@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30717.126
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Integration.DataTablesServerProcessing", "DotNetBrightener.Integration.DataTablesServerProcessing.csproj", "{DA750C38-C8DE-4461-A2A1-669E9600EBA0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DA750C38-C8DE-4461-A2A1-669E9600EBA0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA750C38-C8DE-4461-A2A1-669E9600EBA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA750C38-C8DE-4461-A2A1-669E9600EBA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA750C38-C8DE-4461-A2A1-669E9600EBA0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6DDC7560-BC3B-4367-A523-FD3F29BE8015}
+	EndGlobalSection
+EndGlobal
