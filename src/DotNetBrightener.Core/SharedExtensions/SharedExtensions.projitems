@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>59d960de-d770-4d0c-9ed7-e46e1bcd3a5a</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>SharedExtensions</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)ApplicationBuilderStaticServerExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ClaimsPrincipalExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CommonStringConstants.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CommonUserClaimKeys.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CommonUserConstants.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DateTimeExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DictionaryExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ExceptionExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ExpressionExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)HttpContextAccessorExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)HttpContextAccessorExtentions\UserContextExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectCopyExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ReflectionExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ServiceCollectionAutoRegisterDependenciesExtension.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)StringExtensions.cs" />
+  </ItemGroup>
+</Project>

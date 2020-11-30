@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>net5.0</TargetFrameworks>
+		<PackageId>DotNetBrightener.SharedDataAccessService</PackageId>
+		<Version>1.0.0-beta-001</Version>
+		<Copyright>© 2020 DotNet Brightener</Copyright>
+		<Authors>DotNet Brightener</Authors>
+		<Company>DotNet Brightener</Company>
+		<PackageDescription>
+			A library that provides abstraction layers for accessing database utilizing DotNetBrightener Data Access Framework.
+		</PackageDescription>
+		<RepositoryUrl>https://github.com/dotnetbrightener/dotnet-brightener-framework</RepositoryUrl>
+	</PropertyGroup>
+
+	<ItemGroup Condition="$(Configuration)=='Debug'">
+		<ProjectReference Include="..\DotNetBrightener.Core.DataAccess\DotNetBrightener.Core.DataAccess.csproj" />
+	</ItemGroup>
+
+
+	<ItemGroup Condition="$(Configuration)=='Release'">
+		<PackageReference Include="DotNetBrightener.Core.DataAccess" Version="1.0.0-beta-001" />
+	</ItemGroup>
+
+</Project>

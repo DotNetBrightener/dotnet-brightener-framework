@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFrameworks>net5.0</TargetFrameworks>
+		<PackageId>DotNetBrightener.DependencyDefinition</PackageId>
+		<Version>1.0.1</Version>
+		<Copyright>© 2020 DotNet Brightener</Copyright>
+		<Authors>DotNet Brightener</Authors>
+		<Company>DotNet Brightener</Company>
+		<PackageDescription>
+			A library provides the basic interface for using with DotNetBrightener framework for automatically register dependencies to the IServiceCollection
+		</PackageDescription>
+		<RepositoryUrl>https://github.com/dotnetbrightener/dotnet-brightener-framework</RepositoryUrl>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
+
+</Project>

@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFrameworks>net5.0</TargetFrameworks>
+		<PackageId>DotNetBrightener.Core</PackageId>
+		<Version>1.0.0-beta-001</Version>
+		<Copyright>© 2020 DotNet Brightener</Copyright>
+		<Authors>DotNet Brightener</Authors>
+		<Company>DotNet Brightener</Company>
+		<PackageDescription>
+			A library that helps configurating ASP.Net Core application with minimal efforts
+		</PackageDescription>
+		<RepositoryUrl>https://github.com/dotnetbrightener/dotnet-brightener-framework</RepositoryUrl>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<DefineConstants>TRACE;RELEASE</DefineConstants>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+		<NoWarn>1701;1702;1591;1574;1723</NoWarn>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="5.0.0" />
+		<PackageReference Include="Microsoft.Extensions.DependencyModel" Version="5.0.0" />
+		<PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="5.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="5.0.0" />
+		<PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.8.0" />
+
+		<PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+		<PackageReference Include="NLog.Web.AspNetCore" Version="4.9.3" />
+		<PackageReference Include="RestSharp" Version="106.11.7" />
+	</ItemGroup>
+
+	<Import Project="..\SharedExtensions\SharedExtensions.projitems" Label="Shared" />
+
+</Project>

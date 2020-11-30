@@ -1,0 +1,41 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>net5.0</TargetFrameworks>
+		<PackageId>DotNetBrightener.Integration.Modular</PackageId>
+		<Version>1.0.0-beta-001</Version>
+		<Copyright>© 2020 DotNet Brightener</Copyright>
+		<Authors>DotNet Brightener</Authors>
+		<Company>DotNet Brightener</Company>
+		<PackageDescription>
+			A library that provides APIs for integrating DotNetBrightener.Core.Modular to ASP.Net Core Application
+		</PackageDescription>
+		<RepositoryUrl>https://github.com/dotnetbrightener/dotnet-brightener-framework</RepositoryUrl>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="5.0.0" />
+		<PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="5.0.0" />
+		<PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="5.0.0" />
+
+		<PackageReference Include="DotNetBrightener.Core.DataAccess" Version="1.0.0-beta-001" />
+		<PackageReference Include="DotNetBrightener.Core.DataAccess.EF" Version="1.0.0-beta-001" />
+	</ItemGroup>
+
+	<ItemGroup Condition="$(Configuration)=='Debug'">
+		<ProjectReference Include="..\DotNetBrightener.Core\DotNetBrightener.Core.csproj" />
+		<ProjectReference Include="..\DotNetBrightener.Core.Modular\DotNetBrightener.Core.Modular.csproj" />
+	</ItemGroup>
+
+	<ItemGroup Condition="$(Configuration)=='Release'">
+		<PackageReference Include="DotNetBrightener.Core" Version="1.0.0-beta-001" />
+		<PackageReference Include="DotNetBrightener.Core.Modular" Version="1.0.0-beta-001" />
+	</ItemGroup>
+
+	<Import Project="..\SharedExtensions\SharedExtensions.projitems" Label="Shared" />
+</Project>
