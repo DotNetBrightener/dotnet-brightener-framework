@@ -20,10 +20,11 @@ namespace DotNetBrightener.Core.DataAccess
             if (context.User.Identity.IsAuthenticated)
             {
                 var userName = context.User.FindFirst(CommonUserClaimKeys.UserName)?.Value;
+                var userFullName = context.User.FindFirst(CommonUserClaimKeys.UserFullName)?.Value;
                 var userIdString = context.User.FindFirst(CommonUserClaimKeys.UserId)?.Value;
 
-                dataWorkContext.SetContextData(userName, CommonUserConstants.CurrentLoggedInUserName);
-                httpContextAccessor.StoreValue(CommonUserConstants.CurrentLoggedInUserName, userName);
+                dataWorkContext.SetContextData(userFullName ?? userName, CommonUserConstants.CurrentLoggedInUserName);
+                httpContextAccessor.StoreValue(CommonUserConstants.CurrentLoggedInUserName, userFullName ?? userName);
 
                 if (long.TryParse(userIdString, out var userId))
                 {

@@ -3,6 +3,7 @@
     internal class CommonUserClaimKeys
     {
         public const string UserName = "USERNAME";
+        public const string UserFullName = "USERFULLNAME";
         public const string UserId = "USER_ID";
         public const string UserRole = "USER_ROLE";
         public const string UserRoleId = "USER_ROLE_ID";
