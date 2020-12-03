@@ -56,6 +56,8 @@ namespace DotNetBrightener.Integration.Modular.Mvc
                 // if the controller is ApiController
                 if (apiControllerAttrib != null)
                 {
+                    var modifiedApiPrefix = _apiRoutePrefix + (associatedModuleId != ModuleEntry.MainModuleIdentifier ? associatedModuleId : "");
+
                     // if [Route] attribute found
                     if (hasAttributeRouteModels)
                     {
@@ -65,20 +67,20 @@ namespace DotNetBrightener.Integration.Modular.Mvc
 
                         if (newRouteTemplate.StartsWith(_apiRoutePrefix))
                         {
-                            newRouteTemplate = _apiRoutePrefix + associatedModuleId + newRouteTemplate.Substring(_apiRoutePrefix.Length - 1);
+                            newRouteTemplate = modifiedApiPrefix + newRouteTemplate.Substring(_apiRoutePrefix.Length - 1);
                         }
                         else
                         {
-                            newRouteTemplate = _apiRoutePrefix + associatedModuleId + "/" + newRouteTemplate;
+                            newRouteTemplate = modifiedApiPrefix + "/" + newRouteTemplate;
                         }
 
-                        attributeRouteModel.Template = newRouteTemplate;
+                        attributeRouteModel.Template = newRouteTemplate.Replace("//", "/");
                     }
                     else
                     {
                         controller.Selectors[0].AttributeRouteModel = new AttributeRouteModel
                         {
-                            Template = _apiRoutePrefix + associatedModuleId + "/[controller]"
+                            Template = (modifiedApiPrefix + "/[controller]").Replace("//", "/")
                         };
                     }
                 }

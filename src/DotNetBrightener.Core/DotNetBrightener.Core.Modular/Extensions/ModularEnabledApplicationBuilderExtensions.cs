@@ -19,7 +19,11 @@ namespace DotNetBrightener.Core.Modular.Extensions
 {
     public static class ModularEnabledApplicationBuilderExtensions
     {
-        public static void UseModular(this IApplicationBuilder app)
+        /// <summary>
+        ///     Enables modular static file servers to the modules
+        /// </summary>
+        /// <param name="app"></param>
+        public static void UseModularStaticFileServers(this IApplicationBuilder app)
         {
             var serviceProvider = app.ApplicationServices;
             var modules = serviceProvider.GetService<LoadedModuleEntries>()

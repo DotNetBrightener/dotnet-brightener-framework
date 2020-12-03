@@ -31,13 +31,13 @@ namespace DotNetBrightener.Core.Modular
         }
 
         /// <summary>
-        /// Retrieves the exported types loaded for the context, excluding abstract classes and interfaces
+        ///     Retrieves the exported types loaded for the context, excluding abstract classes and interfaces
         /// </summary>
         /// <returns>An array of <see cref="Type"/> loaded for the context</returns>
         public Type[] GetExportedTypes()
         {
             return this.SelectMany(_ => _.ModuleTypeMetadataCollection)
-                       .Where(_ => !_.IsAbstract && !_.IsInterface)
+                       .Where(_ => _.Type.IsNotSystemType() && !_.IsAbstract && !_.IsInterface)
                        .Select(_ => _.Type)
                        .Distinct()
                        .ToArray();

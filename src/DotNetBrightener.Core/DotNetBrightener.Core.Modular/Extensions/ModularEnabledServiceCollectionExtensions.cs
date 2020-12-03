@@ -62,6 +62,14 @@ namespace DotNetBrightener.Core.Modular.Extensions
         public static LoadedModuleEntries EnableModules(this IServiceCollection serviceCollection,
                                                         string[]                enabledModules = null)
         {
+            // ensure only one LoadedModuleEntries available in the given service collection
+            var existingLoadedModuleEntries = serviceCollection.Any(_ => _.ServiceType == typeof(LoadedModuleEntries));
+
+            if (existingLoadedModuleEntries)
+            {
+                serviceCollection.RemoveAll<LoadedModuleEntries>();
+            }
+
             using var serviceProvider = serviceCollection.BuildServiceProvider();
             var moduleLoader = serviceProvider.GetService<IModuleLoader>();
             var allModules = moduleLoader.RetrieveEnableModules(enabledModules)

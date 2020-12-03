@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Core.DataA
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.SharedDataAccessService", "DotNetBrightener.SharedDataAccessService\DotNetBrightener.SharedDataAccessService.csproj", "{83B0969A-B35B-4B98-A6C7-0C4DE48467EA}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Integration.DataMigration", "DotNetBrightener.Integration.DataMigration\DotNetBrightener.Integration.DataMigration.csproj", "{A7E09A37-BD25-4910-9C69-71570C61D404}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{83B0969A-B35B-4B98-A6C7-0C4DE48467EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{83B0969A-B35B-4B98-A6C7-0C4DE48467EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{83B0969A-B35B-4B98-A6C7-0C4DE48467EA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A7E09A37-BD25-4910-9C69-71570C61D404}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A7E09A37-BD25-4910-9C69-71570C61D404}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A7E09A37-BD25-4910-9C69-71570C61D404}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A7E09A37-BD25-4910-9C69-71570C61D404}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -8,7 +8,7 @@ namespace DotNetBrightener.Core.Modular.StartupConfiguration
 	/// An implementation of this interface is used to initialize the services and HTTP request
 	/// pipeline of a module.
 	/// </summary>
-	public interface IStartupConfiguration
+	public interface IModuleStartupConfiguration
 	{
 		/// <summary>
 		/// Get the value to use to order startups. The default is 0.

@@ -56,6 +56,10 @@ namespace DotNetBrightener.Integration.Modular.Database
                                          .Scoped<ISchemaMigrationExecutor, ModularDbSchemaMigrationExecutor>());
         }
 
+        /// <summary>
+        ///     Executes the migrations for databases of the modules for the current Application Pipeline
+        /// </summary>
+        /// <param name="app"></param>
         public static void AutoMigrateModuleDatabases(this IApplicationBuilder app)
         {
             using (var scope = app.ApplicationServices.CreateScope())
