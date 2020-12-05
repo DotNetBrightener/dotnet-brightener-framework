@@ -3,14 +3,14 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using DotNetBrightener.Core.Caching;
-using Microsoft.Extensions.FileProviders;
-using Newtonsoft.Json;
 
 namespace DotNetBrightener.Core.Localization.Services
 {
     public interface ILocalizationManager
     {
         CultureDictionary GetDictionary(CultureInfo culture);
+
+        void ClearDictionaryCache();
     }
 
     public class LocalizationManager : ILocalizationManager
@@ -19,11 +19,11 @@ namespace DotNetBrightener.Core.Localization.Services
 
         private const    string                                CacheKeyPrefix = "CultureDictionary-";
         private readonly IStaticCacheManager                   _cache;
-        private readonly IEnumerable<ILocalizationFileLoader>  _localizationFileLoader;
+        private readonly IEnumerable<ILocalizationFileManager>  _localizationFileLoader;
         private readonly Dictionary<string, FileSystemWatcher> _watchers = new Dictionary<string, FileSystemWatcher>();
 
         public LocalizationManager(IStaticCacheManager                  cache,
-                                   IEnumerable<ILocalizationFileLoader> localizationFileLoader)
+                                   IEnumerable<ILocalizationFileManager> localizationFileLoader)
         {
             _cache                  = cache;
             _localizationFileLoader = localizationFileLoader;
@@ -35,6 +35,11 @@ namespace DotNetBrightener.Core.Localization.Services
             var cachedDictionary = _cache.Get(cacheKey, () => CreateDictionary(culture));
 
             return cachedDictionary;
+        }
+
+        public void ClearDictionaryCache()
+        {
+            _cache.RemoveByPrefix(CacheKeyPrefix);
         }
 
         private CultureDictionary CreateDictionary(CultureInfo culture)
@@ -49,7 +54,7 @@ namespace DotNetBrightener.Core.Localization.Services
 
         private void LoadTranslations(string cultureName, CultureDictionary dictionary)
         {
-            var localizationFiles = _localizationFileLoader.SelectMany(_ => _.LoadTranslations(cultureName))
+            var localizationFiles = _localizationFileLoader.SelectMany(_ => _.LoadTranslationFiles(cultureName))
                                                            .Where(_ => _.Exists)
                                                            .ToArray();
 
@@ -59,7 +64,7 @@ namespace DotNetBrightener.Core.Localization.Services
             }
         }
 
-        private void LoadFileToDictionary(IFileInfo fileInfo, CultureDictionary dictionary, string cultureName)
+        private void LoadFileToDictionary(ITranslationFileInfo fileInfo, CultureDictionary dictionary, string cultureName)
         {
             if (fileInfo.Exists)
             {
@@ -71,8 +76,7 @@ namespace DotNetBrightener.Core.Localization.Services
                     _watchers.Add(watcherKey, fileWatcher);
                 }
 
-                var fileContent = File.ReadAllText(fileInfo.PhysicalPath);
-                var content     = JsonConvert.DeserializeObject<CultureDictionaryJsonFormat>(fileContent);
+                var content     = fileInfo.GetDictionaryEntries();
 
                 var dict = content.Select(_ => new CultureDictionaryRecord(_.Key, _.Value));
 
@@ -86,7 +90,7 @@ namespace DotNetBrightener.Core.Localization.Services
 
             fileWatcher.Changed += (sender, args) =>
             {
-                _cache.Remove(new CacheKey(CacheKeyPrefix + cultureName));
+                _cache.RemoveByPrefix(CacheKeyPrefix + cultureName);
             };
 
             fileWatcher.EnableRaisingEvents = true;
@@ -97,7 +101,9 @@ namespace DotNetBrightener.Core.Localization.Services
 
         private static CacheKey GetCacheKey(CultureInfo culture)
         {
-            return new CacheKey(CacheKeyPrefix + culture.TwoLetterISOLanguageName, 10);
+            return new CacheKey(CacheKeyPrefix + culture.TwoLetterISOLanguageName, 10, 
+                                CacheKeyPrefix,
+                                CacheKeyPrefix + culture.TwoLetterISOLanguageName);
         }
     }
 }
