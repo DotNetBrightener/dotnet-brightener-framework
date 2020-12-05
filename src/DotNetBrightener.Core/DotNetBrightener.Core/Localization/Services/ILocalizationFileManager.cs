@@ -47,16 +47,15 @@ namespace DotNetBrightener.Core.Localization.Services
             var translationsToSave = new Dictionary<string, string>(
                 translationDictionary.Translations
                                      .Where(_ => !_.MarkedForDelete) // load the entries that are not marked for delete
+                                     .OrderBy(_ => _.Key)
                                      .ToDictionary(_ => _.Key.Trim(),
                                                    _ => _.Value.Trim())
                 );
 
-            string contentToSave = JsonConvert.SerializeObject(translationsToSave, Formatting.Indented);
-
             // no file exist, just write everything
             if (!File.Exists(localeFile))
             {
-                await File.WriteAllTextAsync(localeFile, contentToSave);
+                await File.WriteAllTextAsync(localeFile, JsonConvert.SerializeObject(translationsToSave, Formatting.Indented));
                 return;
             }
 
@@ -81,9 +80,12 @@ namespace DotNetBrightener.Core.Localization.Services
                 translationsToSave.Remove(key);
             }
 
-            contentToSave = JsonConvert.SerializeObject(translationsToSave, Formatting.Indented);
+            // order translations by key
+            translationsToSave = translationsToSave.OrderBy(_ => _.Key)
+                                                   .ToDictionary(_ => _.Key.Trim(),
+                                                                 _ => _.Value.Trim());
 
-            await File.WriteAllTextAsync(localeFile, contentToSave);
+            await File.WriteAllTextAsync(localeFile, JsonConvert.SerializeObject(translationsToSave, Formatting.Indented));
         }
 
         protected virtual string GetPathToSave(TranslationDictionary translationDictionary)
