@@ -78,7 +78,8 @@ namespace DotNetBrightener.Core.Localization.Services
 
                 var content     = fileInfo.GetDictionaryEntries();
 
-                var dict = content.Select(_ => new CultureDictionaryRecord(_.Key, _.Value));
+                var dict = content.Where(_ => !string.IsNullOrEmpty(_.Key))
+                                  .Select(_ => new CultureDictionaryRecord(_.Key, _.Value));
 
                 dictionary.MergeTranslations(dict);
             }

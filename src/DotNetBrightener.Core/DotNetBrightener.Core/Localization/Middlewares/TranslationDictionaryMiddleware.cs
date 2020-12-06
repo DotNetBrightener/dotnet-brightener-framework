@@ -24,12 +24,22 @@ namespace DotNetBrightener.Core.Localization.Middlewares
                            ILocalizationManager localizationManager,
                            IRequestWorkContext  workContext)
         {
-            var languages = context.Request.GetTypedHeaders()
-                                   .AcceptLanguage
-                                  ?.OrderByDescending(x => x.Quality ?? 1)
+            var languages = context.Request
+                                   .Cookies
+                                   .Where(_ => _.Key == nameof(HttpRequestHeader.AcceptLanguage))
+                                   .Select(_ => _.Value)
+                                   .ToArray();
+            
+            if (languages.Length == 0)
+            {
+                languages = context.Request
+                                   .GetTypedHeaders()
+                                   .AcceptLanguage?
+                                   .OrderByDescending(x => x.Quality ?? 1)
                                    .Select(x => x.Value.ToString())
                                    .ToArray() ?? Array.Empty<string>();
-            
+            }
+
             if (languages.Length > 0)
             {
                 var detectedLanguage = CultureInfo.CreateSpecificCulture(languages[0]);
