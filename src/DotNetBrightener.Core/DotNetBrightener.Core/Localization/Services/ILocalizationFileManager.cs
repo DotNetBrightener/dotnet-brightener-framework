@@ -44,6 +44,12 @@ namespace DotNetBrightener.Core.Localization.Services
         {
             var localeFile = GetPathToSave(translationDictionary);
 
+            var directory = Path.GetDirectoryName(localeFile);
+            if (!Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
             var translationsToSave = new Dictionary<string, string>(
                 translationDictionary.Translations
                                      .Where(_ => !_.MarkedForDelete) // load the entries that are not marked for delete
