@@ -8,11 +8,14 @@ using Microsoft.AspNetCore.Hosting;
 
 namespace DotNetBrightener.Integration.Modular.Localization
 {
-    public class ModuleLocalizationFileLoader : DefaultLocalizationFileLoader
+    /// <summary>
+    ///     Represents the <see cref="ILocalizationFileManager" /> for modular architecture
+    /// </summary>
+    public class ModuleLocalizationFileManager : DefaultLocalizationFileManager
     {
         private readonly LoadedModuleEntries _loadedModules;
 
-        public ModuleLocalizationFileLoader(IWebHostEnvironment webHostEnvironment,
+        public ModuleLocalizationFileManager(IWebHostEnvironment webHostEnvironment,
                                             LoadedModuleEntries loadedModules)
             : base(webHostEnvironment)
         {

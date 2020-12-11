@@ -16,7 +16,7 @@ namespace DotNetBrightener.Core.Localization.Extensions
             serviceCollection.AddSingleton<JsonDictionaryBasedStringLocalizer>();
 
             serviceCollection.AddSingleton<ILocalizationManager, LocalizationManager>();
-            serviceCollection.AddSingleton<ILocalizationFileManager, DefaultLocalizationFileLoader>();
+            serviceCollection.AddSingleton<ILocalizationFileManager, DefaultLocalizationFileManager>();
 
             serviceCollection.AddLocalization();
 

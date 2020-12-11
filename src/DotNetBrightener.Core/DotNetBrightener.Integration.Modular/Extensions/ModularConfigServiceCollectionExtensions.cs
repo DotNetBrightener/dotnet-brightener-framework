@@ -35,7 +35,7 @@ namespace DotNetBrightener.Integration.Modular.Extensions
         {
             var loadedModuleEntries = serviceCollection.EnableModules(enabledModules);
 
-            serviceCollection.Replace(ServiceDescriptor.Singleton<ILocalizationFileManager, ModuleLocalizationFileLoader>());
+            serviceCollection.Replace(ServiceDescriptor.Singleton<ILocalizationFileManager, ModuleLocalizationFileManager>());
             serviceCollection.TryAddEnumerable(
                               ServiceDescriptor.Transient<IApplicationModelProvider, ModularApplicationModelProvider>()
                              );

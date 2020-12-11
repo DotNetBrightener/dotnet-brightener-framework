@@ -7,20 +7,38 @@ using Newtonsoft.Json;
 
 namespace DotNetBrightener.Core.Localization.Services
 {
+    /// <summary>
+    ///     The service provides functions for managing localization files
+    /// </summary>
     public interface ILocalizationFileManager
     {
+        /// <summary>
+        ///     Loads the localization files for the given language
+        /// </summary>
+        /// <param name="cultureName">The culture name of the language</param>
+        /// <returns>
+        ///     An enumerable of <see cref="ITranslationFileInfo"/>
+        /// </returns>
         IEnumerable<ITranslationFileInfo> LoadTranslationFiles(string cultureName);
 
+        /// <summary>
+        ///     Saves the translations asynchronously
+        /// </summary>
+        /// <param name="translationDictionary">The dictionary of translation entries to save</param>
         Task SaveTranslationsAsync(TranslationDictionary translationDictionary);
 
+        /// <summary>
+        ///     Saves the translations
+        /// </summary>
+        /// <param name="translationDictionary">The dictionary of translation entries to save</param>
         void SaveTranslations(TranslationDictionary translationDictionary);
     }
 
-    public class DefaultLocalizationFileLoader : ILocalizationFileManager
+    public class DefaultLocalizationFileManager : ILocalizationFileManager
     {
         private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public DefaultLocalizationFileLoader(IWebHostEnvironment webHostEnvironment)
+        public DefaultLocalizationFileManager(IWebHostEnvironment webHostEnvironment)
         {
             _webHostEnvironment = webHostEnvironment;
         }
@@ -44,6 +62,7 @@ namespace DotNetBrightener.Core.Localization.Services
         {
             var localeFile = GetPathToSave(translationDictionary);
 
+            // ensure directory exists
             var directory = Path.GetDirectoryName(localeFile);
             if (!Directory.Exists(directory))
             {
@@ -53,6 +72,7 @@ namespace DotNetBrightener.Core.Localization.Services
             var translationsToSave = new Dictionary<string, string>(
                 translationDictionary.Translations
                                      .Where(_ => !_.MarkedForDelete) // load the entries that are not marked for delete
+                                     // order them in alphabetical order
                                      .OrderBy(_ => _.Key)
                                      .ToDictionary(_ => _.Key.Trim(),
                                                    _ => _.Value.Trim())

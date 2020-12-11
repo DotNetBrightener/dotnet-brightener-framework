@@ -6,7 +6,7 @@ namespace DotNetBrightener.Core.Authentication.Configs
     {
         public const string JwtDefaultIssuer = "https://validissuer.dotnetbrightener.com";
 
-        public const int DefaultExpiration = 30;
+        public const int DefaultExpiration = 5;
 
         public string Issuer { get; set; }
 
