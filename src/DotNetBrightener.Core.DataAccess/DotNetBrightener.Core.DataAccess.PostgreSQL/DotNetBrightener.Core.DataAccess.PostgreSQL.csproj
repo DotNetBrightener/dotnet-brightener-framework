@@ -5,12 +5,20 @@
 		<PackageId>DotNetBrightener.Core.DataAccess.PostgreSQL</PackageId>
 		<Version>1.0.0-beta-001</Version>
 		<Copyright>© 2020 DotNet Brightener</Copyright>
-		<Authors>DotNet Brightener</Authors>
+		<Authors>DotNet Brightener &lt;dotnetbrightener@gmail.com&gt;</Authors>
 		<Company>DotNet Brightener</Company>
 		<PackageDescription>
 			A library that adds the support for PostgreSQL to the centralized data access layer of DotNet Brightener Framework.
 		</PackageDescription>
 		<RepositoryUrl>https://github.com/dotnetbrightener/dotnet-brightener-framework</RepositoryUrl>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<PackageIcon>dotnet-brightener-logo.png</PackageIcon>
+		<RepositoryType>git</RepositoryType>
+		<Description>
+			A library that adds the support for PostgreSQL to the centralized data access layer of DotNet Brightener Framework.
+		</Description>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<NoWarn>1701;1702;1591;1574;1723</NoWarn>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -29,10 +37,15 @@
 	<ItemGroup Condition="$(Configuration)=='Release'">
 		<PackageReference Include="DotNetBrightener.Core.DataAccess" Version="1.0.0-beta-001" />
 	</ItemGroup>
-
-	<PropertyGroup>
-		<DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
-		<NoWarn>1701;1702;1591;1574;1723</NoWarn>
-	</PropertyGroup>
+	<ItemGroup>
+		<None Include="..\..\..\dotnet-brightener-logo.png">
+			<Pack>True</Pack>
+			<PackagePath></PackagePath>
+		</None>
+		<None Include="..\..\..\LICENSE">
+			<Pack>True</Pack>
+			<PackagePath></PackagePath>
+		</None>
+	</ItemGroup>
 
 </Project>

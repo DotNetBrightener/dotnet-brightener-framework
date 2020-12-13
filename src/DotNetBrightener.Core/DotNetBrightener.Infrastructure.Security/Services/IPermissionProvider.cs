@@ -1,6 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using DotNetBrightener.Core.Permissions;
+using System.Collections.Generic;
 
-namespace DotNetBrightener.Core.Permissions
+namespace DotNetBrightener.Infrastructure.Security.Services
 {
     /// <summary>
     /// Represents the provider that provides the permissions

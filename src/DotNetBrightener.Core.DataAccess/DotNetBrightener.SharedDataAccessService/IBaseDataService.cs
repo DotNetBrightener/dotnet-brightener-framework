@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using DotNetBrightener.Core.DataAccess.Repositories;
@@ -102,13 +103,15 @@ namespace DotNetBrightener.SharedDataAccessService
         }
 
         public IQueryable<TEntity> FetchActive(Expression<Func<TEntity, bool>> expression = null)
-        {            
+        {
+            IQueryable<TEntity> query = Repository.Fetch(expression);
+
             if (typeof(TEntity).HasProperty<bool>("IsDeleted"))
             {
-
+                query = query.Where("IsDeleted != True");
             }
 
-            return Repository.Fetch(expression);
+            return query;
         }
 
         public virtual void Insert(TEntity entity)

@@ -1,12 +1,9 @@
 ﻿using System.Threading.Tasks;
 using DotNetBrightener.Core.Authentication.Configs;
 using DotNetBrightener.Core.Authentication.Services;
-using DotNetBrightener.Core.Security.ControllerBasePermissionAuthorizationHandler;
-using DotNetBrightener.Core.Security.GenericPermissionAuthorizationHandler;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -21,10 +18,6 @@ namespace DotNetBrightener.Core.Authentication.Extensions
             servicesCollection.AddSingleton(cookieAuthenticationConfig);
             servicesCollection.AddSingleton<IJwtConfigurationAccessor, JwtConfigurationAccessor>();
             servicesCollection.AddScoped<IJwtSecurityKeySigningResolver, DefaultJwtSecurityKeySigningResolver>();
-
-
-            servicesCollection.AddScoped<IAuthorizationHandler, PermissionAuthorizeAttributeHandler>();
-            servicesCollection.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
 
             servicesCollection.Add(ServiceDescriptor.Scoped<JwtConfig>(provider =>
                                                                        {

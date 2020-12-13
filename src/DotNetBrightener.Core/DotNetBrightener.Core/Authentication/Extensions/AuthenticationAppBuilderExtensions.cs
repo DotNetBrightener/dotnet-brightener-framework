@@ -38,14 +38,9 @@ namespace DotNetBrightener.Core.Authentication.Extensions
                     });
             
             app.UseCookiePolicy();
+
             // let the system authenticate the user first
             app.UseMiddleware<OverrideAuthenticationMiddleware>();
-        }
-
-        public static void UseCustomAuthorization(this IApplicationBuilder app)
-        {
-            // once we have the user then we perform the authorization
-            app.UseMiddleware<OverrideAuthorizationMiddleware>();
         }
     }
 }

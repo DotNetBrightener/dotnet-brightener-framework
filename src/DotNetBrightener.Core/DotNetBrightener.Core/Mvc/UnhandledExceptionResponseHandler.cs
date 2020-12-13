@@ -1,7 +1,4 @@
-﻿using System;
-using System.Net;
-using DotNetBrightener.Core.Events;
-using DotNetBrightener.Core.Exceptions;
+﻿using DotNetBrightener.Core.Exceptions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -9,6 +6,9 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Net;
 
 namespace DotNetBrightener.Core.Mvc
 {
@@ -16,20 +16,20 @@ namespace DotNetBrightener.Core.Mvc
     {
         private const string ApplicationJsonType = "application/json";
 
-        private readonly ILogger             _logger;
+        private readonly ILogger _logger;
         private readonly IErrorResultFactory _errorResultFactory;
-        private readonly IEventPublisher     _eventPublisher;
-        private readonly IStringLocalizer    T;
+        private readonly IEnumerable<IUnhandleExceptionHandler> _unhandledExceptionHandlers;
+        private readonly IStringLocalizer T;
 
-        public UnhandledExceptionResponseHandler(ILogger<UnhandledExceptionResponseHandler>          logger,
-                                                 IEventPublisher                                     eventPublisher,
-                                                 IErrorResultFactory                                 errorResultFactory,
+        public UnhandledExceptionResponseHandler(ILogger<UnhandledExceptionResponseHandler> logger,
+                                                 IErrorResultFactory errorResultFactory,
+                                                 IEnumerable<IUnhandleExceptionHandler> unhandledExceptionHandlers,
                                                  IStringLocalizer<UnhandledExceptionResponseHandler> localizer)
         {
-            _logger             = logger;
-            _eventPublisher     = eventPublisher;
+            _logger = logger;
             _errorResultFactory = errorResultFactory;
-            T                   = localizer;
+            T = localizer;
+            _unhandledExceptionHandlers = unhandledExceptionHandlers;
         }
 
         public void OnException(ExceptionContext context)
@@ -56,9 +56,9 @@ namespace DotNetBrightener.Core.Mvc
 
                 defaultResult = new ContentResult
                 {
-                    Content     = JsonConvert.SerializeObject(errorResult),
+                    Content = JsonConvert.SerializeObject(errorResult),
                     ContentType = ApplicationJsonType,
-                    StatusCode  = (int) exception.StatusCode
+                    StatusCode = (int)exception.StatusCode
                 };
             }
 
@@ -66,9 +66,9 @@ namespace DotNetBrightener.Core.Mvc
             {
                 defaultResult = new ContentResult
                 {
-                    Content     = JsonConvert.SerializeObject(errorResult),
+                    Content = JsonConvert.SerializeObject(errorResult),
                     ContentType = ApplicationJsonType,
-                    StatusCode  = (int) HttpStatusCode.Unauthorized
+                    StatusCode = (int)HttpStatusCode.Unauthorized
                 };
             }
 
@@ -76,9 +76,9 @@ namespace DotNetBrightener.Core.Mvc
             {
                 defaultResult = new ContentResult
                 {
-                    Content     = JsonConvert.SerializeObject(errorResult),
+                    Content = JsonConvert.SerializeObject(errorResult),
                     ContentType = ApplicationJsonType,
-                    StatusCode  = httpRequestException.StatusCode
+                    StatusCode = httpRequestException.StatusCode
                 };
             }
 
@@ -86,14 +86,14 @@ namespace DotNetBrightener.Core.Mvc
             {
                 _logger.LogError(context.Exception, "Unhandled Exception Occurred");
 
-                errorResult.ErrorType        = context.Exception.GetType().FullName;
+                errorResult.ErrorType = context.Exception.GetType().FullName;
                 errorResult.FullErrorMessage = context.Exception.GetFullExceptionMessage();
 
                 defaultResult = new ContentResult
                 {
-                    Content     = JsonConvert.SerializeObject(errorResult),
+                    Content = JsonConvert.SerializeObject(errorResult),
                     ContentType = ApplicationJsonType,
-                    StatusCode  = (int) HttpStatusCode.InternalServerError
+                    StatusCode = (int)HttpStatusCode.InternalServerError
                 };
             }
 
@@ -104,23 +104,29 @@ namespace DotNetBrightener.Core.Mvc
             {
 
                 context.ExceptionHandled = true;
-                context.Result           = defaultResult;
+                context.Result = defaultResult;
                 return;
             }
 
-            var exceptionProcessingEventMessage = new ExceptionProcessingEventMessage
+            var exceptionContext = new UnhandledExceptionContext
             {
-                ErrorResult      = errorResult,
+                ErrorResult = errorResult,
                 ContextException = context.Exception,
-                ProcessResult    = defaultResult,
-                StatusCode       = (HttpStatusCode) defaultResult.StatusCode
+                ProcessResult = defaultResult,
+                StatusCode = (HttpStatusCode)defaultResult.StatusCode
             };
 
-            _eventPublisher.Publish(exceptionProcessingEventMessage)
-                           .Wait();
+            foreach (var handler in _unhandledExceptionHandlers)
+            {
+                handler.HandleException(exceptionContext);
+                if (exceptionContext.ProcessResult != null)
+                {
+                    break;
+                }
+            }
 
             context.ExceptionHandled = true;
-            context.Result = exceptionProcessingEventMessage.ProcessResult ?? defaultResult;
+            context.Result = exceptionContext.ProcessResult ?? defaultResult;
         }
     }
 }

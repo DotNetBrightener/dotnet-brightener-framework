@@ -1,12 +1,12 @@
 ﻿using System;
 
-namespace DotNetBrightener.Core
+namespace DotNetBrightener.Plugins.EventPubSub.Internal
 {
     public interface IBackgroundServiceProvider : IServiceProvider
     {
     }
 
-    public class BackgroundServiceProvider : IBackgroundServiceProvider
+    internal class BackgroundServiceProvider : IBackgroundServiceProvider
     {
         private readonly IServiceProvider _serviceProvider;
 

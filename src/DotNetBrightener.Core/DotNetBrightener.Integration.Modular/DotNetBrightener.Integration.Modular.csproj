@@ -3,9 +3,9 @@
 	<PropertyGroup>
 		<TargetFrameworks>net5.0</TargetFrameworks>
 		<PackageId>DotNetBrightener.Integration.Modular</PackageId>
-		<Version>1.0.0-beta-001</Version>
+		<Version>1.0.0-beta-002</Version>
 		<Copyright>© 2020 DotNet Brightener</Copyright>
-		<Authors>DotNet Brightener</Authors>
+		<Authors>DotNet Brightener &lt;dotnetbrightener@gmail.com&gt;</Authors>
 		<Company>DotNet Brightener</Company>
 		<PackageDescription>
 			A library that provides APIs for integrating DotNetBrightener.Core.Modular to ASP.Net Core Application
@@ -38,8 +38,8 @@
 	</ItemGroup>
 
 	<ItemGroup Condition="$(Configuration)=='Release'">
-		<PackageReference Include="DotNetBrightener.Core" Version="1.0.0-beta-001" />
-		<PackageReference Include="DotNetBrightener.Core.Modular" Version="1.0.0-beta-001" />
+		<PackageReference Include="DotNetBrightener.Core" Version="1.0.0-beta-002" />
+		<PackageReference Include="DotNetBrightener.Core.Modular" Version="1.0.0-beta-002" />
 	</ItemGroup>
 
 	<Import Project="..\SharedExtensions\SharedExtensions.projitems" Label="Shared" />

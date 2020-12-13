@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using DotNetBrightener.Core.Events;
 using DotNetBrightener.Core.Exceptions;
+using DotNetBrightener.Core.Mvc;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
@@ -129,20 +129,24 @@ namespace DotNetBrightener.Core.Modular.Extensions
         private static void ThrowNotFoundException(StatusCodeContext context)
         {
             var localizer = context.HttpContext.RequestServices.GetService<IStringLocalizer<HttpContext>>();
-            var eventPublisher = context.HttpContext.RequestServices.GetService<IEventPublisher>();
+            var exceptionHandlers = context.HttpContext.RequestServices.GetServices<IUnhandleExceptionHandler>();
 
             var exception = new BadHttpRequestException(localizer ["ErrorMessages.TheRequestedResourceCannotBeFound"], (int) HttpStatusCode.NotFound);
 
-            var exceptionProcessingEventMessage = new ExceptionProcessingEventMessage
+            var exceptionContext = new UnhandledExceptionContext
             {
                 ContextException = exception,
                 StatusCode       = (HttpStatusCode) exception.StatusCode
             };
 
-            eventPublisher.Publish(exceptionProcessingEventMessage)
-                          .Wait();
+            foreach(var handler in exceptionHandlers)
+            {
+                handler.HandleException(exceptionContext);
+                if (exceptionContext.ProcessResult != null)
+                    break;
+            }
 
-            if (exceptionProcessingEventMessage.ProcessResult is ContentResult contentResult)
+            if (exceptionContext.ProcessResult != null && exceptionContext.ProcessResult is ContentResult contentResult)
             {
                 context.HttpContext.Response.StatusCode = contentResult.StatusCode.Value;
                 context.HttpContext.Response.ContentType = contentResult.ContentType;

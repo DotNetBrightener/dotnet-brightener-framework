@@ -3,43 +3,34 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using DotNetBrightener.Plugins.EventPubSub.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace DotNetBrightener.Core.Events
+namespace DotNetBrightener.Plugins.EventPubSub
 {
-    public abstract class BaseEventMessage
-    {
-        internal bool ShouldStopProcessing { get; set; }
-
-        public void StopProcessing()
-        {
-            ShouldStopProcessing = true;
-        }
-    }
-
     public interface IEventPublisher
     {
-        Task Publish<T>(T eventMessage, bool runInBackground = false) where T: BaseEventMessage;
+        Task Publish<T>(T eventMessage, bool runInBackground = false) where T : class, new();
     }
 
     public class EventPublisher : IEventPublisher
     {
         private readonly ConcurrentDictionary<object, Timer> _queue = new ConcurrentDictionary<object, Timer>();
-        private readonly ILogger                             _logger;
-        private readonly IServiceProvider                    _serviceResolver;
-        private readonly IServiceProvider                    _backgroundServiceResolver;
+        private readonly ILogger _logger;
+        private readonly IServiceProvider _serviceResolver;
+        private readonly IServiceProvider _backgroundServiceResolver;
 
-        public EventPublisher(IServiceProvider           serviceResolver,
+        public EventPublisher(IServiceProvider serviceResolver,
                               IBackgroundServiceProvider backgroundServiceResolver,
                               ILogger<EventPublisher> logger)
         {
-            _logger                    = logger;
-            _serviceResolver           = serviceResolver;
+            _logger = logger;
+            _serviceResolver = serviceResolver;
             _backgroundServiceResolver = backgroundServiceResolver;
         }
 
-        public Task Publish<T>(T eventMessage, bool runInBackground = false) where T : BaseEventMessage
+        public Task Publish<T>(T eventMessage, bool runInBackground = false) where T : class, new()
         {
             if (eventMessage != null)
             {
@@ -59,7 +50,7 @@ namespace DotNetBrightener.Core.Events
             return Task.Run(async () => await PublishEvent(eventMessage, true));
         }
 
-        private async Task PublishEvent<T>(T eventMessage, bool runInBackground = false) where T : BaseEventMessage
+        private async Task PublishEvent<T>(T eventMessage, bool runInBackground = false) where T : class, new()
         {
             var serviceProviderToUse = !runInBackground
                                            ? _serviceResolver
@@ -77,25 +68,27 @@ namespace DotNetBrightener.Core.Events
 
             foreach (var eventHandler in eventHandlers)
             {
-                await PublishEvent(eventHandler, eventMessage);
-                if (eventMessage.ShouldStopProcessing)
+                var shouldContinue = await PublishEvent(eventHandler, eventMessage);
+                if (!shouldContinue)
                     break;
             }
         }
 
-        private async Task PublishEvent<T>(IEventHandler<T> x, T eventMessage) where T : BaseEventMessage
+        private async Task<bool> PublishEvent<T>(IEventHandler<T> x, T eventMessage) where T : class, new()
         {
             try
             {
-                await x.HandleEvent(eventMessage);
+                return await x.HandleEvent(eventMessage);
             }
             catch (NotImplementedException exception)
             {
                 _logger.LogWarning("Event handler not implemented.", exception);
+                return true;
             }
             catch (Exception exception)
             {
                 _logger.LogError($"Error while executing event {typeof(T)}", exception);
+                return false;
             }
         }
 

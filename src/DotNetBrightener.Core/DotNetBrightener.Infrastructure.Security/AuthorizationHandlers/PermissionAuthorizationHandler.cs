@@ -1,13 +1,14 @@
 ﻿using System.Threading.Tasks;
 using DotNetBrightener.Core.Permissions;
+using DotNetBrightener.Infrastructure.Security.Requirements;
 using Microsoft.AspNetCore.Authorization;
 
-namespace DotNetBrightener.Core.Security.GenericPermissionAuthorizationHandler
+namespace DotNetBrightener.Infrastructure.Security.AuthorizationHandlers
 {
-    public class PermissionAuthorizationHandler : AuthorizationHandler<PermissionRequirement>
+    public class PermissionAuthorizationHandler : AuthorizationHandler<PermissionAuthorizationRequirement>
     {
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context,
-                                                       PermissionRequirement       requirement)
+                                                       PermissionAuthorizationRequirement requirement)
         {
             // user not authenticated
             if (context?.User?.Identity == null || !context.User.Identity.IsAuthenticated)
