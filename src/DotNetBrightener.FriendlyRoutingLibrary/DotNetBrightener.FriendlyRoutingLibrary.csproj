@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<TargetFrameworks>net5.0</TargetFrameworks>
 		<PackageId>DotNetBrightener.FriendlyRoutingLibrary</PackageId>
-		<Version>1.0.0</Version>
+		<Version>1.0.1</Version>
 		<Copyright>© 2020 DotNet Brightener</Copyright>
 		<Authors>DotNet Brightener &lt;dotnetbrightener@gmail.com&gt;</Authors>
 		<Company>DotNet Brightener</Company>
@@ -41,6 +41,7 @@
 		<RepositoryType>git</RepositoryType>
 		<PackageTags>asp net core friendly url slug</PackageTags>
 		<Description>A library that adds friendly routing to ASP.Net Core Application</Description>
+		<PackageReleaseNotes>Adjusted the FrontEndRouter for flexibility of letting the consumer define what it wants to include in the router, to match their own system.</PackageReleaseNotes>
 	</PropertyGroup>
 
 </Project>

@@ -12,12 +12,11 @@ namespace DotNetBrightener.FriendlyRoutingLibrary
 	/// </summary>
     public class FrontEndRouter : IRouter
     {
-        private static readonly HashSet<string> Keys = new HashSet<string>(new[]
+        private readonly HashSet<string> Keys = new HashSet<string>(new[]
         {
             "area",
             "controller",
             "action",
-            "identifier",
             "targetType"
         }, StringComparer.OrdinalIgnoreCase);
 
@@ -25,16 +24,34 @@ namespace DotNetBrightener.FriendlyRoutingLibrary
         private readonly IRouter                 _target;
         private readonly string                  _areaName;
         private readonly string                  _controllerName;
+        private readonly string                  _actionName;
+        private readonly string                  _identifierName;
+        private readonly string                  _targetTypeName;
+        private readonly bool                    _targetTypeRequired;
 
         public FrontEndRouter(IFrontEndRoutingEntries entries,
                               IRouter                 target,
                               string                  areaName,
-                              string                  controllerName)
+                              string                  controllerName,
+                              string                  actionName = "Index",
+                              string                  identifierName = "identifier",
+                              string                  targetTypeName = "")
         {
-            _target         = target;
-            _areaName       = areaName;
-            _controllerName = controllerName;
-            _entries        = entries;
+            _target             = target;
+            _areaName           = areaName;
+            _controllerName     = controllerName;
+            _entries            = entries;
+            _actionName         = actionName;
+            _identifierName     = identifierName;
+            _targetTypeRequired = !string.IsNullOrEmpty(targetTypeName);
+
+            Keys.Add(identifierName);
+
+            if (_targetTypeRequired)
+            {
+                _targetTypeName = targetTypeName;
+                Keys.Add(targetTypeName);
+            }
         }
 
         public VirtualPathData GetVirtualPath(VirtualPathContext context)
@@ -97,17 +114,20 @@ namespace DotNetBrightener.FriendlyRoutingLibrary
                 return null;
             }
 
-            if (!long.TryParse(routeEntry.ItemId, out var itemId))
-                return null;
-
-            return new RouteValueDictionary
+            RouteValueDictionary routeValueDictionaries = new RouteValueDictionary
             {
                 {"area", _areaName},
                 {"controller", _controllerName},
-                {"action", "Index"},
-                {"targetType", routeEntry.TargetType.FullName},
-                {"identifier", itemId}
+                {"action", _actionName},
+                {_identifierName, routeEntry.ItemId}
             };
+
+            if (_targetTypeRequired)
+            {
+                routeValueDictionaries.Add(_targetTypeName, routeEntry.TargetType.FullName);
+            }
+
+            return routeValueDictionaries;
         }
 
         private RouteValueDictionary GetContentItemDisplayRoutes(string itemId, string targetType)
@@ -117,17 +137,20 @@ namespace DotNetBrightener.FriendlyRoutingLibrary
                 return null;
             }
 
-            if (!long.TryParse(itemId, out var contentId))
-                return null;
-
-            return new RouteValueDictionary
+            RouteValueDictionary routeValueDictionaries = new RouteValueDictionary
             {
                 {"area", _areaName},
                 {"controller", _controllerName},
-                {"action", "Index"},
-                {"targetType", targetType},
-                {"identifier", contentId}
+                {"action", _actionName},
+                {_identifierName, itemId}
             };
+
+            if (_targetTypeRequired)
+            {
+                routeValueDictionaries.Add(_targetTypeName, targetType);
+            }
+
+            return routeValueDictionaries;
         }
 
         private async Task EnsureRouteData(RouteContext context, FrontEndRoutingEntry routeEntry)
