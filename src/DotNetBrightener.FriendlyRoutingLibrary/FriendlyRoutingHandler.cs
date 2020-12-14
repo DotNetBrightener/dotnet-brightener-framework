@@ -8,7 +8,10 @@ using Microsoft.Extensions.Logging;
 namespace DotNetBrightener.FriendlyRoutingLibrary
 {
     /// <summary>
-	/// Custom router for handling friendly routes of the contents
+	///		A custom router for handling friendly routes to specific content.
+	///		When applied, a URL like '/path-to-some-dynamic-content' can be routed to 
+	///		the content's specific controller/action like [Content]/[DisplayContent]/{content-id}.
+	///		So we can have a single controller/action with different parameters to handle multiple and dynamic URLs
 	/// </summary>
 	public class FriendlyRoutingHandler : IRouter
 	{
@@ -18,19 +21,18 @@ namespace DotNetBrightener.FriendlyRoutingLibrary
 	    private readonly ILogger                _logger;
 
         public FriendlyRoutingHandler(IActionInvokerFactory actionInvokerFactory,
-		                             FriendlyRouteActionSelector actionSelector,
-		                             ILoggerFactory        loggerFactory)
+                                      FriendlyRouteActionSelector actionSelector,
+                                      ILoggerFactory loggerFactory)
 			: this(actionInvokerFactory, actionSelector, loggerFactory, actionContextAccessor: null)
 		{
 		}
 
-		public FriendlyRoutingHandler(IActionInvokerFactory  actionInvokerFactory,
-		                             FriendlyRouteActionSelector   actionSelector,
-		                             ILoggerFactory         loggerFactory,
-		                             IActionContextAccessor actionContextAccessor)
+		public FriendlyRoutingHandler(
+            IActionInvokerFactory actionInvokerFactory,
+            FriendlyRouteActionSelector actionSelector,
+            ILoggerFactory loggerFactory,
+            IActionContextAccessor actionContextAccessor)
 		{
-			// The IActionContextAccessor is optional. We want to avoid the overhead of using CallContext
-			// if possible.
 			_actionContextAccessor = actionContextAccessor;
 
 			_actionInvokerFactory = actionInvokerFactory;

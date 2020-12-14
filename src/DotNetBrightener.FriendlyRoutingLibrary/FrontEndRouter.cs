@@ -6,6 +6,10 @@ using Microsoft.AspNetCore.WebUtilities;
 
 namespace DotNetBrightener.FriendlyRoutingLibrary
 {
+    /// <summary>
+	///		Represents a router which handles the routing entries from the <see cref="IFrontEndRoutingEntries"/>
+    ///		and converts to the area/controller/action scheme for ASP.Net routing system
+	/// </summary>
     public class FrontEndRouter : IRouter
     {
         private static readonly HashSet<string> Keys = new HashSet<string>(new[]
