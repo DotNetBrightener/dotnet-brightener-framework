@@ -85,7 +85,14 @@ namespace DotNetBrightener.Integration.Modular.Extensions
                         foreach (var routingConfiguration in routingConfigurations)
                         {
                             var router = routingConfiguration.ConfigureRoute(serviceProvider);
-                            options.Routes.Insert(routingConfiguration.Order, router);
+                            if (0 <= routingConfiguration.Order && routingConfiguration.Order < options.Routes.Count)
+                            {
+                                options.Routes.Insert(routingConfiguration.Order, router);
+                            } 
+                            else
+                            {
+                                options.Routes.Add(router);
+                            }
                         }
                     }
                 }

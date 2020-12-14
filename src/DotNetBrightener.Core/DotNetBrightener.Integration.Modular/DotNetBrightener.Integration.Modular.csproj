@@ -11,6 +11,7 @@
 			A library that provides APIs for integrating DotNetBrightener.Core.Modular to ASP.Net Core Application
 		</PackageDescription>
 		<RepositoryUrl>https://github.com/dotnetbrightener/dotnet-brightener-framework</RepositoryUrl>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 	</PropertyGroup>
 
 	<PropertyGroup>
@@ -24,7 +25,7 @@
 
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="5.0.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="5.0.1" />
 		<PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="5.0.0" />
 		<PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="5.0.0" />
 

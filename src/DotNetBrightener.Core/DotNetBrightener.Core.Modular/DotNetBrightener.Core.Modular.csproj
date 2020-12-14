@@ -19,6 +19,7 @@
 		<PackageIcon>dotnet-brightener-logo.png</PackageIcon>		
 		<Description>A library that adds the ability of modular to ASP.Net Core Application</Description>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 	</PropertyGroup>
 
 	<ItemGroup>
