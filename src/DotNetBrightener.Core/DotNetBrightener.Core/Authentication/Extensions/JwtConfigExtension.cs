@@ -25,7 +25,8 @@ namespace DotNetBrightener.Core.Authentication.Extensions
                                              jwtConfig.Audience,
                                              claims,
                                              expires: expiration,
-                                             signingCredentials: credentials);
+                                             signingCredentials: credentials,
+                                             notBefore: DateTime.Now);
 
             token.Header.Add("kid", jwtConfig.KID);
             var writeToken = new JwtSecurityTokenHandler().WriteToken(token);

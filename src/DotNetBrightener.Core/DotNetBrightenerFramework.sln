@@ -13,9 +13,11 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SharedExtensions", "SharedE
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.PublisherTool.CLI", "DotNetBrightener.PublisherTool.CLI\DotNetBrightener.PublisherTool.CLI.csproj", "{B092BACF-F5D3-4E45-87E8-FDDC76E8ECE2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetBrightener.Infrastructure.Security", "DotNetBrightener.Infrastructure.Security\DotNetBrightener.Infrastructure.Security.csproj", "{085A10CF-687B-40F7-9680-1732A2CD64E6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Infrastructure.Security", "DotNetBrightener.Infrastructure.Security\DotNetBrightener.Infrastructure.Security.csproj", "{085A10CF-687B-40F7-9680-1732A2CD64E6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetBrightener.Plugins.EventPubSub", "DotNetBrightener.Plugins.EventPubSub\DotNetBrightener.Plugins.EventPubSub.csproj", "{361C40D4-3B51-440A-ACF2-D30CFB137627}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Plugins.EventPubSub", "DotNetBrightener.Plugins.EventPubSub\DotNetBrightener.Plugins.EventPubSub.csproj", "{361C40D4-3B51-440A-ACF2-D30CFB137627}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Mvc.HandlebarsViewEngine", "DotNetBrightener.Mvc.HandlebarsViewEngine\DotNetBrightener.Mvc.HandlebarsViewEngine.csproj", "{59BBEA89-A4A7-4195-8D24-2090A17C01C6}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -53,6 +55,10 @@ Global
 		{361C40D4-3B51-440A-ACF2-D30CFB137627}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{361C40D4-3B51-440A-ACF2-D30CFB137627}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{361C40D4-3B51-440A-ACF2-D30CFB137627}.Release|Any CPU.Build.0 = Release|Any CPU
+		{59BBEA89-A4A7-4195-8D24-2090A17C01C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{59BBEA89-A4A7-4195-8D24-2090A17C01C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{59BBEA89-A4A7-4195-8D24-2090A17C01C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{59BBEA89-A4A7-4195-8D24-2090A17C01C6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
