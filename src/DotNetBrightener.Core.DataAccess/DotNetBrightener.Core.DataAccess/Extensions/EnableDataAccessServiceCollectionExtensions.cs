@@ -14,8 +14,6 @@ namespace DotNetBrightener.Core.DataAccess.Extensions
             serviceCollection.AddScoped<ITransactionManager, TransactionManager>();
             serviceCollection.AddScoped<IBaseRepository, BaseRepository>();
             serviceCollection.AddScoped<IDataWorkContext, DataWorkContext>();
-            
-            LinqToDB.Common.Configuration.Linq.AllowMultipleQuery = true;
 
             return serviceCollection;
         }

@@ -15,7 +15,6 @@ using DotNetBrightener.Core.DataAccess.Transaction;
 using LinqToDB;
 using LinqToDB.Data;
 using LinqToDB.Mapping;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 
@@ -23,7 +22,6 @@ namespace DotNetBrightener.Core.DataAccess.Repositories
 {
     public class BaseRepository : IBaseRepository
     {
-        protected readonly IHttpContextAccessor HttpContextAccessor;
         protected readonly IDataWorkContext     DataWorkContext;
         protected readonly ITransactionManager  TransactionManager;
         protected readonly ILogger              Logger;
@@ -43,12 +41,10 @@ namespace DotNetBrightener.Core.DataAccess.Repositories
 
         public BaseRepository(DatabaseConfiguration                      databaseConfiguration,
                               IEnumerable<IDotNetBrightenerDataProvider> dataProviders,
-                              IHttpContextAccessor                       httpContextAccessor,
                               IDataWorkContext                           dataWorkContext,
                               ITransactionManager                        transactionManager,
                               ILogger<BaseRepository>                    logger)
         {
-            HttpContextAccessor = httpContextAccessor;
             TransactionManager  = transactionManager;
             DataWorkContext     = dataWorkContext;
             Logger              = logger;

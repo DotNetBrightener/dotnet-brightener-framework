@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<TargetFrameworks>net5.0</TargetFrameworks>
 		<PackageId>DotNetBrightener.Core.DataAccess</PackageId>
-		<Version>1.0.0</Version>
+		<Version>1.0.1</Version>
 		<Copyright>© 2020 DotNet Brightener</Copyright>
 		<Authors>DotNet Brightener &lt;dotnetbrightener@gmail.com&gt;</Authors>
 		<Company>DotNet Brightener</Company>
@@ -20,6 +20,13 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<NoWarn>1701;1702;1591;1574;1723</NoWarn>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<PackageTags>data access; queries; crud; linq; repository pattern</PackageTags>
+		<PackageReleaseNotes>
+			* v1.0.1:
+			- Remove deprecated codes.
+			- Remove the need of ASP.Net Core Framework.
+			- Bug fixes.
+		</PackageReleaseNotes>
 	</PropertyGroup>
 	<ItemGroup>
 		<None Include="..\..\..\dotnet-brightener-logo.png">
@@ -32,13 +39,11 @@
 		</None>
 	</ItemGroup>
 
-	<ItemGroup>
-		<FrameworkReference Include="Microsoft.AspNetCore.App" />
-	</ItemGroup>
-
 
 	<ItemGroup>
 		<PackageReference Include="linq2db" Version="3.2.3" />
 		<PackageReference Include="Microsoft.Data.SqlClient" Version="2.1.1" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.1" />
+		<PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
 	</ItemGroup>
 </Project>

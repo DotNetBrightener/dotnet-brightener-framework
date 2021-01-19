@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using DotNetBrightener.Core.DataAccess;
+﻿using DotNetBrightener.Core.DataAccess;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Collections.Generic;
 
 namespace DotNetBrightener.Integration.DataMigration.Extensions
 {
