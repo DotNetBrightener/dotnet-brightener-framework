@@ -2,6 +2,7 @@
 using DotNetBrightener.Plugins.EventPubSub.Internal;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace Microsoft.Extensions.DependencyInjection.Extensions
 {
@@ -15,9 +16,7 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
         /// </param>
         /// <param name="serviceTypes">
         ///     If specified, only finds and registers the types detected from the given collection.
-        ///     Otherwise, detects and registers from all assemblies loaded into the application.
         /// </param>
-        /// <returns></returns>
         public static IServiceCollection AddEventPublishersAndHandlers(this IServiceCollection serviceCollection,
                                                                        IEnumerable<Type> serviceTypes = null)
         {
@@ -26,18 +25,42 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
             // Event Pub/Sub
             serviceCollection.AddScoped<IEventPublisher, EventPublisher>();
 
-            if (serviceTypes == null)
-            {
-                var appAssemblies = AppDomain.CurrentDomain.GetAssemblies();
-
-                serviceCollection.RegisterServiceImplementations<IEventHandler>(appAssemblies,
-                                                                                ServiceLifetime.Scoped);
-            }
-            else
+            if (serviceTypes != null)
             {
                 serviceCollection.RegisterServiceImplementations<IEventHandler>(serviceTypes,
-                                                                                ServiceLifetime.Scoped);
+                                                                                ServiceLifetime.Scoped,
+                                                                                true);
             }
+            return serviceCollection;
+        }
+
+        public static IServiceCollection AddEventHandlersFromTypes(this IServiceCollection serviceCollection,
+                                                                   IEnumerable<Type> serviceTypes)
+        {
+            if (serviceTypes != null)
+            {
+                serviceCollection.RegisterServiceImplementations<IEventHandler>(serviceTypes,
+                                                                                ServiceLifetime.Scoped,
+                                                                                true);
+            }
+            return serviceCollection;
+        }
+
+        public static IServiceCollection AddEventHandlersFromAssembly(this IServiceCollection serviceCollection, Assembly assembly)
+        {
+            serviceCollection.RegisterServiceImplementations<IEventHandler>(new[] { assembly },
+                                                                            ServiceLifetime.Scoped,
+                                                                            true);
+
+            return serviceCollection;
+        }
+
+        public static IServiceCollection AddEventHandlersFromAssemblies(this IServiceCollection serviceCollection, Assembly[] assemblies)
+        {
+            serviceCollection.RegisterServiceImplementations<IEventHandler>(assemblies,
+                                                                            ServiceLifetime.Scoped,
+                                                                            true);
+
             return serviceCollection;
         }
     }

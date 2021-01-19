@@ -11,22 +11,33 @@
 			A library provides the mechanism for migrating data for applications that make use of DotNetBrightener.Core.DataAccess library. Supports for MS SQL Server and Postgre SQL server
 		</PackageDescription>
 		<RepositoryUrl>https://github.com/dotnetbrightener/dotnet-brightener-framework</RepositoryUrl>
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-	</PropertyGroup>
-
-
-	<PropertyGroup>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<PackageIcon>dotnet-brightener-logo.png</PackageIcon>
+		<RepositoryType>git</RepositoryType>
+		<Description>
+			A library provides the mechanism for migrating data for applications that make use of DotNetBrightener.Core.DataAccess library. Supports for MS SQL Server and Postgre SQL server
+		</Description>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<NoWarn>1701;1702;1591;1574;1723</NoWarn>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 	</PropertyGroup>
+	<ItemGroup>
+		<None Include="..\..\..\dotnet-brightener-logo.png">
+			<Pack>True</Pack>
+			<PackagePath></PackagePath>
+		</None>
+		<None Include="..\..\..\LICENSE">
+			<Pack>True</Pack>
+			<PackagePath></PackagePath>
+		</None>
+	</ItemGroup>
 	
 	<ItemGroup>
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
 	</ItemGroup>
 	
 	<ItemGroup>
-		<PackageReference Include="DotNetBrightener.Core" Version="1.0.0-beta-002" />
-		<PackageReference Include="DotNetBrightener.Core.Modular" Version="1.0.0-beta-002" />
+		<PackageReference Include="DotNetBrightener.Core" Version="1.0.0-beta-003" />
 	</ItemGroup>
 
 	<ItemGroup Condition="$(Configuration)=='Release'">
@@ -42,7 +53,7 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.2" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.2" />
-		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.1" />
+		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.2" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -1,15 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using DotNetBrightener.Core;
-using DotNetBrightener.Core.Localization.Services;
-using DotNetBrightener.Core.Modular;
-using DotNetBrightener.Core.Modular.Extensions;
+﻿using DotNetBrightener.Core.Localization.Services;
+using DotNetBrightener.Core.Modular.Localization;
+using DotNetBrightener.Core.Modular.Mvc;
 using DotNetBrightener.Core.Modular.StartupConfiguration;
 using DotNetBrightener.Core.Routing;
-using DotNetBrightener.Integration.Modular.Localization;
-using DotNetBrightener.Integration.Modular.Mvc;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
@@ -17,8 +10,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
-namespace DotNetBrightener.Integration.Modular.Extensions
+namespace DotNetBrightener.Core.Modular.Extensions
 {
     public static class ModularConfigServiceCollectionExtensions
     {
@@ -36,6 +33,7 @@ namespace DotNetBrightener.Integration.Modular.Extensions
             var loadedModuleEntries = serviceCollection.EnableModules(enabledModules);
 
             serviceCollection.Replace(ServiceDescriptor.Singleton<ILocalizationFileManager, ModuleLocalizationFileManager>());
+
             serviceCollection.TryAddEnumerable(
                               ServiceDescriptor.Transient<IApplicationModelProvider, ModularApplicationModelProvider>()
                              );
@@ -88,7 +86,7 @@ namespace DotNetBrightener.Integration.Modular.Extensions
                             if (0 <= routingConfiguration.Order && routingConfiguration.Order < options.Routes.Count)
                             {
                                 options.Routes.Insert(routingConfiguration.Order, router);
-                            } 
+                            }
                             else
                             {
                                 options.Routes.Add(router);
@@ -117,7 +115,7 @@ namespace DotNetBrightener.Integration.Modular.Extensions
         ///     A collection of service types
         /// </returns>
         public static IEnumerable<Type> ConfigureServicesFromModules(this IServiceCollection services,
-                                                                     LoadedModuleEntries     loadedModuleEntries)
+                                                                     LoadedModuleEntries loadedModuleEntries)
         {
             var otherModuleEntries =
                 new LoadedModuleEntries(loadedModuleEntries.Where(_ => _.ModuleId !=
@@ -171,10 +169,10 @@ namespace DotNetBrightener.Integration.Modular.Extensions
 
         public static Task ExecuteStartupTasks(this IApplicationBuilder appBuilder)
         {
-            return ExecuteTaskFromModulesStartup(appBuilder, "OnAppStartup", ExecuteMethodFromStartUpTask);
+            return appBuilder.ExecuteTaskFromModulesStartup("OnAppStartup", ExecuteMethodFromStartUpTask);
         }
 
-        private static async Task ExecuteTaskFromModulesStartup(this IApplicationBuilder appBuilder, 
+        private static async Task ExecuteTaskFromModulesStartup(this IApplicationBuilder appBuilder,
                                                                string executeMethod,
                                                                Func<string, Type, IServiceProvider, Task> action)
         {
@@ -198,8 +196,8 @@ namespace DotNetBrightener.Integration.Modular.Extensions
             }
         }
 
-        private static async Task ExecuteMethodFromStartUpTask(string           methodNameToExecute,
-                                                               Type             startupType,
+        private static async Task ExecuteMethodFromStartUpTask(string methodNameToExecute,
+                                                               Type startupType,
                                                                IServiceProvider serviceProvider)
         {
             var _methodInfo = startupType
@@ -224,11 +222,11 @@ namespace DotNetBrightener.Integration.Modular.Extensions
             {
                 if (_methodInfo.ReturnType.IsGenericType)
                 {
-                    await (dynamic) _methodInfo.Invoke(startupInstance, parameters);
+                    await (dynamic)_methodInfo.Invoke(startupInstance, parameters);
                 }
                 else
                 {
-                    await (Task) _methodInfo.Invoke(startupInstance, parameters);
+                    await (Task)_methodInfo.Invoke(startupInstance, parameters);
                 }
             }
             else
@@ -237,9 +235,9 @@ namespace DotNetBrightener.Integration.Modular.Extensions
             }
         }
 
-        private static void RegisterStartupTypes(IServiceCollection  services,
+        private static void RegisterStartupTypes(IServiceCollection services,
                                                  LoadedModuleEntries loadedModuleEntries,
-                                                 Type[]              startupTypes)
+                                                 Type[] startupTypes)
         {
             var startupClassCollection = new StartupClassCollection(startupTypes);
             services.AddSingleton(startupClassCollection);
@@ -253,8 +251,8 @@ namespace DotNetBrightener.Integration.Modular.Extensions
                     continue;
                 }
 
-                bool registered   = false;
-                var  constructors = startupType.GetConstructors();
+                bool registered = false;
+                var constructors = startupType.GetConstructors();
                 foreach (var constructorInfo in constructors)
                 {
                     var constructorParams = constructorInfo.GetParameters();

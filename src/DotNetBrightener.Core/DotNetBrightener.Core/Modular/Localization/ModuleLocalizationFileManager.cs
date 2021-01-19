@@ -1,12 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using DotNetBrightener.Core.Localization;
+using DotNetBrightener.Core.Localization.Services;
+using Microsoft.AspNetCore.Hosting;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using DotNetBrightener.Core.Localization;
-using DotNetBrightener.Core.Localization.Services;
-using DotNetBrightener.Core.Modular;
-using Microsoft.AspNetCore.Hosting;
 
-namespace DotNetBrightener.Integration.Modular.Localization
+namespace DotNetBrightener.Core.Modular.Localization
 {
     /// <summary>
     ///     Represents the <see cref="ILocalizationFileManager" /> for modular architecture

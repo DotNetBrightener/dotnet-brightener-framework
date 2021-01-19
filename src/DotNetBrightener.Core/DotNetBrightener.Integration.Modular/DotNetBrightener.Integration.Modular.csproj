@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<TargetFrameworks>net5.0</TargetFrameworks>
 		<PackageId>DotNetBrightener.Integration.Modular</PackageId>
-		<Version>1.0.0-beta-002</Version>
+		<Version>1.0.0-beta-003</Version>
 		<Copyright>© 2020 DotNet Brightener</Copyright>
 		<Authors>DotNet Brightener &lt;dotnetbrightener@gmail.com&gt;</Authors>
 		<Company>DotNet Brightener</Company>
@@ -25,22 +25,20 @@
 
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="5.0.1" />
-		<PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="5.0.0" />
-		<PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="5.0.0" />
-
-		<PackageReference Include="DotNetBrightener.Core.DataAccess" Version="1.0.0-beta-001" />
-		<PackageReference Include="DotNetBrightener.Core.DataAccess.EF" Version="1.0.0-beta-001" />
+		<PackageReference Include="DotNetBrightener.Core.DataAccess" Version="1.0.0" />
+		<PackageReference Include="DotNetBrightener.Core.DataAccess.EF" Version="1.0.0" />
 	</ItemGroup>
 
 	<ItemGroup Condition="$(Configuration)=='Debug'">
 		<ProjectReference Include="..\DotNetBrightener.Core\DotNetBrightener.Core.csproj" />
-		<ProjectReference Include="..\DotNetBrightener.Core.Modular\DotNetBrightener.Core.Modular.csproj" />
 	</ItemGroup>
 
 	<ItemGroup Condition="$(Configuration)=='Release'">
-		<PackageReference Include="DotNetBrightener.Core" Version="1.0.0-beta-002" />
-		<PackageReference Include="DotNetBrightener.Core.Modular" Version="1.0.0-beta-002" />
+		<PackageReference Include="DotNetBrightener.Core" Version="1.0.0-beta-003" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Localization\" />
 	</ItemGroup>
 
 	<Import Project="..\SharedExtensions\SharedExtensions.projitems" Label="Shared" />

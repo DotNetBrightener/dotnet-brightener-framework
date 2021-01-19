@@ -1,12 +1,11 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using DotNetBrightener.Core.Modular;
-using DotNetBrightener.Core.Modular.Extensions;
+﻿using DotNetBrightener.Core.Modular.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
-namespace DotNetBrightener.Integration.Modular.Mvc
+namespace DotNetBrightener.Core.Modular.Mvc
 {
     /// <summary>
     /// Provides the application model that will automatically assign the module id to the 'area' route value
@@ -45,14 +44,14 @@ namespace DotNetBrightener.Integration.Modular.Mvc
                 {
                     controller.RouteValues.Add(RoutingConstants.SubAreaKey, typeMetadata.SubArea);
                 }
-                
+
                 // detect for the [Route] attribute
                 var hasAttributeRouteModels =
                     controller.Selectors.Any(selector => selector.AttributeRouteModel != null);
 
                 // detect the [ApiController] attribute
                 var apiControllerAttrib = controllerType.GetCustomAttribute<ApiControllerAttribute>();
-                
+
                 // if the controller is ApiController
                 if (apiControllerAttrib != null)
                 {
