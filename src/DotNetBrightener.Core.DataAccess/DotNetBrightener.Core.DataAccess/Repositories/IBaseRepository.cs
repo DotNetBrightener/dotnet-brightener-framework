@@ -177,7 +177,7 @@ namespace DotNetBrightener.Core.DataAccess.Repositories
         ///      If the actual result is different than the provided parameter, an exception will be thrown
         ///  </param>
         ///  <exception cref="NotFoundException">Thrown if no entity found for updating.</exception>
-        ///  <exception cref="InvalidOperationException">Thrown if number of entities got updated differs from the provided expectation.</exception>
+        ///  <exception cref="ExpectedAffectedRecordMismatch">Thrown if number of entities got updated differs from the provided expectation.</exception>
         int Update<T>(Expression<Func<T, bool>> conditionExpression,
                       object                    updateExpression,
                       int?                      expectedAffectedRows = null) where T : class;
@@ -193,7 +193,7 @@ namespace DotNetBrightener.Core.DataAccess.Repositories
         ///      If the actual result is different than the provided parameter, an exception will be thrown
         ///  </param>
         ///  <exception cref="NotFoundException">Thrown if no entity found for updating.</exception>
-        ///  <exception cref="InvalidOperationException">Thrown if number of entities got updated differs from the provided expectation.</exception>
+        ///  <exception cref="ExpectedAffectedRecordMismatch">Thrown if number of entities got updated differs from the provided expectation.</exception>
         int Update<T>(Expression<Func<T, bool>> conditionExpression,
                       Expression<Func<T, T>>    updateExpression,
                       int?                      expectedAffectedRows = null) where T : class;
@@ -208,7 +208,7 @@ namespace DotNetBrightener.Core.DataAccess.Repositories
         /// <param name="conditionExpression">The query to get the record to delete</param>
         /// <param name="forceHardDelete">Forces to hard-delete the entity, default is false which means soft-delete</param>
         /// <exception cref="NotFoundException">Thrown if no entity got deleted.</exception>
-        /// <exception cref="InvalidOperationException">Thrown if number of entities got deleted differs from the provided expectation.</exception>
+        /// <exception cref="ExpectedAffectedRecordMismatch">Thrown if number of entities got deleted differs from the provided expectation.</exception>
         Task DeleteOne<T>(Expression<Func<T, bool>> conditionExpression, bool forceHardDelete = false) where T : class;
 
         /// <summary>
@@ -219,8 +219,6 @@ namespace DotNetBrightener.Core.DataAccess.Repositories
         /// </remarks>
         /// <param name="conditionExpression">The query to get the records to delete</param>
         /// <param name="forceHardDelete">Forces to hard-delete the entity, default is false which means soft-delete</param>
-        /// <exception cref="NotFoundException">Thrown if no entity got deleted.</exception>
-        /// <exception cref="InvalidOperationException">Thrown if number of entities got deleted differs from the provided expectation.</exception>
         /// <returns></returns>
         Task<int> DeleteMany<T>(Expression<Func<T, bool>> conditionExpression, bool forceHardDelete = false) where T : class;
 

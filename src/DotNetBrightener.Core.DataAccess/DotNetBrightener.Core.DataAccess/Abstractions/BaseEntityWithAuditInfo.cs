@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace DotNetBrightener.Core.DataAccess.Abstractions
 {
@@ -12,6 +13,7 @@ namespace DotNetBrightener.Core.DataAccess.Abstractions
         /// <summary>
         ///     Indicates by whom the record was created
         /// </summary>
+        [MaxLength(512)]
         public string CreatedBy { get; set; }
 
         /// <summary>
@@ -22,6 +24,7 @@ namespace DotNetBrightener.Core.DataAccess.Abstractions
         /// <summary>
         ///     Indicates by whom the record was last updated
         /// </summary>
+        [MaxLength(512)]
         public string LastUpdatedBy { get; set; }
 
         /// <summary>

@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<TargetFrameworks>net5.0</TargetFrameworks>
 		<PackageId>DotNetBrightener.SharedDataAccessService</PackageId>
-		<Version>1.0.0-beta-001</Version>
+		<Version>1.0.0</Version>
 		<Copyright>© 2020 DotNet Brightener</Copyright>
 		<Authors>DotNet Brightener &lt;dotnetbrightener@gmail.com&gt;</Authors>
 		<Company>DotNet Brightener</Company>
@@ -19,17 +19,6 @@
 		<NoWarn>1701;1702;1591;1574;1723</NoWarn>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 	</PropertyGroup>
-
-	<ItemGroup>
-		<PackageReference Include="System.Linq.Dynamic.Core" Version="1.2.6" />
-	</ItemGroup>
-
-	<ItemGroup Condition="$(Configuration)=='Debug'">
-		<ProjectReference Include="..\DotNetBrightener.Core.DataAccess\DotNetBrightener.Core.DataAccess.csproj" />
-	</ItemGroup>
-	<ItemGroup Condition="$(Configuration)=='Release'">
-		<PackageReference Include="DotNetBrightener.Core.DataAccess" Version="1.0.0-beta-001" />
-	</ItemGroup>
 	<ItemGroup>
 	  <None Include="..\..\..\dotnet-brightener-logo.png">
 	    <Pack>True</Pack>
@@ -39,6 +28,17 @@
 	    <Pack>True</Pack>
 	    <PackagePath></PackagePath>
 	  </None>
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="System.Linq.Dynamic.Core" Version="1.2.7" />
+	</ItemGroup>
+
+	<ItemGroup Condition="$(Configuration)=='Debug'">
+		<ProjectReference Include="..\DotNetBrightener.Core.DataAccess\DotNetBrightener.Core.DataAccess.csproj" />
+	</ItemGroup>
+	<ItemGroup Condition="$(Configuration)=='Release'">
+		<PackageReference Include="DotNetBrightener.Core.DataAccess" Version="1.0.0" />
 	</ItemGroup>
 
 </Project>

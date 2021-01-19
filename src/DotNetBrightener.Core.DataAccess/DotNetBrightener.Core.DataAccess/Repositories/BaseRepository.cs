@@ -234,7 +234,7 @@ namespace DotNetBrightener.Core.DataAccess.Repositories
             if (affectedRecords != expectedAffectedRows)
             {
                 throw new
-                    InvalidOperationException($"Expected {expectedAffectedRows} rows to be inserted but was {affectedRecords}. The operation has been rolled back.");
+                    ExpectedAffectedRecordMismatch($"Expected {expectedAffectedRows} rows to be inserted but was {affectedRecords}.", expectedAffectedRows, (int)affectedRecords);
             }
 
             return Task.CompletedTask;
@@ -274,7 +274,7 @@ namespace DotNetBrightener.Core.DataAccess.Repositories
             if (expectedAffectedRows.HasValue && affectedRecords != expectedAffectedRows)
             {
                 throw new
-                    ExpectedAffectedRecordMismatch($"Expected {expectedAffectedRows} rows to be updated but {affectedRecords} affected. The operation has been rolled back.");
+                    ExpectedAffectedRecordMismatch($"Expected {expectedAffectedRows} rows to be updated but {affectedRecords} affected. ",  expectedAffectedRows, affectedRecords);
             }
 
             return affectedRecords;
@@ -310,7 +310,7 @@ namespace DotNetBrightener.Core.DataAccess.Repositories
             if (recordsAffected != 1)
             {
                 throw new
-                    ExpectedAffectedRecordMismatch($"Expecting one record to delete but {recordsAffected} were found. The operation has been rolled back.");
+                    ExpectedAffectedRecordMismatch($"Expecting one record to delete but {recordsAffected} were found. The operation has been rolled back.", 1, recordsAffected);
             }
 
             return Task.FromResult(recordsAffected);
