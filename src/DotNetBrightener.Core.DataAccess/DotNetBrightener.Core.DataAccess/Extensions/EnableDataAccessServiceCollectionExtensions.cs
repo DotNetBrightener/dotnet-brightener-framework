@@ -1,4 +1,7 @@
-﻿using DotNetBrightener.Core.DataAccess.Providers;
+﻿using DotNetBrightener.Core.DataAccess.Abstractions;
+using DotNetBrightener.Core.DataAccess.Abstractions.Repositories;
+using DotNetBrightener.Core.DataAccess.Abstractions.Transaction;
+using DotNetBrightener.Core.DataAccess.Providers;
 using DotNetBrightener.Core.DataAccess.Repositories;
 using DotNetBrightener.Core.DataAccess.Transaction;
 using Microsoft.Extensions.DependencyInjection;

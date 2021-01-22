@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<TargetFrameworks>net5.0</TargetFrameworks>
 		<PackageId>DotNetBrightener.Core.DataAccess.EF.PostgreSQL</PackageId>
-		<Version>1.0.1</Version>
+		<Version>1.0.2</Version>
 		<Copyright>© 2020 DotNet Brightener</Copyright>
 		<Authors>DotNet Brightener</Authors>
 		<Company>DotNet Brightener</Company>
@@ -25,7 +25,7 @@
 
 
 	<ItemGroup Condition="$(Configuration)=='Release'">
-		<PackageReference Include="DotNetBrightener.Core.DataAccess.EF" Version="1.0.1" />
+		<PackageReference Include="DotNetBrightener.Core.DataAccess.EF" Version="1.0.2" />
 	</ItemGroup>
 
 </Project>

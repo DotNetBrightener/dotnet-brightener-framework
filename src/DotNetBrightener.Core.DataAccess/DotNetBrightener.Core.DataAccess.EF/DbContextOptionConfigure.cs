@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using DotNetBrightener.Core.DataAccess.Abstractions;
 using Microsoft.EntityFrameworkCore;
 
 namespace DotNetBrightener.Core.DataAccess.EF

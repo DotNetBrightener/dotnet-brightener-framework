@@ -1,9 +1,9 @@
-﻿using System;
+﻿using DotNetBrightener.Core.DataAccess.Abstractions.Repositories;
+using System;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using DotNetBrightener.Core.DataAccess.Repositories;
 
 namespace DotNetBrightener.SharedDataAccessService
 {

@@ -1,4 +1,4 @@
-﻿using DotNetBrightener.Core.DataAccess;
+﻿using DotNetBrightener.Core.DataAccess.Abstractions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -29,10 +29,10 @@ namespace DotNetBrightener.Integration.DataMigration.Extensions
 
             switch (databaseConfiguration.DatabaseProvider)
             {
-                case Core.DataAccess.DatabaseProvider.MsSql:
+                case Core.DataAccess.Abstractions.DatabaseProvider.MsSql:
                     serviceCollection.AddDbContext<DataMigrationMsSQLDbContext>();
                     break;
-                case Core.DataAccess.DatabaseProvider.PostgreSql:
+                case Core.DataAccess.Abstractions.DatabaseProvider.PostgreSql:
                     serviceCollection.AddDbContext<DataMigrationPostgreSQLDbContext>();
                     break;
             }

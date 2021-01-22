@@ -3,6 +3,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace DotNetBrightener.Core.DataAccess.Abstractions
 {
+    /// <summary>
+    ///     Represents the base properties of an entity and includes some of audit information such as Created / LastUpdated / Deleted
+    /// </summary>
     public abstract class BaseEntityWithAuditInfo: BaseEntity
     {
         /// <summary>

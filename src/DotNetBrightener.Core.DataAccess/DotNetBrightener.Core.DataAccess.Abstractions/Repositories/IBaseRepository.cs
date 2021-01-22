@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 
-namespace DotNetBrightener.Core.DataAccess.Repositories
+namespace DotNetBrightener.Core.DataAccess.Abstractions.Repositories
 {
     /// <summary>
     /// Represents shared Repository contracts, provides methods to perform database access operations
@@ -38,7 +38,7 @@ namespace DotNetBrightener.Core.DataAccess.Repositories
         /// <returns>
         ///     The record of <typeparamref name="TResult"/> mapped from <typeparamref name="T"/> if found, otherwise, <c>null</c>
         /// </returns>
-        TResult Get<T, TResult>(Expression<Func<T, bool>>    expression,
+        TResult Get<T, TResult>(Expression<Func<T, bool>> expression,
                                 Expression<Func<T, TResult>> propertiesPickupExpression) where T : class;
 
         /// <summary>
@@ -65,7 +65,7 @@ namespace DotNetBrightener.Core.DataAccess.Repositories
         /// <returns>
         ///     A collection of <typeparamref name="TResult"/> records mapped from <typeparamref name="T"/>
         /// </returns>
-        IQueryable<TResult> Fetch<T, TResult>(Expression<Func<T, bool>>    expression, Expression<Func<T, TResult>> propertiesPickupExpression) where T : class;
+        IQueryable<TResult> Fetch<T, TResult>(Expression<Func<T, bool>> expression, Expression<Func<T, TResult>> propertiesPickupExpression) where T : class;
 
         /// <summary>
         ///     Retrieves the sorted records in ascending order from the table associated with the entity type <typeparamref name="T"/>
@@ -78,10 +78,10 @@ namespace DotNetBrightener.Core.DataAccess.Repositories
         /// <returns>
         ///     A collection of sorted records of <typeparamref name="T"/> that satisfy the <see cref="expression"/>
         /// </returns>
-        IQueryable<T> OrderedFetch<T>(Expression<Func<T, bool>>   expression      = null,
+        IQueryable<T> OrderedFetch<T>(Expression<Func<T, bool>> expression = null,
                                       Expression<Func<T, object>> orderExpression = null,
-                                      int?                        pageSize        = null,
-                                      int?                        pageIndex       = null)
+                                      int? pageSize = null,
+                                      int? pageIndex = null)
             where T : class;
 
         /// <summary>
@@ -98,11 +98,11 @@ namespace DotNetBrightener.Core.DataAccess.Repositories
         /// <returns>
         ///     A collection of sorted records of <typeparamref name="T"/> that satisfy the <see cref="expression"/>
         /// </returns>
-        IQueryable<TResult> OrderedFetch<T, TResult>(Expression<Func<T, bool>>    expression                 = null,
+        IQueryable<TResult> OrderedFetch<T, TResult>(Expression<Func<T, bool>> expression = null,
                                                      Expression<Func<T, TResult>> propertiesPickupExpression = null,
-                                                     Expression<Func<T, object>>  orderExpression            = null,
-                                                     int?                         pageSize                   = null,
-                                                     int?                         pageIndex                  = null)
+                                                     Expression<Func<T, object>> orderExpression = null,
+                                                     int? pageSize = null,
+                                                     int? pageIndex = null)
             where T : class;
 
         /// <summary>
@@ -116,10 +116,10 @@ namespace DotNetBrightener.Core.DataAccess.Repositories
         /// <returns>
         ///     A collection of sorted records of <typeparamref name="T"/> that satisfy the <see cref="expression"/>
         /// </returns>
-        IQueryable<T> OrderedDescendingFetch<T>(Expression<Func<T, bool>>   expression      = null,
+        IQueryable<T> OrderedDescendingFetch<T>(Expression<Func<T, bool>> expression = null,
                                                 Expression<Func<T, object>> orderExpression = null,
-                                                int?                        pageSize        = null,
-                                                int?                        pageIndex       = null)
+                                                int? pageSize = null,
+                                                int? pageIndex = null)
             where T : class;
 
         /// <summary>
@@ -161,7 +161,7 @@ namespace DotNetBrightener.Core.DataAccess.Repositories
         /// <returns>
         ///     Number of rows copied
         /// </returns>
-        int CopyRecords<TSource, TTarget>(Expression<Func<TSource, bool>>    conditionExpression,
+        int CopyRecords<TSource, TTarget>(Expression<Func<TSource, bool>> conditionExpression,
                                           Expression<Func<TSource, TTarget>> copyExpression)
             where TSource : class
             where TTarget : class;
@@ -179,8 +179,8 @@ namespace DotNetBrightener.Core.DataAccess.Repositories
         ///  <exception cref="NotFoundException">Thrown if no entity found for updating.</exception>
         ///  <exception cref="ExpectedAffectedRecordMismatch">Thrown if number of entities got updated differs from the provided expectation.</exception>
         int Update<T>(Expression<Func<T, bool>> conditionExpression,
-                      object                    updateExpression,
-                      int?                      expectedAffectedRows = null) where T : class;
+                      object updateExpression,
+                      int? expectedAffectedRows = null) where T : class;
 
         ///  <summary>
         ///      Updates records of type <typeparamref name="T"/> from the query using an expression without retrieving entities
@@ -195,8 +195,8 @@ namespace DotNetBrightener.Core.DataAccess.Repositories
         ///  <exception cref="NotFoundException">Thrown if no entity found for updating.</exception>
         ///  <exception cref="ExpectedAffectedRecordMismatch">Thrown if number of entities got updated differs from the provided expectation.</exception>
         int Update<T>(Expression<Func<T, bool>> conditionExpression,
-                      Expression<Func<T, T>>    updateExpression,
-                      int?                      expectedAffectedRows = null) where T : class;
+                      Expression<Func<T, T>> updateExpression,
+                      int? expectedAffectedRows = null) where T : class;
 
 
         /// <summary>

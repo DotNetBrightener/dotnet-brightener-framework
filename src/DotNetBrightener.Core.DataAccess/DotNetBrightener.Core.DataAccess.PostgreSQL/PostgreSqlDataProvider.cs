@@ -1,4 +1,5 @@
-﻿using DotNetBrightener.Core.DataAccess.Providers;
+﻿using DotNetBrightener.Core.DataAccess.Abstractions;
+using DotNetBrightener.Core.DataAccess.Providers;
 using LinqToDB.Data;
 using LinqToDB.DataProvider;
 using LinqToDB.DataProvider.PostgreSQL;

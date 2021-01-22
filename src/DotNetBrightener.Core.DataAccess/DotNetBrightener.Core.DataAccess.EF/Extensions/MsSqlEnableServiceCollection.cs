@@ -1,4 +1,5 @@
-﻿using DotNetBrightener.Core.DataAccess.EF.Migrations.Schema;
+﻿using DotNetBrightener.Core.DataAccess.Abstractions;
+using DotNetBrightener.Core.DataAccess.EF.Migrations.Schema;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;

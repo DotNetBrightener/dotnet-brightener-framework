@@ -1,4 +1,5 @@
 ﻿using System;
+using DotNetBrightener.Core.DataAccess.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 

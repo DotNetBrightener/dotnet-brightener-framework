@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<TargetFrameworks>net5.0</TargetFrameworks>
 		<PackageId>DotNetBrightener.SharedDataAccessService</PackageId>
-		<Version>1.0.1</Version>
+		<Version>1.0.2</Version>
 		<Copyright>© 2020 DotNet Brightener</Copyright>
 		<Authors>DotNet Brightener &lt;dotnetbrightener@gmail.com&gt;</Authors>
 		<Company>DotNet Brightener</Company>
@@ -20,10 +20,8 @@
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<PackageTags>data access; queries; crud; linq; repository pattern</PackageTags>
 		<PackageReleaseNotes>
-			* v1.0.1:
-			- Remove deprecated codes.
-			- Remove the need of ASP.Net Core Framework.
-			- Bug fixes.
+			* v1.0.2:
+			- Upgrade Nuget Package.
 		</PackageReleaseNotes>
 	</PropertyGroup>
 	<ItemGroup>
@@ -42,10 +40,10 @@
 	</ItemGroup>
 
 	<ItemGroup Condition="$(Configuration)=='Debug'">
-		<ProjectReference Include="..\DotNetBrightener.Core.DataAccess\DotNetBrightener.Core.DataAccess.csproj" />
+		<ProjectReference Include="..\DotNetBrightener.Core.DataAccess.Abstractions\DotNetBrightener.Core.DataAccess.Abstractions.csproj" />
 	</ItemGroup>
 	<ItemGroup Condition="$(Configuration)=='Release'">
-		<PackageReference Include="DotNetBrightener.Core.DataAccess" Version="1.0.1" />
+		<PackageReference Include="DotNetBrightener.Core.DataAccess.Abstractions" Version="1.0.2" />
 	</ItemGroup>
 
 </Project>

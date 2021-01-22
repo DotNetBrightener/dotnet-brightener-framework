@@ -1,4 +1,15 @@
-﻿using System;
+﻿using DotNetBrightener.Core.DataAccess.Abstractions;
+using DotNetBrightener.Core.DataAccess.Abstractions.Exceptions;
+using DotNetBrightener.Core.DataAccess.Abstractions.Repositories;
+using DotNetBrightener.Core.DataAccess.Abstractions.Transaction;
+using DotNetBrightener.Core.DataAccess.Extensions;
+using DotNetBrightener.Core.DataAccess.Providers;
+using LinqToDB;
+using LinqToDB.Data;
+using LinqToDB.Mapping;
+using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -7,24 +18,14 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
-using DotNetBrightener.Core.DataAccess.Abstractions;
-using DotNetBrightener.Core.DataAccess.Exceptions;
-using DotNetBrightener.Core.DataAccess.Extensions;
-using DotNetBrightener.Core.DataAccess.Providers;
-using DotNetBrightener.Core.DataAccess.Transaction;
-using LinqToDB;
-using LinqToDB.Data;
-using LinqToDB.Mapping;
-using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.Logging;
 
 namespace DotNetBrightener.Core.DataAccess.Repositories
 {
     public class BaseRepository : IBaseRepository
     {
-        protected readonly IDataWorkContext     DataWorkContext;
-        protected readonly ITransactionManager  TransactionManager;
-        protected readonly ILogger              Logger;
+        protected readonly IDataWorkContext    DataWorkContext;
+        protected readonly ITransactionManager TransactionManager;
+        protected readonly ILogger             Logger;
 
         /// <summary>
         ///     Retrieves the current logged in user's name for audit purpose

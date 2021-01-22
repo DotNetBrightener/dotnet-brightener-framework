@@ -1,4 +1,5 @@
-﻿using LinqToDB;
+﻿using DotNetBrightener.Core.DataAccess.Abstractions;
+using LinqToDB;
 using LinqToDB.Data;
 using LinqToDB.DataProvider;
 using LinqToDB.DataProvider.SqlServer;

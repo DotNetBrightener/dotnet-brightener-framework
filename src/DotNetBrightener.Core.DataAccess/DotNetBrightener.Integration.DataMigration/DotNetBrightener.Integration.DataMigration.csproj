@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<TargetFrameworks>net5.0</TargetFrameworks>
 		<PackageId>DotNetBrightener.Intergration.DataMigration</PackageId>
-		<Version>1.0.0</Version>
+		<Version>1.0.1</Version>
 		<Copyright>© 2020 DotNet Brightener</Copyright>
 		<Authors>DotNet Brightener</Authors>
 		<Company>DotNet Brightener</Company>
@@ -40,14 +40,20 @@
 		<PackageReference Include="DotNetBrightener.Core" Version="1.0.0-beta-003" />
 	</ItemGroup>
 
+	<ItemGroup Condition="$(Configuration)=='Debug'">
+		<ProjectReference Include="..\DotNetBrightener.Core.DataAccess.Abstractions\DotNetBrightener.Core.DataAccess.Abstractions.csproj" />
+	</ItemGroup>
 	<ItemGroup Condition="$(Configuration)=='Release'">
-		<PackageReference Include="DotNetBrightener.Core.DataAccess" Version="1.0.1" />
+		<PackageReference Include="DotNetBrightener.Core.DataAccess.Abstractions" Version="1.0.1" />
+	</ItemGroup>
+
+
+	<ItemGroup Condition="$(Configuration)=='Release'">
 		<PackageReference Include="DotNetBrightener.Core.DataAccess.EF" Version="1.0.0" />
 	</ItemGroup>
 
 	<ItemGroup Condition="$(Configuration)=='Debug'">
 		<ProjectReference Include="..\DotNetBrightener.Core.DataAccess.EF\DotNetBrightener.Core.DataAccess.EF.csproj" />
-		<ProjectReference Include="..\DotNetBrightener.Core.DataAccess\DotNetBrightener.Core.DataAccess.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

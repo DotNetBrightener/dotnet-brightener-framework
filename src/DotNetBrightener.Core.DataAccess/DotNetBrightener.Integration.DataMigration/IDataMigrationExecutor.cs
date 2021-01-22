@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using DotNetBrightener.Core.DataAccess;
-using DotNetBrightener.Core.DataAccess.Repositories;
-using DotNetBrightener.Core.DataAccess.Transaction;
+﻿using DotNetBrightener.Core.DataAccess.Abstractions;
+using DotNetBrightener.Core.DataAccess.Abstractions.Repositories;
+using DotNetBrightener.Core.DataAccess.Abstractions.Transaction;
 using DotNetBrightener.Core.Modular;
 using DotNetBrightener.Integration.DataMigration.Exceptions;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +8,10 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace DotNetBrightener.Integration.DataMigration
 {
@@ -133,8 +133,8 @@ namespace DotNetBrightener.Integration.DataMigration
         {
             DbContext dataMigrationDbContext = _databaseConfiguration.DatabaseProvider switch
             {
-                Core.DataAccess.DatabaseProvider.MsSql => _serviceProvider.GetService<DataMigrationMsSQLDbContext>(),
-                Core.DataAccess.DatabaseProvider.PostgreSql => _serviceProvider.GetService<DataMigrationPostgreSQLDbContext>(),
+                Core.DataAccess.Abstractions.DatabaseProvider.MsSql => _serviceProvider.GetService<DataMigrationMsSQLDbContext>(),
+                Core.DataAccess.Abstractions.DatabaseProvider.PostgreSql => _serviceProvider.GetService<DataMigrationPostgreSQLDbContext>(),
                 _ => null
             };
 

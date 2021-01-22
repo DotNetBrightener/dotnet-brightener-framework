@@ -2,20 +2,20 @@
 
 	<PropertyGroup>
 		<TargetFrameworks>net5.0</TargetFrameworks>
-		<PackageId>DotNetBrightener.Core.DataAccess</PackageId>
+		<PackageId>DotNetBrightener.Core.DataAccess.Abstractions</PackageId>
 		<Version>1.0.2</Version>
 		<Copyright>© 2020 DotNet Brightener</Copyright>
 		<Authors>DotNet Brightener &lt;dotnetbrightener@gmail.com&gt;</Authors>
 		<Company>DotNet Brightener</Company>
 		<PackageDescription>
-			A library that make use of Linq2DB to provide centralized services for accessing database, supports MS SQL Server by default
+			An abstraction layer provides the basic CRUD operations for accessing database
 		</PackageDescription>
 		<RepositoryUrl>https://github.com/dotnetbrightener/dotnet-brightener-framework</RepositoryUrl>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<PackageIcon>dotnet-brightener-logo.png</PackageIcon>
 		<RepositoryType>git</RepositoryType>
 		<Description>
-			A library that make use of Linq2DB to provide centralized services for accessing database, supports MS SQL Server by default
+			An abstraction layer provides the basic CRUD operations for accessing database
 		</Description>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<NoWarn>1701;1702;1591;1574;1723</NoWarn>
@@ -23,7 +23,7 @@
 		<PackageTags>data access; queries; crud; linq; repository pattern</PackageTags>
 		<PackageReleaseNotes>
 			* v1.0.2:
-			- Extract the APIs into Abstractions library.
+			- Initial version: Extract abstraction layer from package DotNetBrightener.Core.DataAccess.
 		</PackageReleaseNotes>
 	</PropertyGroup>
 	<ItemGroup>
@@ -37,19 +37,7 @@
 		</None>
 	</ItemGroup>
 
-
 	<ItemGroup>
-		<PackageReference Include="linq2db" Version="3.2.3" />
 		<PackageReference Include="Microsoft.Data.SqlClient" Version="2.1.1" />
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.1" />
-		<PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
-	</ItemGroup>
-
-	<ItemGroup Condition="$(Configuration)=='Debug'">
-		<ProjectReference Include="..\DotNetBrightener.Core.DataAccess.Abstractions\DotNetBrightener.Core.DataAccess.Abstractions.csproj" />
-	</ItemGroup>
-	
-	<ItemGroup Condition="$(Configuration)=='Release'">
-		<PackageReference Include="DotNetBrightener.Core.DataAccess.Abstractions" Version="1.0.2" />
 	</ItemGroup>
 </Project>

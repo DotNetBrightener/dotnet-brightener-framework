@@ -1,4 +1,4 @@
-﻿namespace DotNetBrightener.Core.DataAccess
+﻿namespace DotNetBrightener.Core.DataAccess.Abstractions
 {
     public class DatabaseConfiguration
     {
