@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using DotNetBrightener.Core.DataAccess;
+﻿using DotNetBrightener.Core.DataAccess.Abstractions;
 using DotNetBrightener.Core.DataAccess.EF.Extensions;
 using DotNetBrightener.Core.DataAccess.EF.Migrations.Schema;
 using DotNetBrightener.Core.DataAccess.EF.Repositories;
@@ -10,6 +7,9 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace DotNetBrightener.Integration.Modular.Database
 {

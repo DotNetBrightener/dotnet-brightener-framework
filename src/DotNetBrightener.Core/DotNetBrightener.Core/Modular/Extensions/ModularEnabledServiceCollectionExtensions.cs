@@ -1,10 +1,9 @@
-﻿using System;
-using System.Linq;
-using System.Reflection;
-using DotNetBrightener.Core.Modular.Parsers;
+﻿using DotNetBrightener.Core.Modular.Parsers;
 using DotNetBrightener.Core.Modular.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using System;
+using System.Linq;
 
 namespace DotNetBrightener.Core.Modular.Extensions
 {
@@ -18,7 +17,7 @@ namespace DotNetBrightener.Core.Modular.Extensions
             serviceCollection.AddSingleton<IModuleAssembliesLoader, ModuleAssembliesLoader>();
             
             IModuleAssembliesLoader moduleAssembliesLoader;
-            //AssemblyName[] loadedAssemblyNames;
+
             using (var serviceProvider = serviceCollection.BuildServiceProvider())
             {
                 moduleAssembliesLoader = serviceProvider.GetService<IModuleAssembliesLoader>();
@@ -39,14 +38,7 @@ namespace DotNetBrightener.Core.Modular.Extensions
                                                                                      typeMetadata);
                                                                 });
                 }
-
-                //loadedAssemblyNames = moduleAssembliesLoader.LoadAssemblyNames();
             }
-
-            //foreach (var assemblyName in loadedAssemblyNames)
-            //{
-            //    AppDomain.CurrentDomain.Load(assemblyName);
-            //}
 
             AppDomain.CurrentDomain.AssemblyResolve += moduleAssembliesLoader.ResolveAssembly;
 

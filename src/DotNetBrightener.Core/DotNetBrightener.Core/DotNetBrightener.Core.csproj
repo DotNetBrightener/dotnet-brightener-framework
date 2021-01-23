@@ -54,6 +54,10 @@
 		</None>
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Modular\Abstractions\" />
+	</ItemGroup>
+
 	<Import Project="..\SharedExtensions\SharedExtensions.projitems" Label="Shared" />
 
 </Project>

@@ -5,8 +5,8 @@ using Microsoft.Extensions.DependencyInjection;
 namespace DotNetBrightener.Core.Modular.StartupConfiguration
 {
 	/// <summary>
-	/// An implementation of this interface is used to initialize the services and HTTP request
-	/// pipeline of a module.
+	///		Provides the abstraction layer for configuring the service collection and HTTP request pipeline at the startup of 
+	///		the application for the module implements this interface.
 	/// </summary>
 	public interface IModuleStartupConfiguration
 	{

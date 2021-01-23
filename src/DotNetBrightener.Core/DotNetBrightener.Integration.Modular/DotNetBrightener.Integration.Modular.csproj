@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<TargetFrameworks>net5.0</TargetFrameworks>
 		<PackageId>DotNetBrightener.Integration.Modular</PackageId>
-		<Version>1.0.0-beta-003</Version>
+		<Version>1.0.0-beta-004</Version>
 		<Copyright>© 2020 DotNet Brightener</Copyright>
 		<Authors>DotNet Brightener &lt;dotnetbrightener@gmail.com&gt;</Authors>
 		<Company>DotNet Brightener</Company>
@@ -25,8 +25,8 @@
 
 
 	<ItemGroup>
-		<PackageReference Include="DotNetBrightener.Core.DataAccess" Version="1.0.0" />
-		<PackageReference Include="DotNetBrightener.Core.DataAccess.EF" Version="1.0.0" />
+		<PackageReference Include="DotNetBrightener.Core.DataAccess.Abstractions" Version="1.0.2" />
+		<PackageReference Include="DotNetBrightener.Core.DataAccess.EF" Version="1.0.2" />
 	</ItemGroup>
 
 	<ItemGroup Condition="$(Configuration)=='Debug'">
@@ -35,10 +35,6 @@
 
 	<ItemGroup Condition="$(Configuration)=='Release'">
 		<PackageReference Include="DotNetBrightener.Core" Version="1.0.0-beta-003" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Localization\" />
 	</ItemGroup>
 
 	<Import Project="..\SharedExtensions\SharedExtensions.projitems" Label="Shared" />
