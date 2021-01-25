@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using DotNetBrightener.Caching;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Primitives;
 
@@ -11,7 +12,7 @@ namespace DotNetBrightener.Core.Caching
     /// <summary>
     /// Represents a memory cache manager 
     /// </summary>
-    public class MemoryCacheManager : IStaticCacheManager
+    public class MemoryCacheManager : ICacheManager
     {
         #region Fields
 

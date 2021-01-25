@@ -17,6 +17,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Plugins.Ev
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Mvc.HandlebarsViewEngine", "DotNetBrightener.Mvc.HandlebarsViewEngine\DotNetBrightener.Mvc.HandlebarsViewEngine.csproj", "{59BBEA89-A4A7-4195-8D24-2090A17C01C6}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Caching.Abstractions", "DotNetBrightener.Caching\DotNetBrightener.Caching.Abstractions.csproj", "{AF6B7E5A-A7E7-4E18-AE04-04E1322A3C87}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		SharedExtensions\SharedExtensions.projitems*{59d960de-d770-4d0c-9ed7-e46e1bcd3a5a}*SharedItemsImports = 13
@@ -52,6 +54,10 @@ Global
 		{59BBEA89-A4A7-4195-8D24-2090A17C01C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{59BBEA89-A4A7-4195-8D24-2090A17C01C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{59BBEA89-A4A7-4195-8D24-2090A17C01C6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AF6B7E5A-A7E7-4E18-AE04-04E1322A3C87}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF6B7E5A-A7E7-4E18-AE04-04E1322A3C87}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF6B7E5A-A7E7-4E18-AE04-04E1322A3C87}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF6B7E5A-A7E7-4E18-AE04-04E1322A3C87}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

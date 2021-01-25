@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace DotNetBrightener.Core.Caching
+namespace DotNetBrightener.Caching
 {
     public class CacheKey
     {
@@ -18,7 +18,7 @@ namespace DotNetBrightener.Core.Caching
         {
             Init(cacheKey.Key, cacheKey.CacheTime, cacheKey.Prefixes.ToArray());
 
-            if(!keyObjects.Any())
+            if (!keyObjects.Any())
                 return;
 
             Key = string.Format(_keyFormat, keyObjects.Select(createCacheKeyParameters).ToArray());
@@ -56,7 +56,7 @@ namespace DotNetBrightener.Core.Caching
             if (cacheTime.HasValue)
                 CacheTime = cacheTime.Value;
 
-            Prefixes.AddRange(prefixes.Where(prefix=> !string.IsNullOrEmpty(prefix)));
+            Prefixes.AddRange(prefixes.Where(prefix => !string.IsNullOrEmpty(prefix)));
         }
 
         #endregion
@@ -75,25 +75,5 @@ namespace DotNetBrightener.Core.Caching
         /// Cache time in minutes
         /// </summary>
         public int CacheTime { get; set; } = CacheDefaultSettings.CacheTime;
-    }
-    
-    /// <summary>
-    /// Represents default values related to caching
-    /// </summary>
-    public static class CacheDefaultSettings
-    {
-        /// <summary>
-        /// Gets the default cache time in minutes
-        /// </summary>
-        public static int CacheTime => 60;
-
-        /// <summary>
-        /// Gets a key for caching
-        /// </summary>
-        /// <remarks>
-        /// {0} : Entity type name
-        /// {1} : Entity id
-        /// </remarks>
-        public static string EntityCacheKey => "DNB.{0}.id-{1}";
     }
 }

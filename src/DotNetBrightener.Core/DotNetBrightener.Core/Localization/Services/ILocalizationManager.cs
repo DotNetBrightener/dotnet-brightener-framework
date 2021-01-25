@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using DotNetBrightener.Core.Caching;
+using DotNetBrightener.Caching;
 
 namespace DotNetBrightener.Core.Localization.Services
 {
@@ -15,14 +15,14 @@ namespace DotNetBrightener.Core.Localization.Services
 
     public class LocalizationManager : ILocalizationManager
     {
-        private static readonly PluralizationRuleDelegate DefaultPluralRule = n => (n != 1 ? 1 : 0);
+        private static readonly PluralizationRuleDelegate DefaultPluralRule = n => n != 1 ? 1 : 0;
 
         private const    string                                CacheKeyPrefix = "CultureDictionary-";
-        private readonly IStaticCacheManager                   _cache;
+        private readonly ICacheManager                   _cache;
         private readonly IEnumerable<ILocalizationFileManager>  _localizationFileLoader;
         private readonly Dictionary<string, FileSystemWatcher> _watchers = new Dictionary<string, FileSystemWatcher>();
 
-        public LocalizationManager(IStaticCacheManager                  cache,
+        public LocalizationManager(ICacheManager                  cache,
                                    IEnumerable<ILocalizationFileManager> localizationFileLoader)
         {
             _cache                  = cache;

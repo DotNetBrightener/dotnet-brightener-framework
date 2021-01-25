@@ -5,6 +5,9 @@ using Microsoft.Extensions.Options;
 
 namespace DotNetBrightener.Mvc.HandlebarsViewEngine
 {
+    /// <summary>
+    ///     Adds the extension setup for <see cref="MvcViewOptions"/> to extend the view engines
+    /// </summary>
     public class HandleBarMvcViewOptionsSetup : IConfigureOptions<MvcViewOptions>
     {
         private readonly IHandlebarsViewEngine _handleBarViewEngine;

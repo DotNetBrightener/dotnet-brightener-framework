@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace DotNetBrightener.Core.Caching
+namespace DotNetBrightener.Caching
 {
     /// <summary>
-    /// Represents a manager for caching between HTTP requests (long term caching)
+    ///     Represents a manager for caching between HTTP requests (long term caching)
     /// </summary>
-    public interface IStaticCacheManager : IDisposable
+    public interface ICacheManager : IDisposable
     {
         /// <summary>
         /// Get a cached item. If it's not in the cache yet, then load and cache it

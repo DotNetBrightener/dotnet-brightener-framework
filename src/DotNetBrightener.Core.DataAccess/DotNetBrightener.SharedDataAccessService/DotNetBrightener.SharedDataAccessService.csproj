@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<TargetFrameworks>net5.0</TargetFrameworks>
 		<PackageId>DotNetBrightener.SharedDataAccessService</PackageId>
-		<Version>1.0.2</Version>
+		<Version>1.0.3</Version>
 		<Copyright>© 2020 DotNet Brightener</Copyright>
 		<Authors>DotNet Brightener &lt;dotnetbrightener@gmail.com&gt;</Authors>
 		<Company>DotNet Brightener</Company>
@@ -20,8 +20,8 @@
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<PackageTags>data access; queries; crud; linq; repository pattern</PackageTags>
 		<PackageReleaseNotes>
-			* v1.0.2:
-			- Upgrade Nuget Package.
+			* v1.0.3:
+			- Added support for caching.
 		</PackageReleaseNotes>
 	</PropertyGroup>
 	<ItemGroup>
@@ -36,6 +36,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="DotNetBrightener.Caching.Abstractions" Version="1.0.0" />
 		<PackageReference Include="System.Linq.Dynamic.Core" Version="1.2.7" />
 	</ItemGroup>
 

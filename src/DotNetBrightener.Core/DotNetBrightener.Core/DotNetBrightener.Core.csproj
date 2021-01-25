@@ -58,6 +58,14 @@
 	  <Folder Include="Modular\Abstractions\" />
 	</ItemGroup>
 
+	<ItemGroup Condition="$(Configuration)=='Debug'">
+		<ProjectReference Include="..\DotNetBrightener.Caching\DotNetBrightener.Caching.Abstractions.csproj" />
+	</ItemGroup>
+
+	<ItemGroup Condition="$(Configuration)=='Release'">
+		<PackageReference Include="DotNetBrightener.Caching.Abstractions" Version="1.0.0" />
+	</ItemGroup>
+
 	<Import Project="..\SharedExtensions\SharedExtensions.projitems" Label="Shared" />
 
 </Project>

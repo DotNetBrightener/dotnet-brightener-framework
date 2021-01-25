@@ -1,4 +1,5 @@
-﻿using DotNetBrightener.Core.DataAccess.Abstractions.Repositories;
+﻿using DotNetBrightener.Caching;
+using DotNetBrightener.Core.DataAccess.Abstractions.Repositories;
 using System;
 using System.Linq;
 using System.Linq.Dynamic.Core;
@@ -86,15 +87,38 @@ namespace DotNetBrightener.SharedDataAccessService
     public abstract class BaseDataService<TEntity> : IBaseDataService<TEntity> where TEntity : class, new()
     {
         protected readonly IBaseRepository Repository;
+        protected readonly ICacheManager CacheManager;
 
-        protected BaseDataService(IBaseRepository repository)
+        /// <summary>
+        ///     Indicates the data access service should use cache. Default is <c>true</c>
+        /// </summary>
+        protected virtual bool UseCache => true;
+
+        /// <summary>
+        ///     Specifies the time in minute for the cache to be kept
+        /// </summary>
+        protected virtual int DefaultCacheTime => 20;
+
+        protected BaseDataService(IBaseRepository repository, 
+                                  ICacheManager cacheManager)
         {
             Repository = repository;
+            CacheManager = cacheManager;
         }
 
         public virtual TEntity Get(Expression<Func<TEntity, bool>> expression)
         {
-            return Repository.Get(expression);
+            if (!UseCache)
+            {
+                return Repository.Get(expression);
+            }
+
+            var result = CacheManager.Get(GetCacheKey(expression), () =>
+            {
+                return Repository.Get(expression);
+            });
+
+            return result;
         }
 
         public virtual IQueryable<TEntity> Fetch(Expression<Func<TEntity, bool>> expression = null)
@@ -128,6 +152,7 @@ namespace DotNetBrightener.SharedDataAccessService
                                       Expression<Func<TEntity, TEntity>> updateExpression)
         {
             Repository.Update(filterExpression, updateExpression, 1);
+            CacheManager.Remove(GetCacheKey(filterExpression));
         }
 
         public virtual void UpdateMany(Expression<Func<TEntity, bool>> filterExpression,
@@ -139,11 +164,36 @@ namespace DotNetBrightener.SharedDataAccessService
         public virtual void DeleteOne(Expression<Func<TEntity, bool>> filterExpression, bool forceHardDelete = false)
         {
             Repository.DeleteOne(filterExpression, forceHardDelete);
+            CacheManager.Remove(GetCacheKey(filterExpression));
         }
 
         public virtual void DeleteMany(Expression<Func<TEntity, bool>> filterExpression, bool forceHardDelete = false)
         {
             Repository.DeleteMany(filterExpression, forceHardDelete).Wait();
+        }
+
+        /// <summary>
+        ///     Retrieves the cache key for the cache from given query expression
+        /// </summary>
+        /// <param name="queryExpression">
+        ///     The expression describes how to fetch the record
+        /// </param>
+        /// <param name="cacheTime">
+        ///     Indicates the amount of time the cache should live
+        /// </param>
+        /// <returns>
+        ///     The <see cref="CacheKey" /> object
+        /// </returns>
+        protected virtual CacheKey GetCacheKey(Expression<Func<TEntity, bool>> queryExpression, int? cacheTime = null)
+        {
+            if (cacheTime == null)
+            {
+                cacheTime = DefaultCacheTime;
+            }
+
+            var cacheKeyString = queryExpression.GenerateCacheKey();
+
+            return new CacheKey(cacheKeyString, cacheTime: cacheTime, typeof(TEntity).Name);
         }
     }
 }
