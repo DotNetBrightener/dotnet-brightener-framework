@@ -32,11 +32,31 @@ namespace DotNetBrightener.CMS.Tests
             resultCacheKey = expression.GenerateCacheKey();
 
             Assert.AreEqual(expectedCacheKey, resultCacheKey);
+
+            var user = new User
+            {
+                UserId = 10
+            };
+
+            expression = _ => _.Id == user.UserId;
+
+            expectedCacheKey = "SomeObject_[Id==10]";
+
+            resultCacheKey = expression.GenerateCacheKey();
+
+            Assert.AreEqual(expectedCacheKey, resultCacheKey);
         }
+    }
+
+    class User
+    {
+        public long UserId { get; set; }
     }
 
     class SomeObject
     {
+        public long Id { get; set; }
+
         public string TestValue { get; set; }
 
         public string TestValue2 { get; set; }

@@ -78,6 +78,12 @@ namespace System.Linq
                         var value = (memberExpression.Member as FieldInfo).GetValue(constantExpression.Value);
                         stringBuilder.Append(value);
                     }
+                    else if (memberExpression.Expression.NodeType == ExpressionType.MemberAccess)
+                    {
+                        var value = Expression.Lambda(memberExpression).Compile().DynamicInvoke();
+
+                        stringBuilder.Append(value);
+                    }
                     else
                     {
                         stringBuilder.Append(memberExpression.Member.Name);
