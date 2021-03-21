@@ -1,5 +1,5 @@
 ﻿using System;
-using DotNetBrightener.Core.Permissions;
+using DotNetBrightener.Infrastructure.Security.Permissions;
 using Microsoft.AspNetCore.Authorization;
 
 namespace DotNetBrightener.Infrastructure.Security.Requirements

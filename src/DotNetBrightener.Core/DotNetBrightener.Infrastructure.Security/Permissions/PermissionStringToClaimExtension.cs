@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
 
-namespace DotNetBrightener.Core.Permissions
+namespace DotNetBrightener.Infrastructure.Security.Permissions
 {
     public static class PermissionStringToClaimExtension
     {

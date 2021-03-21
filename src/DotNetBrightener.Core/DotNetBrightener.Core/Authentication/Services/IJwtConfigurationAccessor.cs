@@ -40,7 +40,7 @@ namespace DotNetBrightener.Core.Authentication.Services
                 };
 
                 File.WriteAllText(fileInfo.PhysicalPath,
-                                  JsonConvert.SerializeObject(jwtTokenOptions, Formatting.Indented));
+                                  JsonConvert.SerializeObject(jwtTokenOptions, Formatting.Indented, CoreConstants.DefaultJsonSerializerSettings));
             }
             else
             {

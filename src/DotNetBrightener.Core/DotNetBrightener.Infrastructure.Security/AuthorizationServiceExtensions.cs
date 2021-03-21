@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
 using System.Threading.Tasks;
-using DotNetBrightener.Core.Permissions;
+using DotNetBrightener.Infrastructure.Security.Permissions;
 using DotNetBrightener.Infrastructure.Security.Requirements;
 
 namespace Microsoft.AspNetCore.Authorization

@@ -1,4 +1,4 @@
-﻿using DotNetBrightener.Core.Permissions;
+﻿using DotNetBrightener.Infrastructure.Security.Permissions;
 using System.Collections.Generic;
 
 namespace DotNetBrightener.Infrastructure.Security.Services

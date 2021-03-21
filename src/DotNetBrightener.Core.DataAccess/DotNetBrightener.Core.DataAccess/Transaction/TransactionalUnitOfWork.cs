@@ -12,7 +12,7 @@ namespace DotNetBrightener.Core.DataAccess.Transaction
 
         public TransactionalUnitOfWork()
         {
-            _transactionScope = new TransactionScope();
+            _transactionScope = new TransactionScope(TransactionScopeOption.RequiresNew, TransactionScopeAsyncFlowOption.Enabled);
         }
 
         public void Rollback()

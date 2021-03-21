@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -56,7 +57,8 @@ namespace DotNetBrightener.Core.Modular.Extensions
 
             mvcBuilder.AddNewtonsoftJson(options =>
             {
-                options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+                options.SerializerSettings.ContractResolver = CoreConstants.DefaultJsonSerializerSettings.ContractResolver;
+                options.SerializerSettings.ReferenceLoopHandling = CoreConstants.DefaultJsonSerializerSettings.ReferenceLoopHandling;
             });
 
             return loadedModuleEntries;

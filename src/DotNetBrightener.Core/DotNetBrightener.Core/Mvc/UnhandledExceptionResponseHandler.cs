@@ -56,7 +56,7 @@ namespace DotNetBrightener.Core.Mvc
 
                 defaultResult = new ContentResult
                 {
-                    Content = JsonConvert.SerializeObject(errorResult),
+                    Content = JsonConvert.SerializeObject(errorResult, CoreConstants.DefaultJsonSerializerSettings),
                     ContentType = ApplicationJsonType,
                     StatusCode = (int)exception.StatusCode
                 };
@@ -66,7 +66,7 @@ namespace DotNetBrightener.Core.Mvc
             {
                 defaultResult = new ContentResult
                 {
-                    Content = JsonConvert.SerializeObject(errorResult),
+                    Content = JsonConvert.SerializeObject(errorResult, CoreConstants.DefaultJsonSerializerSettings),
                     ContentType = ApplicationJsonType,
                     StatusCode = (int)HttpStatusCode.Unauthorized
                 };
@@ -76,7 +76,7 @@ namespace DotNetBrightener.Core.Mvc
             {
                 defaultResult = new ContentResult
                 {
-                    Content = JsonConvert.SerializeObject(errorResult),
+                    Content = JsonConvert.SerializeObject(errorResult, CoreConstants.DefaultJsonSerializerSettings),
                     ContentType = ApplicationJsonType,
                     StatusCode = httpRequestException.StatusCode
                 };
@@ -91,7 +91,7 @@ namespace DotNetBrightener.Core.Mvc
 
                 defaultResult = new ContentResult
                 {
-                    Content = JsonConvert.SerializeObject(errorResult),
+                    Content = JsonConvert.SerializeObject(errorResult, CoreConstants.DefaultJsonSerializerSettings),
                     ContentType = ApplicationJsonType,
                     StatusCode = (int)HttpStatusCode.InternalServerError
                 };

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using DotNetBrightener.Core.Permissions;
+using DotNetBrightener.Infrastructure.Security.Permissions;
 
 namespace DotNetBrightener.Infrastructure.Security.Services
 {
