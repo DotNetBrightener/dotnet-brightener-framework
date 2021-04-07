@@ -15,13 +15,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.SharedData
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Integration.DataMigration", "DotNetBrightener.Integration.DataMigration\DotNetBrightener.Integration.DataMigration.csproj", "{A7E09A37-BD25-4910-9C69-71570C61D404}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Core.DataAccess.SchemaMigration", "DotNetBrightener.Core.DataAccess.SchemaMigration\DotNetBrightener.Core.DataAccess.SchemaMigration.csproj", "{0FFDB323-9EC5-43B8-9F14-F35D665D8885}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Core.DataAccess.Migration", "DotNetBrightener.Core.DataAccess.Migration\DotNetBrightener.Core.DataAccess.Migration.csproj", "{0FFDB323-9EC5-43B8-9F14-F35D665D8885}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Core.DataAccess.Abstractions", "DotNetBrightener.Core.DataAccess.Abstractions\DotNetBrightener.Core.DataAccess.Abstractions.csproj", "{6B64145E-CC6F-458A-A646-28F97D0AF142}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{EA02C774-0F5A-49AF-BD20-7C0D0B6D578C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetBrightener.SharedDataAccessService.Tests", "Tests\DotNetBrightener.SharedDataAccessService.Tests\DotNetBrightener.SharedDataAccessService.Tests.csproj", "{E3BEF2BD-6611-4717-8F92-13FA99BA328B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.SharedDataAccessService.Tests", "Tests\DotNetBrightener.SharedDataAccessService.Tests\DotNetBrightener.SharedDataAccessService.Tests.csproj", "{E3BEF2BD-6611-4717-8F92-13FA99BA328B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

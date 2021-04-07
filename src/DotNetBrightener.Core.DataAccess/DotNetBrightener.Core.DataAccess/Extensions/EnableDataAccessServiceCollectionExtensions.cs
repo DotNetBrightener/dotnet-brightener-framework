@@ -15,6 +15,7 @@ namespace DotNetBrightener.Core.DataAccess.Extensions
             serviceCollection.AddSingleton<IDotNetBrightenerDataProvider, MsSqlDataProvider>();
 
             serviceCollection.AddScoped<ITransactionManager, TransactionManager>();
+            serviceCollection.AddScoped<IDataProviderFactory, DataProviderFactory>();
             serviceCollection.AddScoped<IBaseRepository, BaseRepository>();
             serviceCollection.AddScoped<IDataWorkContext, DataWorkContext>();
 

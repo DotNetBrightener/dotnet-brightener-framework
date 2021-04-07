@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<TargetFrameworks>net5.0</TargetFrameworks>
 		<PackageId>DotNetBrightener.SharedDataAccessService</PackageId>
-		<Version>1.0.4</Version>
+		<Version>1.0.5</Version>
 		<Copyright>© 2020 DotNet Brightener</Copyright>
 		<Authors>DotNet Brightener &lt;dotnetbrightener@gmail.com&gt;</Authors>
 		<Company>DotNet Brightener</Company>
@@ -20,8 +20,8 @@
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<PackageTags>data access; queries; crud; linq; repository pattern</PackageTags>
 		<PackageReleaseNotes>
-			* v1.0.4:
-			- Bug fixes for cache key generator.
+			* v1.0.5:
+			- Upgrade dependencies
 		</PackageReleaseNotes>
 	</PropertyGroup>
 	<ItemGroup>
@@ -44,7 +44,7 @@
 		<ProjectReference Include="..\DotNetBrightener.Core.DataAccess.Abstractions\DotNetBrightener.Core.DataAccess.Abstractions.csproj" />
 	</ItemGroup>
 	<ItemGroup Condition="$(Configuration)=='Release'">
-		<PackageReference Include="DotNetBrightener.Core.DataAccess.Abstractions" Version="1.0.2" />
+		<PackageReference Include="DotNetBrightener.Core.DataAccess.Abstractions" Version="1.0.5" />
 	</ItemGroup>
 
 </Project>

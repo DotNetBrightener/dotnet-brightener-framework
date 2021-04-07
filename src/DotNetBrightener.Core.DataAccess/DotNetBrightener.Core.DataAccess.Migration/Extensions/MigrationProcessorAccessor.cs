@@ -1,11 +1,11 @@
-﻿using FluentMigrator;
+﻿using DotNetBrightener.Core.DataAccess.Abstractions;
+using FluentMigrator;
+using FluentMigrator.Runner.Processors;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using FluentMigrator.Runner.Processors;
-using DotNetBrightener.Core.DataAccess.Abstractions;
 
-namespace DotNetBrightener.Core.DataAccess.SchemaMigration.Extensions
+namespace DotNetBrightener.Core.DataAccess.Migration.Extensions
 {
     internal class MigrationProcessorAccessor : IProcessorAccessor
     {
@@ -13,7 +13,7 @@ namespace DotNetBrightener.Core.DataAccess.SchemaMigration.Extensions
         private readonly DatabaseConfiguration _databaseConfiguration;
 
         public MigrationProcessorAccessor(
-            IEnumerable<IMigrationProcessor> migrationProcessors, 
+            IEnumerable<IMigrationProcessor> migrationProcessors,
             DatabaseConfiguration databaseConfiguration)
         {
             _migrationProcessors = migrationProcessors;

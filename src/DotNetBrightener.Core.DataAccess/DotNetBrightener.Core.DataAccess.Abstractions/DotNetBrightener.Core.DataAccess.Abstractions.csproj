@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<TargetFrameworks>net5.0</TargetFrameworks>
 		<PackageId>DotNetBrightener.Core.DataAccess.Abstractions</PackageId>
-		<Version>1.0.2</Version>
+		<Version>1.0.5</Version>
 		<Copyright>© 2020 DotNet Brightener</Copyright>
 		<Authors>DotNet Brightener &lt;dotnetbrightener@gmail.com&gt;</Authors>
 		<Company>DotNet Brightener</Company>
@@ -22,8 +22,8 @@
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<PackageTags>data access; queries; crud; linq; repository pattern</PackageTags>
 		<PackageReleaseNotes>
-			* v1.0.2:
-			- Initial version: Extract abstraction layer from package DotNetBrightener.Core.DataAccess.
+			* v1.0.5:
+			- Upgrade dependencies.
 		</PackageReleaseNotes>
 	</PropertyGroup>
 	<ItemGroup>
@@ -38,6 +38,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Data.SqlClient" Version="2.1.1" />
+		<PackageReference Include="Microsoft.Data.SqlClient" Version="2.1.2" />
 	</ItemGroup>
 </Project>

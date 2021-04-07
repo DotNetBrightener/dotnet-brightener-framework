@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<TargetFrameworks>net5.0</TargetFrameworks>
 		<PackageId>DotNetBrightener.Core.DataAccess</PackageId>
-		<Version>1.0.4</Version>
+		<Version>1.0.5</Version>
 		<Copyright>© 2020 DotNet Brightener</Copyright>
 		<Authors>DotNet Brightener &lt;dotnetbrightener@gmail.com&gt;</Authors>
 		<Company>DotNet Brightener</Company>
@@ -22,8 +22,8 @@
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<PackageTags>data access; queries; crud; linq; repository pattern</PackageTags>
 		<PackageReleaseNotes>
-			* v1.0.4:
-			- Correct Transaction Initialization.
+			* v1.0.5:
+			- Upgrade dependencies.
 		</PackageReleaseNotes>
 	</PropertyGroup>
 	<ItemGroup>
@@ -39,8 +39,8 @@
 
 
 	<ItemGroup>
-		<PackageReference Include="linq2db" Version="3.2.3" />
-		<PackageReference Include="Microsoft.Data.SqlClient" Version="2.1.1" />
+		<PackageReference Include="linq2db" Version="3.3.0" />
+		<PackageReference Include="Microsoft.Data.SqlClient" Version="2.1.2" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.1" />
 		<PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
 	</ItemGroup>
@@ -50,6 +50,6 @@
 	</ItemGroup>
 	
 	<ItemGroup Condition="$(Configuration)=='Release'">
-		<PackageReference Include="DotNetBrightener.Core.DataAccess.Abstractions" Version="1.0.2" />
+		<PackageReference Include="DotNetBrightener.Core.DataAccess.Abstractions" Version="1.0.5" />
 	</ItemGroup>
 </Project>

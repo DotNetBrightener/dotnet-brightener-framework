@@ -40,24 +40,23 @@ namespace DotNetBrightener.Core.DataAccess.Repositories
         protected readonly IDotNetBrightenerDataProvider DataProvider;
         protected readonly DataConnection DataContext;
 
-        public BaseRepository(DatabaseConfiguration                      databaseConfiguration,
-                              IEnumerable<IDotNetBrightenerDataProvider> dataProviders,
-                              IDataWorkContext                           dataWorkContext,
-                              ITransactionManager                        transactionManager,
-                              ILogger<BaseRepository>                    logger)
+        public BaseRepository(DatabaseConfiguration   databaseConfiguration,
+                              IDataWorkContext        dataWorkContext,
+                              ITransactionManager     transactionManager,
+                              IDataProviderFactory    dataProviderFactory,
+                              ILogger<BaseRepository> logger)
         {
             TransactionManager  = transactionManager;
             DataWorkContext     = dataWorkContext;
             Logger              = logger;
-
-            DataProvider = dataProviders.FirstOrDefault(_ => _.SupportedDatabaseProvider ==
-                                                             databaseConfiguration.DatabaseProvider);
+            DataProvider        = dataProviderFactory.GetDataProvider();
 
             if (DataProvider == null)
                 throw new
                     NotSupportedException($"The specified database provider {databaseConfiguration.DatabaseProvider} is not supported by the system");
 
             DataContext = DataProvider.CreateDataConnection(databaseConfiguration.ConnectionString);
+
             DataContext.AddMappingSchema(new MappingSchema(DataContext.DataProvider.Name)
             {
                 MetadataReader = EntityFrameworkIntegratedMetadataReader.Instance

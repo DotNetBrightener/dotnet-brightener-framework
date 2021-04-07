@@ -1,15 +1,10 @@
-﻿using System;
-using FluentMigrator.Runner.VersionTableInfo;
+﻿using FluentMigrator.Runner.VersionTableInfo;
+using System;
 
 namespace DotNetBrightener.Core.DataAccess.SchemaMigration.Extensions
 {
     public class SchemaMigrationHistory : IVersionTableMetaData
     {
-        public SchemaMigrationHistory()
-        {
-
-        }
-
         /// <summary>
         ///     Version
         /// </summary>
@@ -32,7 +27,7 @@ namespace DotNetBrightener.Core.DataAccess.SchemaMigration.Extensions
 
         public string SchemaName => string.Empty;
 
-        public string TableName => "__" + nameof(SchemaMigrationHistory);
+        public string TableName => "___" + nameof(SchemaMigrationHistory);
 
         public string ColumnName => nameof(Version);
 
