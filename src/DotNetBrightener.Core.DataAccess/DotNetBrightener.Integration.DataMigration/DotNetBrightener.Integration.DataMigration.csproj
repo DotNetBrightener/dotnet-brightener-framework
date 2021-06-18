@@ -1,36 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net5.0</TargetFrameworks>
 		<PackageId>DotNetBrightener.Intergration.DataMigration</PackageId>
-		<Version>1.0.2</Version>
-		<Copyright>© 2020 DotNet Brightener</Copyright>
-		<Authors>DotNet Brightener</Authors>
-		<Company>DotNet Brightener</Company>
 		<PackageDescription>
 			A library provides the mechanism for migrating data for applications that make use of DotNetBrightener.Core.DataAccess library. Supports for MS SQL Server and Postgre SQL server
 		</PackageDescription>
-		<RepositoryUrl>https://github.com/dotnetbrightener/dotnet-brightener-framework</RepositoryUrl>
-		<PackageLicenseFile>LICENSE</PackageLicenseFile>
-		<PackageIcon>dotnet-brightener-logo.png</PackageIcon>
-		<RepositoryType>git</RepositoryType>
 		<Description>
 			A library provides the mechanism for migrating data for applications that make use of DotNetBrightener.Core.DataAccess library. Supports for MS SQL Server and Postgre SQL server
 		</Description>
-		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<NoWarn>1701;1702;1591;1574;1723</NoWarn>
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 	</PropertyGroup>
-	<ItemGroup>
-		<None Include="..\..\..\dotnet-brightener-logo.png">
-			<Pack>True</Pack>
-			<PackagePath></PackagePath>
-		</None>
-		<None Include="..\..\..\LICENSE">
-			<Pack>True</Pack>
-			<PackagePath></PackagePath>
-		</None>
-	</ItemGroup>
 	
 	<ItemGroup>
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />

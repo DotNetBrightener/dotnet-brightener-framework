@@ -41,6 +41,7 @@ namespace DotNetBrightener.Core.DataAccess.Repositories
         protected readonly DataConnection DataContext;
 
         public BaseRepository(DatabaseConfiguration   databaseConfiguration,
+                              IServiceProvider        serviceProvider,
                               IDataWorkContext        dataWorkContext,
                               ITransactionManager     transactionManager,
                               IDataProviderFactory    dataProviderFactory,
@@ -59,7 +60,7 @@ namespace DotNetBrightener.Core.DataAccess.Repositories
 
             DataContext.AddMappingSchema(new MappingSchema(DataContext.DataProvider.Name)
             {
-                MetadataReader = EntityFrameworkIntegratedMetadataReader.Instance
+                MetadataReader = MetadataReader.RetrieveInstance(serviceProvider)
             });
         }
 

@@ -1,43 +1,21 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net5.0</TargetFrameworks>
 		<PackageId>DotNetBrightener.Core.DataAccess.PostgreSQL</PackageId>
-		<Version>1.0.5</Version>
-		<Copyright>© 2020 DotNet Brightener</Copyright>
-		<Authors>DotNet Brightener &lt;dotnetbrightener@gmail.com&gt;</Authors>
-		<Company>DotNet Brightener</Company>
 		<PackageDescription>
 			A library that adds the support for PostgreSQL to the centralized data access layer of DotNet Brightener Framework.
 		</PackageDescription>
-		<RepositoryUrl>https://github.com/dotnetbrightener/dotnet-brightener-framework</RepositoryUrl>
-		<PackageLicenseFile>LICENSE</PackageLicenseFile>
-		<PackageIcon>dotnet-brightener-logo.png</PackageIcon>
-		<RepositoryType>git</RepositoryType>
 		<Description>
 			A library that adds the support for PostgreSQL to the centralized data access layer of DotNet Brightener Framework.
 		</Description>
-		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<NoWarn>1701;1702;1591;1574;1723</NoWarn>
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<PackageReleaseNotes>
-			* v1.0.5:
+			* v1.0.6:
 			- Upgrade dependencies.
 		</PackageReleaseNotes>
 	</PropertyGroup>
-	<ItemGroup>
-		<None Include="..\..\..\dotnet-brightener-logo.png">
-			<Pack>True</Pack>
-			<PackagePath></PackagePath>
-		</None>
-		<None Include="..\..\..\LICENSE">
-			<Pack>True</Pack>
-			<PackagePath></PackagePath>
-		</None>
-	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="linq2db.PostgreSQL" Version="3.3.0" />
+		<PackageReference Include="linq2db.PostgreSQL" Version="3.4.0" />
 	</ItemGroup>
 
 	<ItemGroup Condition="$(Configuration)=='Debug'">
@@ -46,7 +24,7 @@
 
 
 	<ItemGroup Condition="$(Configuration)=='Release'">
-		<PackageReference Include="DotNetBrightener.Core.DataAccess" Version="1.0.5" />
+		<PackageReference Include="DotNetBrightener.Core.DataAccess" Version="$Version" />
 	</ItemGroup>
 
 </Project>

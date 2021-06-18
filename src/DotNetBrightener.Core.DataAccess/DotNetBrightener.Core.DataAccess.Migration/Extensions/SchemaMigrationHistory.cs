@@ -1,7 +1,7 @@
-﻿using FluentMigrator.Runner.VersionTableInfo;
-using System;
+﻿using System;
+using FluentMigrator.Runner.VersionTableInfo;
 
-namespace DotNetBrightener.Core.DataAccess.SchemaMigration.Extensions
+namespace DotNetBrightener.Core.DataAccess.Migration.Extensions
 {
     public class SchemaMigrationHistory : IVersionTableMetaData
     {

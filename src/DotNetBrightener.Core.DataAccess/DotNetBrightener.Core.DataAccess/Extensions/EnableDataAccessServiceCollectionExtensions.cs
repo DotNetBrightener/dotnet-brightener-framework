@@ -5,12 +5,15 @@ using DotNetBrightener.Core.DataAccess.Providers;
 using DotNetBrightener.Core.DataAccess.Repositories;
 using DotNetBrightener.Core.DataAccess.Transaction;
 using Microsoft.Extensions.DependencyInjection;
+using System;
 
 namespace DotNetBrightener.Core.DataAccess.Extensions
 {
+
     public static class EnableDataAccessServiceCollectionExtensions
     {
-        public static IServiceCollection EnableDataAccess(this IServiceCollection serviceCollection)
+        public static IServiceCollection EnableDataAccess(this IServiceCollection serviceCollection,
+            Action<DataAccessConfiguration> configure = null)
         {
             serviceCollection.AddSingleton<IDotNetBrightenerDataProvider, MsSqlDataProvider>();
 
@@ -18,6 +21,11 @@ namespace DotNetBrightener.Core.DataAccess.Extensions
             serviceCollection.AddScoped<IDataProviderFactory, DataProviderFactory>();
             serviceCollection.AddScoped<IBaseRepository, BaseRepository>();
             serviceCollection.AddScoped<IDataWorkContext, DataWorkContext>();
+
+            var configuration = new DataAccessConfiguration();
+
+            configure?.Invoke(configuration);
+            serviceCollection.AddSingleton(configuration);
 
             return serviceCollection;
         }

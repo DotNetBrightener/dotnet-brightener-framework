@@ -1,17 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net5.0</TargetFrameworks>
-		<PackageId>DotNetBrightener.Core.DataAccess.EF.PostgreSQL</PackageId>
-		<Version>1.0.5</Version>
-		<Copyright>© 2020 DotNet Brightener</Copyright>
-		<Authors>DotNet Brightener</Authors>
-		<Company>DotNet Brightener</Company>
 		<PackageDescription>
 			A library that adds the support for PostgreSQL to Entity Framework and utilizes the centralized data access layer of DotNet Brightener Framework.
 		</PackageDescription>
-		<RepositoryUrl>https://github.com/dotnetbrightener/dotnet-brightener-framework</RepositoryUrl>
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<PackageReleaseNotes>
 			* v1.0.5:
 			- Upgrade dependencies.
@@ -19,8 +11,8 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.2" />
-		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.1" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.7" />
+		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.7" />
 	</ItemGroup>
 
 	<ItemGroup Condition="$(Configuration)=='Debug'">
@@ -29,7 +21,7 @@
 
 
 	<ItemGroup Condition="$(Configuration)=='Release'">
-		<PackageReference Include="DotNetBrightener.Core.DataAccess.EF" Version="1.0.5" />
+		<PackageReference Include="DotNetBrightener.Core.DataAccess.EF" Version="$Version" />
 	</ItemGroup>
 
 </Project>

@@ -1,6 +1,5 @@
 ﻿using DotNetBrightener.Core.DataAccess.Abstractions;
 using DotNetBrightener.Core.DataAccess.Migration.Services;
-using DotNetBrightener.Core.DataAccess.SchemaMigration.Extensions;
 using FluentMigrator.Runner;
 using FluentMigrator.Runner.Initialization;
 using FluentMigrator.Runner.Processors;
@@ -8,10 +7,10 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Linq;
 using System.Reflection;
+using DotNetBrightener.Core.DataAccess.Migration.Abstractions.Services;
 
 namespace DotNetBrightener.Core.DataAccess.Migration.Extensions
 {
-
     public static class SchemaMigrationEnabledServiceCollection
     {
         public static void EnableSchemaMigration(this IServiceCollection serviceCollection,

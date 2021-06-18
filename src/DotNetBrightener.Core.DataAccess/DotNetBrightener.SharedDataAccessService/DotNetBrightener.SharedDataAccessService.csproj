@@ -1,39 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net5.0</TargetFrameworks>
 		<PackageId>DotNetBrightener.SharedDataAccessService</PackageId>
-		<Version>1.0.5</Version>
-		<Copyright>© 2020 DotNet Brightener</Copyright>
-		<Authors>DotNet Brightener &lt;dotnetbrightener@gmail.com&gt;</Authors>
-		<Company>DotNet Brightener</Company>
 		<PackageDescription>
 			A library that provides abstraction layers for accessing database utilizing DotNetBrightener Data Access Framework.
 		</PackageDescription>
-		<RepositoryUrl>https://github.com/dotnetbrightener/dotnet-brightener-framework</RepositoryUrl>
-		<PackageLicenseFile>LICENSE</PackageLicenseFile>
-		<PackageIcon>dotnet-brightener-logo.png</PackageIcon>
-		<RepositoryType>git</RepositoryType>
 		<Description>A library that provides abstraction layers for accessing database utilizing DotNetBrightener Data Access Framework.</Description>
-		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<NoWarn>1701;1702;1591;1574;1723</NoWarn>
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<PackageTags>data access; queries; crud; linq; repository pattern</PackageTags>
 		<PackageReleaseNotes>
 			* v1.0.5:
 			- Upgrade dependencies
 		</PackageReleaseNotes>
 	</PropertyGroup>
-	<ItemGroup>
-	  <None Include="..\..\..\dotnet-brightener-logo.png">
-	    <Pack>True</Pack>
-	    <PackagePath></PackagePath>
-	  </None>
-	  <None Include="..\..\..\LICENSE">
-	    <Pack>True</Pack>
-	    <PackagePath></PackagePath>
-	  </None>
-	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="DotNetBrightener.Caching.Abstractions" Version="1.0.0" />
@@ -44,7 +21,7 @@
 		<ProjectReference Include="..\DotNetBrightener.Core.DataAccess.Abstractions\DotNetBrightener.Core.DataAccess.Abstractions.csproj" />
 	</ItemGroup>
 	<ItemGroup Condition="$(Configuration)=='Release'">
-		<PackageReference Include="DotNetBrightener.Core.DataAccess.Abstractions" Version="1.0.5" />
+		<PackageReference Include="DotNetBrightener.Core.DataAccess.Abstractions" Version="$Version" />
 	</ItemGroup>
 
 </Project>

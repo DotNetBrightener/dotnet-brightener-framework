@@ -1,40 +1,21 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net5.0</TargetFrameworks>
-		<PackageId>DotNetBrightener.Core.DataAccess.EF</PackageId>
-		<Version>1.0.5</Version>
-		<Copyright>© 2020 DotNet Brightener</Copyright>
-		<Authors>DotNet Brightener</Authors>
-		<Company>DotNet Brightener</Company>
 		<PackageDescription>
 			A library that adds EntityFramework support and utilizes the Data Access layer from DotNet Brightener Framework
 		</PackageDescription>
-		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<NoWarn>1701;1702;1591;1574;1723</NoWarn>
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<PackageReleaseNotes>
 			* v1.0.5:
 			- Upgrade dependencies.
 		</PackageReleaseNotes>
 	</PropertyGroup>
-	<ItemGroup>
-		<None Include="..\..\..\dotnet-brightener-logo.png">
-			<Pack>True</Pack>
-			<PackagePath></PackagePath>
-		</None>
-		<None Include="..\..\..\LICENSE">
-			<Pack>True</Pack>
-			<PackagePath></PackagePath>
-		</None>
-	</ItemGroup>
 
 
 	<ItemGroup>
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.2" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="5.0.2" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.2" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.7" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="5.0.7" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.7" />
 	</ItemGroup>
 
 
@@ -44,6 +25,6 @@
 
 
 	<ItemGroup Condition="$(Configuration)=='Release'">
-		<PackageReference Include="DotNetBrightener.Core.DataAccess" Version="1.0.5" />
+		<PackageReference Include="DotNetBrightener.Core.DataAccess" Version="$Version" />
 	</ItemGroup>
 </Project>

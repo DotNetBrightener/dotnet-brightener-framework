@@ -1,43 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net5.0</TargetFrameworks>
-		<PackageId>DotNetBrightener.Core.DataAccess.Abstractions</PackageId>
-		<Version>1.0.5</Version>
-		<Copyright>© 2020 DotNet Brightener</Copyright>
-		<Authors>DotNet Brightener &lt;dotnetbrightener@gmail.com&gt;</Authors>
-		<Company>DotNet Brightener</Company>
 		<PackageDescription>
 			An abstraction layer provides the basic CRUD operations for accessing database
 		</PackageDescription>
-		<RepositoryUrl>https://github.com/dotnetbrightener/dotnet-brightener-framework</RepositoryUrl>
-		<PackageLicenseFile>LICENSE</PackageLicenseFile>
-		<PackageIcon>dotnet-brightener-logo.png</PackageIcon>
-		<RepositoryType>git</RepositoryType>
 		<Description>
 			An abstraction layer provides the basic CRUD operations for accessing database
 		</Description>
-		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<NoWarn>1701;1702;1591;1574;1723</NoWarn>
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<PackageTags>data access; queries; crud; linq; repository pattern</PackageTags>
 		<PackageReleaseNotes>
 			* v1.0.5:
 			- Upgrade dependencies.
 		</PackageReleaseNotes>
 	</PropertyGroup>
-	<ItemGroup>
-		<None Include="..\..\..\dotnet-brightener-logo.png">
-			<Pack>True</Pack>
-			<PackagePath></PackagePath>
-		</None>
-		<None Include="..\..\..\LICENSE">
-			<Pack>True</Pack>
-			<PackagePath></PackagePath>
-		</None>
-	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Data.SqlClient" Version="2.1.2" />
+		<PackageReference Include="Microsoft.Data.SqlClient" Version="3.0.0" />
 	</ItemGroup>
 </Project>

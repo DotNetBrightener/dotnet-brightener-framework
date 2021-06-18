@@ -1,8 +1,8 @@
-﻿using FluentMigrator;
-using System;
+﻿using System;
 using System.Globalization;
+using FluentMigrator;
 
-namespace DotNetBrightener.Core.DataAccess.SchemaMigration.Attributes
+namespace DotNetBrightener.Core.DataAccess.Migration.Attributes
 {
     public class MigrationVersionAttribute : MigrationAttribute
     {

@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Reflection;
+using DotNetBrightener.Core.DataAccess.NameWriters;
 using LinqToDB.Metadata;
 using LinqToDB.SqlQuery;
 using ColumnAttribute = LinqToDB.Mapping.ColumnAttribute;
@@ -10,23 +11,36 @@ using TableAttribute = LinqToDB.Mapping.TableAttribute;
 
 namespace DotNetBrightener.Core.DataAccess.Providers
 {
-    internal class EntityFrameworkIntegratedMetadataReader : IMetadataReader
+    internal class MetadataReader : IMetadataReader
     {
+        private readonly DataAccessConfiguration _dataAccessConfiguration;
+
+        #region Singleton Pattern
         private static readonly object LockObject = new object();
 
-        private static EntityFrameworkIntegratedMetadataReader _singleInstance;
+        private static MetadataReader _singleInstance;
 
-        public static EntityFrameworkIntegratedMetadataReader Instance
+        public static MetadataReader RetrieveInstance(IServiceProvider serviceProvider)
         {
-            get
+            if (_singleInstance != null)
+                return _singleInstance;
+
+            lock (LockObject)
             {
                 if (_singleInstance != null)
                     return _singleInstance;
 
-                lock (LockObject)
-                {
-                    return _singleInstance ??= new EntityFrameworkIntegratedMetadataReader();
-                }
+                return _singleInstance ??= serviceProvider.TryGetService<MetadataReader>();
+            }
+        }
+        #endregion
+
+        public MetadataReader(DataAccessConfiguration dataAccessConfiguration)
+        {
+            _dataAccessConfiguration = dataAccessConfiguration;
+            if (_dataAccessConfiguration.UsingNameRewriter == null)
+            {
+                _dataAccessConfiguration.UsingNameRewriter = new NoneRewriter();
             }
         }
 
@@ -68,10 +82,13 @@ namespace DotNetBrightener.Core.DataAccess.Providers
 
                     if (tableAttributeValue != null)
                     {
-                        return new TableAttribute(tableAttributeValue.Name) { Schema = tableAttributeValue.Schema };
+                        return new TableAttribute(tableAttributeValue.Name)
+                        {
+                            Schema = tableAttributeValue.Schema
+                        };
                     }
-
-                    return new TableAttribute(type.Name);
+                    
+                    return new TableAttribute(_dataAccessConfiguration.UsingNameRewriter.RewriteName(type.Name));
                 }
 
                 if (typeof(T) != typeof(ColumnAttribute)) 
@@ -84,7 +101,7 @@ namespace DotNetBrightener.Core.DataAccess.Providers
                 if (sqlDataType.Type.DataType == null)
                     return null;
 
-                var columnName = memberInfo.Name;
+                var columnName = _dataAccessConfiguration.UsingNameRewriter.RewriteName(memberInfo.Name);
 
                 var columnAttributeValue = memberInfo.GetCustomAttribute<System.ComponentModel.DataAnnotations.Schema.ColumnAttribute>();
                 if (columnAttributeValue != null)

@@ -1,46 +1,23 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net5.0</TargetFrameworks>
-		<PackageId>DotNetBrightener.Core.DataAccess</PackageId>
-		<Version>1.0.5</Version>
-		<Copyright>© 2020 DotNet Brightener</Copyright>
-		<Authors>DotNet Brightener &lt;dotnetbrightener@gmail.com&gt;</Authors>
-		<Company>DotNet Brightener</Company>
 		<PackageDescription>
 			A library that make use of Linq2DB to provide centralized services for accessing database, supports MS SQL Server by default
 		</PackageDescription>
-		<RepositoryUrl>https://github.com/dotnetbrightener/dotnet-brightener-framework</RepositoryUrl>
-		<PackageLicenseFile>LICENSE</PackageLicenseFile>
-		<PackageIcon>dotnet-brightener-logo.png</PackageIcon>
-		<RepositoryType>git</RepositoryType>
 		<Description>
 			A library that make use of Linq2DB to provide centralized services for accessing database, supports MS SQL Server by default
 		</Description>
-		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<NoWarn>1701;1702;1591;1574;1723</NoWarn>
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<PackageTags>data access; queries; crud; linq; repository pattern</PackageTags>
 		<PackageReleaseNotes>
-			* v1.0.5:
-			- Upgrade dependencies.
+			* v1.0.6:
+			- Adding support for naming convention.
 		</PackageReleaseNotes>
 	</PropertyGroup>
-	<ItemGroup>
-		<None Include="..\..\..\dotnet-brightener-logo.png">
-			<Pack>True</Pack>
-			<PackagePath></PackagePath>
-		</None>
-		<None Include="..\..\..\LICENSE">
-			<Pack>True</Pack>
-			<PackagePath></PackagePath>
-		</None>
-	</ItemGroup>
 
 
 	<ItemGroup>
-		<PackageReference Include="linq2db" Version="3.3.0" />
-		<PackageReference Include="Microsoft.Data.SqlClient" Version="2.1.2" />
+		<PackageReference Include="linq2db" Version="3.4.0" />
+		<PackageReference Include="Microsoft.Data.SqlClient" Version="3.0.0" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.1" />
 		<PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
 	</ItemGroup>
@@ -50,6 +27,6 @@
 	</ItemGroup>
 	
 	<ItemGroup Condition="$(Configuration)=='Release'">
-		<PackageReference Include="DotNetBrightener.Core.DataAccess.Abstractions" Version="1.0.5" />
+		<PackageReference Include="DotNetBrightener.Core.DataAccess.Abstractions" Version="$Version" />
 	</ItemGroup>
 </Project>

@@ -7,16 +7,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using DotNetBrightener.Core.DataAccess.Migration.Abstractions.Services;
 
 namespace DotNetBrightener.Core.DataAccess.Migration.Services
 {
-    public interface ISchemaMigrationManager
-    {
-        void ApplyUpMigrations(Assembly assembly);
-
-        void ApplyDownMigrations(Assembly assembly);
-    }
-
     public class SchemaMigrationManager : ISchemaMigrationManager
     {
         private readonly IFilteringMigrationSource _filteringMigrationSource;
