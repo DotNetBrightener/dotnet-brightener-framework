@@ -3,17 +3,18 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using DotNetBrightener.Caching;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Primitives;
 
-namespace DotNetBrightener.Core.Caching
+namespace DotNetBrightener.Caching.Memory
 {
     /// <summary>
-    /// Represents a memory cache manager 
+    ///     Represents a provider for caching using memory
     /// </summary>
-    public class MemoryCacheManager : ICacheManager
+    public class MemoryCacheProvider : ICacheProvider
     {
+        public bool CanUse => true;
+
         #region Fields
 
         // Flag: Has Dispose already been called?
@@ -30,7 +31,7 @@ namespace DotNetBrightener.Core.Caching
 
         #region Ctor
 
-        public MemoryCacheManager(IMemoryCache memoryCache)
+        public MemoryCacheProvider(IMemoryCache memoryCache)
         {
             _memoryCache = memoryCache;
         }
@@ -150,36 +151,7 @@ namespace DotNetBrightener.Core.Caching
         {
             return _memoryCache.TryGetValue(key.Key, out _);
         }
-
-        /// <summary>
-        /// Perform some action with exclusive in-memory lock
-        /// </summary>
-        /// <param name="key">The key we are locking on</param>
-        /// <param name="expirationTime">The time after which the lock will automatically be expired</param>
-        /// <param name="action">Action to be performed with locking</param>
-        /// <returns>True if lock was acquired and action was performed; otherwise false</returns>
-        public bool PerformActionWithLock(string key, TimeSpan expirationTime, Action action)
-        {
-            //ensure that lock is acquired
-            if (IsSet(new CacheKey(key)))
-                return false;
-
-            try
-            {
-                _memoryCache.Set(key, key, expirationTime);
-
-                //perform action
-                action();
-
-                return true;
-            }
-            finally
-            {
-                //release lock even if action fails
-                Remove(key);
-            }
-        }
-
+        
         /// <summary>
         /// Removes the value with the specified key from the cache
         /// </summary>

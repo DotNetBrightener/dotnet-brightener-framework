@@ -1,6 +1,4 @@
-﻿using DotNetBrightener.Caching;
-using DotNetBrightener.Core.ApplicationShell;
-using DotNetBrightener.Core.Caching;
+﻿using DotNetBrightener.Core.ApplicationShell;
 using DotNetBrightener.Core.Encryption;
 using DotNetBrightener.Core.Exceptions;
 using DotNetBrightener.Core.IO;
@@ -42,10 +40,7 @@ namespace DotNetBrightener.Core
             serviceCollection.AddScoped<IRequestWorkContext, RequestWorkContext>();
             serviceCollection.AddScoped<IPasswordValidationProvider, DefaultPasswordValidationProvider>();
             serviceCollection.AddScoped<ICryptoEngine, CryptoEngine>();
-
-            // supporting cache
-            serviceCollection.AddSingleton<ICacheManager, MemoryCacheManager>();
-
+            
             serviceCollection.AddScoped<IUnhandleExceptionHandler, DefaultUnhandledExceptionHandler>();
             serviceCollection.AddScoped<IErrorResultFactory, ErrorResultFactory>();
 

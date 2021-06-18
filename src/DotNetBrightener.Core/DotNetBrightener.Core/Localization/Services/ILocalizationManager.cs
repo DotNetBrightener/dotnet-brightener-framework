@@ -18,11 +18,11 @@ namespace DotNetBrightener.Core.Localization.Services
         private static readonly PluralizationRuleDelegate DefaultPluralRule = n => n != 1 ? 1 : 0;
 
         private const    string                                CacheKeyPrefix = "CultureDictionary-";
-        private readonly ICacheManager                   _cache;
+        private readonly ICacheProvider                   _cache;
         private readonly IEnumerable<ILocalizationFileManager>  _localizationFileLoader;
         private readonly Dictionary<string, FileSystemWatcher> _watchers = new Dictionary<string, FileSystemWatcher>();
 
-        public LocalizationManager(ICacheManager                  cache,
+        public LocalizationManager(ICacheProvider                  cache,
                                    IEnumerable<ILocalizationFileManager> localizationFileLoader)
         {
             _cache                  = cache;

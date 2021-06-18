@@ -21,6 +21,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Caching.Ab
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.FriendlyRoutingLibrary", "DotNetBrightener.FriendlyRoutingLibrary\DotNetBrightener.FriendlyRoutingLibrary.csproj", "{C4565D58-B5C6-4A08-B3E9-1E94D4BA4882}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Caching.Memory", "DotNetBrightener.Caching.Memory\DotNetBrightener.Caching.Memory.csproj", "{4F185DF7-1F98-45F0-A952-EDD9E3E91484}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Caching.Redis", "DotNetBrightener.Caching.Redis\DotNetBrightener.Caching.Redis.csproj", "{D4CAD886-A931-4592-B959-34308886B3C5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "builds", "builds", "{ECA8FAA6-A93B-4985-948B-7D8F0BFF9792}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Build.props = Directory.Build.props
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		SharedExtensions\SharedExtensions.projitems*{59d960de-d770-4d0c-9ed7-e46e1bcd3a5a}*SharedItemsImports = 13
@@ -64,6 +73,14 @@ Global
 		{C4565D58-B5C6-4A08-B3E9-1E94D4BA4882}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C4565D58-B5C6-4A08-B3E9-1E94D4BA4882}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C4565D58-B5C6-4A08-B3E9-1E94D4BA4882}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4F185DF7-1F98-45F0-A952-EDD9E3E91484}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F185DF7-1F98-45F0-A952-EDD9E3E91484}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F185DF7-1F98-45F0-A952-EDD9E3E91484}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F185DF7-1F98-45F0-A952-EDD9E3E91484}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D4CAD886-A931-4592-B959-34308886B3C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D4CAD886-A931-4592-B959-34308886B3C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D4CAD886-A931-4592-B959-34308886B3C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D4CAD886-A931-4592-B959-34308886B3C5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
