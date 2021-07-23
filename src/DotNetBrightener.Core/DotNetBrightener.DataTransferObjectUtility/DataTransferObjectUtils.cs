@@ -250,11 +250,11 @@ namespace DotNetBrightener.DataTransferObjectUtility
             ///     Represents the type of the generic collection
             /// </summary>
             private Type _sourceGenericTypeArgument;
-            private Type _destinationResultTypeArgument;
             /// <summary>
             ///     The type of enumerable generic, eg <seealso cref="IEnumerable{T}"/>
             /// </summary>
             private Type _enumerableGenericType;
+            private Type _destinationResultTypeArgument;
 
             private readonly List<MemberAssignment> _memberAssignments = new List<MemberAssignment>();
             private          ParameterExpression    _childSourceParameter;
@@ -347,23 +347,7 @@ namespace DotNetBrightener.DataTransferObjectUtility
             }
         }
 
-        public static bool HasAttribute<TAttribute>(this Type type) where TAttribute : Attribute
-        {
-            return type != null && type.GetCustomAttribute<TAttribute>() != null;
-        }
-
-        public static bool HasProperty<TType>(this Type type, string propertyName)
-        {
-            if (type == null)
-                throw new ArgumentNullException(nameof(type));
-
-            var property = type.GetProperties()
-                               .FirstOrDefault(_ => _.Name == propertyName && _.PropertyType == typeof(TType));
-
-            return property != null;
-        }
-
-        public static bool HasAttribute<TAttribute>(this MemberInfo type) where TAttribute : Attribute
+        internal static bool HasAttribute<TAttribute>(this MemberInfo type) where TAttribute : Attribute
         {
             return type != null && type.GetCustomAttribute<TAttribute>() != null;
         }
