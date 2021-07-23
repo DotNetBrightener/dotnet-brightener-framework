@@ -21,7 +21,7 @@ using System.Threading.Tasks;
 
 namespace DotNetBrightener.Core.DataAccess.Repositories
 {
-    public class BaseRepository : IBaseRepository
+    public class Repository : IRepository
     {
         protected readonly IDataWorkContext    DataWorkContext;
         protected readonly ITransactionManager TransactionManager;
@@ -40,17 +40,17 @@ namespace DotNetBrightener.Core.DataAccess.Repositories
         protected readonly IDotNetBrightenerDataProvider DataProvider;
         protected readonly DataConnection DataContext;
 
-        public BaseRepository(DatabaseConfiguration   databaseConfiguration,
-                              IServiceProvider        serviceProvider,
-                              IDataWorkContext        dataWorkContext,
-                              ITransactionManager     transactionManager,
-                              IDataProviderFactory    dataProviderFactory,
-                              ILogger<BaseRepository> logger)
+        public Repository(DatabaseConfiguration databaseConfiguration,
+                          IServiceProvider      serviceProvider,
+                          IDataWorkContext      dataWorkContext,
+                          ITransactionManager   transactionManager,
+                          IDataProviderFactory  dataProviderFactory,
+                          ILogger<Repository>   logger)
         {
-            TransactionManager  = transactionManager;
-            DataWorkContext     = dataWorkContext;
-            Logger              = logger;
-            DataProvider        = dataProviderFactory.GetDataProvider();
+            TransactionManager = transactionManager;
+            DataWorkContext    = dataWorkContext;
+            Logger             = logger;
+            DataProvider       = dataProviderFactory.GetDataProvider();
 
             if (DataProvider == null)
                 throw new
@@ -64,15 +64,15 @@ namespace DotNetBrightener.Core.DataAccess.Repositories
             });
         }
 
-        public virtual T Get<T>(Expression<Func<T, bool>> expression) where T : class
+        public virtual Task<T> Get<T>(Expression<Func<T, bool>> expression) where T : class
         {
-            return Fetch(expression).SingleOrDefault();
+            return Fetch(expression).SingleOrDefaultAsync();
         }
 
-        public virtual TResult Get<T, TResult>(Expression<Func<T, bool>> expression,
-                                               Expression<Func<T, TResult>> propertiesPickupExpression) where T : class
+        public virtual Task<TResult> Get<T, TResult>(Expression<Func<T, bool>>    expression,
+                                                     Expression<Func<T, TResult>> propertiesPickupExpression) where T : class
         {
-            return Fetch(expression, propertiesPickupExpression).SingleOrDefault();
+            return Fetch(expression, propertiesPickupExpression).SingleOrDefaultAsync();
         }
 
         public virtual IQueryable<T> Fetch<T>(Expression<Func<T, bool>> expression = null) where T : class
@@ -158,9 +158,9 @@ namespace DotNetBrightener.Core.DataAccess.Repositories
             return query;
         }
 
-        public virtual int Count<T>(Expression<Func<T, bool>> expression = null) where T : class
+        public virtual Task<int> Count<T>(Expression<Func<T, bool>> expression = null) where T : class
         {
-            return Fetch(expression).Count();
+            return Fetch(expression).CountAsync();
         }
 
         public virtual Task Insert<T>(T entity) where T : class
@@ -231,7 +231,7 @@ namespace DotNetBrightener.Core.DataAccess.Repositories
             if (affectedRecords != expectedAffectedRows)
             {
                 throw new
-                    ExpectedAffectedRecordMismatch($"Expected {expectedAffectedRows} rows to be inserted but was {affectedRecords}.", expectedAffectedRows, (int)affectedRecords);
+                    ExpectedAffectedRecordMismatchException($"Expected {expectedAffectedRows} rows to be inserted but was {affectedRecords}.", expectedAffectedRows, (int)affectedRecords);
             }
 
             return Task.CompletedTask;
@@ -271,7 +271,7 @@ namespace DotNetBrightener.Core.DataAccess.Repositories
             if (expectedAffectedRows.HasValue && affectedRecords != expectedAffectedRows)
             {
                 throw new
-                    ExpectedAffectedRecordMismatch($"Expected {expectedAffectedRows} rows to be updated but {affectedRecords} affected. ",  expectedAffectedRows, affectedRecords);
+                    ExpectedAffectedRecordMismatchException($"Expected {expectedAffectedRows} rows to be updated but {affectedRecords} affected. ",  expectedAffectedRows, affectedRecords);
             }
 
             return affectedRecords;
@@ -307,7 +307,7 @@ namespace DotNetBrightener.Core.DataAccess.Repositories
             if (recordsAffected != 1)
             {
                 throw new
-                    ExpectedAffectedRecordMismatch($"Expecting one record to delete but {recordsAffected} were found. The operation has been rolled back.", 1, recordsAffected);
+                    ExpectedAffectedRecordMismatchException($"Expecting one record to delete but {recordsAffected} were found. The operation has been rolled back.", 1, recordsAffected);
             }
 
             return Task.FromResult(recordsAffected);

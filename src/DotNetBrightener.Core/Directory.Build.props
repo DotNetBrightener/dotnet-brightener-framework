@@ -13,9 +13,9 @@
 		<RepositoryUrl>https://github.com/dotnetbrightener/dotnet-brightener-framework</RepositoryUrl>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<DocumentationMarkdown>$(MSBuildProjectDirectory)\$(MSBuildProjectName).md</DocumentationMarkdown>
 		<PackageTags>DotNetBrightener</PackageTags>
-		
-		<NoWarn>$(NoWarn);1701;1702;1591;1574;1723</NoWarn>
+		<NoWarn>$(NoWarn);0168;1701;1702;1591;1574;1723;1998;1573;RCS1194;</NoWarn>
 		<PackageIcon>dotnet-brightener-logo.png</PackageIcon>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 	</PropertyGroup>
@@ -37,5 +37,11 @@
 			<Pack>True</Pack>
 			<PackagePath></PackagePath>
 		</None>
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Vsxmd" Version="1.4.5">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+		</PackageReference>
 	</ItemGroup>
 </Project>

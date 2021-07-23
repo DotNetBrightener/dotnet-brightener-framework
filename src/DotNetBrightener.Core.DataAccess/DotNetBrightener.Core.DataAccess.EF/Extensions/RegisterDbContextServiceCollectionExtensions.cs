@@ -1,12 +1,36 @@
 ﻿using System;
 using DotNetBrightener.Core.DataAccess.Abstractions;
+using DotNetBrightener.Core.DataAccess.Abstractions.Repositories;
+using DotNetBrightener.Core.DataAccess.Abstractions.Transaction;
+using DotNetBrightener.Core.DataAccess.EF.Repositories;
+using DotNetBrightener.Core.DataAccess.EF.Transaction;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DotNetBrightener.Core.DataAccess.EF.Extensions
 {
-    public static class RegisterDbContextServiceCollectionExtensions
+    public static class EnableDataAccessServiceCollectionExtensions
     {
+        public static IServiceCollection EnableEntityFrameworkDataAccess(this IServiceCollection serviceCollection,
+                                                                         DatabaseConfiguration   databaseConfiguration)
+        {
+            serviceCollection.AddScoped<ITransactionManager, TransactionManager>();
+            serviceCollection.AddScoped<IDataWorkContext, DataWorkContext>();
+
+            serviceCollection.AddSingleton(databaseConfiguration);
+
+            return serviceCollection;
+        }
+
+        public static IServiceCollection RegisterRepository<TRepositoryIntf, TRepository>(
+            this IServiceCollection serviceCollection)
+            where TRepositoryIntf : class, IRepository
+            where TRepository : class, TRepositoryIntf
+        {
+            serviceCollection.AddScoped<TRepositoryIntf, TRepository>();
+
+            return serviceCollection;
+        }
 
         /// <summary>
         ///     Registers the <typeparamref name="TDbContextToRegister"/> to service collection,

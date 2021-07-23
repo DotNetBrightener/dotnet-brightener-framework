@@ -20,11 +20,11 @@
 
 
 	<ItemGroup Condition="$(Configuration)=='Debug'">
-	  <ProjectReference Include="..\DotNetBrightener.Core.DataAccess\DotNetBrightener.Core.DataAccess.csproj" />
+		<ProjectReference Include="..\DotNetBrightener.Core.DataAccess.Abstractions\DotNetBrightener.Core.DataAccess.Abstractions.csproj" />
 	</ItemGroup>
 
 
 	<ItemGroup Condition="$(Configuration)=='Release'">
-		<PackageReference Include="DotNetBrightener.Core.DataAccess" Version="$Version" />
+		<PackageReference Include="DotNetBrightener.Core.DataAccess.Abstractions" Version="$Version" />
 	</ItemGroup>
 </Project>

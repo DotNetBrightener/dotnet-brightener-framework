@@ -1,10 +1,10 @@
-﻿using DotNetBrightener.Core.DataAccess.Migration.Abstractions.Services;
-using DotNetBrightener.Core.DataAccess.Migration.EntityFramework.Services;
+﻿using DotNetBrightener.Core.DataAccess.Migration.EntityFramework.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Linq;
 using System.Reflection;
+using DotNetBrightener.Core.DataAccess.Migration.Abstractions.Services;
 
 namespace DotNetBrightener.Core.DataAccess.Migration.EntityFramework.Extensions
 {

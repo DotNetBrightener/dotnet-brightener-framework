@@ -1,5 +1,4 @@
-﻿using DotNetBrightener.Core.DataAccess.Abstractions;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace DotNetBrightener.Core.DataAccess.EF.Repositories
 {
@@ -9,23 +8,8 @@ namespace DotNetBrightener.Core.DataAccess.EF.Repositories
     /// </summary>
     public abstract class DotNetBrightenerDbContext : DbContext
     {
-        protected IDataWorkContext DataWorkContext;
-
-        /// <summary>
-        ///     Retrieves the current logged in user's name for audit purpose
-        /// </summary>
-        protected string CurrentLoggedInUser => DataWorkContext.GetContextData<string>("CurrentUserName");
-
-        /// <summary>
-        ///     Retrieves the current logged in user's id for audit purpose
-        /// </summary>
-        protected long? CurrentLoggedInUserId => DataWorkContext.GetContextData<long?>("CurrentUserId");
-
-
-        protected DotNetBrightenerDbContext(DbContextOptions options,
-                                            IDataWorkContext dataWorkContext) : base(options)
+        protected DotNetBrightenerDbContext(DbContextOptions options) : base(options)
         {
-            DataWorkContext = dataWorkContext;
         }
     }
 }

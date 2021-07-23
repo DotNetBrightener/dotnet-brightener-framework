@@ -22,6 +22,7 @@
 
 	<ItemGroup Condition="$(Configuration)=='Debug'">
 		<ProjectReference Include="..\DotNetBrightener.Core.DataAccess.Abstractions\DotNetBrightener.Core.DataAccess.Abstractions.csproj" />
+		<ProjectReference Include="..\DotNetBrightener.Core.DataAccess.Migration.Abstractions\DotNetBrightener.Core.DataAccess.Migration.Abstractions.csproj" />
 	</ItemGroup>
 
 

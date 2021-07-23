@@ -1,8 +1,6 @@
 ﻿using DotNetBrightener.Core.DataAccess.Abstractions;
-using DotNetBrightener.Core.DataAccess.EF.Migrations.Schema;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace DotNetBrightener.Core.DataAccess.EF.Extensions
 {
@@ -20,16 +18,6 @@ namespace DotNetBrightener.Core.DataAccess.EF.Extensions
                                                      DatabaseConfiguration   databaseConfiguration)
         {
             dbContextOptions.UseSqlServer(databaseConfiguration.ConnectionString);
-        }
-    }
-
-    public static class EnableDataAccessServiceCollectionExtensions
-    {
-        public static IServiceCollection EnableEntityFramework(this IServiceCollection serviceCollection)
-        {
-            serviceCollection.TryAddScoped<ISchemaMigrationExecutor, SchemaMigrationExecutor>();
-
-            return serviceCollection;
         }
     }
 }
