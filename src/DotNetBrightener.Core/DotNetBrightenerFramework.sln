@@ -34,6 +34,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Core.Local
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.DataTransferObjectUtility", "DotNetBrightener.DataTransferObjectUtility\DotNetBrightener.DataTransferObjectUtility.csproj", "{C84B07F2-6062-4EE0-811A-A6198E06015F}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DataTransferObjectUtils", "DataTransferObjectUtils", "{C2FF2966-62D8-4ED5-BBA1-4FFD492BBF0C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetBrightener.DataTransferObjectUtility.Tests", "DotNetBrightener.DataTransferObjectUtility.Tests\DotNetBrightener.DataTransferObjectUtility.Tests.csproj", "{8448AA3F-3A69-458F-83FB-4D8B150A6CEB}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		SharedExtensions\SharedExtensions.projitems*{59d960de-d770-4d0c-9ed7-e46e1bcd3a5a}*SharedItemsImports = 13
@@ -94,9 +98,17 @@ Global
 		{C84B07F2-6062-4EE0-811A-A6198E06015F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C84B07F2-6062-4EE0-811A-A6198E06015F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C84B07F2-6062-4EE0-811A-A6198E06015F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8448AA3F-3A69-458F-83FB-4D8B150A6CEB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8448AA3F-3A69-458F-83FB-4D8B150A6CEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8448AA3F-3A69-458F-83FB-4D8B150A6CEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8448AA3F-3A69-458F-83FB-4D8B150A6CEB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{C84B07F2-6062-4EE0-811A-A6198E06015F} = {C2FF2966-62D8-4ED5-BBA1-4FFD492BBF0C}
+		{8448AA3F-3A69-458F-83FB-4D8B150A6CEB} = {C2FF2966-62D8-4ED5-BBA1-4FFD492BBF0C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CBA29A5C-A736-4EB9-8D61-8E76924706CD}

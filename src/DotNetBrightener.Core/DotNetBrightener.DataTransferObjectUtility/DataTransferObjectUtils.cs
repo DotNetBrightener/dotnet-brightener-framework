@@ -8,11 +8,95 @@ using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using System.Reflection;
+using Newtonsoft.Json;
 
 namespace DotNetBrightener.DataTransferObjectUtility
 {
     public static class DataTransferObjectUtils
     {
+        /// <summary>
+        ///     Updates the given <see cref="entityObject"/> by the values provided in the <seealso cref="dataTransferObject"/>
+        /// </summary>
+        /// <typeparam name="T">
+        ///     The type of the <see cref="entityObject"/>
+        /// </typeparam>
+        /// <param name="entityObject">
+        ///     The object to be updated
+        /// </param>
+        /// <param name="updateExpression">
+        ///     The expression to describe the data to apply updates to <see cref="entityObject"/>, with accesses to the <seealso cref="entityObject"/>
+        /// </param>
+        /// <param name="ignoreProperties">
+        ///     The properties that should not be updated by this method
+        /// </param>
+        /// <returns>
+        ///     The <see cref="entityObject"/> itself
+        /// </returns>
+        public static T UpdateEntityFromDtoExpression<T>(T               entityObject,
+                                                         Func<T, object> updateExpression,
+                                                         params string[] ignoreProperties) where T : class
+        {
+            Type entityType = typeof(T);
+
+            var dataTransferObject = updateExpression(entityObject);
+            var jObject            = JObject.FromObject(dataTransferObject);
+            var propertiesFromDto  = jObject.Properties();
+
+            foreach (var propertyInfo in propertiesFromDto)
+            {
+                if (ignoreProperties.Contains(propertyInfo.Name))
+                    continue;
+
+                if (!TryPickPropAndValue(entityType, propertyInfo, out var destinationProp, out var value))
+                    continue;
+
+                destinationProp.SetValue(entityObject, value);
+            }
+
+            return entityObject;
+        }
+
+        /// <summary>
+        ///     Updates the given <see cref="entityObject"/> by the values provided in the <seealso cref="dataTransferObject"/>
+        /// </summary>
+        /// <typeparam name="T">
+        ///     The type of the <see cref="entityObject"/>
+        /// </typeparam>
+        /// <param name="entityObject">
+        ///     The object to be updated
+        /// </param>
+        /// <param name="dataTransferObject">
+        ///     The object contains the data to apply updates to <see cref="entityObject"/>
+        /// </param>
+        /// <param name="ignoreProperties">
+        ///     The properties that should not be updated by this method
+        /// </param>
+        /// <returns>
+        ///     The <see cref="entityObject"/> itself
+        /// </returns>
+        public static T UpdateEntityFromDto<T>(T               entityObject,
+                                               object          dataTransferObject,
+                                               params string[] ignoreProperties) where T : class
+        {
+            Type entityType = typeof(T);
+
+            var jobject           = JObject.FromObject(dataTransferObject);
+            var propertiesFromDto = jobject.Properties();
+
+            foreach (var propertyInfo in propertiesFromDto)
+            {
+                if (ignoreProperties.Contains(propertyInfo.Name))
+                    continue;
+
+                if (!TryPickPropAndValue(entityType, propertyInfo, out var destinationProp, out var value))
+                    continue;
+
+                destinationProp.SetValue(entityObject, value);
+            }
+
+            return entityObject;
+        }
+
         /// <summary>
         ///     Generates the member init expression for <typeparamref name="T"/> type from the given <seealso cref="dataTransferObject"/>
         /// </summary>
@@ -23,11 +107,13 @@ namespace DotNetBrightener.DataTransferObjectUtility
         /// <returns>
         ///     The expression to initialize a new object of type <typeparamref name="T"/>
         /// </returns>
-        public static Expression<Func<T, T>> BuildMemberInitExpressionFromDto<T>(object dataTransferObject) where T : class
+        public static Expression<Func<T, T>> BuildMemberInitExpressionFromDto<T>(
+            object          dataTransferObject,
+            params string[] ignoreProperties) where T : class
         {
-            Type targetType = typeof(T);
-            var newExpression = Expression.New(targetType.GetConstructor(new Type[0])!);
-            var memberAssignmentList = new List<MemberAssignment>();
+            Type entityType           = typeof(T);
+            var  newExpression        = Expression.New(entityType.GetConstructor(new Type[0])!);
+            var  memberAssignmentList = new List<MemberAssignment>();
 
             var jobject = JObject.FromObject(dataTransferObject);
 
@@ -35,43 +121,17 @@ namespace DotNetBrightener.DataTransferObjectUtility
 
             foreach (var propertyInfo in propertiesFromDto)
             {
-                PropertyInfo destinationProp = targetType.GetProperty(propertyInfo.Name);
-
-                // not converting some properties that should not be put back to the entity
-                if (destinationProp == null ||
-                    destinationProp.HasAttribute<NotMappedAttribute>())
+                if (ignoreProperties.Contains(propertyInfo.Name))
                     continue;
 
-                if (destinationProp.HasAttribute<KeyAttribute>())
-                {
-                    var keyPropAttr = destinationProp.GetCustomAttribute<DatabaseGeneratedAttribute>();
-                    if (keyPropAttr == null ||
-                        keyPropAttr.DatabaseGeneratedOption != DatabaseGeneratedOption.None)
-                        continue;
-                }
 
-                var value = propertyInfo.Value.ToObject(destinationProp.PropertyType);
-
-                if (value != null)
-                {
-                    if (destinationProp.PropertyType == typeof(DateTime) &&
-                        value is DateTime dateTimeValue &&
-                        dateTimeValue == DateTime.MinValue)
-                    {
-                        value = new DateTime(1970, 1, 1);
-                    }
-
-                    else if (destinationProp.PropertyType == typeof(DateTimeOffset) &&
-                             value is DateTimeOffset dateTimeOffsetValue &&
-                             dateTimeOffsetValue == DateTimeOffset.MinValue)
-                    {
-                        value = new DateTimeOffset(new DateTime(1970, 1, 1), TimeSpan.Zero);
-                    }
-                }
+                if (!TryPickPropAndValue(entityType, propertyInfo, out var propertyOnEntity, out var valueToUpdate))
+                    continue;
 
                 memberAssignmentList.Add(Expression.Bind(
-                                                         destinationProp,
-                                                         Expression.Constant(value, destinationProp.PropertyType)
+                                                         propertyOnEntity,
+                                                         Expression.Constant(valueToUpdate,
+                                                                             propertyOnEntity.PropertyType)
                                                         )
                                         );
             }
@@ -79,7 +139,7 @@ namespace DotNetBrightener.DataTransferObjectUtility
             var memberInitExpression =
                 Expression
                    .Lambda<Func<T, T>>(Expression.MemberInit(newExpression, memberAssignmentList),
-                                       Expression.Parameter(targetType));
+                                       Expression.Parameter(entityType));
 
             return memberInitExpression;
         }
@@ -143,7 +203,9 @@ namespace DotNetBrightener.DataTransferObjectUtility
 
                 prop = GetProperty<T>(propName);
 
-                if (prop == null)
+                if (prop == null || 
+                    prop.HasAttribute<JsonIgnoreAttribute>() || 
+                    prop.HasAttribute<System.Text.Json.Serialization.JsonIgnoreAttribute>())
                     continue;
 
                 mainPropertiesBinding.Add(new DynamicProperty(prop.Name, prop.PropertyType));
@@ -188,6 +250,58 @@ namespace DotNetBrightener.DataTransferObjectUtility
             var mainPropSelectors = Expression.Lambda<Func<T, dynamic>>(result, sourceQuery);
 
             return mainPropSelectors;
+        }
+
+        private static bool TryPickPropAndValue(Type             entityType,
+                                                JProperty        propertyFromDto,
+                                                out PropertyInfo propertyOnEntity,
+                                                out object       valueToUpdate)
+        {
+            valueToUpdate    = null;
+            propertyOnEntity = GetProperty(entityType, propertyFromDto.Name);
+
+            // not converting some properties that should not be put back to the entity
+            if (propertyOnEntity == null ||
+                propertyOnEntity.HasAttribute<NotMappedAttribute>())
+                return false;
+
+            if (propertyOnEntity.HasAttribute<KeyAttribute>())
+            {
+                var keyPropAttr = propertyOnEntity.GetCustomAttribute<DatabaseGeneratedAttribute>();
+
+                if (keyPropAttr == null ||
+                    keyPropAttr.DatabaseGeneratedOption != DatabaseGeneratedOption.None)
+                    return false;
+            }
+
+            if (!propertyOnEntity.CanWrite)
+                return false;
+
+            if (propertyOnEntity.GetGetMethod()?.IsVirtual == true)
+            {
+                return false;
+            }
+
+            valueToUpdate = propertyFromDto.Value.ToObject(propertyOnEntity.PropertyType);
+
+            if (valueToUpdate != null)
+            {
+                if (propertyOnEntity.PropertyType == typeof(DateTime) &&
+                    valueToUpdate is DateTime dateTimeValue &&
+                    dateTimeValue == DateTime.MinValue)
+                {
+                    valueToUpdate = new DateTime(1970, 1, 1);
+                }
+
+                else if (propertyOnEntity.PropertyType == typeof(DateTimeOffset) &&
+                         valueToUpdate is DateTimeOffset dateTimeOffsetValue &&
+                         dateTimeOffsetValue == DateTimeOffset.MinValue)
+                {
+                    valueToUpdate = new DateTimeOffset(new DateTime(1970, 1, 1), TimeSpan.Zero);
+                }
+            }
+
+            return true;
         }
 
         internal static PropertyInfo GetProperty<T>(string propName) where T : class
@@ -274,7 +388,9 @@ namespace DotNetBrightener.DataTransferObjectUtility
                 {
                     var childProp = GetProperty(_sourceGenericTypeArgument, childPropName);
 
-                    if (childProp == null)
+                    if (childProp == null ||
+                        childProp.HasAttribute<JsonIgnoreAttribute>() ||
+                        childProp.HasAttribute<System.Text.Json.Serialization.JsonIgnoreAttribute>())
                         continue;
 
                     arrayPropBindings.Add(new DynamicProperty(childProp.Name, childProp.PropertyType));
