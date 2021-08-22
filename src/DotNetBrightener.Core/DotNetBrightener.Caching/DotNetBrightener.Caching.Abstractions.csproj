@@ -1,6 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<PackageId>DotNetBrightener.Caching.Abstractions</PackageId>
+		<VersionPrefix>2021.8.1</VersionPrefix>
+		<VersionSuffix></VersionSuffix>
 		<Description>
 			A library that provides abstract mechanism for caching data
 		</Description>

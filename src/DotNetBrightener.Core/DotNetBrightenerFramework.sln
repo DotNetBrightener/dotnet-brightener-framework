@@ -36,7 +36,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.DataTransf
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DataTransferObjectUtils", "DataTransferObjectUtils", "{C2FF2966-62D8-4ED5-BBA1-4FFD492BBF0C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetBrightener.DataTransferObjectUtility.Tests", "DotNetBrightener.DataTransferObjectUtility.Tests\DotNetBrightener.DataTransferObjectUtility.Tests.csproj", "{8448AA3F-3A69-458F-83FB-4D8B150A6CEB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.DataTransferObjectUtility.Tests", "DotNetBrightener.DataTransferObjectUtility.Tests\DotNetBrightener.DataTransferObjectUtility.Tests.csproj", "{8448AA3F-3A69-458F-83FB-4D8B150A6CEB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Caching", "Caching", "{283EB969-79AF-4657-8B77-4704134384CE}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -107,6 +109,9 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{AF6B7E5A-A7E7-4E18-AE04-04E1322A3C87} = {283EB969-79AF-4657-8B77-4704134384CE}
+		{4F185DF7-1F98-45F0-A952-EDD9E3E91484} = {283EB969-79AF-4657-8B77-4704134384CE}
+		{D4CAD886-A931-4592-B959-34308886B3C5} = {283EB969-79AF-4657-8B77-4704134384CE}
 		{C84B07F2-6062-4EE0-811A-A6198E06015F} = {C2FF2966-62D8-4ED5-BBA1-4FFD492BBF0C}
 		{8448AA3F-3A69-458F-83FB-4D8B150A6CEB} = {C2FF2966-62D8-4ED5-BBA1-4FFD492BBF0C}
 	EndGlobalSection
