@@ -4,7 +4,7 @@ namespace DotNetBrightener.Plugins.EventPubSub
 {
     public interface IEventHandler { }
 
-    public interface IEventHandler<T> : IEventHandler
+    public interface IEventHandler<T> : IEventHandler where T: IEventMessage
     {
         /// <summary>
         ///		Retrieves the priority of the event handler, the higher number will be run first

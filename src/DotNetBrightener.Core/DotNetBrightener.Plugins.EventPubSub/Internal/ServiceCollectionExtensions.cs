@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace Microsoft.Extensions.DependencyInjection.Extensions
+namespace DotNetBrightener.Plugins.EventPubSub.Internal
 {
     internal static partial class ServiceCollectionExtensions
     {

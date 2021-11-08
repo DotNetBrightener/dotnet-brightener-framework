@@ -1,8 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<PackageId>DotNetBrightener.Caching.Memory</PackageId>
-		<VersionPrefix>2021.8.1</VersionPrefix>
-		<VersionSuffix></VersionSuffix>
 		<Description>
 			A library that provides mechanism for caching data using memory cache
 		</Description>
@@ -24,6 +22,6 @@
 	</ItemGroup>
 
 	<ItemGroup Condition="$(Configuration)=='Release'">
-		<PackageReference Include="DotNetBrightener.Caching.Abstractions" Version="1.0.5-beta" />
+		<PackageReference Include="DotNetBrightener.Caching.Abstractions" Version="$(DNBLibraryVersion)" />
 	</ItemGroup>
 </Project>

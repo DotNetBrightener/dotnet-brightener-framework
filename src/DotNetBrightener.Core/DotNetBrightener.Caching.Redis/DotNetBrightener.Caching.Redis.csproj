@@ -1,8 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<PackageId>DotNetBrightener.Caching.Redis</PackageId>
-		<VersionPrefix>2021.8.1</VersionPrefix>
-		<VersionSuffix></VersionSuffix>
 		<Description>
 			A library that provides mechanism for caching data using Redis cache
 		</Description>
@@ -16,8 +14,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-		<PackageReference Include="StackExchange.Redis" Version="2.2.4" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+		<PackageReference Include="StackExchange.Redis" Version="2.2.79" />
 	</ItemGroup>
 
 	<ItemGroup Condition="$(Configuration)=='Debug'">
@@ -25,6 +23,6 @@
 	</ItemGroup>
 
 	<ItemGroup Condition="$(Configuration)=='Release'">
-		<PackageReference Include="DotNetBrightener.Caching.Abstractions" Version="1.0.5-beta" />
+		<PackageReference Include="DotNetBrightener.Caching.Abstractions" Version="$(DNBLibraryVersion)" />
 	</ItemGroup>
 </Project>

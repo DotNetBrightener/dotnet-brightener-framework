@@ -1,10 +1,10 @@
-﻿using DotNetBrightener.Plugins.EventPubSub;
-using DotNetBrightener.Plugins.EventPubSub.Internal;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using DotNetBrightener.Plugins.EventPubSub.Internal;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.Extensions.DependencyInjection.Extensions
+namespace DotNetBrightener.Plugins.EventPubSub
 {
     public static class ServiceCollectionEventPublisherExtensions
     {

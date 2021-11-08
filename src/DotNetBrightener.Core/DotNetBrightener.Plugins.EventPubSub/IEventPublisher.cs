@@ -11,7 +11,16 @@ namespace DotNetBrightener.Plugins.EventPubSub
 {
     public interface IEventPublisher
     {
-        Task Publish<T>(T eventMessage, bool runInBackground = false) where T : class, new();
+        /// <summary>
+        ///     Fires an event of type <typeparamref name="T"/>, optionally specify if it should be executed in background
+        /// </summary>
+        /// <typeparam name="T">Type of the event message</typeparam>
+        /// <param name="eventMessage">The event message</param>
+        /// <param name="runInBackground">
+        ///     If <c>true</c>, another thread will be used to execute the task.
+        ///     The thread will not share the resources objects from the calling scope so be cautioned using this property as <c>true</c>
+        /// </param>
+        Task Publish<T>(T eventMessage, bool runInBackground = false) where T : class, IEventMessage;
     }
 
     public class EventPublisher : IEventPublisher
@@ -30,7 +39,7 @@ namespace DotNetBrightener.Plugins.EventPubSub
             _backgroundServiceResolver = backgroundServiceResolver;
         }
 
-        public Task Publish<T>(T eventMessage, bool runInBackground = false) where T : class, new()
+        public Task Publish<T>(T eventMessage, bool runInBackground = false) where T : class, IEventMessage
         {
             if (eventMessage != null)
             {
@@ -50,7 +59,7 @@ namespace DotNetBrightener.Plugins.EventPubSub
             return Task.Run(async () => await PublishEvent(eventMessage, true));
         }
 
-        private async Task PublishEvent<T>(T eventMessage, bool runInBackground = false) where T : class, new()
+        private async Task PublishEvent<T>(T eventMessage, bool runInBackground = false) where T : class, IEventMessage
         {
             var serviceProviderToUse = !runInBackground
                                            ? _serviceResolver
@@ -66,6 +75,13 @@ namespace DotNetBrightener.Plugins.EventPubSub
             if (!eventHandlers.Any())
                 return;
 
+            if (eventMessage is INonStoppedEventMessage)
+            {
+                await Task.WhenAll(eventHandlers.Select(_ => PublishEvent(_, eventMessage)));
+
+                return;
+            }
+
             foreach (var eventHandler in eventHandlers)
             {
                 var shouldContinue = await PublishEvent(eventHandler, eventMessage);
@@ -74,7 +90,7 @@ namespace DotNetBrightener.Plugins.EventPubSub
             }
         }
 
-        private async Task<bool> PublishEvent<T>(IEventHandler<T> x, T eventMessage) where T : class, new()
+        private async Task<bool> PublishEvent<T>(IEventHandler<T> x, T eventMessage) where T : class, IEventMessage
         {
             try
             {

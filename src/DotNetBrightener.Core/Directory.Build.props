@@ -1,12 +1,14 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<PropertyGroup>
 		<TargetFrameworks>net5.0</TargetFrameworks>
-		<VersionPrefix>1.0.5</VersionPrefix>
-		<VersionSuffix>beta</VersionSuffix>
+		<VersionPrefix>2021.11.1</VersionPrefix>
+		<VersionSuffix></VersionSuffix>
 		<VersionSuffix Condition="'$(VersionSuffix)'!='' AND '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
 		<Copyright>© 2021 DotNet Brightener</Copyright>
 		<Authors>DotNet Brightener &lt;admin@dotnetbrightener.com&gt;</Authors>
 		<Company>DotNet Brightener</Company>
+
+		<DNBLibraryVersion>$(VersionPrefix)</DNBLibraryVersion>
 
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
