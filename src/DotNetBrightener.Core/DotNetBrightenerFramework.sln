@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30717.126
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32228.430
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Core", "DotNetBrightener.Core\DotNetBrightener.Core.csproj", "{72BB256B-5A03-4395-9735-40231F1A90A7}"
 EndProject
@@ -28,6 +28,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "builds", "builds", "{ECA8FAA6-A93B-4985-948B-7D8F0BFF9792}"
 	ProjectSection(SolutionItems) = preProject
 		Directory.Build.props = Directory.Build.props
+		..\..\LICENSE = ..\..\LICENSE
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Core.Localization", "DotNetBrightener.Core.Localization\DotNetBrightener.Core.Localization.csproj", "{63429871-C398-44FF-A044-93371C474025}"
@@ -39,6 +40,12 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.DataTransferObjectUtility.Tests", "DotNetBrightener.DataTransferObjectUtility.Tests\DotNetBrightener.DataTransferObjectUtility.Tests.csproj", "{8448AA3F-3A69-458F-83FB-4D8B150A6CEB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Caching", "Caching", "{283EB969-79AF-4657-8B77-4704134384CE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Cryptography", "Cryptography", "{44C64A4C-88B5-46D6-ACD2-BD52277B579D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.CryptoEngine", "DotNetBrightener.CryptoEngine\DotNetBrightener.CryptoEngine.csproj", "{AA51059E-C09C-4FD0-A5C3-4A9712600B2F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.CryptoEngine.DependencyInjection", "DotNetBrightener.CryptoEngine.DependencyInjection\DotNetBrightener.CryptoEngine.DependencyInjection.csproj", "{018E56DE-D0A2-4E5E-927C-3C33B9D6E112}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -104,6 +111,14 @@ Global
 		{8448AA3F-3A69-458F-83FB-4D8B150A6CEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8448AA3F-3A69-458F-83FB-4D8B150A6CEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8448AA3F-3A69-458F-83FB-4D8B150A6CEB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AA51059E-C09C-4FD0-A5C3-4A9712600B2F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA51059E-C09C-4FD0-A5C3-4A9712600B2F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA51059E-C09C-4FD0-A5C3-4A9712600B2F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AA51059E-C09C-4FD0-A5C3-4A9712600B2F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{018E56DE-D0A2-4E5E-927C-3C33B9D6E112}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{018E56DE-D0A2-4E5E-927C-3C33B9D6E112}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{018E56DE-D0A2-4E5E-927C-3C33B9D6E112}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{018E56DE-D0A2-4E5E-927C-3C33B9D6E112}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -114,6 +129,8 @@ Global
 		{D4CAD886-A931-4592-B959-34308886B3C5} = {283EB969-79AF-4657-8B77-4704134384CE}
 		{C84B07F2-6062-4EE0-811A-A6198E06015F} = {C2FF2966-62D8-4ED5-BBA1-4FFD492BBF0C}
 		{8448AA3F-3A69-458F-83FB-4D8B150A6CEB} = {C2FF2966-62D8-4ED5-BBA1-4FFD492BBF0C}
+		{AA51059E-C09C-4FD0-A5C3-4A9712600B2F} = {44C64A4C-88B5-46D6-ACD2-BD52277B579D}
+		{018E56DE-D0A2-4E5E-927C-3C33B9D6E112} = {44C64A4C-88B5-46D6-ACD2-BD52277B579D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CBA29A5C-A736-4EB9-8D61-8E76924706CD}

@@ -50,13 +50,13 @@ namespace DotNetBrightener.Core.RemoteServices
                                                         NameValueCollection headers = null)
         {
             var restClient = new RestClient();
-            var restMethod = Enum.Parse<Method>(method.Method);
+            var restMethod = Enum.Parse<Method>(method.Method, true);
 
             var restRequest = new RestRequest(new Uri(requestUrl), restMethod);
 
             if (body != null)
             {
-                if (restMethod == Method.POST || restMethod == Method.PUT || restMethod == Method.PATCH)
+                if (restMethod == Method.Post || restMethod == Method.Put || restMethod == Method.Patch)
                 {
                     restRequest.AddJsonBody(body);
                 }

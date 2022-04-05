@@ -1,10 +1,10 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<PropertyGroup>
-		<TargetFrameworks>net5.0</TargetFrameworks>
-		<VersionPrefix>2021.11.1</VersionPrefix>
+		<TargetFramework>net6.0</TargetFramework>
+		<VersionPrefix>2022.4.1</VersionPrefix>
 		<VersionSuffix></VersionSuffix>
 		<VersionSuffix Condition="'$(VersionSuffix)'!='' AND '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
-		<Copyright>© 2021 DotNet Brightener</Copyright>
+		<Copyright>© $([System.DateTime]::Now.ToString(yyyy)) DotNet Brightener</Copyright>
 		<Authors>DotNet Brightener &lt;admin@dotnetbrightener.com&gt;</Authors>
 		<Company>DotNet Brightener</Company>
 

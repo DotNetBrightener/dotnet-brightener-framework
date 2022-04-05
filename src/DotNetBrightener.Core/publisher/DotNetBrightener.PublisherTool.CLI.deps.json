@@ -1,12 +1,12 @@
 {
   "runtimeTarget": {
-    "name": ".NETCoreApp,Version=v5.0",
+    "name": ".NETCoreApp,Version=v6.0",
     "signature": ""
   },
   "compilationOptions": {},
   "targets": {
-    ".NETCoreApp,Version=v5.0": {
-      "DotNetBrightener.PublisherTool.CLI/2021.11.1": {
+    ".NETCoreApp,Version=v6.0": {
+      "DotNetBrightener.PublisherTool.CLI/2022.4.1": {
         "dependencies": {
           "Newtonsoft.Json": "13.0.1"
         },
@@ -25,7 +25,7 @@
     }
   },
   "libraries": {
-    "DotNetBrightener.PublisherTool.CLI/2021.11.1": {
+    "DotNetBrightener.PublisherTool.CLI/2022.4.1": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
