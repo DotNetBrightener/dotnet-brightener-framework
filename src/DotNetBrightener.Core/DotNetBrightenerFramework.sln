@@ -47,13 +47,23 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.CryptoEngi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.CryptoEngine.DependencyInjection", "DotNetBrightener.CryptoEngine.DependencyInjection\DotNetBrightener.CryptoEngine.DependencyInjection.csproj", "{018E56DE-D0A2-4E5E-927C-3C33B9D6E112}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Localization", "Localization", "{A9891200-0022-4B86-BB51-608AF11BCBBE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Security", "Security", "{AC2A9F3C-2867-4BB3-80D6-5E54D0F6AD49}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EventPubSub", "EventPubSub", "{6E8BD219-2CBB-486F-AF06-F5155B65FE43}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Plugins.EventPubSub.DependencyInjection", "DotNetBrightener.Plugins.EventPubSub.DependencyInjection\DotNetBrightener.Plugins.EventPubSub.DependencyInjection.csproj", "{8009CB4E-EA6C-4B12-98C7-93820106E47E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Infrastructure.Security.Tests", "DotNetBrightener.Infrastructure.Security.Tests\DotNetBrightener.Infrastructure.Security.Tests.csproj", "{CFEB2210-2053-4BD2-B4E4-B8802EC5F077}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{E0CD78AC-96A8-4B83-8357-4641DDB9749C}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SharedExtensions.XmlDocumentationHelper", "SharedExtensions.XmlDocumentationHelper\SharedExtensions.XmlDocumentationHelper.shproj", "{949E66B2-8674-450A-B45B-B5C0E6530E59}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SharedExtensions.ServiceCollectionExtensions", "SharedExtensions.ServiceCollectionExtensions\SharedExtensions.ServiceCollectionExtensions.shproj", "{8CD77910-A209-4FFF-A324-DFB73F91D4DA}"
+EndProject
 Global
-	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		SharedExtensions\SharedExtensions.projitems*{59d960de-d770-4d0c-9ed7-e46e1bcd3a5a}*SharedItemsImports = 13
-		SharedExtensions\SharedExtensions.projitems*{63429871-c398-44ff-a044-93371c474025}*SharedItemsImports = 5
-		SharedExtensions\SharedExtensions.projitems*{72bb256b-5a03-4395-9735-40231f1a90a7}*SharedItemsImports = 5
-		SharedExtensions\SharedExtensions.projitems*{772a8619-9d25-472c-b636-03e80a8a761c}*SharedItemsImports = 5
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
@@ -119,20 +129,44 @@ Global
 		{018E56DE-D0A2-4E5E-927C-3C33B9D6E112}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{018E56DE-D0A2-4E5E-927C-3C33B9D6E112}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{018E56DE-D0A2-4E5E-927C-3C33B9D6E112}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8009CB4E-EA6C-4B12-98C7-93820106E47E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8009CB4E-EA6C-4B12-98C7-93820106E47E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8009CB4E-EA6C-4B12-98C7-93820106E47E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8009CB4E-EA6C-4B12-98C7-93820106E47E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CFEB2210-2053-4BD2-B4E4-B8802EC5F077}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CFEB2210-2053-4BD2-B4E4-B8802EC5F077}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CFEB2210-2053-4BD2-B4E4-B8802EC5F077}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CFEB2210-2053-4BD2-B4E4-B8802EC5F077}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{085A10CF-687B-40F7-9680-1732A2CD64E6} = {AC2A9F3C-2867-4BB3-80D6-5E54D0F6AD49}
+		{361C40D4-3B51-440A-ACF2-D30CFB137627} = {6E8BD219-2CBB-486F-AF06-F5155B65FE43}
 		{AF6B7E5A-A7E7-4E18-AE04-04E1322A3C87} = {283EB969-79AF-4657-8B77-4704134384CE}
 		{4F185DF7-1F98-45F0-A952-EDD9E3E91484} = {283EB969-79AF-4657-8B77-4704134384CE}
 		{D4CAD886-A931-4592-B959-34308886B3C5} = {283EB969-79AF-4657-8B77-4704134384CE}
+		{63429871-C398-44FF-A044-93371C474025} = {A9891200-0022-4B86-BB51-608AF11BCBBE}
 		{C84B07F2-6062-4EE0-811A-A6198E06015F} = {C2FF2966-62D8-4ED5-BBA1-4FFD492BBF0C}
 		{8448AA3F-3A69-458F-83FB-4D8B150A6CEB} = {C2FF2966-62D8-4ED5-BBA1-4FFD492BBF0C}
 		{AA51059E-C09C-4FD0-A5C3-4A9712600B2F} = {44C64A4C-88B5-46D6-ACD2-BD52277B579D}
 		{018E56DE-D0A2-4E5E-927C-3C33B9D6E112} = {44C64A4C-88B5-46D6-ACD2-BD52277B579D}
+		{8009CB4E-EA6C-4B12-98C7-93820106E47E} = {6E8BD219-2CBB-486F-AF06-F5155B65FE43}
+		{CFEB2210-2053-4BD2-B4E4-B8802EC5F077} = {AC2A9F3C-2867-4BB3-80D6-5E54D0F6AD49}
+		{949E66B2-8674-450A-B45B-B5C0E6530E59} = {E0CD78AC-96A8-4B83-8357-4641DDB9749C}
+		{8CD77910-A209-4FFF-A324-DFB73F91D4DA} = {E0CD78AC-96A8-4B83-8357-4641DDB9749C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CBA29A5C-A736-4EB9-8D61-8E76924706CD}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		SharedExtensions.XmlDocumentationHelper\SharedExtensions.XmlDocumentationHelper.projitems*{085a10cf-687b-40f7-9680-1732a2cd64e6}*SharedItemsImports = 5
+		SharedExtensions\SharedExtensions.projitems*{59d960de-d770-4d0c-9ed7-e46e1bcd3a5a}*SharedItemsImports = 13
+		SharedExtensions\SharedExtensions.projitems*{63429871-c398-44ff-a044-93371c474025}*SharedItemsImports = 5
+		SharedExtensions\SharedExtensions.projitems*{72bb256b-5a03-4395-9735-40231f1a90a7}*SharedItemsImports = 5
+		SharedExtensions\SharedExtensions.projitems*{772a8619-9d25-472c-b636-03e80a8a761c}*SharedItemsImports = 5
+		SharedExtensions.ServiceCollectionExtensions\SharedExtensions.ServiceCollectionExtensions.projitems*{8cd77910-a209-4fff-a324-dfb73f91d4da}*SharedItemsImports = 13
+		SharedExtensions.XmlDocumentationHelper\SharedExtensions.XmlDocumentationHelper.projitems*{949e66b2-8674-450a-b45b-b5c0e6530e59}*SharedItemsImports = 13
 	EndGlobalSection
 EndGlobal

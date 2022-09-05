@@ -1,11 +1,10 @@
 ﻿using System;
 
-namespace DotNetBrightener.FriendlyRoutingLibrary
+namespace DotNetBrightener.FriendlyRoutingLibrary;
+
+public struct FrontEndRoutingEntry
 {
-    public struct FrontEndRoutingEntry
-    {
-        public string ItemId;
-        public string Path;
-        public Type TargetType;
-    }
+    public string ItemId;
+    public string Path;
+    public Type   TargetType;
 }

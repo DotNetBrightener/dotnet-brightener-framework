@@ -24,6 +24,13 @@
 		<PackageReference Include="DotNetBrightener.Caching.Abstractions" Version="$(DNBLibraryVersion)" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <None Update="docs\readme.md">
+	    <PackagePath>\</PackagePath>
+	    <Pack>true</Pack>
+	  </None>
+	</ItemGroup>
+
 	<Import Project="..\SharedExtensions\SharedExtensions.projitems" Label="Shared" />
 
 </Project>

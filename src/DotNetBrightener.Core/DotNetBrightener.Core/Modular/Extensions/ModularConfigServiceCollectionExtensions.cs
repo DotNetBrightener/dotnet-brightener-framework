@@ -16,291 +16,290 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace DotNetBrightener.Core.Modular.Extensions
+namespace DotNetBrightener.Core.Modular.Extensions;
+
+public static class ModularConfigServiceCollectionExtensions
 {
-    public static class ModularConfigServiceCollectionExtensions
+    /// <summary>
+    ///     Adds the integration with modular system to the <see cref="IServiceCollection"/>
+    /// </summary>
+    /// <param name="serviceCollection"></param>
+    /// <param name="enabledModules">The module ids that are enabled. Leave null to register all detected modules</param>
+    /// <returns>
+    ///     The loaded module entries
+    /// </returns>
+    public static LoadedModuleEntries AddModularIntegration(this IServiceCollection serviceCollection,
+                                                            string[]                enabledModules = null)
     {
-        /// <summary>
-        ///     Adds the integration with modular system to the <see cref="IServiceCollection"/>
-        /// </summary>
-        /// <param name="serviceCollection"></param>
-        /// <param name="enabledModules">The module ids that are enabled. Leave null to register all detected modules</param>
-        /// <returns>
-        ///     The loaded module entries
-        /// </returns>
-        public static LoadedModuleEntries AddModularIntegration(this IServiceCollection serviceCollection,
-                                                                string[] enabledModules = null)
+        var loadedModuleEntries = serviceCollection.EnableModules(enabledModules);
+
+        serviceCollection.Replace(ServiceDescriptor.Singleton<ILocalizationFileManager, ModuleLocalizationFileManager>());
+
+        serviceCollection.TryAddEnumerable(
+                                           ServiceDescriptor.Transient<IApplicationModelProvider, ModularApplicationModelProvider>()
+                                          );
+
+        var serviceTypes = loadedModuleEntries.GetExportedTypes();
+
+        serviceCollection.RegisterServiceImplementations<IActionFilterProvider>(serviceTypes);
+        serviceCollection.RegisterServiceImplementations<IRoutingConfiguration>(serviceTypes);
+
+        var mvcBuilder = serviceCollection.AddControllersWithViews(options =>
         {
-            var loadedModuleEntries = serviceCollection.EnableModules(enabledModules);
+            options.EnableEndpointRouting = false;
+            ConfigureMvcFilters(options, loadedModuleEntries);
+        });
 
-            serviceCollection.Replace(ServiceDescriptor.Singleton<ILocalizationFileManager, ModuleLocalizationFileManager>());
-
-            serviceCollection.TryAddEnumerable(
-                              ServiceDescriptor.Transient<IApplicationModelProvider, ModularApplicationModelProvider>()
-                             );
-
-            var serviceTypes = loadedModuleEntries.GetExportedTypes();
-
-            serviceCollection.RegisterServiceImplementations<IActionFilterProvider>(serviceTypes);
-            serviceCollection.RegisterServiceImplementations<IRoutingConfiguration>(serviceTypes);
-
-            var mvcBuilder = serviceCollection.AddControllersWithViews(options =>
-            {
-                options.EnableEndpointRouting = false;
-                ConfigureMvcFilters(options, loadedModuleEntries);
-            });
-
-            foreach (var assembly in loadedModuleEntries.GetModuleAssemblies())
-            {
-                mvcBuilder.AddApplicationPart(assembly);
-            }
-
-            mvcBuilder.AddNewtonsoftJson(options =>
-            {
-                options.SerializerSettings.ContractResolver = CoreConstants.DefaultJsonSerializerSettings.ContractResolver;
-                options.SerializerSettings.ReferenceLoopHandling = CoreConstants.DefaultJsonSerializerSettings.ReferenceLoopHandling;
-            });
-
-            return loadedModuleEntries;
+        foreach (var assembly in loadedModuleEntries.GetModuleAssemblies())
+        {
+            mvcBuilder.AddApplicationPart(assembly);
         }
 
-        /// <summary>
-        ///     Adds support for modular routing with the MVC to the <see cref="IApplicationBuilder"/> request execution pipeline
-        /// </summary>
-        /// <param name="builder"></param>
-        public static void UseModularMvcApplicationRouting(this IApplicationBuilder builder)
+        mvcBuilder.AddNewtonsoftJson(options =>
         {
-            var serviceProvider = builder.ApplicationServices;
+            options.SerializerSettings.ContractResolver = CoreConstants.DefaultJsonSerializerSettings.ContractResolver;
+            options.SerializerSettings.ReferenceLoopHandling = CoreConstants.DefaultJsonSerializerSettings.ReferenceLoopHandling;
+        });
 
-            builder.UseMvc(options =>
+        return loadedModuleEntries;
+    }
+
+    /// <summary>
+    ///     Adds support for modular routing with the MVC to the <see cref="IApplicationBuilder"/> request execution pipeline
+    /// </summary>
+    /// <param name="builder"></param>
+    public static void UseModularMvcApplicationRouting(this IApplicationBuilder builder)
+    {
+        var serviceProvider = builder.ApplicationServices;
+
+        builder.UseMvc(options =>
+        {
+            using (var scope = serviceProvider.CreateScope())
             {
-                using (var scope = serviceProvider.CreateScope())
-                {
-                    var routingConfigurations = scope.ServiceProvider
-                                                     .GetServices<IRoutingConfiguration>()
-                                                     .ToArray();
+                var routingConfigurations = scope.ServiceProvider
+                                                 .GetServices<IRoutingConfiguration>()
+                                                 .ToArray();
 
-                    if (routingConfigurations.Any())
+                if (routingConfigurations.Any())
+                {
+                    foreach (var routingConfiguration in routingConfigurations)
                     {
-                        foreach (var routingConfiguration in routingConfigurations)
+                        var router = routingConfiguration.ConfigureRoute(serviceProvider);
+                        if (0 <= routingConfiguration.Order && routingConfiguration.Order < options.Routes.Count)
                         {
-                            var router = routingConfiguration.ConfigureRoute(serviceProvider);
-                            if (0 <= routingConfiguration.Order && routingConfiguration.Order < options.Routes.Count)
-                            {
-                                options.Routes.Insert(routingConfiguration.Order, router);
-                            }
-                            else
-                            {
-                                options.Routes.Add(router);
-                            }
+                            options.Routes.Insert(routingConfiguration.Order, router);
+                        }
+                        else
+                        {
+                            options.Routes.Add(router);
                         }
                     }
                 }
-
-                options.MapRoute("default",
-                                 "{area:exists}/{controller=Home}/{action=Index}/{id?}");
-            });
-        }
-
-        /// <summary>
-        ///     Detects the Statup classes in given modules, then automatically calls the <see cref="ConfigureService"/> method to
-        ///     register the modules' services into the <see cref="services"/>
-        /// </summary>
-        /// <param name="services">The <see cref="IServiceCollection"/> to register services into</param>
-        /// <param name="loadedModuleEntries">
-        ///     The loaded module entries
-        /// </param>
-        /// <remarks>
-        ///     The purpose of this configuration method is we don't need to force the module to conform to the framework.
-        /// </remarks>
-        /// <returns>
-        ///     A collection of service types
-        /// </returns>
-        public static IEnumerable<Type> ConfigureServicesFromModules(this IServiceCollection services,
-                                                                     LoadedModuleEntries loadedModuleEntries)
-        {
-            var otherModuleEntries =
-                new LoadedModuleEntries(loadedModuleEntries.Where(_ => _.ModuleId !=
-                                                                       ModuleEntry.MainModuleIdentifier));
-
-            var loadedTypes = loadedModuleEntries.GetExportedTypes();
-
-            services.RegisterServiceImplementations<IModuleStartupConfiguration>(loadedTypes);
-
-            var moduleLoadedTypes = new ModuleExportedTypeCollection(loadedTypes);
-            services.AddSingleton<List<Type>>(moduleLoadedTypes);
-
-            var startupTypes = otherModuleEntries.GetExportedTypesWithName("Startup")
-                                                 .OrderByModuleDependencies(otherModuleEntries)
-                                                 .ToArray();
-
-            if (startupTypes.Length == 0)
-                return loadedTypes;
-
-            RegisterStartupTypes(services, loadedModuleEntries, startupTypes);
-
-            using (var serviceProvider = services.BuildServiceProvider())
-            {
-                foreach (var startupType in startupTypes)
-                {
-                    // get the ConfigureServices(IServiceCollection services) method from the 'Startup' file
-                    var configureServicesMethod = startupType.GetMethods()
-                                                             .Where(_ => _.Name == "ConfigureServices")
-                                                             .FirstOrDefault(_ => _.GetParameters().Length == 1 &&
-                                                                                  _.GetParameters()[0].ParameterType ==
-                                                                                  typeof(IServiceCollection));
-
-                    if (configureServicesMethod == null)
-                        continue;
-
-                    var startupInstance = serviceProvider.GetService(startupType);
-
-                    if (startupInstance == null)
-                        continue;
-
-                    configureServicesMethod.Invoke(startupInstance,
-                                                   new object[]
-                                                   {
-                                                       services
-                                                   });
-                }
             }
 
+            options.MapRoute("default",
+                             "{area:exists}/{controller=Home}/{action=Index}/{id?}");
+        });
+    }
+
+    /// <summary>
+    ///     Detects the Statup classes in given modules, then automatically calls the <see cref="ConfigureService"/> method to
+    ///     register the modules' services into the <see cref="services"/>
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> to register services into</param>
+    /// <param name="loadedModuleEntries">
+    ///     The loaded module entries
+    /// </param>
+    /// <remarks>
+    ///     The purpose of this configuration method is we don't need to force the module to conform to the framework.
+    /// </remarks>
+    /// <returns>
+    ///     A collection of service types
+    /// </returns>
+    public static IEnumerable<Type> ConfigureServicesFromModules(this IServiceCollection services,
+                                                                 LoadedModuleEntries     loadedModuleEntries)
+    {
+        var otherModuleEntries =
+            new LoadedModuleEntries(loadedModuleEntries.Where(_ => _.ModuleId !=
+                                                                   ModuleEntry.MainModuleIdentifier));
+
+        var loadedTypes = loadedModuleEntries.GetExportedTypes();
+
+        services.RegisterServiceImplementations<IModuleStartupConfiguration>(loadedTypes);
+
+        var moduleLoadedTypes = new ModuleExportedTypeCollection(loadedTypes);
+        services.AddSingleton<List<Type>>(moduleLoadedTypes);
+
+        var startupTypes = otherModuleEntries.GetExportedTypesWithName("Startup")
+                                             .OrderByModuleDependencies(otherModuleEntries)
+                                             .ToArray();
+
+        if (startupTypes.Length == 0)
             return loadedTypes;
-        }
 
-        public static Task ExecuteStartupTasks(this IApplicationBuilder appBuilder)
-        {
-            return appBuilder.ExecuteTaskFromModulesStartup("OnAppStartup", ExecuteMethodFromStartUpTask);
-        }
+        RegisterStartupTypes(services, loadedModuleEntries, startupTypes);
 
-        private static async Task ExecuteTaskFromModulesStartup(this IApplicationBuilder appBuilder,
-                                                               string executeMethod,
-                                                               Func<string, Type, IServiceProvider, Task> action)
+        using (var serviceProvider = services.BuildServiceProvider())
         {
-            using (var serviceProviderScope = appBuilder.ApplicationServices.CreateScope())
+            foreach (var startupType in startupTypes)
             {
-                var serviceProvider = serviceProviderScope.ServiceProvider;
-                {
-                    var cachedStartupTypes = serviceProvider.GetService<StartupClassCollection>();
-                    if (cachedStartupTypes == null)
-                        throw new InvalidOperationException($"Cannot find the startup files collection.");
+                // get the ConfigureServices(IServiceCollection services) method from the 'Startup' file
+                var configureServicesMethod = startupType.GetMethods()
+                                                         .Where(_ => _.Name == "ConfigureServices")
+                                                         .FirstOrDefault(_ => _.GetParameters().Length == 1 &&
+                                                                              _.GetParameters()[0].ParameterType ==
+                                                                              typeof(IServiceCollection));
 
-                    var tasks = new List<Task>();
+                if (configureServicesMethod == null)
+                    continue;
 
-                    foreach (var startupType in cachedStartupTypes)
-                    {
-                        tasks.Add(action.Invoke(executeMethod, startupType, serviceProvider));
-                    }
+                var startupInstance = serviceProvider.GetService(startupType);
 
-                    await Task.WhenAll(tasks);
-                }
+                if (startupInstance == null)
+                    continue;
+
+                configureServicesMethod.Invoke(startupInstance,
+                                               new object[]
+                                               {
+                                                   services
+                                               });
             }
         }
 
-        private static async Task ExecuteMethodFromStartUpTask(string methodNameToExecute,
-                                                               Type startupType,
-                                                               IServiceProvider serviceProvider)
+        return loadedTypes;
+    }
+
+    public static Task ExecuteStartupTasks(this IApplicationBuilder appBuilder)
+    {
+        return appBuilder.ExecuteTaskFromModulesStartup("OnAppStartup", ExecuteMethodFromStartUpTask);
+    }
+
+    private static async Task ExecuteTaskFromModulesStartup(this IApplicationBuilder                   appBuilder,
+                                                            string                                     executeMethod,
+                                                            Func<string, Type, IServiceProvider, Task> action)
+    {
+        using (var serviceProviderScope = appBuilder.ApplicationServices.CreateScope())
         {
-            var _methodInfo = startupType
-                             .GetMethods()
-                             .FirstOrDefault(_ => _.Name == methodNameToExecute);
-
-            if (_methodInfo == null)
-                return;
-
-            var startupInstance = serviceProvider.GetService(startupType);
-
-            if (startupInstance == null)
-                return;
-
-            var parameters = _methodInfo.GetParameters()
-                                        .Select(_ => serviceProvider.GetService(_.ParameterType))
-                                        .ToArray();
-
-            var isAwaitable = _methodInfo.ReturnType.GetMethod(nameof(Task.GetAwaiter)) != null;
-
-            if (isAwaitable)
+            var serviceProvider = serviceProviderScope.ServiceProvider;
             {
-                if (_methodInfo.ReturnType.IsGenericType)
+                var cachedStartupTypes = serviceProvider.GetService<StartupClassCollection>();
+                if (cachedStartupTypes == null)
+                    throw new InvalidOperationException($"Cannot find the startup files collection.");
+
+                var tasks = new List<Task>();
+
+                foreach (var startupType in cachedStartupTypes)
                 {
-                    await (dynamic)_methodInfo.Invoke(startupInstance, parameters);
+                    tasks.Add(action.Invoke(executeMethod, startupType, serviceProvider));
                 }
-                else
-                {
-                    await (Task)_methodInfo.Invoke(startupInstance, parameters);
-                }
+
+                await Task.WhenAll(tasks);
+            }
+        }
+    }
+
+    private static async Task ExecuteMethodFromStartUpTask(string           methodNameToExecute,
+                                                           Type             startupType,
+                                                           IServiceProvider serviceProvider)
+    {
+        var _methodInfo = startupType
+                         .GetMethods()
+                         .FirstOrDefault(_ => _.Name == methodNameToExecute);
+
+        if (_methodInfo == null)
+            return;
+
+        var startupInstance = serviceProvider.GetService(startupType);
+
+        if (startupInstance == null)
+            return;
+
+        var parameters = _methodInfo.GetParameters()
+                                    .Select(_ => serviceProvider.GetService(_.ParameterType))
+                                    .ToArray();
+
+        var isAwaitable = _methodInfo.ReturnType.GetMethod(nameof(Task.GetAwaiter)) != null;
+
+        if (isAwaitable)
+        {
+            if (_methodInfo.ReturnType.IsGenericType)
+            {
+                await (dynamic)_methodInfo.Invoke(startupInstance, parameters);
             }
             else
             {
-                _methodInfo.Invoke(startupInstance, parameters);
+                await (Task)_methodInfo.Invoke(startupInstance, parameters);
             }
         }
-
-        private static void RegisterStartupTypes(IServiceCollection services,
-                                                 LoadedModuleEntries loadedModuleEntries,
-                                                 Type[] startupTypes)
+        else
         {
-            var startupClassCollection = new StartupClassCollection(startupTypes);
-            services.AddSingleton(startupClassCollection);
+            _methodInfo.Invoke(startupInstance, parameters);
+        }
+    }
 
-            foreach (var startupType in startupTypes)
+    private static void RegisterStartupTypes(IServiceCollection  services,
+                                             LoadedModuleEntries loadedModuleEntries,
+                                             Type[]              startupTypes)
+    {
+        var startupClassCollection = new StartupClassCollection(startupTypes);
+        services.AddSingleton(startupClassCollection);
+
+        foreach (var startupType in startupTypes)
+        {
+            var associatedModule = loadedModuleEntries.GetAssociatedModuleEntry(startupType);
+            if (associatedModule.Configuration == null)
             {
-                var associatedModule = loadedModuleEntries.GetAssociatedModuleEntry(startupType);
-                if (associatedModule.Configuration == null)
+                services.AddScoped(startupType);
+                continue;
+            }
+
+            bool registered   = false;
+            var  constructors = startupType.GetConstructors();
+            foreach (var constructorInfo in constructors)
+            {
+                var constructorParams = constructorInfo.GetParameters();
+                if (constructorParams.Length == 1 &&
+                    constructorParams[0].ParameterType == typeof(IConfiguration))
                 {
-                    services.AddScoped(startupType);
-                    continue;
+                    services.AddScoped(startupType,
+                                       provider => constructorInfo.Invoke(new[]
+                                       {
+                                           associatedModule.Configuration
+                                       }));
+                    registered = true;
+                    break;
                 }
-
-                bool registered = false;
-                var constructors = startupType.GetConstructors();
-                foreach (var constructorInfo in constructors)
-                {
-                    var constructorParams = constructorInfo.GetParameters();
-                    if (constructorParams.Length == 1 &&
-                        constructorParams[0].ParameterType == typeof(IConfiguration))
-                    {
-                        services.AddScoped(startupType,
-                                           provider => constructorInfo.Invoke(new[]
-                                           {
-                                               associatedModule.Configuration
-                                           }));
-                        registered = true;
-                        break;
-                    }
-                }
-
-                if (!registered)
-                    services.AddScoped(startupType);
             }
+
+            if (!registered)
+                services.AddScoped(startupType);
         }
+    }
 
 
-        private static void ConfigureMvcFilters(MvcOptions options, LoadedModuleEntries loadedModules)
+    private static void ConfigureMvcFilters(MvcOptions options, LoadedModuleEntries loadedModules)
+    {
+        var actionFilterTypes = loadedModules.GetExportedTypesOfType<IActionFilterProvider>();
+
+        foreach (var actionFilterProviderType in actionFilterTypes)
         {
-            var actionFilterTypes = loadedModules.GetExportedTypesOfType<IActionFilterProvider>();
-
-            foreach (var actionFilterProviderType in actionFilterTypes)
-            {
-                options.Filters.Add(actionFilterProviderType);
-            }
+            options.Filters.Add(actionFilterProviderType);
         }
+    }
 
-        private class StartupClassCollection : List<Type>
+    private class StartupClassCollection : List<Type>
+    {
+        public StartupClassCollection(IEnumerable<Type> collection) : base(collection)
         {
-            public StartupClassCollection(IEnumerable<Type> collection) : base(collection)
-            {
 
-            }
         }
+    }
 
-        private class ModuleExportedTypeCollection : List<Type>
+    private class ModuleExportedTypeCollection : List<Type>
+    {
+        public ModuleExportedTypeCollection(IEnumerable<Type> collection) : base(collection)
         {
-            public ModuleExportedTypeCollection(IEnumerable<Type> collection) : base(collection)
-            {
 
-            }
         }
     }
 }

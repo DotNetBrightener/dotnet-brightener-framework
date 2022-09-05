@@ -2,29 +2,28 @@
 using System.Globalization;
 
 // ReSharper disable once CheckNamespace
-namespace Microsoft.AspNetCore.Http
+namespace Microsoft.AspNetCore.Http;
+
+public static class HttpContextExtensions
 {
-    public static class HttpContextExtensions
+    private const string CurrentCultureRequestKey = "DNB::CurrentRequestCulture";
+
+    internal static void StoreCurrentCulture(this HttpContext httpContext, CultureInfo currentCulture)
     {
-        private const string CurrentCultureRequestKey = "DNB::CurrentRequestCulture";
+        if (httpContext == null)
+            throw new ArgumentNullException(nameof(httpContext));
 
-        internal static void StoreCurrentCulture(this HttpContext httpContext, CultureInfo currentCulture)
+        httpContext.Items.Add(CurrentCultureRequestKey, currentCulture);
+    }
+
+    public static CultureInfo GetCurrentCulture(this HttpContext httpContext)
+    {
+        if (httpContext.Items.TryGetValue(CurrentCultureRequestKey, out object cultureObj) &&
+            cultureObj is CultureInfo result)
         {
-            if (httpContext == null)
-                throw new ArgumentNullException(nameof(httpContext));
-
-            httpContext.Items.Add(CurrentCultureRequestKey, currentCulture);
+            return result;
         }
 
-        public static CultureInfo GetCurrentCulture(this HttpContext httpContext)
-        {
-            if (httpContext.Items.TryGetValue(CurrentCultureRequestKey, out object cultureObj) &&
-                cultureObj is CultureInfo result)
-            {
-                return result;
-            }
-
-            return CultureInfo.CurrentUICulture;
-        }
+        return CultureInfo.CurrentUICulture;
     }
 }

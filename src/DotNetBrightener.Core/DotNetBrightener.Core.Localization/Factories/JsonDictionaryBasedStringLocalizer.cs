@@ -9,202 +9,201 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 
-namespace DotNetBrightener.Core.Localization.Factories
+namespace DotNetBrightener.Core.Localization.Factories;
+
+public class JsonDictionaryBasedStringLocalizer : IStringLocalizer
 {
-    public class JsonDictionaryBasedStringLocalizer : IStringLocalizer
+    private readonly ILocalizationManager _localizationManager;
+    private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly ILogger              _logger;
+
+    public JsonDictionaryBasedStringLocalizer(ILocalizationManager                        localizationManager,
+                                              IHttpContextAccessor                        httpContextAccessor,
+                                              ILogger<JsonDictionaryBasedStringLocalizer> logger)
     {
-        private readonly ILocalizationManager _localizationManager;
-        private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly ILogger              _logger;
+        _localizationManager = localizationManager;
+        _httpContextAccessor = httpContextAccessor;
+        _logger              = logger;
+    }
 
-        public JsonDictionaryBasedStringLocalizer(ILocalizationManager                        localizationManager,
-                                                  IHttpContextAccessor                        httpContextAccessor,
-                                                  ILogger<JsonDictionaryBasedStringLocalizer> logger)
+    public IStringLocalizer WithCulture(CultureInfo culture)
+    {
+        return this;
+    }
+
+    public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures)
+    {
+        var culture = _httpContextAccessor.HttpContext.GetCurrentCulture();
+
+        return includeParentCultures
+                   ? GetAllStringsFromCultureHierarchy(culture)
+                   : GetAllStrings(culture);
+    }
+
+    private IEnumerable<LocalizedString> GetAllStringsFromCultureHierarchy(CultureInfo culture)
+    {
+        var currentCulture      = culture;
+        var allLocalizedStrings = new List<LocalizedString>();
+
+        do
         {
-            _localizationManager = localizationManager;
-            _httpContextAccessor = httpContextAccessor;
-            _logger              = logger;
+            var localizedStrings = GetAllStrings(currentCulture);
+
+            if (localizedStrings != null)
+            {
+                foreach (var localizedString in localizedStrings)
+                {
+                    if (allLocalizedStrings.All(ls => ls.Name != localizedString.Name))
+                    {
+                        allLocalizedStrings.Add(localizedString);
+                    }
+                }
+            }
+
+            currentCulture = currentCulture.Parent;
+        } while (currentCulture != currentCulture.Parent);
+
+        return allLocalizedStrings;
+    }
+
+    private IEnumerable<LocalizedString> GetAllStrings(CultureInfo culture)
+    {
+        var dictionary = _localizationManager.GetDictionary(culture);
+
+        foreach (var translation in dictionary.Translations)
+        {
+            yield return new LocalizedString(translation.Key, translation.Value);
         }
+    }
 
-        public IStringLocalizer WithCulture(CultureInfo culture)
+    public LocalizedString this[string name]
+    {
+        get
         {
-            return this;
-        }
-
-        public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures)
-        {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+                
             var culture = _httpContextAccessor.HttpContext.GetCurrentCulture();
 
-            return includeParentCultures
-                       ? GetAllStringsFromCultureHierarchy(culture)
-                       : GetAllStrings(culture);
+            var translation = Translate(name, culture);
+
+            return new LocalizedString(name, translation ?? name, translation == null);
         }
+    }
 
-        private IEnumerable<LocalizedString> GetAllStringsFromCultureHierarchy(CultureInfo culture)
+    public LocalizedString this[string name, params object[] arguments]
+    {
+        get
         {
-            var currentCulture      = culture;
-            var allLocalizedStrings = new List<LocalizedString>();
-
-            do
+            if (name == null)
             {
-                var localizedStrings = GetAllStrings(currentCulture);
-
-                if (localizedStrings != null)
-                {
-                    foreach (var localizedString in localizedStrings)
-                    {
-                        if (allLocalizedStrings.All(ls => ls.Name != localizedString.Name))
-                        {
-                            allLocalizedStrings.Add(localizedString);
-                        }
-                    }
-                }
-
-                currentCulture = currentCulture.Parent;
-            } while (currentCulture != currentCulture.Parent);
-
-            return allLocalizedStrings;
-        }
-
-        private IEnumerable<LocalizedString> GetAllStrings(CultureInfo culture)
-        {
-            var dictionary = _localizationManager.GetDictionary(culture);
-
-            foreach (var translation in dictionary.Translations)
-            {
-                yield return new LocalizedString(translation.Key, translation.Value);
+                throw new ArgumentNullException(nameof(name));
             }
-        }
-
-        public LocalizedString this[string name]
-        {
-            get
-            {
-                if (name == null)
-                {
-                    throw new ArgumentNullException(nameof(name));
-                }
                 
-                var culture = _httpContextAccessor.HttpContext.GetCurrentCulture();
+            var culture = _httpContextAccessor.HttpContext.GetCurrentCulture();
 
-                var translation = Translate(name, culture);
+            var translation = Translate(name, culture, true);
 
-                return new LocalizedString(name, translation ?? name, translation == null);
-            }
-        }
+            string formatted;
 
-        public LocalizedString this[string name, params object[] arguments]
-        {
-            get
+            try
             {
-                if (name == null)
+                if (arguments.Length == 1)
                 {
-                    throw new ArgumentNullException(nameof(name));
+                    formatted = FormatWith(translation, arguments.FirstOrDefault());
                 }
-                
-                var culture = _httpContextAccessor.HttpContext.GetCurrentCulture();
-
-                var translation = Translate(name, culture, true);
-
-                string formatted;
-
-                try
-                {
-                    if (arguments.Length == 1)
-                    {
-                        formatted = FormatWith(translation, arguments.FirstOrDefault());
-                    }
-                    else
-                    {
-                        formatted = string.Format(translation, arguments);
-                    }
-                }
-                catch
+                else
                 {
                     formatted = string.Format(translation, arguments);
                 }
-
-
-                return new LocalizedString(name, formatted, translation == null);
             }
-        }
-
-        private string Translate(string name, CultureInfo culture, bool isPlural = false)
-        {
-            var key = CultureDictionaryRecord.GetKey(name);
-            try
+            catch
             {
-                var dictionary = _localizationManager.GetDictionary(culture);
+                formatted = string.Format(translation, arguments);
+            }
 
-                var translation = dictionary[key, isPlural];
 
-                // Should we search in the parent culture?
-                if (translation == null && !Equals(culture.Parent, culture))
+            return new LocalizedString(name, formatted, translation == null);
+        }
+    }
+
+    private string Translate(string name, CultureInfo culture, bool isPlural = false)
+    {
+        var key = CultureDictionaryRecord.GetKey(name);
+        try
+        {
+            var dictionary = _localizationManager.GetDictionary(culture);
+
+            var translation = dictionary[key, isPlural];
+
+            // Should we search in the parent culture?
+            if (translation == null && !Equals(culture.Parent, culture))
+            {
+                dictionary = _localizationManager.GetDictionary(culture.Parent);
+
+                if (dictionary != null)
                 {
-                    dictionary = _localizationManager.GetDictionary(culture.Parent);
-
-                    if (dictionary != null)
-                    {
-                        translation = dictionary[key, isPlural]; // fallback to the parent culture
-                    }
+                    translation = dictionary[key, isPlural]; // fallback to the parent culture
                 }
-
-                return translation ?? name; // return the key if no translation found
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex.Message);
             }
 
-            return name;
+            return translation ?? name; // return the key if no translation found
         }
-
-        public static string FormatWith(string format, object source)
+        catch (Exception ex)
         {
-            return FormatWith(format, null, source);
+            _logger.LogWarning(ex.Message);
         }
 
-        public static string FormatWith(string format, IFormatProvider provider, object source)
+        return name;
+    }
+
+    public static string FormatWith(string format, object source)
+    {
+        return FormatWith(format, null, source);
+    }
+
+    public static string FormatWith(string format, IFormatProvider provider, object source)
+    {
+        if (format == null)
+            throw new ArgumentNullException("format");
+
+        var r = new Regex(@"(?<start>\{)+(?<property>[\w\.\[\]]+)(?<format>:[^}]+)?(?<end>\})+",
+                          RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+
+        var values = new List<object>();
+
+        var rewrittenFormat = r.Replace(format, delegate(Match m)
         {
-            if (format == null)
-                throw new ArgumentNullException("format");
+            var startGroup    = m.Groups["start"];
+            var propertyGroup = m.Groups["property"];
+            var formatGroup   = m.Groups["format"];
+            var endGroup      = m.Groups["end"];
 
-            var r = new Regex(@"(?<start>\{)+(?<property>[\w\.\[\]]+)(?<format>:[^}]+)?(?<end>\})+",
-                              RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+            var objectValue = propertyGroup.Value == "0"
+                                  ? source
+                                  : Eval(source, propertyGroup.Value);
 
-            var values = new List<object>();
+            values.Add(objectValue);
 
-            var rewrittenFormat = r.Replace(format, delegate(Match m)
-                                                    {
-                                                        var startGroup    = m.Groups["start"];
-                                                        var propertyGroup = m.Groups["property"];
-                                                        var formatGroup   = m.Groups["format"];
-                                                        var endGroup      = m.Groups["end"];
+            return new string('{', startGroup.Captures.Count) +
+                   (values.Count - 1) + formatGroup.Value
+                 + new string('}', endGroup.Captures.Count);
+        });
 
-                                                        var objectValue = propertyGroup.Value == "0"
-                                                                              ? source
-                                                                              : Eval(source, propertyGroup.Value);
+        return string.Format(provider, rewrittenFormat, values.ToArray());
+    }
 
-                                                        values.Add(objectValue);
+    private static object Eval(object source, string propertyName)
+    {
+        var prop = source.GetType()
+                         .GetProperties()
+                         .FirstOrDefault(_ => _.Name == propertyName);
 
-                                                        return new string('{', startGroup.Captures.Count) +
-                                                               (values.Count - 1) + formatGroup.Value
-                                                             + new string('}', endGroup.Captures.Count);
-                                                    });
+        if (prop == null)
+            return null;
 
-            return string.Format(provider, rewrittenFormat, values.ToArray());
-        }
-
-        private static object Eval(object source, string propertyName)
-        {
-            var prop = source.GetType()
-                             .GetProperties()
-                             .FirstOrDefault(_ => _.Name == propertyName);
-
-            if (prop == null)
-                return null;
-
-            return prop.GetValue(source);
-        }
+        return prop.GetValue(source);
     }
 }

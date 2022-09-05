@@ -1,7 +1,6 @@
-﻿namespace DotNetBrightener.PublisherTool.CLI
+﻿namespace DotNetBrightener.PublisherTool.CLI;
+
+class Constants
 {
-    class Constants
-    {
-        internal const string BuildCommand = "publish \"{0}\" -c {1} -o \"{2}\"";
-    }
+    internal const string BuildCommand = "publish \"{0}\" -c {1} -o \"{2}\"";
 }

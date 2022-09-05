@@ -7,42 +7,41 @@ using DotNetBrightener.CryptoEngine.Options;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 
-namespace DotNetBrightener.CryptoEngine.Loaders
+namespace DotNetBrightener.CryptoEngine.Loaders;
+
+public class EnvironmentVarISAKeysLoader : IRSAKeysLoader
 {
-    public class EnvironmentVarISAKeysLoader : IRSAKeysLoader
+    private readonly IConfiguration            _configuration;
+    private readonly CryptoEngineConfiguration _cryptoConfig;
+
+    public string LoaderName => "EnvVarLoader";
+
+    public EnvironmentVarISAKeysLoader(IConfiguration                      configuration,
+                                       IOptions<CryptoEngineConfiguration> cryptoConfig)
     {
-        private readonly IConfiguration            _configuration;
-        private readonly CryptoEngineConfiguration _cryptoConfig;
+        _configuration = configuration;
+        _cryptoConfig  = cryptoConfig.Value;
+    }
 
-        public string LoaderName => "EnvVarLoader";
+    public Tuple<string, string> LoadOrInitializeKeyPair()
+    {
+        var privateKeyValueFromEnvVar = _configuration[_cryptoConfig.RsaEnvironmentVariableName];
 
-        public EnvironmentVarISAKeysLoader(IConfiguration                      configuration,
-                                           IOptions<CryptoEngineConfiguration> cryptoConfig)
+        if (string.IsNullOrEmpty(privateKeyValueFromEnvVar))
         {
-            _configuration = configuration;
-            _cryptoConfig  = cryptoConfig.Value;
+            throw new
+                CryptographicException($"Private Key for RSA Crypto Engine is not configured. Please add private key value to Environment Variable with name '${_cryptoConfig.RsaEnvironmentVariableName}'");
         }
 
-        public Tuple<string, string> LoadOrInitializeKeyPair()
-        {
-            var privateKeyValueFromEnvVar = _configuration[_cryptoConfig.RsaEnvironmentVariableName];
+        var isXmlFormat = privateKeyValueFromEnvVar.Contains("<?xml ");
 
-            if (string.IsNullOrEmpty(privateKeyValueFromEnvVar))
-            {
-                throw new
-                    CryptographicException($"Private Key for RSA Crypto Engine is not configured. Please add private key value to Environment Variable with name '${_cryptoConfig.RsaEnvironmentVariableName}'");
-            }
+        RSACryptoServiceProvider csp = isXmlFormat
+                                           ? RsaCryptoEngine.ImportFromXml(privateKeyValueFromEnvVar)
+                                           : RsaCryptoEngine.ImportPemPrivateKey(privateKeyValueFromEnvVar);
 
-            var isXmlFormat = privateKeyValueFromEnvVar.Contains("<?xml ");
+        var publicKey  = csp.ExportPublicKeyToPem();
+        var privateKey = csp.ExportPrivateKeyToPem();
 
-            RSACryptoServiceProvider csp = isXmlFormat
-                                               ? RsaCryptoEngine.ImportFromXml(privateKeyValueFromEnvVar)
-                                               : RsaCryptoEngine.ImportPemPrivateKey(privateKeyValueFromEnvVar);
-
-            var publicKey  = csp.ExportPublicKeyToPem();
-            var privateKey = csp.ExportPrivateKeyToPem();
-
-            return new Tuple<string, string>(publicKey, privateKey);
-        }
+        return new Tuple<string, string>(publicKey, privateKey);
     }
 }

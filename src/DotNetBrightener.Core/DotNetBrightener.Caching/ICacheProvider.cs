@@ -1,10 +1,9 @@
 ﻿
 
 // ReSharper disable once CheckNamespace
-namespace DotNetBrightener.Caching
+namespace DotNetBrightener.Caching;
+
+public interface ICacheProvider : IBaseCacheService
 {
-    public interface ICacheProvider : IBaseCacheService
-    {
-        bool CanUse { get; }
-    }
+    bool CanUse { get; }
 }

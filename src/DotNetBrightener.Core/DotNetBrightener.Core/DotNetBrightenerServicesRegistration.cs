@@ -12,53 +12,52 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System;
 
-namespace DotNetBrightener.Core
+namespace DotNetBrightener.Core;
+
+public static class DotNetBrightenerServicesRegistration
 {
-    public static class DotNetBrightenerServicesRegistration
+    /// <summary>
+    ///		Adds default services to the service collection
+    /// </summary>
+    public static IServiceCollection AddAppDefaultServices(this IServiceCollection serviceCollection)
     {
-        /// <summary>
-        ///		Adds default services to the service collection
-        /// </summary>
-        public static IServiceCollection AddAppDefaultServices(this IServiceCollection serviceCollection)
-        {
-            serviceCollection.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            serviceCollection.TryAddSingleton<IContentTypeProvider, FileExtensionContentTypeProvider>();
+        serviceCollection.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+        serviceCollection.TryAddSingleton<IContentTypeProvider, FileExtensionContentTypeProvider>();
 
-            serviceCollection.AddLogging();
-            serviceCollection.AddOptions();
+        serviceCollection.AddLogging();
+        serviceCollection.AddOptions();
 
-            serviceCollection.AddSingleton(typeof(IConfigurationFilesProvider), ConfigurationFileProviderFactory);
+        serviceCollection.AddSingleton(typeof(IConfigurationFilesProvider), ConfigurationFileProviderFactory);
 
-            return serviceCollection;
-        }
+        return serviceCollection;
+    }
 
-        public static IServiceCollection AddDotNetBrightenerCoreServices(this IServiceCollection serviceCollection)
-        {
-            serviceCollection.AddSingleton<IMemoryCache, MemoryCache>();
+    public static IServiceCollection AddDotNetBrightenerCoreServices(this IServiceCollection serviceCollection)
+    {
+        serviceCollection.AddSingleton<IMemoryCache, MemoryCache>();
 
-            serviceCollection.AddSingleton<IAppHostContext, AppHostContext>();
-            serviceCollection.AddScoped<IRequestWorkContext, RequestWorkContext>();
-            serviceCollection.AddScoped<IPasswordValidationProvider, DefaultPasswordValidationProvider>();
-            serviceCollection.AddScoped<ICryptoEngine, CryptoEngine>();
+        serviceCollection.AddSingleton<IAppHostContext, AppHostContext>();
+        serviceCollection.AddScoped<IRequestWorkContext, RequestWorkContext>();
+        serviceCollection.AddScoped<IPasswordValidationProvider, DefaultPasswordValidationProvider>();
+        serviceCollection.AddScoped<ICryptoEngine, CryptoEngine>();
             
-            serviceCollection.AddScoped<IUnhandleExceptionHandler, DefaultUnhandledExceptionHandler>();
-            serviceCollection.AddScoped<IErrorResultFactory, ErrorResultFactory>();
+        serviceCollection.AddScoped<IUnhandleExceptionHandler, DefaultUnhandledExceptionHandler>();
+        serviceCollection.AddScoped<IErrorResultFactory, ErrorResultFactory>();
 
-            // remote service
-            serviceCollection.AddScoped<IRestClientService, DefaultRestClientService>();
+        // remote service
+        serviceCollection.AddScoped<IRestClientService, DefaultRestClientService>();
 
-            // File access
-            serviceCollection.AddSingleton<IUploadSystemFileProvider, DefaultUploadSystemFileProvider>();
-            serviceCollection.AddSingleton<IRootSystemFileProvider, DefaultRootSystemFileProvider>();
+        // File access
+        serviceCollection.AddSingleton<IUploadSystemFileProvider, DefaultUploadSystemFileProvider>();
+        serviceCollection.AddSingleton<IRootSystemFileProvider, DefaultRootSystemFileProvider>();
 
-            return serviceCollection;
-        }
+        return serviceCollection;
+    }
 
-        private static IConfigurationFilesProvider ConfigurationFileProviderFactory(IServiceProvider provider)
-        {
-            var hostingEnv = provider.GetService<IWebHostEnvironment>();
+    private static IConfigurationFilesProvider ConfigurationFileProviderFactory(IServiceProvider provider)
+    {
+        var hostingEnv = provider.GetService<IWebHostEnvironment>();
 
-            return DefaultConfigurationFilesProvider.Init(hostingEnv);
-        }
+        return DefaultConfigurationFilesProvider.Init(hostingEnv);
     }
 }

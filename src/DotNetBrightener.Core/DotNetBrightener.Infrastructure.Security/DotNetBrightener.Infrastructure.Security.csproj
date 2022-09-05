@@ -35,4 +35,10 @@
 	  </None>
 	</ItemGroup>
 
+	<ItemGroup>
+	  <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+	</ItemGroup>
+
+	<Import Project="..\SharedExtensions.XmlDocumentationHelper\SharedExtensions.XmlDocumentationHelper.projitems" Label="Shared" />
+
 </Project>

@@ -1,14 +1,13 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 
-namespace DotNetBrightener.Caching.Redis
-{
-    public static class RedisCachingEnableServiceCollectionExtensions
-    {
-        public static void EnableRedisCacheService(this IServiceCollection serviceCollection)
-        {
-            serviceCollection.AddSingleton<IRedisConnectionWrapper, RedisConnectionWrapper>();
+namespace DotNetBrightener.Caching.Redis;
 
-            serviceCollection.AddCacheProvider<RedisCacheProvider>();
-        }
+public static class RedisCachingEnableServiceCollectionExtensions
+{
+    public static void EnableRedisCacheService(this IServiceCollection serviceCollection)
+    {
+        serviceCollection.AddSingleton<IRedisConnectionWrapper, RedisConnectionWrapper>();
+
+        serviceCollection.AddCacheProvider<RedisCacheProvider>();
     }
 }

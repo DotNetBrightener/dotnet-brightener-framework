@@ -1,7 +1,6 @@
-﻿namespace DotNetBrightener.Core
-{
-    public interface IActionFilterProvider
-    {
+﻿namespace DotNetBrightener.Core;
 
-    }
+public interface IActionFilterProvider
+{
+
 }

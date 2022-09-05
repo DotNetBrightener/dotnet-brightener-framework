@@ -1,9 +1,8 @@
-﻿namespace DotNetBrightener.Mvc.HandlebarsViewEngine
+﻿namespace DotNetBrightener.Mvc.HandlebarsViewEngine;
+
+public class RoutingConstants
 {
-    public class RoutingConstants
-    {
-        public const string ControllerKey = "controller";
-        public const string AreaKey       = "area";
-        public const string SubAreaKey    = "subarea";
-    }
+    public const string ControllerKey = "controller";
+    public const string AreaKey       = "area";
+    public const string SubAreaKey    = "subarea";
 }

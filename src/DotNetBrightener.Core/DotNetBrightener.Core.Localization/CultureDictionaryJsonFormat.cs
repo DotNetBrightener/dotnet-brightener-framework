@@ -1,17 +1,16 @@
 ﻿using System.Collections.Generic;
 
-namespace DotNetBrightener.Core.Localization
+namespace DotNetBrightener.Core.Localization;
+
+public class CultureDictionaryJsonFormat : Dictionary<string, string>
 {
-    public class CultureDictionaryJsonFormat : Dictionary<string, string>
+    public CultureDictionaryJsonFormat()
     {
-        public CultureDictionaryJsonFormat()
-        {
 
-        }
+    }
 
-        public CultureDictionaryJsonFormat(Dictionary<string, string> otherDictionary) : base(otherDictionary)
-        {
+    public CultureDictionaryJsonFormat(Dictionary<string, string> otherDictionary) : base(otherDictionary)
+    {
 
-        }
     }
 }

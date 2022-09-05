@@ -1,7 +1,6 @@
-﻿namespace DotNetBrightener.Core.Modular
+﻿namespace DotNetBrightener.Core.Modular;
+
+public class ModuleConstants
 {
-	public class ModuleConstants
-	{
-		public const string ModuleDescriptorFileName = "Module.json";
-	}
+    public const string ModuleDescriptorFileName = "Module.json";
 }

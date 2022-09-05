@@ -1,29 +1,6 @@
-﻿using System;
-using DotNetBrightener.Core.ApplicationShell;
+﻿namespace DotNetBrightener.Core.Exceptions;
 
-namespace DotNetBrightener.Core.Exceptions
+public interface IErrorResultFactory
 {
-    public interface IErrorResultFactory
-    {
-        T InstantiateErrorResult<T>() where T : DefaultErrorResult;
-    }
-
-    public class ErrorResultFactory : IErrorResultFactory
-    {
-        private readonly IAppHostContext _appHostContext;
-
-        public ErrorResultFactory(IAppHostContext appHostContext)
-        {
-            _appHostContext = appHostContext;
-        }
-
-        public T InstantiateErrorResult<T>() where T : DefaultErrorResult
-        {
-            var errorResult = Activator.CreateInstance<T>() as DefaultErrorResult;
-
-            errorResult.TenantName = _appHostContext.RetrieveState<string>(CoreConstants.TenantName);
-
-            return (T) errorResult;
-        }
-    }
+    T InstantiateErrorResult<T>() where T : DefaultErrorResult;
 }

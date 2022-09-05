@@ -5,31 +5,30 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
-namespace DotNetBrightener.Infrastructure.Security.AuthorizationHandlers
-{
-    public class AdministratorAuthorizer : IAuthorizationHandler
-    {
-        public async Task HandleAsync(AuthorizationHandlerContext context)
-        {
-            var userRole = context?.User?.FindFirstValue(CommonUserClaimKeys.UserRole);
-            if (userRole == null)
-            {
-                return;
-            }
+namespace DotNetBrightener.Infrastructure.Security.AuthorizationHandlers;
 
-            // if user is an administrator, allow all permissions
-            if (string.Equals(userRole, DefaultUserRoles.AdministratorRoleName, StringComparison.OrdinalIgnoreCase))
-            {
-                GrantAllPermissions(context);
-            }
+public class AdministratorAuthorizer : IAuthorizationHandler
+{
+    public async Task HandleAsync(AuthorizationHandlerContext context)
+    {
+        var userRole = context?.User?.FindFirstValue(CommonUserClaimKeys.UserRole);
+        if (userRole == null)
+        {
+            return;
         }
 
-        private static void GrantAllPermissions(AuthorizationHandlerContext context)
+        // if user is an administrator, allow all permissions
+        if (string.Equals(userRole, DefaultUserRoles.AdministratorRoleName, StringComparison.OrdinalIgnoreCase))
         {
-            foreach (var requirement in context.Requirements.OfType<PermissionAuthorizationRequirement>())
-            {
-                context.Succeed(requirement);
-            }
+            GrantAllPermissions(context);
+        }
+    }
+
+    private static void GrantAllPermissions(AuthorizationHandlerContext context)
+    {
+        foreach (var requirement in context.Requirements.OfType<PermissionsAuthorizationRequirement>())
+        {
+            context.Succeed(requirement);
         }
     }
 }

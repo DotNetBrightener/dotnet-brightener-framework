@@ -1,9 +1,8 @@
-﻿namespace DotNetBrightener.Core.Modular
+﻿namespace DotNetBrightener.Core.Modular;
+
+public enum ModuleType
 {
-    public enum ModuleType
-    {
-        Infrastructure,
-        SystemModule,
-        ExtensionModule
-    }
+    Infrastructure,
+    SystemModule,
+    ExtensionModule
 }

@@ -1,26 +1,25 @@
 ﻿using System;
 
-namespace DotNetBrightener.Core.Localization
+namespace DotNetBrightener.Core.Localization;
+
+public class CultureDictionaryRecord
 {
-    public class CultureDictionaryRecord
+    public string Key         { get; }
+    public string Translation { get; }
+
+    public CultureDictionaryRecord(string messageId, string translation)
     {
-        public string Key         { get; }
-        public string Translation { get; }
+        Key         = GetKey(messageId);
+        Translation = translation;
+    }
 
-        public CultureDictionaryRecord(string messageId, string translation)
+    public static string GetKey(string messageId)
+    {
+        if (string.IsNullOrEmpty(messageId))
         {
-            Key          = GetKey(messageId);
-            Translation = translation;
+            throw new ArgumentException("MessageId can't be empty.", nameof(messageId));
         }
 
-        public static string GetKey(string messageId)
-        {
-            if (string.IsNullOrEmpty(messageId))
-            {
-                throw new ArgumentException("MessageId can't be empty.", nameof(messageId));
-            }
-
-            return messageId;
-        }
+        return messageId;
     }
 }

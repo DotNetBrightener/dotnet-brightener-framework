@@ -1,22 +1,18 @@
-﻿using DotNetBrightener.Infrastructure.Security.Permissions;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using DotNetBrightener.Infrastructure.Security.Extensions;
+using DotNetBrightener.Infrastructure.Security.Permissions;
+using DotNetBrightener.Infrastructure.Security.Services;
 
-namespace DotNetBrightener.Infrastructure.Security.Services
+namespace DotNetBrightener.Infrastructure.Security.Providers;
+
+public class DefaultPermissionsProvider : IPermissionProvider
 {
-    public class DefaultPermissionsProvider : IPermissionProvider
+    public const string SystemPermissionGroupName = "System Permissions";
+    
+    public string PermissionGroupName => SystemPermissionGroupName;
+
+    public IEnumerable<Permission> GetPermissions()
     {
-        public const string SystemPermissionGroupName = "System Permissions";
-
-        public static readonly Permission ManagePermissions = new Permission("System.Permissions.ManagePermissions");
-
-        public string PermissionGroupName => SystemPermissionGroupName;
-
-        public IEnumerable<Permission> GetPermissions()
-        {
-            return new List<Permission>
-            {
-                ManagePermissions
-            };
-        }
+        return typeof(DefaultPermissions).ExtractConstantsPermissions();
     }
 }

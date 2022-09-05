@@ -4,24 +4,23 @@ using NLog;
 using NLog.LayoutRenderers;
 using NLog.Web;
 
-namespace DotNetBrightener.Core.Logging
+namespace DotNetBrightener.Core.Logging;
+
+public static class WebHostBuilderExtensions
 {
-	public static class WebHostBuilderExtensions
-	{
-		public static IWebHostBuilder UseNLogWeb(this IWebHostBuilder builder)
-		{
-			LayoutRenderer.Register<TenantLayoutRenderer>(TenantLayoutRenderer.LayoutRendererName);
-			builder.UseNLog();
-			builder.ConfigureAppConfiguration((context, configuration) =>
-			                                  {
-				                                  var environment = context.HostingEnvironment;
+    public static IWebHostBuilder UseNLogWeb(this IWebHostBuilder builder)
+    {
+        LayoutRenderer.Register<TenantLayoutRenderer>(TenantLayoutRenderer.LayoutRendererName);
+        builder.UseNLog();
+        builder.ConfigureAppConfiguration((context, configuration) =>
+        {
+            var environment = context.HostingEnvironment;
 
-                                                  NLogBuilder.ConfigureNLog($"{environment.ContentRootPath}{Path.DirectorySeparatorChar}NLog.config");
+            NLogBuilder.ConfigureNLog($"{environment.ContentRootPath}{Path.DirectorySeparatorChar}NLog.config");
                                                   
-				                                  LogManager.Configuration.Variables["configDir"] = environment.ContentRootPath;
-			                                  });
+            LogManager.Configuration.Variables["configDir"] = environment.ContentRootPath;
+        });
 
-			return builder;
-		}
-	}
+        return builder;
+    }
 }

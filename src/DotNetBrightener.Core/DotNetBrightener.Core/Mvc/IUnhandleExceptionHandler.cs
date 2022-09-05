@@ -1,17 +1,8 @@
 ﻿using DotNetBrightener.Core.Exceptions;
 
-namespace DotNetBrightener.Core.Mvc
-{
-    public interface IUnhandleExceptionHandler
-    {
-        void HandleException(UnhandledExceptionContext context);
-    }
+namespace DotNetBrightener.Core.Mvc;
 
-    internal class DefaultUnhandledExceptionHandler : IUnhandleExceptionHandler
-    {
-        public void HandleException(UnhandledExceptionContext context)
-        {
-            
-        }
-    }
+public interface IUnhandleExceptionHandler
+{
+    void HandleException(UnhandledExceptionContext context);
 }

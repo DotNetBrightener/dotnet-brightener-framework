@@ -1,9 +1,8 @@
-﻿namespace DotNetBrightener.Core.Localization
+﻿namespace DotNetBrightener.Core.Localization;
+
+public struct PluralizationArgument
 {
-    public struct PluralizationArgument
-    {
-        public int      Count     { get; set; }
-        public string[] Forms     { get; set; }
-        public object[] Arguments { get; set; }
-    }
+    public int      Count     { get; set; }
+    public string[] Forms     { get; set; }
+    public object[] Arguments { get; set; }
 }

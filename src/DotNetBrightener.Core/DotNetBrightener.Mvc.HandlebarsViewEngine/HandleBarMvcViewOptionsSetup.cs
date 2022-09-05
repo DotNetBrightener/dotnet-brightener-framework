@@ -3,28 +3,27 @@ using DotNetBrightener.Mvc.HandlebarsViewEngine.ViewEngines;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
-namespace DotNetBrightener.Mvc.HandlebarsViewEngine
+namespace DotNetBrightener.Mvc.HandlebarsViewEngine;
+
+/// <summary>
+///     Adds the extension setup for <see cref="MvcViewOptions"/> to extend the view engines
+/// </summary>
+public class HandleBarMvcViewOptionsSetup : IConfigureOptions<MvcViewOptions>
 {
-    /// <summary>
-    ///     Adds the extension setup for <see cref="MvcViewOptions"/> to extend the view engines
-    /// </summary>
-    public class HandleBarMvcViewOptionsSetup : IConfigureOptions<MvcViewOptions>
+    private readonly IHandlebarsViewEngine _handleBarViewEngine;
+
+    public HandleBarMvcViewOptionsSetup(IHandlebarsViewEngine handleBarViewEngine)
     {
-        private readonly IHandlebarsViewEngine _handleBarViewEngine;
+        _handleBarViewEngine = handleBarViewEngine ?? throw new ArgumentNullException(nameof(handleBarViewEngine));
+    }
 
-        public HandleBarMvcViewOptionsSetup(IHandlebarsViewEngine handleBarViewEngine)
+    public void Configure(MvcViewOptions options)
+    {
+        if (options == null)
         {
-            _handleBarViewEngine = handleBarViewEngine ?? throw new ArgumentNullException(nameof(handleBarViewEngine));
+            throw new ArgumentNullException(nameof(options));
         }
 
-        public void Configure(MvcViewOptions options)
-        {
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
-
-            options.ViewEngines.Add(_handleBarViewEngine);
-        }
+        options.ViewEngines.Add(_handleBarViewEngine);
     }
 }

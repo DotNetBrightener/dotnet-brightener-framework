@@ -7,226 +7,225 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-namespace DotNetBrightener.PublisherTool.CLI
+namespace DotNetBrightener.PublisherTool.CLI;
+
+public class DotNetBrightenerPublisher
 {
-    public class DotNetBrightenerPublisher
-    {
-        private readonly string _entryProjectName;
-        public event EventHandler<string> Output;
-        public event EventHandler<string> OutputInline;
-        private readonly string _folderToScan;
-        private const string EntryModuleName = "MainModule";
+    private readonly string           _entryProjectName;
+    public event EventHandler<string> Output;
+    public event EventHandler<string> OutputInline;
+    private readonly string           _folderToScan;
+    private const    string           EntryModuleName = "MainModule";
         
-        public DotNetBrightenerPublisher(string entryProjectName)
+    public DotNetBrightenerPublisher(string entryProjectName)
+    {
+        _entryProjectName = entryProjectName;
+        var currentWorkingDirectory = Directory.GetCurrentDirectory();
+
+        while (true)
         {
-            _entryProjectName = entryProjectName;
-            var currentWorkingDirectory = Directory.GetCurrentDirectory();
-
-            while (true)
+            var dir           = new DirectoryInfo(currentWorkingDirectory);
+            var solutionFiles = dir.GetFiles("*.sln");
+            if (!solutionFiles.Any())
             {
-                var dir           = new DirectoryInfo(currentWorkingDirectory);
-                var solutionFiles = dir.GetFiles("*.sln");
-                if (!solutionFiles.Any())
-                {
-                    currentWorkingDirectory = Path.GetDirectoryName(currentWorkingDirectory);
-                    continue;
-                }
-
-                break;
+                currentWorkingDirectory = Path.GetDirectoryName(currentWorkingDirectory);
+                continue;
             }
 
-            _folderToScan = currentWorkingDirectory;
-            Console.WriteLine($"[Publisher Tool] - Detected folder for building: {_folderToScan}");
+            break;
         }
 
-        public string PrepareBuildOutputFolder()
+        _folderToScan = currentWorkingDirectory;
+        Console.WriteLine($"[Publisher Tool] - Detected folder for building: {_folderToScan}");
+    }
+
+    public string PrepareBuildOutputFolder()
+    {
+        var parentFolder  = Path.GetDirectoryName(_folderToScan);
+        var publishFolder = Path.Combine(parentFolder, "Published");
+
+        if (Directory.Exists(publishFolder))
         {
-            var parentFolder  = Path.GetDirectoryName(_folderToScan);
-            var publishFolder = Path.Combine(parentFolder, "Published");
-
-            if (Directory.Exists(publishFolder))
-            {
-                Directory.Delete(publishFolder, true);
-            }
-
-            Directory.CreateDirectory(publishFolder);
-
-            return publishFolder;
+            Directory.Delete(publishFolder, true);
         }
 
-        public IEnumerable<ModuleDefinition> RetrievesModuleFilesToBuild(string[] modulesToBuild = null)
+        Directory.CreateDirectory(publishFolder);
+
+        return publishFolder;
+    }
+
+    public IEnumerable<ModuleDefinition> RetrievesModuleFilesToBuild(string[] modulesToBuild = null)
+    {
+        var projectsFolder = new DirectoryInfo(_folderToScan);
+        var moduleFiles    = projectsFolder.GetFiles("Module.json", SearchOption.AllDirectories);
+
+        var allModules = new List<ModuleDefinition>();
+
+        foreach (var moduleFile in moduleFiles)
         {
-            var projectsFolder = new DirectoryInfo(_folderToScan);
-            var moduleFiles    = projectsFolder.GetFiles("Module.json", SearchOption.AllDirectories);
+            var moduleFolder = moduleFile.Directory;
 
-            var allModules = new List<ModuleDefinition>();
+            if (moduleFolder.FullName.Contains("\\bin\\"))
+                continue;
 
-            foreach (var moduleFile in moduleFiles)
+            var csProjectFile = moduleFolder.GetFiles("*.csproj", SearchOption.TopDirectoryOnly)
+                                            .FirstOrDefault();
+            if (csProjectFile == null)
+                continue;
+
+            var moduleDefinition =
+                JsonConvert.DeserializeObject<ModuleDefinition>(File.ReadAllText(moduleFile.FullName));
+
+            if (modulesToBuild == null ||
+                !modulesToBuild.Any() ||
+                modulesToBuild.Contains(moduleDefinition.ModuleId))
             {
-                var moduleFolder = moduleFile.Directory;
-
-                if (moduleFolder.FullName.Contains("\\bin\\"))
-                    continue;
-
-                var csProjectFile = moduleFolder.GetFiles("*.csproj", SearchOption.TopDirectoryOnly)
-                                                .FirstOrDefault();
-                if (csProjectFile == null)
-                    continue;
-
-                var moduleDefinition =
-                    JsonConvert.DeserializeObject<ModuleDefinition>(File.ReadAllText(moduleFile.FullName));
-
-                if (modulesToBuild == null ||
-                    !modulesToBuild.Any() ||
-                    modulesToBuild.Contains(moduleDefinition.ModuleId))
-                {
-                    moduleDefinition.AssociatedProjectFile = csProjectFile.FullName;
-                    allModules.Add(moduleDefinition);
-                }
+                moduleDefinition.AssociatedProjectFile = csProjectFile.FullName;
+                allModules.Add(moduleDefinition);
             }
-
-
-            var frameworkModules = allModules.Where(_ => _.ModuleType == ModuleType.Infrastructure)
-                                             .Select(_ => _.ModuleId)
-                                             .ToArray();
-
-            // make all modules depends on the framework modules
-            allModules.ForEach(module =>
-                               {
-                                   if (module.ModuleType == ModuleType.Infrastructure)
-                                       return;
-
-                                   module.Dependencies.InsertRange(0, frameworkModules);
-                               });
-
-            var orderedModules = allModules.SortByDependencies(definition => allModules
-                                                                  .Where(module => definition
-                                                                                  .Dependencies
-                                                                                  .Contains(module.ModuleId)))
-                                           .ToList();
-
-            var mainEntryProject = projectsFolder.GetFiles($"{_entryProjectName}.csproj", SearchOption.AllDirectories)
-                                                 .FirstOrDefault();
-
-            if (mainEntryProject != null && mainEntryProject.Exists)
-            {
-                orderedModules.Insert(0, new ModuleDefinition
-                {
-                    ModuleId              = EntryModuleName,
-                    AssociatedProjectFile = mainEntryProject.FullName
-                });
-            }
-
-            if (Output != null)
-            {
-                Output.Invoke(this, "Detected Modules: ");
-                foreach (var module in orderedModules)
-                {
-                    Output.Invoke(this,
-                                   $"\t - {module.AssociatedProjectFile.Replace(_folderToScan, string.Empty)} -> {module.ModuleId}.");
-                }
-            }
-
-            return orderedModules;
         }
 
-        public void ProcessBuild(IEnumerable<ModuleDefinition> projectsToBuild, string configuration = "Debug")
+
+        var frameworkModules = allModules.Where(_ => _.ModuleType == ModuleType.Infrastructure)
+                                         .Select(_ => _.ModuleId)
+                                         .ToArray();
+
+        // make all modules depends on the framework modules
+        allModules.ForEach(module =>
         {
-            var buildOutputFolder = PrepareBuildOutputFolder();
-            var moduleOutputFolder = Path.Combine(buildOutputFolder, "Modules");
+            if (module.ModuleType == ModuleType.Infrastructure)
+                return;
 
-            var loadedDllFileNames = new List<string>();
+            module.Dependencies.InsertRange(0, frameworkModules);
+        });
 
-            Output?.Invoke(this, string.Empty);
-            Output?.Invoke(this, string.Empty);
-            Output?.Invoke(this, $"Build starting...");
-            Output?.Invoke(this, string.Empty);
-            Output?.Invoke(this, string.Empty);
-            foreach (var projectToBuild in projectsToBuild)
+        var orderedModules = allModules.SortByDependencies(definition => allModules
+                                                              .Where(module => definition
+                                                                              .Dependencies
+                                                                              .Contains(module.ModuleId)))
+                                       .ToList();
+
+        var mainEntryProject = projectsFolder.GetFiles($"{_entryProjectName}.csproj", SearchOption.AllDirectories)
+                                             .FirstOrDefault();
+
+        if (mainEntryProject != null && mainEntryProject.Exists)
+        {
+            orderedModules.Insert(0, new ModuleDefinition
             {
-                Output?.Invoke(this, string.Empty);
+                ModuleId              = EntryModuleName,
+                AssociatedProjectFile = mainEntryProject.FullName
+            });
+        }
 
-                var outputFolder = projectToBuild.ModuleId == EntryModuleName
-                                       ? buildOutputFolder
-                                       : Path.Combine(moduleOutputFolder, projectToBuild.ModuleId);
+        if (Output != null)
+        {
+            Output.Invoke(this, "Detected Modules: ");
+            foreach (var module in orderedModules)
+            {
+                Output.Invoke(this,
+                              $"\t - {module.AssociatedProjectFile.Replace(_folderToScan, string.Empty)} -> {module.ModuleId}.");
+            }
+        }
 
-                OutputInline?.Invoke(this, $"Building module {projectToBuild.ModuleId} -> {outputFolder.Replace(buildOutputFolder, string.Empty)}");
+        return orderedModules;
+    }
 
-                var buildCommand = string.Format(Constants.BuildCommand,
-                                                 projectToBuild.AssociatedProjectFile,
-                                                 configuration,
-                                                 outputFolder);
+    public void ProcessBuild(IEnumerable<ModuleDefinition> projectsToBuild, string configuration = "Debug")
+    {
+        var buildOutputFolder  = PrepareBuildOutputFolder();
+        var moduleOutputFolder = Path.Combine(buildOutputFolder, "Modules");
 
-                Output?.Invoke(this, $"Executing command: dotnet {buildCommand}");
+        var loadedDllFileNames = new List<string>();
 
-                var processStartInfo = new ProcessStartInfo("dotnet", buildCommand)
+        Output?.Invoke(this, string.Empty);
+        Output?.Invoke(this, string.Empty);
+        Output?.Invoke(this, $"Build starting...");
+        Output?.Invoke(this, string.Empty);
+        Output?.Invoke(this, string.Empty);
+        foreach (var projectToBuild in projectsToBuild)
+        {
+            Output?.Invoke(this, string.Empty);
+
+            var outputFolder = projectToBuild.ModuleId == EntryModuleName
+                                   ? buildOutputFolder
+                                   : Path.Combine(moduleOutputFolder, projectToBuild.ModuleId);
+
+            OutputInline?.Invoke(this, $"Building module {projectToBuild.ModuleId} -> {outputFolder.Replace(buildOutputFolder, string.Empty)}");
+
+            var buildCommand = string.Format(Constants.BuildCommand,
+                                             projectToBuild.AssociatedProjectFile,
+                                             configuration,
+                                             outputFolder);
+
+            Output?.Invoke(this, $"Executing command: dotnet {buildCommand}");
+
+            var processStartInfo = new ProcessStartInfo("dotnet", buildCommand)
+            {
+                UseShellExecute = true,
+                CreateNoWindow  = true,
+                WindowStyle     = ProcessWindowStyle.Hidden,
+                //RedirectStandardOutput = true,
+            };
+
+            var threadExist = false;
+            Task.Run(() =>
+            {
+                Process.Start(processStartInfo)?.WaitForExit();
+                threadExist = true;
+            });
+
+            while (!threadExist)
+            {
+                OutputInline?.Invoke(this, ".");
+                Thread.Sleep(TimeSpan.FromSeconds(1.5));
+            }
+
+            Output?.Invoke(this, string.Empty);
+
+            var outputFolderDir = new DirectoryInfo(outputFolder);
+            if (outputFolderDir == null || !outputFolderDir.Exists)
+            {
+                Output?.Invoke(this, $"[WARNING] Module {projectToBuild.ModuleId} build cannot be found, perhaps it has failed. Please check carefully.");
+                continue;
+            }
+            var allDllFiles = outputFolderDir.GetFiles("*.dll");
+
+            if (projectToBuild.ModuleId == EntryModuleName)
+            {
+                projectToBuild.OutputDllFiles = allDllFiles;
+            }
+            else
+            {
+                var dllToDeletes = new List<string>();
+                var dllToKeep    = new List<FileInfo>();
+                foreach (var dllFile in allDllFiles)
                 {
-                    UseShellExecute = true,
-                    CreateNoWindow  = true,
-                    WindowStyle     = ProcessWindowStyle.Hidden,
-                    //RedirectStandardOutput = true,
-                };
-
-                var threadExist = false;
-                Task.Run(() =>
-                         {
-                             Process.Start(processStartInfo)?.WaitForExit();
-                             threadExist = true;
-                         });
-
-                while (!threadExist)
-                {
-                    OutputInline?.Invoke(this, ".");
-                    Thread.Sleep(TimeSpan.FromSeconds(1.5));
-                }
-
-                Output?.Invoke(this, string.Empty);
-
-                var outputFolderDir = new DirectoryInfo(outputFolder);
-                if (outputFolderDir == null || !outputFolderDir.Exists)
-                {
-                    Output?.Invoke(this, $"[WARNING] Module {projectToBuild.ModuleId} build cannot be found, perhaps it has failed. Please check carefully.");
-                    continue;
-                }
-                var allDllFiles = outputFolderDir.GetFiles("*.dll");
-
-                if (projectToBuild.ModuleId == EntryModuleName)
-                {
-                    projectToBuild.OutputDllFiles = allDllFiles;
-                }
-                else
-                {
-                    var dllToDeletes = new List<string>();
-                    var dllToKeep = new List<FileInfo>();
-                    foreach (var dllFile in allDllFiles)
+                    if (loadedDllFileNames.Contains(dllFile.Name))
                     {
-                        if (loadedDllFileNames.Contains(dllFile.Name))
+                        dllToDeletes.Add(dllFile.FullName);
+                        var pdbFile = dllFile.FullName.Replace(".dll", ".pdb");
+                        if (File.Exists(pdbFile))
                         {
-                            dllToDeletes.Add(dllFile.FullName);
-                            var pdbFile = dllFile.FullName.Replace(".dll", ".pdb");
-                            if (File.Exists(pdbFile))
-                            {
-                                dllToDeletes.Add(pdbFile);
-                            }
-                            var xmlFile = dllFile.FullName.Replace(".dll", ".xml");
-                            if (File.Exists(xmlFile))
-                            {
-                                dllToDeletes.Add(xmlFile);
-                            }
+                            dllToDeletes.Add(pdbFile);
                         }
-                        else
+                        var xmlFile = dllFile.FullName.Replace(".dll", ".xml");
+                        if (File.Exists(xmlFile))
                         {
-                            dllToKeep.Add(dllFile);
+                            dllToDeletes.Add(xmlFile);
                         }
                     }
-
-                    dllToDeletes.ForEach(File.Delete);
-                    projectToBuild.OutputDllFiles = dllToKeep.ToArray();
+                    else
+                    {
+                        dllToKeep.Add(dllFile);
+                    }
                 }
 
-                loadedDllFileNames.AddRange(projectToBuild.OutputDllFiles.Select(_ => _.Name));
-                Output?.Invoke(this, $"Module {projectToBuild.ModuleId} is built successfully.");
+                dllToDeletes.ForEach(File.Delete);
+                projectToBuild.OutputDllFiles = dllToKeep.ToArray();
             }
+
+            loadedDllFileNames.AddRange(projectToBuild.OutputDllFiles.Select(_ => _.Name));
+            Output?.Invoke(this, $"Module {projectToBuild.ModuleId} is built successfully.");
         }
     }
 }

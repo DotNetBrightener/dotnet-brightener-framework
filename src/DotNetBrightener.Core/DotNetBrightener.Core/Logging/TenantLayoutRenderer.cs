@@ -5,20 +5,19 @@ using NLog;
 using NLog.LayoutRenderers;
 using NLog.Web.LayoutRenderers;
 
-namespace DotNetBrightener.Core.Logging
+namespace DotNetBrightener.Core.Logging;
+
+[LayoutRenderer(LayoutRendererName)]
+public class TenantLayoutRenderer : AspNetLayoutRendererBase
 {
-    [LayoutRenderer(LayoutRendererName)]
-    public class TenantLayoutRenderer : AspNetLayoutRendererBase
+    public const string LayoutRendererName = "tenant-name";
+
+    protected override void DoAppend(StringBuilder builder, LogEventInfo logEvent)
     {
-        public const string LayoutRendererName = "tenant-name";
+        var context = HttpContextAccessor.HttpContext;
 
-        protected override void DoAppend(StringBuilder builder, LogEventInfo logEvent)
-        {
-            var context = HttpContextAccessor.HttpContext;
-
-            var appHostContext = context.RequestServices.GetService<IAppHostContext>();
-            var tenantName     = appHostContext.RetrieveState<string>(CoreConstants.TenantName) ?? "Default";
-            builder.Append(tenantName);
-        }
+        var appHostContext = context.RequestServices.GetService<IAppHostContext>();
+        var tenantName     = appHostContext.RetrieveState<string>(CoreConstants.TenantName) ?? "Default";
+        builder.Append(tenantName);
     }
 }

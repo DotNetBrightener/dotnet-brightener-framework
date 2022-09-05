@@ -5,34 +5,33 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace DotNetBrightener.CryptoEngine.DependencyInjection
+namespace DotNetBrightener.CryptoEngine.DependencyInjection;
+
+public static class CryptoEngineServiceCollectionExtensions
 {
-    public static class CryptoEngineServiceCollectionExtensions
+    public static void AddCryptoEngine(this IServiceCollection serviceCollection,
+                                       IConfiguration          configuration,
+                                       string                  encryptKeysRootPath = "")
     {
-        public static void AddCryptoEngine(this IServiceCollection serviceCollection,
-                                           IConfiguration          configuration,
-                                           string                  encryptKeysRootPath = "")
+        serviceCollection
+           .Configure<CryptoEngineConfiguration>(configuration.GetSection(nameof(CryptoEngineConfiguration)));
+
+        serviceCollection.AddScoped<IRSAKeysLoader>(s =>
         {
-            serviceCollection
-               .Configure<CryptoEngineConfiguration>(configuration.GetSection(nameof(CryptoEngineConfiguration)));
-
-            serviceCollection.AddScoped<IRSAKeysLoader>(s =>
+            if (string.IsNullOrEmpty(encryptKeysRootPath))
             {
-                if (string.IsNullOrEmpty(encryptKeysRootPath))
-                {
-                    encryptKeysRootPath = s.GetService<IWebHostEnvironment>()?.ContentRootPath;
-                }
+                encryptKeysRootPath = s.GetService<IWebHostEnvironment>()?.ContentRootPath;
+            }
 
-                if (string.IsNullOrEmpty(encryptKeysRootPath))
-                {
-                    encryptKeysRootPath = Directory.GetCurrentDirectory();
-                }
+            if (string.IsNullOrEmpty(encryptKeysRootPath))
+            {
+                encryptKeysRootPath = Directory.GetCurrentDirectory();
+            }
 
-                return new FileRSAKeysLoader(encryptKeysRootPath);
-            });
+            return new FileRSAKeysLoader(encryptKeysRootPath);
+        });
 
-            serviceCollection.AddScoped<IRSAKeysLoader, EnvironmentVarISAKeysLoader>();
-            serviceCollection.AddScoped<ICryptoEngine, DefaultCryptoEngine>();
-        }
+        serviceCollection.AddScoped<IRSAKeysLoader, EnvironmentVarISAKeysLoader>();
+        serviceCollection.AddScoped<ICryptoEngine, DefaultCryptoEngine>();
     }
 }
