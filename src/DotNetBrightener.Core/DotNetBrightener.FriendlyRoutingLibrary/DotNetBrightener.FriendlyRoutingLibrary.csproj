@@ -1,12 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
 	<PropertyGroup>
-		<TargetFrameworks>net5.0</TargetFrameworks>
-		<PackageId>DotNetBrightener.FriendlyRoutingLibrary</PackageId>
-		<Version>1.0.1</Version>
-		<Copyright>© 2020 DotNet Brightener</Copyright>
-		<Authors>DotNet Brightener &lt;dotnetbrightener@gmail.com&gt;</Authors>
-		<Company>DotNet Brightener</Company>
 		<PackageDescription>
 			A library that adds supports for friendly routing ASP.Net Core Application
 		</PackageDescription>

@@ -17,7 +17,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-		<PackageReference Include="System.Linq.Dynamic.Core" Version="1.2.18" />
+		<PackageReference Include="System.Linq.Dynamic.Core" Version="1.2.19" />
 	</ItemGroup>
 
 </Project>

@@ -13,4 +13,4 @@ If ("" -ne $package -and "" -ne $version) {
 
 dotnet nuget push -s $destination -k $apiKey $packagePath
 
-& .\nuget-cleanup.ps1
+& .\nuget-cleanup.ps1 

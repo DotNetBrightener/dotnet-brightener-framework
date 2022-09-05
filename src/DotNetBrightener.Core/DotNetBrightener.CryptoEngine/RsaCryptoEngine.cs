@@ -71,7 +71,8 @@ namespace DotNetBrightener.CryptoEngine
         public static RSACryptoServiceProvider ImportPemPrivateKey(string pem)
         {
             string reformattedPem = pem;
-            if (!reformattedPem.StartsWith("-----BEGIN RSA PRIVATE KEY-----\n"))
+            if (!reformattedPem.StartsWith("-----BEGIN RSA PRIVATE KEY-----") && 
+                !reformattedPem.EndsWith("-----END RSA PRIVATE KEY-----"))
             {
                 reformattedPem = "-----BEGIN RSA PRIVATE KEY-----\n";
 
@@ -102,7 +103,7 @@ namespace DotNetBrightener.CryptoEngine
         public static RSACryptoServiceProvider ImportPemPublicKey(string pem)
         {
             string reformattedPem = pem;
-            if (!reformattedPem.StartsWith("-----BEGIN PUBLIC KEY-----\n"))
+            if (!reformattedPem.StartsWith("-----BEGIN PUBLIC KEY-----") && !reformattedPem.EndsWith("-----END PUBLIC KEY-----"))
             {
                 reformattedPem = "-----BEGIN PUBLIC KEY-----\n";
 
@@ -125,7 +126,7 @@ namespace DotNetBrightener.CryptoEngine
             return csp;
         }
 
-        public static string ExportPrivateKeyToPem(this RSACryptoServiceProvider csp)
+        public static string ExportPrivateKeyToPem(this RSACryptoServiceProvider csp, bool inlineString = false)
         {
             StringWriter outputStream = new StringWriter();
 
@@ -161,23 +162,31 @@ namespace DotNetBrightener.CryptoEngine
                 }
 
                 var base64 = Convert.ToBase64String(stream.GetBuffer(), 0, (int) stream.Length).ToCharArray();
-                // WriteLine terminates with \r\n, we want only \n
-                outputStream.Write("-----BEGIN RSA PRIVATE KEY-----\n");
 
-                // Output as Base64 with lines chopped at 64 characters
-                for (var i = 0; i < base64.Length; i += 64)
+                if (inlineString)
                 {
-                    outputStream.Write(base64, i, Math.Min(64, base64.Length - i));
-                    outputStream.Write("\n");
+                    outputStream.Write(base64);
                 }
+                else
+                {
+                    // WriteLine terminates with \r\n, we want only \n
+                    outputStream.Write("-----BEGIN RSA PRIVATE KEY-----\n");
 
-                outputStream.Write("-----END RSA PRIVATE KEY-----");
+                    // Output as Base64 with lines chopped at 64 characters
+                    for (var i = 0; i < base64.Length; i += 64)
+                    {
+                        outputStream.Write(base64, i, Math.Min(64, base64.Length - i));
+                        outputStream.Write("\n");
+                    }
+
+                    outputStream.Write("-----END RSA PRIVATE KEY-----");
+                }
             }
 
             return outputStream.ToString();
         }
 
-        public static string ExportPublicKeyToPem(this RSACryptoServiceProvider csp)
+        public static string ExportPublicKeyToPem(this RSACryptoServiceProvider csp, bool inlineString = false)
         {
             StringWriter outputStream = new StringWriter();
             var          parameters   = csp.ExportParameters(false);
@@ -230,16 +239,24 @@ namespace DotNetBrightener.CryptoEngine
                 }
 
                 var base64 = Convert.ToBase64String(stream.GetBuffer(), 0, (int) stream.Length).ToCharArray();
-                // WriteLine terminates with \r\n, we want only \n
-                outputStream.Write("-----BEGIN PUBLIC KEY-----\n");
 
-                for (var i = 0; i < base64.Length; i += 64)
+                if (inlineString)
                 {
-                    outputStream.Write(base64, i, Math.Min(64, base64.Length - i));
-                    outputStream.Write("\n");
+                    outputStream.Write(base64);
                 }
+                else
+                {
+                    // WriteLine terminates with \r\n, we want only \n
+                    outputStream.Write("-----BEGIN PUBLIC KEY-----\n");
 
-                outputStream.Write("-----END PUBLIC KEY-----");
+                    for (var i = 0; i < base64.Length; i += 64)
+                    {
+                        outputStream.Write(base64, i, Math.Min(64, base64.Length - i));
+                        outputStream.Write("\n");
+                    }
+
+                    outputStream.Write("-----END PUBLIC KEY-----");
+                }
             }
 
             return outputStream.ToString();
@@ -331,12 +348,12 @@ namespace DotNetBrightener.CryptoEngine
         /// <returns>
         ///     A <see cref="Tuple{T1, T2}"/> of 2 <see cref="string"/>s which represent public and private key
         /// </returns>
-        public static Tuple<string, string> GenerateKeyPair()
+        public static Tuple<string, string> GenerateKeyPair(bool inlineString = false)
         {
             var csp = new RSACryptoServiceProvider(2048);
 
-            var publicKey = csp.ExportPublicKeyToPem();
-            var privateKey = csp.ExportPrivateKeyToPem();
+            var publicKey = csp.ExportPublicKeyToPem(inlineString);
+            var privateKey = csp.ExportPrivateKeyToPem(inlineString);
 
             return new Tuple<string, string>(publicKey, privateKey);
         }

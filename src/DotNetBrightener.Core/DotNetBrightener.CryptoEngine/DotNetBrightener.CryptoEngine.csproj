@@ -1,8 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
+		<VersionPrefix>2022.5.2</VersionPrefix>
 		<Description>A library provides the APIs for Asymetric Encryption and Symetric Encryption methods</Description>
 		<PackageDescription>$(Description)</PackageDescription>
+
+		<PackageReleaseNotes>
+			2022.5.2: 
+				- Added ability to generate inline PEM format
+		</PackageReleaseNotes>
 	</PropertyGroup>
 	
 	<ItemGroup>
