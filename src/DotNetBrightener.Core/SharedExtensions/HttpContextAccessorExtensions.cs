@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Http;
 
+namespace Microsoft.AspNetCore.Http;
 
 internal static class HttpContextAccessorExtensions
 {

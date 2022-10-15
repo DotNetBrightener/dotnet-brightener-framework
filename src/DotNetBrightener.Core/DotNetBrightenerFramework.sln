@@ -63,6 +63,14 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SharedExtensions.XmlDocumen
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SharedExtensions.ServiceCollectionExtensions", "SharedExtensions.ServiceCollectionExtensions\SharedExtensions.ServiceCollectionExtensions.shproj", "{8CD77910-A209-4FFF-A324-DFB73F91D4DA}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "DateTimeExtensions", "DateTimeExtensions\DateTimeExtensions.shproj", "{BB84EC03-5EB3-4BAF-B342-DB2247424702}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OTPGenerator", "OTPGenerator", "{DB3331D8-F3E5-4B17-9389-035EC51CEBE5}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.TimeBasedOtp", "DotNetBrightener.TimeBasedOtp\DotNetBrightener.TimeBasedOtp.csproj", "{944735EF-360D-4085-917A-7257EBA9CC5E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.TimeBasedOtp.Tests", "DotNetBrightener.TimeBasedOtp.Tests\DotNetBrightener.TimeBasedOtp.Tests.csproj", "{BC035BD1-8150-419E-B537-276B825049D5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -137,6 +145,14 @@ Global
 		{CFEB2210-2053-4BD2-B4E4-B8802EC5F077}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CFEB2210-2053-4BD2-B4E4-B8802EC5F077}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CFEB2210-2053-4BD2-B4E4-B8802EC5F077}.Release|Any CPU.Build.0 = Release|Any CPU
+		{944735EF-360D-4085-917A-7257EBA9CC5E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{944735EF-360D-4085-917A-7257EBA9CC5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{944735EF-360D-4085-917A-7257EBA9CC5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{944735EF-360D-4085-917A-7257EBA9CC5E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BC035BD1-8150-419E-B537-276B825049D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BC035BD1-8150-419E-B537-276B825049D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BC035BD1-8150-419E-B537-276B825049D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BC035BD1-8150-419E-B537-276B825049D5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -156,6 +172,9 @@ Global
 		{CFEB2210-2053-4BD2-B4E4-B8802EC5F077} = {AC2A9F3C-2867-4BB3-80D6-5E54D0F6AD49}
 		{949E66B2-8674-450A-B45B-B5C0E6530E59} = {E0CD78AC-96A8-4B83-8357-4641DDB9749C}
 		{8CD77910-A209-4FFF-A324-DFB73F91D4DA} = {E0CD78AC-96A8-4B83-8357-4641DDB9749C}
+		{BB84EC03-5EB3-4BAF-B342-DB2247424702} = {E0CD78AC-96A8-4B83-8357-4641DDB9749C}
+		{944735EF-360D-4085-917A-7257EBA9CC5E} = {DB3331D8-F3E5-4B17-9389-035EC51CEBE5}
+		{BC035BD1-8150-419E-B537-276B825049D5} = {DB3331D8-F3E5-4B17-9389-035EC51CEBE5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CBA29A5C-A736-4EB9-8D61-8E76924706CD}
@@ -167,6 +186,8 @@ Global
 		SharedExtensions\SharedExtensions.projitems*{72bb256b-5a03-4395-9735-40231f1a90a7}*SharedItemsImports = 5
 		SharedExtensions\SharedExtensions.projitems*{772a8619-9d25-472c-b636-03e80a8a761c}*SharedItemsImports = 5
 		SharedExtensions.ServiceCollectionExtensions\SharedExtensions.ServiceCollectionExtensions.projitems*{8cd77910-a209-4fff-a324-dfb73f91d4da}*SharedItemsImports = 13
+		DateTimeExtensions\DateTimeExtensions.projitems*{944735ef-360d-4085-917a-7257eba9cc5e}*SharedItemsImports = 5
 		SharedExtensions.XmlDocumentationHelper\SharedExtensions.XmlDocumentationHelper.projitems*{949e66b2-8674-450a-b45b-b5c0e6530e59}*SharedItemsImports = 13
+		DateTimeExtensions\DateTimeExtensions.projitems*{bb84ec03-5eb3-4baf-b342-db2247424702}*SharedItemsImports = 13
 	EndGlobalSection
 EndGlobal

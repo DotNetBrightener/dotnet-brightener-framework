@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
+
+namespace Microsoft.Extensions.DependencyInjection.Extensions;
 
 internal static class ServiceCollectionAutoRegisterDependenciesExtension
 {
@@ -22,12 +23,12 @@ internal static class ServiceCollectionAutoRegisterDependenciesExtension
                 //try to resolve constructor parameters
                 var parameters = constructor.GetParameters()
                                             .Select(parameter =>
-                                                    {
-                                                        var service = provider.GetService(parameter.ParameterType);
-                                                        if (service == null)
-                                                            throw new Exception("Unknown dependency");
-                                                        return service;
-                                                    });
+                                             {
+                                                 var service = provider.GetService(parameter.ParameterType);
+                                                 if (service == null)
+                                                     throw new Exception("Unknown dependency");
+                                                 return service;
+                                             });
 
                 //all is ok, so create instance
                 return Activator.CreateInstance(type, parameters.ToArray());

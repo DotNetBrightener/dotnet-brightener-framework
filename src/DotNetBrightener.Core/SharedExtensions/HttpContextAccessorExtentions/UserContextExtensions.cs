@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿namespace Microsoft.AspNetCore.Http;
 
 internal static class UserContextExtensions
 {

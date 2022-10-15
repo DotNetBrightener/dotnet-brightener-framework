@@ -1,5 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
+		<RootNamespace>DotNetBrightener.Caching</RootNamespace>
 		<PackageId>DotNetBrightener.Caching.Abstractions</PackageId>
 		<Description>
 			A library that provides abstract mechanism for caching data

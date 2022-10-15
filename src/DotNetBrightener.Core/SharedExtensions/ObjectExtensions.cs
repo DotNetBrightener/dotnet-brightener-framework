@@ -4,6 +4,8 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 
+namespace DotNetBrightener.Core;
+
 internal static class ObjectExtensions
 {
     public static void TryAssignValue<T>(this T obj, string propertyName, object value)

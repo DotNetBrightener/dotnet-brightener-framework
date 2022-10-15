@@ -1,2 +1,11 @@
-﻿# Memory Caching support for DotNetBrightener.Caching library
+﻿# Memory Caching Provider for DotNetBrightener.Caching library
 
+&copy; 2022 DotNetBrightener
+
+## Usage
+
+``` cs
+// in your ConfigureService() Startup.cs
+
+services.EnableMemoryCacheService();
+```

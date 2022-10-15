@@ -1,8 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+
+namespace System;
 
 internal static class ReflectionExtensions
 {
@@ -19,9 +20,9 @@ internal static class ReflectionExtensions
 
 
     public static List<string> GetAvailableFieldNames(this Type    type,
-                                                     string       name          = "",
-                                                     List<string> recursiveList = null,
-                                                     int          level         = 0)
+                                                      string       name          = "",
+                                                      List<string> recursiveList = null,
+                                                      int          level         = 0)
     {
         if (recursiveList == null)
             recursiveList = new List<string>();
@@ -38,9 +39,9 @@ internal static class ReflectionExtensions
             if (property.PropertyType.IsClass && property.PropertyType.IsNotSystemType())
             {
                 GetAvailableFieldNames(property.PropertyType,
-                                      $"{name}.{property.Name}".Trim('.'),
-                                      recursiveList,
-                                      level + 1);
+                                       $"{name}.{property.Name}".Trim('.'),
+                                       recursiveList,
+                                       level + 1);
             }
         }
 

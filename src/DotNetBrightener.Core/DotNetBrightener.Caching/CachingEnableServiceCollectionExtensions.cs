@@ -1,6 +1,6 @@
 ﻿using DotNetBrightener.Caching;
 
-// ReSharper disable once CheckNamespace
+// ReSharper disable CheckNamespace
 namespace Microsoft.Extensions.DependencyInjection;
 
 public static class CachingEnableServiceCollectionExtensions

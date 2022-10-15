@@ -1,7 +1,4 @@
-﻿
-
-// ReSharper disable once CheckNamespace
-namespace DotNetBrightener.Caching;
+﻿namespace DotNetBrightener.Caching;
 
 public interface ICacheProvider : IBaseCacheService
 {

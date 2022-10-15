@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<IsPackable>false</IsPackable>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Compile Remove="docs\**" />
+		<EmbeddedResource Remove="docs\**" />
+		<None Remove="docs\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="NSubstitute" Version="4.4.0" />
+		<PackageReference Include="NUnit" Version="3.13.3" />
+		<PackageReference Include="NUnit3TestAdapter" Version="4.2.1" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\DotNetBrightener.TimeBasedOtp\DotNetBrightener.TimeBasedOtp.csproj" />
+	</ItemGroup>
+
+</Project>
