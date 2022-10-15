@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<PackageId>DotNetBrightener.SharedDataAccessService</PackageId>
+		<PackageDescription>
+			A library that provides abstraction layers for accessing database utilizing DotNetBrightener Data Access Framework.
+		</PackageDescription>
+		<Description>A library that provides abstraction layers for accessing database utilizing DotNetBrightener Data Access Framework.</Description>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="DotNetBrightener.Caching.Abstractions" Version="1.0.0" />
+		<PackageReference Include="System.Linq.Dynamic.Core" Version="1.2.7" />
+	</ItemGroup>
+
+	<ItemGroup Condition="$(Configuration)=='Debug'">
+		<ProjectReference Include="..\DotNetBrightener.Core.DataAccess.Abstractions\DotNetBrightener.Core.DataAccess.Abstractions.csproj" />
+	</ItemGroup>
+	<ItemGroup Condition="$(Configuration)=='Release'">
+		<PackageReference Include="DotNetBrightener.Core.DataAccess.Abstractions" Version="$Version" />
+	</ItemGroup>
+
+</Project>

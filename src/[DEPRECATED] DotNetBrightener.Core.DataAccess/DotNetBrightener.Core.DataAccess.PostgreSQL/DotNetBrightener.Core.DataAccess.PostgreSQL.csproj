@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<PackageId>DotNetBrightener.Core.DataAccess.PostgreSQL</PackageId>
+		<PackageDescription>
+			A library that adds the support for PostgreSQL to the centralized data access layer of DotNet Brightener Framework.
+		</PackageDescription>
+		<Description>
+			A library that adds the support for PostgreSQL to the centralized data access layer of DotNet Brightener Framework.
+		</Description>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="linq2db.PostgreSQL" Version="4.3.0" />
+	</ItemGroup>
+
+	<ItemGroup Condition="$(Configuration)=='Debug'">
+		<ProjectReference Include="..\DotNetBrightener.Core.DataAccess\DotNetBrightener.Core.DataAccess.csproj" />
+	</ItemGroup>
+
+
+	<ItemGroup Condition="$(Configuration)=='Release'">
+		<PackageReference Include="DotNetBrightener.Core.DataAccess" Version="$Version" />
+	</ItemGroup>
+
+</Project>
