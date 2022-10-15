@@ -1,0 +1,49 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>net5.0</TargetFrameworks>
+		<PackageId>DotNetBrightener.Core.Modular</PackageId>
+		<Version>1.0.0-beta-002</Version>
+		<Copyright>© 2020 DotNet Brightener</Copyright>
+		<Authors>DotNet Brightener &lt;dotnetbrightener@gmail.com&gt;</Authors>
+		<Company>DotNet Brightener</Company>
+		<PackageDescription>
+			A library that adds the ability of modular to ASP.Net Core Application
+		</PackageDescription>
+		<RepositoryUrl>https://github.com/dotnetbrightener/dotnet-brightener-framework</RepositoryUrl>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<NoWarn>1701;1702;1591;1574;1723</NoWarn>
+		<PackageIcon>dotnet-brightener-logo.png</PackageIcon>		
+		<Description>A library that adds the ability of modular to ASP.Net Core Application</Description>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+	</PropertyGroup>
+	<ItemGroup>
+		<None Include="..\..\..\dotnet-brightener-logo.png">
+			<Pack>True</Pack>
+			<PackagePath></PackagePath>
+		</None>
+		<None Include="..\..\..\LICENSE">
+			<Pack>True</Pack>
+			<PackagePath></PackagePath>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+	</ItemGroup>
+
+	<ItemGroup Condition="$(Configuration)=='Debug'">
+	  <ProjectReference Include="..\DotNetBrightener.Core\DotNetBrightener.Core.csproj" />
+	</ItemGroup>
+
+	<ItemGroup Condition="$(Configuration)=='Release'">
+		<PackageReference Include="DotNetBrightener.Core" Version="1.0.0-beta-002" />
+	</ItemGroup>
+
+	<Import Project="..\SharedExtensions\SharedExtensions.projitems" Label="Shared" />
+</Project>
