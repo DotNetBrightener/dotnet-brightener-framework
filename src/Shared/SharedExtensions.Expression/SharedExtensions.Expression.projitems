@@ -10,5 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)ExpressionExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)OperatorComparer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PredicateBuilder.cs" />
   </ItemGroup>
 </Project>

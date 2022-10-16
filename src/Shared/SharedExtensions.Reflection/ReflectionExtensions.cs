@@ -49,16 +49,6 @@ internal static class ReflectionExtensions
         return recursiveList;
     }
 
-    public static Type[] GetDerivedTypes<TParent>(this IEnumerable<Assembly> assemblies)
-    {
-        return GetDerivedTypes(assemblies, typeof(TParent)).ToArray();
-    }
-
-    public static Type[] GetDerivedTypes<TParent>(this Assembly assembly)
-    {
-        return GetDerivedTypes(new[] {assembly}, typeof(TParent)).ToArray();
-    }
-
     public static IEnumerable<Assembly> FilterSkippedAssemblies(this IEnumerable<Assembly> assemblies)
     {
         return assemblies.Where(x => !x.FullName.IsMatch(AssemblySkipLoadingPattern, RegexOptions.IgnoreCase | RegexOptions.Compiled));

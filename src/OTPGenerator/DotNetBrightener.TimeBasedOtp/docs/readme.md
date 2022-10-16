@@ -13,8 +13,10 @@ dotnet add package DotNetBrightener.TimeBasedOtp
 Or add the following to `.csproj` file
 
 ```xml
-<PackageReference Include="DotNetBrightener.TimeBasedOtp" Version="2022.9.0" />
+<PackageReference Include="DotNetBrightener.TimeBasedOtp" Version="2022.10.0" />
 ```
+
+You should check the latest version from [Nuget Site](https://www.nuget.org)
 
 ## Usage
 

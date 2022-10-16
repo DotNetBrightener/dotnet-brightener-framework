@@ -1,3 +1,4 @@
+using System.Linq;
 using DotNetBrightener.Infrastructure.Security.Extensions;
 using DotNetBrightener.Infrastructure.Security.Services;
 using NUnit.Framework;
@@ -16,7 +17,8 @@ public class PermissionLoadFromTypeTest
     [Test]
     public void TestLoadPermissionFromType()
     {
-        var loadedPermissions = typeof(SomePermissionsList).ExtractConstantsPermissions();
+        var loadedPermissions = new SomePermissionsList().GetPermissions()
+                                                         .ToArray();
             
         Assert.AreEqual(SomePermissionsList.Permission1, loadedPermissions[0].PermissionKey);
         Assert.AreEqual("Description for Permission 1", loadedPermissions[0].Description);
@@ -25,7 +27,7 @@ public class PermissionLoadFromTypeTest
         Assert.AreEqual("Description for Permission 2", loadedPermissions[1].Description);
     }
 
-    private class SomePermissionsList: IPermissionsDeclaration
+    private class SomePermissionsList: AutomaticPermissionProvider
     {
         /// <summary>
         ///     Description for Permission 1

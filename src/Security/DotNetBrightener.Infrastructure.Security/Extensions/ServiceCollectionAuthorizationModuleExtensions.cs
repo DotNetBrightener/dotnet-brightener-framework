@@ -1,4 +1,5 @@
 ﻿using DotNetBrightener.Infrastructure.Security.AuthorizationHandlers;
+using DotNetBrightener.Infrastructure.Security.Providers;
 using DotNetBrightener.Infrastructure.Security.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -23,6 +24,8 @@ public static class ServiceCollectionAuthorizationModuleExtensions
 
         // permissions and securities
         servicesCollection.AddSingleton<IPermissionsContainer, PermissionsContainer>();
+
+        servicesCollection.RegisterPermissionProvider<DefaultPermissions>();
 
         return servicesCollection;
     }

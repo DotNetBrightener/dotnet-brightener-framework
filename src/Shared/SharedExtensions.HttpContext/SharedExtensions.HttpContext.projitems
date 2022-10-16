@@ -3,14 +3,12 @@
   <PropertyGroup>
     <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
     <HasSharedItems>true</HasSharedItems>
-    <SharedGUID>37fcad5c-ac17-49ef-966a-0b6e18c89276</SharedGUID>
+    <SharedGUID>eb78590d-83be-404a-b554-1e436ecd64f7</SharedGUID>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>SharedExtensions.ObjectExtensions</Import_RootNamespace>
+    <Import_RootNamespace>SharedExtensions.HttpContext</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)ObjectCopyExtensions.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ObjectExtensions.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ObjectMethodExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)HttpContextAccessorExtensions.cs" />
   </ItemGroup>
 </Project>

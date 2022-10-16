@@ -11,4 +11,14 @@ internal static class DateTimeExtensions
 
         return dateTimeValue.Subtract(DateTime.UnixEpoch).TotalMilliseconds;
     }
+
+    public static double GetUnixTimestampInSeconds(this DateTime dateTimeValue)
+    {
+        if (dateTimeValue.Kind != DateTimeKind.Utc)
+        {
+            dateTimeValue = dateTimeValue.ToUniversalTime();
+        }
+
+        return dateTimeValue.Subtract(DateTime.UnixEpoch).TotalSeconds;
+    }
 }

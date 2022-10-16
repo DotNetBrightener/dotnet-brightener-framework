@@ -1,4 +1,4 @@
-﻿namespace DotNetBrightener.TimeBaseOtp;
+﻿namespace System;
 
 public interface IDateTimeProvider
 {

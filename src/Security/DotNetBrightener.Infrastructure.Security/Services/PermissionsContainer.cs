@@ -9,7 +9,7 @@ public class PermissionsContainer : IPermissionsContainer
 {
     private readonly IEnumerable<IPermissionProvider> _permissionProviders;
 
-    private Dictionary<string, Permission> _availablePermissions = null;
+    private Dictionary<string, Permission> _availablePermissions;
 
     public PermissionsContainer(IEnumerable<IPermissionProvider> permissionProviders)
     {
@@ -44,7 +44,9 @@ public class PermissionsContainer : IPermissionsContainer
 
         if (existingPermissionKeys.Any())
         {
-            throw new InvalidOperationException($"There are permissions with same keys {string.Join(", ", existingPermissionKeys)}. Please fix the issue to get the application launch properly.");
+            throw new InvalidOperationException(
+                                                $"There are permissions with same keys {string.Join(", ", existingPermissionKeys)}. " +
+                                                $"Please fix the issue to get the application launch properly.");
         }
     }
 
@@ -53,7 +55,7 @@ public class PermissionsContainer : IPermissionsContainer
         if (_availablePermissions == null || !_availablePermissions.Any())
             LoadAndValidatePermissions();
 
-        return _availablePermissions.Values;
+        return _availablePermissions!.Values;
     }
 
     public Permission GetPermissionByKey(string permissionKey)
@@ -61,7 +63,7 @@ public class PermissionsContainer : IPermissionsContainer
         if (_availablePermissions == null || !_availablePermissions.Any())
             LoadAndValidatePermissions();
 
-        if (_availablePermissions.TryGetValue(permissionKey, out var permission))
+        if (_availablePermissions!.TryGetValue(permissionKey, out var permission))
             return permission;
 
         return null;

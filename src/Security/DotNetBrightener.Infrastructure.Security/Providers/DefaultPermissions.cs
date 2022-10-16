@@ -1,10 +1,8 @@
-﻿// DotNetBrightenerFramework - DotNetBrightener.Infrastructure.Security
-
-using DotNetBrightener.Infrastructure.Security.Services;
+﻿using DotNetBrightener.Infrastructure.Security.Services;
 
 namespace DotNetBrightener.Infrastructure.Security.Providers;
 
-public class DefaultPermissions: IPermissionsDeclaration
+public class DefaultPermissions: AutomaticPermissionProvider
 {
     /// <summary>
     ///     Granted permissions management rights
