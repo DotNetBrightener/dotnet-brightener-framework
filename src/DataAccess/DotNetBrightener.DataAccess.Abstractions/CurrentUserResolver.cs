@@ -1,5 +1,8 @@
 ﻿namespace DotNetBrightener.DataAccess;
 
+/// <summary>
+///     Defines the contracts of how to identify the current logged user who executes the database operation, and obtain user name and id
+/// </summary>
 public interface ICurrentLoggedInUserResolver
 {
     string CurrentUserName { get; }
@@ -7,9 +10,6 @@ public interface ICurrentLoggedInUserResolver
     string CurrentUserId { get; }
 }
 
-/// <summary>
-///     Represents logic of how to identify the current user who executes the database operation
-/// </summary>
 public class DefaultCurrentUserResolver : ICurrentLoggedInUserResolver
 {
     public string CurrentUserName => null;

@@ -15,8 +15,12 @@
 		</PackageReference>
 	</ItemGroup>
 
-	<ItemGroup>
+	<ItemGroup Condition="$(Configuration)=='Debug'">
 		<ProjectReference Include="..\DotNetBrightener.DataAccess.Abstractions\DotNetBrightener.DataAccess.Abstractions.csproj" />
+	</ItemGroup>
+
+	<ItemGroup Condition="$(Configuration)=='Release'">
+		<PackageReference Include="DotNetBrightener.DataAccess.Abstractions" Version="$(DNBLibraryVersion)" />
 	</ItemGroup>
 
 	<ItemGroup>

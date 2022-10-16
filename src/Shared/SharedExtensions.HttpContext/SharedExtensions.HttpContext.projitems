@@ -10,5 +10,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)HttpContextAccessorExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)HttpRequestExtensions.cs" />
   </ItemGroup>
 </Project>

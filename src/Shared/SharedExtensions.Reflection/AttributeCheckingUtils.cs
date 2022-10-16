@@ -1,10 +1,9 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Reflection;
 
-namespace DotNetBrightener.DataAccess;
+namespace System;
 
-public static class AttributeCheckingUtils
+internal static class AttributeCheckingUtils
 {
     public static bool HasAttribute<TAttribute>(this Type type) where TAttribute : Attribute
     {

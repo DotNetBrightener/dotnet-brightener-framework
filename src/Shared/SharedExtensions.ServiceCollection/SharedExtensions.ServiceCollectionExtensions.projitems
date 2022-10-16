@@ -12,5 +12,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)ServiceCollectionAutoRegisterDependenciesExtension.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ServiceCollectionExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ServiceCollectionLazySupportExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ServiceProviderExtensions.cs" />
   </ItemGroup>
 </Project>

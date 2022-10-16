@@ -18,8 +18,13 @@
 		</PackageReference>
 	</ItemGroup>
 
-	<ItemGroup>
-	  <ProjectReference Include="..\DotNetBrightener.DataAccess.Abstractions\DotNetBrightener.DataAccess.Abstractions.csproj" />
+
+	<ItemGroup Condition="$(Configuration)=='Debug'">
+		<ProjectReference Include="..\DotNetBrightener.DataAccess.Abstractions\DotNetBrightener.DataAccess.Abstractions.csproj" />
+	</ItemGroup>
+
+	<ItemGroup Condition="$(Configuration)=='Release'">
+		<PackageReference Include="DotNetBrightener.DataAccess.Abstractions" Version="$(DNBLibraryVersion)" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -28,4 +33,8 @@
 	    <Pack>true</Pack>
 	  </None>
 	</ItemGroup>
+
+	<Import Project="..\..\Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems" Label="Shared" />
+
+	<Import Project="..\..\Shared\SharedExtensions.String\StringExtensions.projitems" Label="Shared" />
 </Project>
