@@ -9,8 +9,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "builds", "builds", "{ECA8FA
 		..\..\LICENSE = ..\..\LICENSE
 	EndProjectSection
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SharedExtensions", "SharedExtensions\SharedExtensions.shproj", "{59D960DE-D770-4D0C-9ED7-E46E1BCD3A5A}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Security", "Security", "{A8260E20-A153-47F4-AD48-3C711C1C1796}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Infrastructure.Security.Tests", "Security\DotNetBrightener.Infrastructure.Security.Tests\DotNetBrightener.Infrastructure.Security.Tests.csproj", "{F61705CC-CC79-479C-8087-3E1762342C75}"
@@ -85,29 +83,33 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SharedExtensions.Dictionary
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SharedExtensions.Expression", "Shared\SharedExtensions.Expression\SharedExtensions.Expression.shproj", "{1DD493F9-6617-4E22-9ACE-AFC40E2E26BB}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SharedExtensions.MvcBuilder", "..\..\DotNetBrightener.WebApp\Shared\SharedExtensions.MvcBuilder\SharedExtensions.MvcBuilder.shproj", "{FF19BE9F-9E7F-4B69-AC0C-F80EE2218228}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{8BCFD1A4-6EB1-422B-8A50-E3CB83C8F600}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SharedExtensions.HttpContext", "..\..\DotNetBrightener.WebApp\Shared\SharedExtensions.HttpContext\SharedExtensions.HttpContext.shproj", "{EB78590D-83BE-404A-B554-1E436ECD64F7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.WebApi.GenericCRUD", "Infrastructure\DotNetBrightener.WebApi.GenericCRUD\DotNetBrightener.WebApi.GenericCRUD.csproj", "{09E410F1-A947-4128-90DA-74BE5BD5795D}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{C2581BEB-91EA-4B5B-B9DB-26B3CD3E7313}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.TemplateEngine", "Infrastructure\DotNetBrightener.TemplateEngine\DotNetBrightener.TemplateEngine.csproj", "{9833380D-01CD-426D-9AF7-6F11C8F13782}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.WebApi.GenericCRUD", "..\..\DotNetBrightener.WebApp\Infrastructure\DotNetBrightener.WebApi.GenericCRUD\DotNetBrightener.WebApi.GenericCRUD.csproj", "{2194144F-FA80-4305-BB87-901905347832}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.SimpleUploadService", "Infrastructure\DotNetBrightener.SimpleUploadService\DotNetBrightener.SimpleUploadService.csproj", "{35F8279B-DB86-4412-B519-BC9EE20D4405}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.TemplateEngine", "..\..\DotNetBrightener.WebApp\Infrastructure\DotNetBrightener.TemplateEngine\DotNetBrightener.TemplateEngine.csproj", "{1238E78A-14CE-4DA3-88A5-8A6863694DF8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.MultiTenancy", "Infrastructure\DotNetBrightener.MultiTenancy\DotNetBrightener.MultiTenancy.csproj", "{6FFC158F-337D-4001-8261-F22C5A757B67}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.MultiTenancy", "..\..\DotNetBrightener.WebApp\Infrastructure\DotNetBrightener.MultiTenancy\DotNetBrightener.MultiTenancy.csproj", "{F1352330-7B16-4AAA-AFED-E00123D80500}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.FriendlyRoutingLibrary", "Infrastructure\DotNetBrightener.FriendlyRoutingLibrary\DotNetBrightener.FriendlyRoutingLibrary.csproj", "{D9CF02F1-495C-4011-A83E-59FE3876259C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Core.Logging", "..\..\DotNetBrightener.WebApp\Infrastructure\DotNetBrightener.Core.Logging\DotNetBrightener.Core.Logging.csproj", "{CD6F4612-9FE5-46B8-AD17-8A67A1D931A6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Core.StartupTask", "Infrastructure\DotNetBrightener.Core.StartupTask\DotNetBrightener.Core.StartupTask.csproj", "{7E618AFD-CF2F-4A14-B949-FDD79AEE1133}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Core.BackgroundTasks", "..\..\DotNetBrightener.WebApp\Infrastructure\DotNetBrightener.Core.BackgroundTasks\DotNetBrightener.Core.BackgroundTasks.csproj", "{8711C48C-09A0-4038-B6C3-3118CA1EB03F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Core.Logging", "Infrastructure\DotNetBrightener.Core.Logging\DotNetBrightener.Core.Logging.csproj", "{B89D0A74-E80D-44DF-8D47-72B16C47DAC4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.CommonShared", "..\..\DotNetBrightener.WebApp\Infrastructure\DotNetBrightener.CommonShared\DotNetBrightener.CommonShared.csproj", "{0E514EF5-A896-41E8-A53F-03A546998AA6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Core.BackgroundTasks", "Infrastructure\DotNetBrightener.Core.BackgroundTasks\DotNetBrightener.Core.BackgroundTasks.csproj", "{B57F410A-9DC3-4B02-BD94-B7DE5CE96A9F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.FriendlyRoutingLibrary", "Infrastructure\DotNetBrightener.FriendlyRoutingLibrary\DotNetBrightener.FriendlyRoutingLibrary.csproj", "{CA4D022D-50DB-4C3C-B8FB-69B0BBC393B6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.CommonShared", "Infrastructure\DotNetBrightener.CommonShared\DotNetBrightener.CommonShared.csproj", "{A47DC5E2-CF25-4D04-B03F-26D87513F86C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetBrightener.SimpleUploadService", "Infrastructure\DotNetBrightener.SimpleUploadService\DotNetBrightener.SimpleUploadService.csproj", "{D334553F-1C15-4141-820F-E947B4577859}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SharedExtensions.DateTimeProvider", "Shared\SharedExtensions.DateTimeProvider\SharedExtensions.DateTimeProvider.shproj", "{8AA48C89-69EE-47DB-8CE4-B7B40B36A210}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Core.StartupTask", "Infrastructure\DotNetBrightener.Core.StartupTask\DotNetBrightener.Core.StartupTask.csproj", "{ED4FD7DB-55FD-4976-8DB7-4CFEA328544C}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SharedExtensions.HttpContext", "Shared\SharedExtensions.HttpContext\SharedExtensions.HttpContext.shproj", "{EB78590D-83BE-404A-B554-1E436ECD64F7}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SharedExtensions.MvcBuilder", "Shared\SharedExtensions.MvcBuilder\SharedExtensions.MvcBuilder.shproj", "{FF19BE9F-9E7F-4B69-AC0C-F80EE2218228}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.SiteSettings", "Infrastructure\DotNetBrightener.SiteSettings\DotNetBrightener.SiteSettings.csproj", "{5B777C3C-FFE6-4C98-B9F6-DD7DE4F11FB4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -191,42 +193,46 @@ Global
 		{F9D8AED6-CB01-4F6F-B397-F0C48E144B73}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F9D8AED6-CB01-4F6F-B397-F0C48E144B73}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F9D8AED6-CB01-4F6F-B397-F0C48E144B73}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2194144F-FA80-4305-BB87-901905347832}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2194144F-FA80-4305-BB87-901905347832}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2194144F-FA80-4305-BB87-901905347832}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2194144F-FA80-4305-BB87-901905347832}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1238E78A-14CE-4DA3-88A5-8A6863694DF8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1238E78A-14CE-4DA3-88A5-8A6863694DF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1238E78A-14CE-4DA3-88A5-8A6863694DF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1238E78A-14CE-4DA3-88A5-8A6863694DF8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F1352330-7B16-4AAA-AFED-E00123D80500}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F1352330-7B16-4AAA-AFED-E00123D80500}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F1352330-7B16-4AAA-AFED-E00123D80500}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F1352330-7B16-4AAA-AFED-E00123D80500}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CD6F4612-9FE5-46B8-AD17-8A67A1D931A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CD6F4612-9FE5-46B8-AD17-8A67A1D931A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CD6F4612-9FE5-46B8-AD17-8A67A1D931A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CD6F4612-9FE5-46B8-AD17-8A67A1D931A6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8711C48C-09A0-4038-B6C3-3118CA1EB03F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8711C48C-09A0-4038-B6C3-3118CA1EB03F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8711C48C-09A0-4038-B6C3-3118CA1EB03F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8711C48C-09A0-4038-B6C3-3118CA1EB03F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0E514EF5-A896-41E8-A53F-03A546998AA6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0E514EF5-A896-41E8-A53F-03A546998AA6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0E514EF5-A896-41E8-A53F-03A546998AA6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0E514EF5-A896-41E8-A53F-03A546998AA6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CA4D022D-50DB-4C3C-B8FB-69B0BBC393B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CA4D022D-50DB-4C3C-B8FB-69B0BBC393B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CA4D022D-50DB-4C3C-B8FB-69B0BBC393B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CA4D022D-50DB-4C3C-B8FB-69B0BBC393B6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D334553F-1C15-4141-820F-E947B4577859}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D334553F-1C15-4141-820F-E947B4577859}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D334553F-1C15-4141-820F-E947B4577859}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D334553F-1C15-4141-820F-E947B4577859}.Release|Any CPU.Build.0 = Release|Any CPU
-		{ED4FD7DB-55FD-4976-8DB7-4CFEA328544C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{ED4FD7DB-55FD-4976-8DB7-4CFEA328544C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{ED4FD7DB-55FD-4976-8DB7-4CFEA328544C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{ED4FD7DB-55FD-4976-8DB7-4CFEA328544C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{09E410F1-A947-4128-90DA-74BE5BD5795D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{09E410F1-A947-4128-90DA-74BE5BD5795D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{09E410F1-A947-4128-90DA-74BE5BD5795D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{09E410F1-A947-4128-90DA-74BE5BD5795D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9833380D-01CD-426D-9AF7-6F11C8F13782}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9833380D-01CD-426D-9AF7-6F11C8F13782}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9833380D-01CD-426D-9AF7-6F11C8F13782}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9833380D-01CD-426D-9AF7-6F11C8F13782}.Release|Any CPU.Build.0 = Release|Any CPU
+		{35F8279B-DB86-4412-B519-BC9EE20D4405}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{35F8279B-DB86-4412-B519-BC9EE20D4405}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{35F8279B-DB86-4412-B519-BC9EE20D4405}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{35F8279B-DB86-4412-B519-BC9EE20D4405}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6FFC158F-337D-4001-8261-F22C5A757B67}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6FFC158F-337D-4001-8261-F22C5A757B67}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6FFC158F-337D-4001-8261-F22C5A757B67}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6FFC158F-337D-4001-8261-F22C5A757B67}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D9CF02F1-495C-4011-A83E-59FE3876259C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D9CF02F1-495C-4011-A83E-59FE3876259C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D9CF02F1-495C-4011-A83E-59FE3876259C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D9CF02F1-495C-4011-A83E-59FE3876259C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E618AFD-CF2F-4A14-B949-FDD79AEE1133}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E618AFD-CF2F-4A14-B949-FDD79AEE1133}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E618AFD-CF2F-4A14-B949-FDD79AEE1133}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E618AFD-CF2F-4A14-B949-FDD79AEE1133}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B89D0A74-E80D-44DF-8D47-72B16C47DAC4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B89D0A74-E80D-44DF-8D47-72B16C47DAC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B89D0A74-E80D-44DF-8D47-72B16C47DAC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B89D0A74-E80D-44DF-8D47-72B16C47DAC4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B57F410A-9DC3-4B02-BD94-B7DE5CE96A9F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B57F410A-9DC3-4B02-BD94-B7DE5CE96A9F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B57F410A-9DC3-4B02-BD94-B7DE5CE96A9F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B57F410A-9DC3-4B02-BD94-B7DE5CE96A9F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A47DC5E2-CF25-4D04-B03F-26D87513F86C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A47DC5E2-CF25-4D04-B03F-26D87513F86C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A47DC5E2-CF25-4D04-B03F-26D87513F86C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A47DC5E2-CF25-4D04-B03F-26D87513F86C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5B777C3C-FFE6-4C98-B9F6-DD7DE4F11FB4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5B777C3C-FFE6-4C98-B9F6-DD7DE4F11FB4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5B777C3C-FFE6-4C98-B9F6-DD7DE4F11FB4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5B777C3C-FFE6-4C98-B9F6-DD7DE4F11FB4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -260,63 +266,69 @@ Global
 		{BB84EC03-5EB3-4BAF-B342-DB2247424702} = {7205287C-4CD6-4E4D-830D-46F0BBEBB605}
 		{E4358D5E-109B-4050-A5B9-D4FF094754A4} = {7205287C-4CD6-4E4D-830D-46F0BBEBB605}
 		{1DD493F9-6617-4E22-9ACE-AFC40E2E26BB} = {7205287C-4CD6-4E4D-830D-46F0BBEBB605}
-		{FF19BE9F-9E7F-4B69-AC0C-F80EE2218228} = {7205287C-4CD6-4E4D-830D-46F0BBEBB605}
+		{09E410F1-A947-4128-90DA-74BE5BD5795D} = {8BCFD1A4-6EB1-422B-8A50-E3CB83C8F600}
+		{9833380D-01CD-426D-9AF7-6F11C8F13782} = {8BCFD1A4-6EB1-422B-8A50-E3CB83C8F600}
+		{35F8279B-DB86-4412-B519-BC9EE20D4405} = {8BCFD1A4-6EB1-422B-8A50-E3CB83C8F600}
+		{6FFC158F-337D-4001-8261-F22C5A757B67} = {8BCFD1A4-6EB1-422B-8A50-E3CB83C8F600}
+		{D9CF02F1-495C-4011-A83E-59FE3876259C} = {8BCFD1A4-6EB1-422B-8A50-E3CB83C8F600}
+		{7E618AFD-CF2F-4A14-B949-FDD79AEE1133} = {8BCFD1A4-6EB1-422B-8A50-E3CB83C8F600}
+		{B89D0A74-E80D-44DF-8D47-72B16C47DAC4} = {8BCFD1A4-6EB1-422B-8A50-E3CB83C8F600}
+		{B57F410A-9DC3-4B02-BD94-B7DE5CE96A9F} = {8BCFD1A4-6EB1-422B-8A50-E3CB83C8F600}
+		{A47DC5E2-CF25-4D04-B03F-26D87513F86C} = {8BCFD1A4-6EB1-422B-8A50-E3CB83C8F600}
+		{8AA48C89-69EE-47DB-8CE4-B7B40B36A210} = {7205287C-4CD6-4E4D-830D-46F0BBEBB605}
 		{EB78590D-83BE-404A-B554-1E436ECD64F7} = {7205287C-4CD6-4E4D-830D-46F0BBEBB605}
-		{2194144F-FA80-4305-BB87-901905347832} = {C2581BEB-91EA-4B5B-B9DB-26B3CD3E7313}
-		{1238E78A-14CE-4DA3-88A5-8A6863694DF8} = {C2581BEB-91EA-4B5B-B9DB-26B3CD3E7313}
-		{F1352330-7B16-4AAA-AFED-E00123D80500} = {C2581BEB-91EA-4B5B-B9DB-26B3CD3E7313}
-		{CD6F4612-9FE5-46B8-AD17-8A67A1D931A6} = {C2581BEB-91EA-4B5B-B9DB-26B3CD3E7313}
-		{8711C48C-09A0-4038-B6C3-3118CA1EB03F} = {C2581BEB-91EA-4B5B-B9DB-26B3CD3E7313}
-		{0E514EF5-A896-41E8-A53F-03A546998AA6} = {C2581BEB-91EA-4B5B-B9DB-26B3CD3E7313}
-		{CA4D022D-50DB-4C3C-B8FB-69B0BBC393B6} = {C2581BEB-91EA-4B5B-B9DB-26B3CD3E7313}
-		{D334553F-1C15-4141-820F-E947B4577859} = {C2581BEB-91EA-4B5B-B9DB-26B3CD3E7313}
-		{ED4FD7DB-55FD-4976-8DB7-4CFEA328544C} = {C2581BEB-91EA-4B5B-B9DB-26B3CD3E7313}
+		{FF19BE9F-9E7F-4B69-AC0C-F80EE2218228} = {7205287C-4CD6-4E4D-830D-46F0BBEBB605}
+		{5B777C3C-FFE6-4C98-B9F6-DD7DE4F11FB4} = {8BCFD1A4-6EB1-422B-8A50-E3CB83C8F600}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CBA29A5C-A736-4EB9-8D61-8E76924706CD}
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		..\..\DotNetBrightener.WebApp\Shared\SharedExtensions.Exception\SharedExtensions.Exception.projitems*{0e514ef5-a896-41e8-a53f-03a546998aa6}*SharedItemsImports = 5
-		..\..\DotNetBrightener.WebApp\Shared\SharedExtensions.Expression\SharedExtensions.Expression.projitems*{0e514ef5-a896-41e8-a53f-03a546998aa6}*SharedItemsImports = 5
-		..\..\DotNetBrightener.WebApp\Shared\SharedExtensions.Object\SharedExtensions.ObjectExtensions.projitems*{0e514ef5-a896-41e8-a53f-03a546998aa6}*SharedItemsImports = 5
-		..\..\DotNetBrightener.WebApp\Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{0e514ef5-a896-41e8-a53f-03a546998aa6}*SharedItemsImports = 5
-		..\..\DotNetBrightener.WebApp\Shared\SharedExtensions.ServiceCollection\SharedExtensions.ServiceCollectionExtensions.projitems*{0e514ef5-a896-41e8-a53f-03a546998aa6}*SharedItemsImports = 5
-		..\..\DotNetBrightener.WebApp\Shared\SharedExtensions.String\StringExtensions.projitems*{0e514ef5-a896-41e8-a53f-03a546998aa6}*SharedItemsImports = 5
+		Shared\SharedExtensions.Dictionary\SharedExtensions.Dictionary.projitems*{09e410f1-a947-4128-90da-74be5bd5795d}*SharedItemsImports = 5
+		Shared\SharedExtensions.Expression\SharedExtensions.Expression.projitems*{09e410f1-a947-4128-90da-74be5bd5795d}*SharedItemsImports = 5
+		Shared\SharedExtensions.HttpContext\SharedExtensions.HttpContext.projitems*{09e410f1-a947-4128-90da-74be5bd5795d}*SharedItemsImports = 5
+		Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{09e410f1-a947-4128-90da-74be5bd5795d}*SharedItemsImports = 5
+		Shared\SharedExtensions.String\StringExtensions.projitems*{09e410f1-a947-4128-90da-74be5bd5795d}*SharedItemsImports = 5
 		Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{0f0e79f0-bcb6-43d1-8a4a-5a1d50c36a22}*SharedItemsImports = 13
 		Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{11a36038-d86a-4dc9-b660-d881d242ee2f}*SharedItemsImports = 5
 		Shared\SharedExtensions.String\StringExtensions.projitems*{11a36038-d86a-4dc9-b660-d881d242ee2f}*SharedItemsImports = 5
-		..\..\DotNetBrightener.WebApp\Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{1238e78a-14ce-4da3-88a5-8a6863694df8}*SharedItemsImports = 5
-		..\..\DotNetBrightener.WebApp\Shared\SharedExtensions.String\StringExtensions.projitems*{1238e78a-14ce-4da3-88a5-8a6863694df8}*SharedItemsImports = 5
 		Shared\SharedExtensions.Expression\SharedExtensions.Expression.projitems*{1dd493f9-6617-4e22-9ace-afc40e2e26bb}*SharedItemsImports = 13
-		..\..\DotNetBrightener.WebApp\Shared\SharedExtensions.Dictionary\SharedExtensions.Dictionary.projitems*{2194144f-fa80-4305-bb87-901905347832}*SharedItemsImports = 5
-		..\..\DotNetBrightener.WebApp\Shared\SharedExtensions.Expression\SharedExtensions.Expression.projitems*{2194144f-fa80-4305-bb87-901905347832}*SharedItemsImports = 5
-		..\..\DotNetBrightener.WebApp\Shared\SharedExtensions.HttpContext\SharedExtensions.HttpContext.projitems*{2194144f-fa80-4305-bb87-901905347832}*SharedItemsImports = 5
-		..\..\DotNetBrightener.WebApp\Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{2194144f-fa80-4305-bb87-901905347832}*SharedItemsImports = 5
-		..\..\DotNetBrightener.WebApp\Shared\SharedExtensions.String\StringExtensions.projitems*{2194144f-fa80-4305-bb87-901905347832}*SharedItemsImports = 5
 		Shared\SharedExtensions.String\StringExtensions.projitems*{2cb41a59-4f22-4813-a509-a43bbc02dac2}*SharedItemsImports = 13
+		Shared\SharedExtensions.Exception\SharedExtensions.Exception.projitems*{35f8279b-db86-4412-b519-bc9ee20d4405}*SharedItemsImports = 5
 		Shared\SharedExtensions.Object\SharedExtensions.ObjectExtensions.projitems*{37fcad5c-ac17-49ef-966a-0b6e18c89276}*SharedItemsImports = 13
-		SharedExtensions\SharedExtensions.projitems*{59d960de-d770-4d0c-9ed7-e46e1bcd3a5a}*SharedItemsImports = 13
+		Shared\SharedExtensions.ServiceCollection\SharedExtensions.ServiceCollectionExtensions.projitems*{5b777c3c-ffe6-4c98-b9f6-dd7de4f11fb4}*SharedItemsImports = 5
+		Shared\SharedExtensions.String\StringExtensions.projitems*{5b777c3c-ffe6-4c98-b9f6-dd7de4f11fb4}*SharedItemsImports = 5
 		Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{6ee8521b-ca33-45a6-899d-bd48d8dccbac}*SharedItemsImports = 5
 		Shared\SharedExtensions.String\StringExtensions.projitems*{6ee8521b-ca33-45a6-899d-bd48d8dccbac}*SharedItemsImports = 5
+		Shared\SharedExtensions.Expression\SharedExtensions.Expression.projitems*{6ffc158f-337d-4001-8261-f22c5a757b67}*SharedItemsImports = 5
+		Shared\SharedExtensions.HttpContext\SharedExtensions.HttpContext.projitems*{6ffc158f-337d-4001-8261-f22c5a757b67}*SharedItemsImports = 5
+		Shared\SharedExtensions.Object\SharedExtensions.ObjectExtensions.projitems*{6ffc158f-337d-4001-8261-f22c5a757b67}*SharedItemsImports = 5
+		Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{6ffc158f-337d-4001-8261-f22c5a757b67}*SharedItemsImports = 5
+		Shared\SharedExtensions.ServiceCollection\SharedExtensions.ServiceCollectionExtensions.projitems*{6ffc158f-337d-4001-8261-f22c5a757b67}*SharedItemsImports = 5
+		Shared\SharedExtensions.String\StringExtensions.projitems*{6ffc158f-337d-4001-8261-f22c5a757b67}*SharedItemsImports = 5
 		Shared\SharedExtensions.XmlDocumentationHelper\SharedExtensions.XmlDocumentationHelper.projitems*{7d3709d1-1aa1-4f52-b6f1-0398f4977049}*SharedItemsImports = 5
-		..\..\DotNetBrightener.WebApp\Shared\SharedExtensions.ServiceCollection\SharedExtensions.ServiceCollectionExtensions.projitems*{8711c48c-09a0-4038-b6c3-3118ca1eb03f}*SharedItemsImports = 5
+		Shared\SharedExtensions.DateTimeProvider\DateTimeExtensions.projitems*{8aa48c89-69ee-47db-8ce4-b7b40b36a210}*SharedItemsImports = 13
 		Shared\SharedExtensions.ServiceCollection\SharedExtensions.ServiceCollectionExtensions.projitems*{8cd77910-a209-4fff-a324-dfb73f91d4da}*SharedItemsImports = 13
 		Shared\SharedExtensions.XmlDocumentationHelper\SharedExtensions.XmlDocumentationHelper.projitems*{949e66b2-8674-450a-b45b-b5c0e6530e59}*SharedItemsImports = 13
+		Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{9833380d-01cd-426d-9af7-6f11c8f13782}*SharedItemsImports = 5
+		Shared\SharedExtensions.String\StringExtensions.projitems*{9833380d-01cd-426d-9af7-6f11c8f13782}*SharedItemsImports = 5
+		Shared\SharedExtensions.DateTimeProvider\DateTimeExtensions.projitems*{a47dc5e2-cf25-4d04-b03f-26d87513f86c}*SharedItemsImports = 5
+		Shared\SharedExtensions.Exception\SharedExtensions.Exception.projitems*{a47dc5e2-cf25-4d04-b03f-26d87513f86c}*SharedItemsImports = 5
+		Shared\SharedExtensions.Expression\SharedExtensions.Expression.projitems*{a47dc5e2-cf25-4d04-b03f-26d87513f86c}*SharedItemsImports = 5
+		Shared\SharedExtensions.Object\SharedExtensions.ObjectExtensions.projitems*{a47dc5e2-cf25-4d04-b03f-26d87513f86c}*SharedItemsImports = 5
+		Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{a47dc5e2-cf25-4d04-b03f-26d87513f86c}*SharedItemsImports = 5
+		Shared\SharedExtensions.ServiceCollection\SharedExtensions.ServiceCollectionExtensions.projitems*{a47dc5e2-cf25-4d04-b03f-26d87513f86c}*SharedItemsImports = 5
+		Shared\SharedExtensions.String\StringExtensions.projitems*{a47dc5e2-cf25-4d04-b03f-26d87513f86c}*SharedItemsImports = 5
+		Shared\SharedExtensions.ServiceCollection\SharedExtensions.ServiceCollectionExtensions.projitems*{b57f410a-9dc3-4b02-bd94-b7de5ce96a9f}*SharedItemsImports = 5
+		Shared\SharedExtensions.Exception\SharedExtensions.Exception.projitems*{b89d0a74-e80d-44df-8d47-72b16c47dac4}*SharedItemsImports = 5
 		Shared\SharedExtensions.DateTime\DateTimeExtensions.projitems*{bb84ec03-5eb3-4baf-b342-db2247424702}*SharedItemsImports = 13
+		Shared\SharedExtensions.DateTimeProvider\DateTimeExtensions.projitems*{c489afdb-e2f3-45a7-8ab4-5990d092db8e}*SharedItemsImports = 5
 		Shared\SharedExtensions.DateTime\DateTimeExtensions.projitems*{c489afdb-e2f3-45a7-8ab4-5990d092db8e}*SharedItemsImports = 5
-		..\..\DotNetBrightener.WebApp\Shared\SharedExtensions.Exception\SharedExtensions.Exception.projitems*{cd6f4612-9fe5-46b8-ad17-8a67a1d931a6}*SharedItemsImports = 5
-		Shared\SharedExtensions.Exception\SharedExtensions.Exception.projitems*{d334553f-1c15-4141-820f-e947b4577859}*SharedItemsImports = 5
 		Shared\SharedExtensions.ServiceCollection\SharedExtensions.ServiceCollectionExtensions.projitems*{e0d3e777-c608-432c-9aea-b549c41b07fa}*SharedItemsImports = 5
 		Shared\SharedExtensions.Dictionary\SharedExtensions.Dictionary.projitems*{e4358d5e-109b-4050-a5b9-d4ff094754a4}*SharedItemsImports = 13
-		..\..\DotNetBrightener.WebApp\Shared\SharedExtensions.HttpContext\SharedExtensions.HttpContext.projitems*{eb78590d-83be-404a-b554-1e436ecd64f7}*SharedItemsImports = 13
-		..\..\DotNetBrightener.WebApp\Shared\SharedExtensions.Expression\SharedExtensions.Expression.projitems*{f1352330-7b16-4aaa-afed-e00123d80500}*SharedItemsImports = 5
-		..\..\DotNetBrightener.WebApp\Shared\SharedExtensions.HttpContext\SharedExtensions.HttpContext.projitems*{f1352330-7b16-4aaa-afed-e00123d80500}*SharedItemsImports = 5
-		..\..\DotNetBrightener.WebApp\Shared\SharedExtensions.Object\SharedExtensions.ObjectExtensions.projitems*{f1352330-7b16-4aaa-afed-e00123d80500}*SharedItemsImports = 5
-		..\..\DotNetBrightener.WebApp\Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{f1352330-7b16-4aaa-afed-e00123d80500}*SharedItemsImports = 5
-		..\..\DotNetBrightener.WebApp\Shared\SharedExtensions.ServiceCollection\SharedExtensions.ServiceCollectionExtensions.projitems*{f1352330-7b16-4aaa-afed-e00123d80500}*SharedItemsImports = 5
-		..\..\DotNetBrightener.WebApp\Shared\SharedExtensions.String\StringExtensions.projitems*{f1352330-7b16-4aaa-afed-e00123d80500}*SharedItemsImports = 5
+		Shared\SharedExtensions.HttpContext\SharedExtensions.HttpContext.projitems*{eb78590d-83be-404a-b554-1e436ecd64f7}*SharedItemsImports = 13
 		Shared\SharedExtensions.XmlDocumentationHelper\SharedExtensions.XmlDocumentationHelper.projitems*{f57e424a-9d77-4321-b557-377c63832857}*SharedItemsImports = 5
 		Shared\SharedExtensions.Exception\SharedExtensions.Exception.projitems*{fe4e97e2-286f-47ee-a7a9-aca29fd3e217}*SharedItemsImports = 13
-		..\..\DotNetBrightener.WebApp\Shared\SharedExtensions.MvcBuilder\SharedExtensions.MvcBuilder.projitems*{ff19be9f-9e7f-4b69-ac0c-f80ee2218228}*SharedItemsImports = 13
+		Shared\SharedExtensions.MvcBuilder\SharedExtensions.MvcBuilder.projitems*{ff19be9f-9e7f-4b69-ac0c-f80ee2218228}*SharedItemsImports = 13
 	EndGlobalSection
 EndGlobal

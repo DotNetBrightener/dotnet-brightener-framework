@@ -18,7 +18,7 @@ public static class LoggingEnableServiceCollectionExtensions
         serviceCollection.AddSingleton<IEventLogWatcher>((provider) =>
         {
             var eventLogWatcher = EventLoggingWatcher.Instance;
-            eventLogWatcher.SetServiceProvider(provider.GetService<TServiceProvider>()!);
+            eventLogWatcher.SetServiceScopeFactory(provider.GetService<IServiceScopeFactory>()!);
 
             return eventLogWatcher;
         });

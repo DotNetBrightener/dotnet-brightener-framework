@@ -6,7 +6,6 @@ using NLog;
 using NLog.Common;
 using NLog.Layouts;
 using NLog.Targets;
-// ReSharper disable ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
 
 namespace DotNetBrightener.Core.Logging;
 
@@ -22,8 +21,9 @@ public class EventLoggingWatcher : TargetWithLayout, IEventLogWatcher
         "[${longdate}] | ${aspnet-traceidentifier} | ${event-properties:item=EventId.Id} | [${logger}] | ${uppercase:${level}} | ${message} ${exception:format=ToString,StackTrace}";
 
     private readonly FileTarget           _fileTarget;
+    private readonly ConsoleTarget        _consoleTarget;
     private readonly Queue<EventLogModel> _queue = new();
-    private          IServiceProvider     _serviceProvider;
+    private          IServiceScopeFactory _serviceScopeFactory;
     private          bool                 _serviceProviderSet;
 
     public EventLoggingWatcher()
@@ -38,14 +38,16 @@ public class EventLoggingWatcher : TargetWithLayout, IEventLogWatcher
             MaxArchiveFiles = 30,
             Layout = Layout.FromString(DefaultLogLayout)
         };
+
+        _consoleTarget = new ConsoleTarget();
     }
     
-    internal void SetServiceProvider(IServiceProvider serviceProvider)
+    internal void SetServiceScopeFactory(IServiceScopeFactory serviceScopeFactory)
     {
         if (_serviceProviderSet)
             throw new InvalidOperationException("Service Provider can be configured once");
 
-        _serviceProvider    = serviceProvider;
+        _serviceScopeFactory    = serviceScopeFactory;
         _serviceProviderSet = true;
     }
 
@@ -59,9 +61,7 @@ public class EventLoggingWatcher : TargetWithLayout, IEventLogWatcher
     protected override void Write(LogEventInfo logEvent)
     {
         _fileTarget.WriteAsyncLogEvent(new AsyncLogEventInfo(logEvent, Continuation));
-
-        if (_serviceProvider == null) // when app not fully initialized, don't put logs to queue
-            return;
+        _consoleTarget.WriteAsyncLogEvent(new AsyncLogEventInfo(logEvent, Continuation));
 
         var eventLogModel = new EventLogModel
         {
@@ -77,24 +77,28 @@ public class EventLoggingWatcher : TargetWithLayout, IEventLogWatcher
             UserAgent        = RequestUserAgentLayoutRenderer.Render(logEvent)
         };
 
-        using (var scope = _serviceProvider.CreateScope())
-        {
-            var eventPublisher = scope.ServiceProvider.GetService<IEventPublisher>();
-            eventPublisher!.Publish(new EventLogEnqueueingEvent
-                            {
-                                EventLogRecord = eventLogModel
-                            })
-                           .Wait();
-        }
-
         _queue.Enqueue(eventLogModel);
+        
+        if (_serviceScopeFactory == null) // when app not fully initialized, don't put logs to queue
+            return;
+
+        using var scope = _serviceScopeFactory.CreateScope();
+
+        var eventPublisher = scope.ServiceProvider
+                                  .GetService<IEventPublisher>();
+
+        eventPublisher?.Publish(new EventLogEnqueueingEvent
+                        {
+                            EventLogRecord = eventLogModel
+                        })
+                       .Wait();
     }
 
     private void Continuation(Exception exception)
     {
         if (exception != null)
         {
-            // do something
+            Console.WriteLine(exception.ToString());
         }
     }
 }
