@@ -1,5 +1,6 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
+		<VersionPrefix>2022.7.1</VersionPrefix>
 		<PackageDescription>
 			A library that adds supports for friendly routing ASP.Net Core Application
 		</PackageDescription>
@@ -27,11 +28,6 @@
 	</ItemGroup>
 
 	<PropertyGroup>
-		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<NoWarn>1701;1702;1591;1574;1723</NoWarn>
-		<PackageLicenseFile>LICENSE</PackageLicenseFile>
-		<PackageIcon>dotnet-brightener-logo.png</PackageIcon>
-		<RepositoryType>git</RepositoryType>
 		<PackageTags>asp net core friendly url slug</PackageTags>
 		<Description>A library that adds friendly routing to ASP.Net Core Application</Description>
 		<PackageReleaseNotes>Adjusted the FrontEndRouter for flexibility of letting the consumer define what it wants to include in the router, to match their own system.</PackageReleaseNotes>

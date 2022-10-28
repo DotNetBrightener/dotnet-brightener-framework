@@ -10,6 +10,5 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)DateTimeExtensions.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)IDateTimeProvider.cs" />
   </ItemGroup>
 </Project>

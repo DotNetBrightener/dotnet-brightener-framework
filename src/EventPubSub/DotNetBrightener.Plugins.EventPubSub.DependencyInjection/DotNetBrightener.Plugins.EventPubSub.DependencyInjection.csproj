@@ -1,5 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
+	<PropertyGroup>
+		<VersionPrefix>2022.10.0</VersionPrefix>
+		<DNBLibraryVersion>2022.10.0</DNBLibraryVersion>
+	</PropertyGroup>
 	<ItemGroup>
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
 	</ItemGroup>

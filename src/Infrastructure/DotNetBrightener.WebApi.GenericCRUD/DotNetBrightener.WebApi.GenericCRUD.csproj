@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<VersionPrefix>2022.10.1</VersionPrefix>
+	</PropertyGroup>
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
+	<ItemGroup>
+	  <PackageReference Include="DotNetBrightener.DataAccess.Abstractions" Version="2022.10.1" />
+	  <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+	  <PackageReference Include="System.Linq.Dynamic.Core" Version="1.2.20" />
+	</ItemGroup>
+
+	<Import Project="..\..\Shared\SharedExtensions.Expression\SharedExtensions.Expression.projitems" Label="Shared" />
+
+	<Import Project="..\..\Shared\SharedExtensions.Dictionary\SharedExtensions.Dictionary.projitems" Label="Shared" />
+
+	<Import Project="..\..\Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems" Label="Shared" />
+
+	<Import Project="..\..\Shared\SharedExtensions.HttpContext\SharedExtensions.HttpContext.projitems" Label="Shared" />
+
+	<Import Project="..\..\Shared\SharedExtensions.String\StringExtensions.projitems" Label="Shared" />
+
+</Project>

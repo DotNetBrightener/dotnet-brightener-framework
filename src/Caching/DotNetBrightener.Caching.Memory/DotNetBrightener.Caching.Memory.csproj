@@ -1,5 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
+		<VersionPrefix>2022.10.0</VersionPrefix>
+		<DNBLibraryVersion>2022.10.0</DNBLibraryVersion>
 		<PackageId>DotNetBrightener.Caching.Memory</PackageId>
 		<Description>
 			A library that provides mechanism for caching data using memory cache

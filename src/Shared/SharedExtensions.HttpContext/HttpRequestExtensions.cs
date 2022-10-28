@@ -1,13 +1,15 @@
 ﻿/***
  *
- * Copyright (c) 2021 DotNetBrightener.
+ * Copyright (c) 2022 DotNetBrightener.
  * Licensed under MIT.
  * Feel free to use!!
- * https://gist.github.com/dotnetbrightener/e9bdacd19714685b24e143e5600fc2ee
+ * https://gist.github.com/JustinChasez/37c7c9ea910c191ff5a15e9fd7ae53ba
  ***/
 
 using System;
+using System.Linq;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.Extensions.Primitives;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.AspNetCore.Http;
@@ -26,19 +28,43 @@ internal static class HttpRequestExtensions
     {
         var requestUrl = request.GetDisplayUrl();
 
-        if (request.Headers.ContainsKey("x-forwarded-host"))
+        var uri  = new UriBuilder(requestUrl);
+        
+        if (request.Headers.ContainsKey("X-Forwarded-Proto"))
         {
-            request.Headers.TryGetValue("x-forwarded-host", out var host);
-            var uri = new UriBuilder(requestUrl)
-            {
-                Host = host,
-            };
-            uri.Port = uri.Scheme == "http" ? 80 : 443;
-            requestUrl = new Uri(uri.ToString()).GetComponents(UriComponents.AbsoluteUri & ~UriComponents.Port,
-                                                               UriFormat.UriEscaped);
+            request.Headers.TryGetValue("X-Forwarded-Proto", out var proto);
+            uri.Scheme = proto;
+            uri.Port   = uri.Scheme == "http" ? 80 : 443;
         }
 
+        requestUrl = new Uri(uri.ToString()).GetComponents(UriComponents.AbsoluteUri & ~UriComponents.Port,
+                                                           UriFormat.UriEscaped);
+
         return requestUrl;
+    }
+
+    /// <summary>
+    ///     Retrieves the IP Address from the client for the current Http Request
+    /// </summary>
+    /// <param name="request">The current Http Request</param>
+    /// <returns></returns>
+    public static string GetClientIP(this HttpContext currentContext)
+    {
+        if (currentContext is null)
+            return null;
+
+        StringValues ipString;
+
+        if (!currentContext.Request.Headers.TryGetValue("X-Forwarded-For", out ipString) &&
+            !currentContext.Request.Headers.TryGetValue("X-Real-IP", out ipString))
+            return currentContext.Connection?.RemoteIpAddress?.ToString();
+
+        if (ipString.Contains(","))
+            ipString = ipString.ToString()
+                               .Split(',')
+                               .First()
+                               .Trim();
+        return ipString;
     }
 
     /// <summary>
@@ -51,9 +77,8 @@ internal static class HttpRequestExtensions
     /// </returns>
     public static string GetRequestUrl(this IHttpContextAccessor httpContextAccessor)
     {
-        if (httpContextAccessor?.HttpContext?.Request == null)
-            return string.Empty;
-
-        return httpContextAccessor.HttpContext.Request.GetRequestUrl();
+        return httpContextAccessor?.HttpContext?.Request == null 
+                   ? string.Empty 
+                   : httpContextAccessor.HttpContext.Request.GetRequestUrl();
     }
 }

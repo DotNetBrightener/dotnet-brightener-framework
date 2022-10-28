@@ -1,5 +1,6 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
+		<VersionPrefix>2022.10.4</VersionPrefix>
 		<PackageDescription>
 			A library that provides the abilities to authorize the users with given permissions
 		</PackageDescription>

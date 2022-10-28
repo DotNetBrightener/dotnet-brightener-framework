@@ -1,5 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
+		<VersionPrefix>2022.10.0</VersionPrefix>
+		<DNBLibraryVersion>2022.10.0</DNBLibraryVersion>
 		<PackageId>DotNetBrightener.Core.Localization</PackageId>
 		<Description>A library that helps configuring Localization in ASP.Net Core applications with minimal efforts</Description>
 		<PackageDescription>$(Description)</PackageDescription>
