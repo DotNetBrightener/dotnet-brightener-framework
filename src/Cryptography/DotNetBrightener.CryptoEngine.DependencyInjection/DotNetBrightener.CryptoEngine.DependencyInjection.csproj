@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<VersionPrefix>2022.5.2</VersionPrefix>
 		<Description>A library that helps configuring DotNetBrightener.CryptoEngine in ASP.Net Core applications with minimal efforts</Description>
 		<PackageDescription>$(Description)</PackageDescription>
 	</PropertyGroup>
@@ -15,7 +14,7 @@
 	</ItemGroup>
 
 	<ItemGroup Condition="$(Configuration)=='Release'">
-		<PackageReference Include="DotNetBrightener.CryptoEngine" Version="2022.5.2" />
+		<PackageReference Include="DotNetBrightener.CryptoEngine" Version="$(DNBLibraryVersion)" />
 	</ItemGroup>
 
 </Project>

@@ -1,12 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<VersionPrefix>2022.10.0</VersionPrefix>
 		<PackageDescription>
 			A small library that provides central API for defining and executing certain job at the startup of the ASP.NET Core application
 		</PackageDescription>
 	</PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
 	</ItemGroup>
 
 </Project>

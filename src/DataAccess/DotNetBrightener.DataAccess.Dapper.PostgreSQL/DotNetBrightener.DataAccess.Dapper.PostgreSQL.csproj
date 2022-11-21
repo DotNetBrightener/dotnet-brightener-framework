@@ -1,9 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-	<PropertyGroup>
-		<VersionPrefix>2022.11.0</VersionPrefix>
-	</PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="Npgsql" Version="6.0.7" />
+		<PackageReference Include="Npgsql" Version="7.0.0" />
 	</ItemGroup>
 
 	<ItemGroup Condition="$(Configuration)=='Debug'">
@@ -12,8 +9,8 @@
 	</ItemGroup>
 
 	<ItemGroup Condition="$(Configuration)=='Release'">
-		<PackageReference Include="DotNetBrightener.DataAccess.Abstractions" Version="2022.11.0" />
-		<PackageReference Include="DotNetBrightener.DataAccess.Dapper" Version="2022.11.0" />
+		<PackageReference Include="DotNetBrightener.DataAccess.Abstractions" Version="2023.0.1" />
+		<PackageReference Include="DotNetBrightener.DataAccess.Dapper" Version="2023.0.1" />
 	</ItemGroup>
 
 	<ItemGroup>

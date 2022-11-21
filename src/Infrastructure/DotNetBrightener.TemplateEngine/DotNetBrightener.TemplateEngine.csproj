@@ -1,16 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-	<PropertyGroup>
-		<VersionPrefix>2022.10.1</VersionPrefix>
-	</PropertyGroup>
 	<ItemGroup>
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="DotNetBrightener.DataAccess.Abstractions" Version="2022.10.1" />
+		<PackageReference Include="DotNetBrightener.DataAccess.Abstractions" Version="2023.0.1" />
 		<PackageReference Include="Handlebars.Net" Version="2.1.2" />
-		<PackageReference Include="Handlebars.Net.Helpers" Version="2.3.5" />
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.1" />
-		<PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" />
+		<PackageReference Include="Handlebars.Net.Helpers" Version="2.3.7" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
 	</ItemGroup>
 	<ItemGroup>
 	  <None Update="docs\readme.md">

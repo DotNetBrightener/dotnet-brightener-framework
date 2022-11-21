@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<PackageId>DotNetBrightener.DataTransferObjectUtility</PackageId>
-		<VersionPrefix>2022.11.0</VersionPrefix>
+		<VersionPrefix>2023.0.1</VersionPrefix>
 		<VersionSuffix></VersionSuffix>
 		<Description>
 			A library that provides APIs to convert back and forth from entities to Data Transfer Objects (DTOs)
@@ -9,14 +9,14 @@
 		<PackageDescription>$(Description)</PackageDescription>
 
 		<PackageReleaseNotes>
-			* v2022.11.0: 
-				- Support ignoring properties with Javascript name convention (eg createdDate / CreatedDate)
+			* v2023.0.1: 
+				- Support NET 7
 		</PackageReleaseNotes>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-		<PackageReference Include="System.Linq.Dynamic.Core" Version="1.2.20" />
+		<PackageReference Include="System.Linq.Dynamic.Core" Version="1.2.23" />
 	</ItemGroup>
 
 	<Import Project="..\..\Shared\SharedExtensions.XmlDocumentationHelper\SharedExtensions.XmlDocumentationHelper.projitems" Label="Shared" />
