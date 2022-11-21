@@ -198,7 +198,7 @@ public abstract class SystemFileProvider : PhysicalFileProvider, ISystemFileProv
 
     private static string _NormalizePath(string path)
     {
-        return path.Trim('/', '\\')
+        return path.TrimEnd('/', '\\')
                    .Replace('/', Path.DirectorySeparatorChar)
                    .Replace('\\', Path.DirectorySeparatorChar);
     }

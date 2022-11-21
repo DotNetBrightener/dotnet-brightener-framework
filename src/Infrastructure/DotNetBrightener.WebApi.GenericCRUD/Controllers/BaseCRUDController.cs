@@ -1,17 +1,17 @@
-﻿using System;
+﻿using DotNetBrightener.DataAccess.Attributes;
+using DotNetBrightener.DataAccess.Models;
+using DotNetBrightener.DataAccess.Services;
+using DotNetBrightener.WebApi.GenericCRUD.ActionFilters;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using System.Net;
 using System.Threading.Tasks;
-using DotNetBrightener.DataAccess.Attributes;
-using DotNetBrightener.DataAccess.Models;
-using DotNetBrightener.DataAccess.Services;
 using DotNetBrightener.DataTransferObjectUtility;
-using DotNetBrightener.WebApi.GenericCRUD.ActionFilters;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 
 namespace DotNetBrightener.WebApi.GenericCRUD.Controllers;
 
@@ -90,7 +90,6 @@ public abstract class BaseCRUDController<TEntityType> : Controller where TEntity
         Response.Headers.Add("Result-Count", result.Count().ToString());
 
         // add expose header to support CORS
-        // TODO: Limit which domain to expose this header
         Response.Headers.Add("Access-Control-Expose-Headers",
                              "Result-Totals,Result-PageIndex,Result-PageSize,Result-Count," +
                              "Result-Totals,Result-PageIndex,Result-PageSize,Result-Count".ToLower());
@@ -140,6 +139,19 @@ public abstract class BaseCRUDController<TEntityType> : Controller where TEntity
 
         if (model is BaseEntity baseEntity)
         {
+            if (model is BaseEntityWithAuditInfo auditableEntity)
+            {
+                return StatusCode((int)HttpStatusCode.Created,
+                                  new
+                                  {
+                                      EntityId = baseEntity.Id,
+                                      auditableEntity.CreatedDate,
+                                      auditableEntity.CreatedBy,
+                                      auditableEntity.ModifiedDate,
+                                      auditableEntity.ModifiedBy
+                                  });
+            }
+
             return StatusCode((int) HttpStatusCode.Created,
                               new
                               {
@@ -178,7 +190,29 @@ public abstract class BaseCRUDController<TEntityType> : Controller where TEntity
         DataService.Update(entity);
         await PostUpdateEntity(entity);
 
-        return StatusCode((int) HttpStatusCode.OK);
+        if (entity is BaseEntity baseEntity)
+        {
+            if (entity is BaseEntityWithAuditInfo auditableEntity)
+            {
+                return StatusCode((int)HttpStatusCode.OK,
+                                  new
+                                  {
+                                      EntityId = baseEntity.Id,
+                                      auditableEntity.CreatedDate,
+                                      auditableEntity.CreatedBy,
+                                      auditableEntity.ModifiedDate,
+                                      auditableEntity.ModifiedBy
+                                  });
+            }
+
+            return StatusCode((int)HttpStatusCode.OK,
+                              new
+                              {
+                                  EntityId = baseEntity.Id
+                              });
+        }
+
+        return StatusCode((int)HttpStatusCode.OK);
     }
 
     [HttpDelete("{id:long}")]
@@ -482,8 +516,7 @@ public abstract class BaseCRUDController<TEntityType> : Controller where TEntity
         }
 
         var filteredResult =
-            entitiesQuery.Select(DataTransferObjectUtils
-                                    .BuildDtoSelectorExpressionFromEntity<TIn>(columnsToReturn));
+            entitiesQuery.Select(DataTransferObjectUtils.BuildDtoSelectorExpressionFromEntity<TIn>(columnsToReturn));
 
         return filteredResult;
     }

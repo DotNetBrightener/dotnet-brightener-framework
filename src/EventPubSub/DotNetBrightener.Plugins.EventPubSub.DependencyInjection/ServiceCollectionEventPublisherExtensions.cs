@@ -1,7 +1,6 @@
-﻿using System.Reflection;
-using DotNetBrightener.Plugins.EventPubSub;
-using DotNetBrightener.Plugins.EventPubSub.DependencyInjection.Internal;
+﻿using DotNetBrightener.Plugins.EventPubSub;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using System.Reflection;
 
 // ReSharper disable CheckNamespace
 namespace Microsoft.Extensions.DependencyInjection;
@@ -16,8 +15,6 @@ public static class ServiceCollectionEventPublisherExtensions
     /// </param>
     public static IServiceCollection AddEventPubSubService(this IServiceCollection serviceCollection)
     {
-        serviceCollection.AddSingleton<IEventPubSubBackgroundServiceProvider>(provider => new BackgroundServiceProvider(provider));
-
         // Event Pub/Sub
         serviceCollection.AddScoped<IEventPublisher, EventPublisher>();
 

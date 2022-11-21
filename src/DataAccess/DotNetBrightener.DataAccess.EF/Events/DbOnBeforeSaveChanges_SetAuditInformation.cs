@@ -29,7 +29,7 @@ public class DbOnBeforeSaveChanges_SetAuditInformation : IEventHandler<DbContext
                 var createdByPropName = nameof(BaseEntityWithAuditInfo.CreatedBy);
 
                 if (entry.Properties.Any(_ => _.Metadata.Name == createdByPropName) &&
-                    entry.Property(createdByPropName) != null)
+                    entry.Property(createdByPropName).CurrentValue == null)
                 {
                     entry.Property(createdByPropName).CurrentValue =
                         eventMessage.CurrentUserName ??
@@ -38,9 +38,9 @@ public class DbOnBeforeSaveChanges_SetAuditInformation : IEventHandler<DbContext
 
                 var createdDatePropName = nameof(BaseEntityWithAuditInfo.CreatedDate);
                 if (entry.Properties.Any(_ => _.Metadata.Name == createdDatePropName) &&
-                    entry.Property(createdDatePropName) != null)
+                    entry.Property(createdDatePropName).CurrentValue == null)
                 {
-                    entry.Property(createdDatePropName).CurrentValue = DateTimeOffset.Now;
+                    entry.Property(createdDatePropName).CurrentValue = DateTimeOffset.UtcNow;
                 }
             }
             catch (Exception error)
@@ -57,7 +57,7 @@ public class DbOnBeforeSaveChanges_SetAuditInformation : IEventHandler<DbContext
             {
                 var lastUpdatedByPropName = nameof(BaseEntityWithAuditInfo.ModifiedBy);
                 if (entry.Properties.Any(_ => _.Metadata.Name == lastUpdatedByPropName) &&
-                    entry.Property(lastUpdatedByPropName) != null)
+                    entry.Property(lastUpdatedByPropName).CurrentValue == null)
                 {
                     entry.Property(lastUpdatedByPropName).CurrentValue =
                         eventMessage.CurrentUserName ??
@@ -66,9 +66,9 @@ public class DbOnBeforeSaveChanges_SetAuditInformation : IEventHandler<DbContext
 
                 var lastUpdatedPropName = nameof(BaseEntityWithAuditInfo.ModifiedDate);
                 if (entry.Properties.Any(_ => _.Metadata.Name == lastUpdatedPropName) &&
-                    entry.Property(lastUpdatedPropName) != null)
+                    entry.Property(lastUpdatedPropName).CurrentValue == null)
                 {
-                    entry.Property(lastUpdatedPropName).CurrentValue = DateTimeOffset.Now;
+                    entry.Property(lastUpdatedPropName).CurrentValue = DateTimeOffset.UtcNow;
                 }
             }
             catch (Exception error)

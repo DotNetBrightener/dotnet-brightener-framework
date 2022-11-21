@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using DotNetBrightener.SimpleUploadService.Models;
 using DotNetBrightener.SimpleUploadService.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -36,7 +37,7 @@ public abstract class FileUploadController : ControllerBase
                 var fileUploadResult = await UploadService.Upload(file.OpenReadStream(),
                                                                   model,
                                                                   file.FileName,
-                                                                  Request.GetDisplayUrl());
+                                                                  Request.GetRequestUrl());
 
                 result.Add(fileUploadResult);
             }

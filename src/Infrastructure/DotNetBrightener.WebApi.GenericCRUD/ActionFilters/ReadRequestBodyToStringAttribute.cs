@@ -26,7 +26,7 @@ public class RequestBodyToStringAttribute: Attribute,
 
     private static readonly string[] SupportedMethods = 
     {
-        "POST", "PATCH"
+        "POST", "PATCH", "PUT"
     };
 
     public void OnAuthorization(AuthorizationFilterContext context)

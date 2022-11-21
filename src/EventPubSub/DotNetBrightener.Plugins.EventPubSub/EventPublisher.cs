@@ -12,16 +12,13 @@ public class EventPublisher : IEventPublisher
 {
     private readonly ConcurrentDictionary<object, Timer> _queue = new ConcurrentDictionary<object, Timer>();
     private readonly ILogger                             _logger;
-    private readonly IServiceProvider                    _serviceResolver;
-    private readonly IServiceProvider                    _backgroundServiceResolver;
+    private readonly IServiceScopeFactory                _serviceResolver;
 
-    public EventPublisher(IServiceProvider                      serviceResolver,
-                          IEventPubSubBackgroundServiceProvider backgroundServiceResolver,
-                          ILogger<EventPublisher>               logger)
+    public EventPublisher(IServiceScopeFactory    serviceResolver,
+                          ILogger<EventPublisher> logger)
     {
-        _logger                    = logger;
-        _serviceResolver           = serviceResolver;
-        _backgroundServiceResolver = backgroundServiceResolver;
+        _logger          = logger;
+        _serviceResolver = serviceResolver;
     }
 
     public Task Publish<T>(T eventMessage, bool runInBackground = false) where T : class, IEventMessage
@@ -46,11 +43,9 @@ public class EventPublisher : IEventPublisher
 
     private async Task PublishEvent<T>(T eventMessage, bool runInBackground = false) where T : class, IEventMessage
     {
-        var serviceProviderToUse = !runInBackground
-                                       ? _serviceResolver
-                                       : _backgroundServiceResolver;
+        var serviceProviderToUse = _serviceResolver.CreateScope();
 
-        using var serviceScope = serviceProviderToUse.CreateScope();
+        using var serviceScope = serviceProviderToUse;
 
         var eventHandlers = serviceScope.ServiceProvider
                                         .GetServices<IEventHandler<T>>()

@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<VersionPrefix>2022.10.0</VersionPrefix>
+		<VersionPrefix>2022.11.1</VersionPrefix>
 		<PackageDescription>
 			A Simple Upload API for ASP.NET Core Applications
 		</PackageDescription>
@@ -13,6 +13,7 @@
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
 	</ItemGroup>
 	<Import Project="..\..\Shared\SharedExtensions.Exception\SharedExtensions.Exception.projitems" Label="Shared" />
+	<Import Project="..\..\Shared\SharedExtensions.HttpContext\SharedExtensions.HttpContext.projitems" Label="Shared" />
 
 
 </Project>

@@ -1,4 +1,5 @@
 ﻿using DotNetBrightener.DataTransferObjectUtility.Internal;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,6 @@ using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using System.Reflection;
-using Newtonsoft.Json;
 
 namespace DotNetBrightener.DataTransferObjectUtility;
 
@@ -88,6 +88,11 @@ public static class DataTransferObjectUtils
             if (ignoreProperties.Contains(propertyInfo.Name))
                 continue;
 
+            var csConventionName = propertyInfo.Name[0].ToString().ToUpper() + propertyInfo.Name.Substring(1);
+
+            if (ignoreProperties.Contains(csConventionName))
+                continue;
+
             if (!TryPickPropAndValue(entityType, propertyInfo, out var destinationProp, out var value))
                 continue;
 
@@ -107,9 +112,9 @@ public static class DataTransferObjectUtils
     /// <returns>
     ///     The expression to initialize a new object of type <typeparamref name="T"/>
     /// </returns>
-    public static Expression<Func<T, T>> BuildMemberInitExpressionFromDto<T>(
-        object          dataTransferObject,
-        params string[] ignoreProperties) where T : class
+    public static Expression<Func<T, T>> BuildMemberInitExpressionFromDto<T>(object          dataTransferObject,
+                                                                             params string[] ignoreProperties)
+        where T : class
     {
         Type entityType           = typeof(T);
         var  newExpression        = Expression.New(entityType.GetConstructor(new Type[0])!);
@@ -124,6 +129,10 @@ public static class DataTransferObjectUtils
             if (ignoreProperties.Contains(propertyInfo.Name))
                 continue;
 
+            var csConventionName = propertyInfo.Name[0].ToString().ToUpper() + propertyInfo.Name.Substring(1);
+
+            if (ignoreProperties.Contains(csConventionName))
+                continue;
 
             if (!TryPickPropAndValue(entityType, propertyInfo, out var propertyOnEntity, out var valueToUpdate))
                 continue;
@@ -156,17 +165,18 @@ public static class DataTransferObjectUtils
     /// <returns>
     ///     The expression to initialize a dynamic data transfer object from type <typeparamref name="T"/>
     /// </returns>
-    public static Expression<Func<T, object>> BuildDtoSelectorExpressionFromEntity<T>(IEnumerable<string> propertiesList) where T : class
+    public static Expression<Func<T, object>> BuildDtoSelectorExpressionFromEntity<T>(
+        IEnumerable<string> propertiesList) where T : class
     {
         var properties = propertiesList != null
-                             ? propertiesList as string [ ] ?? propertiesList.ToArray()
+                             ? propertiesList as string[] ?? propertiesList.ToArray()
                              : Array.Empty<string>();
 
         if (properties.Length == 0)
         {
             throw new InvalidOperationException("Properties must be provided");
         }
-            
+
         var sourceQuery = Expression.Parameter(typeof(T), "o");
 
         List<DynamicProperty>                        mainPropertiesBinding = new();
@@ -203,8 +213,8 @@ public static class DataTransferObjectUtils
 
             prop = GetProperty<T>(propName);
 
-            if (prop == null || 
-                prop.HasAttribute<JsonIgnoreAttribute>() || 
+            if (prop == null ||
+                prop.HasAttribute<JsonIgnoreAttribute>() ||
                 prop.HasAttribute<System.Text.Json.Serialization.JsonIgnoreAttribute>())
                 continue;
 
@@ -315,7 +325,7 @@ public static class DataTransferObjectUtils
 
         if (prop == null)
         {
-            var csConventionName = propName [0].ToString().ToUpper() + propName.Substring(1);
+            var csConventionName = propName[0].ToString().ToUpper() + propName.Substring(1);
             prop = type.GetProperty(csConventionName);
         }
 
@@ -364,10 +374,12 @@ public static class DataTransferObjectUtils
         ///     Represents the type of the generic collection
         /// </summary>
         private Type _sourceGenericTypeArgument;
+
         /// <summary>
         ///     The type of enumerable generic, eg <seealso cref="IEnumerable{T}"/>
         /// </summary>
         private Type _enumerableGenericType;
+
         private Type _destinationResultTypeArgument;
 
         private readonly List<MemberAssignment> _memberAssignments = new List<MemberAssignment>();
@@ -421,10 +433,10 @@ public static class DataTransferObjectUtils
                 var lambda = EnumerableMethodHelpers.LambdaMethod.MakeGenericMethod(delegateType);
 
                 dynamic childSelector = lambda.Invoke(null,
-                                                      new object [ ]
+                                                      new object[]
                                                       {
                                                           _memberInitExpression,
-                                                          new [ ]
+                                                          new[]
                                                           {
                                                               _childSourceParameter
                                                           }

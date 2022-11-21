@@ -7,8 +7,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class LoggingEnableServiceCollectionExtensions
 {
-    public static IServiceCollection RegisterLoggingService<TServiceProvider>(this IServiceCollection serviceCollection)
-        where TServiceProvider : IServiceProvider
+    public static IServiceCollection RegisterLoggingService(this IServiceCollection serviceCollection)
     {
         serviceCollection.AddLogging();
 

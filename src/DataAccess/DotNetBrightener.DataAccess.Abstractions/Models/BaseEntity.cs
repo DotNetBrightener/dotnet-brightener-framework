@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DotNetBrightener.DataAccess.Attributes;
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace DotNetBrightener.DataAccess.Models;
@@ -22,20 +23,24 @@ public abstract class BaseEntityWithAuditInfo : BaseEntity
     /// <summary>
     ///     The date and time of record creation
     /// </summary>
+    [NoClientSideUpdate]
     public DateTimeOffset? CreatedDate { get; set; }
 
     /// <summary>
     ///     The name or identifier of the user who created the entity
     /// </summary>
+    [NoClientSideUpdate]
     public string CreatedBy { get; set; }
 
     /// <summary>
     ///     The date and time of last modification of the record
     /// </summary>
+    [NoClientSideUpdate]
     public DateTimeOffset? ModifiedDate { get; set; }
 
     /// <summary>
     ///     The name or identifier of the user who modified the entity
     /// </summary>
+    [NoClientSideUpdate]
     public string ModifiedBy { get; set; }
 }

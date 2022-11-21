@@ -73,8 +73,18 @@ public class Repository : IRepository
     public virtual async void Insert<T>(T entity)
         where T : class
     {
-        var entityEntry = DbContext.Entry(entity);
+        if (entity is BaseEntityWithAuditInfo auditableEntity)
+        {
+            auditableEntity.CreatedDate = auditableEntity.ModifiedDate = DateTimeOffset.Now;
 
+            if (string.IsNullOrEmpty(auditableEntity.CreatedBy))
+                auditableEntity.CreatedBy = CurrentLoggedInUserResolver.CurrentUserName;
+
+            auditableEntity.ModifiedBy = "RECORD_CREATED_EVENT";
+        }
+
+        var entityEntry = DbContext.Entry(entity);
+        
         if (entityEntry.State != EntityState.Detached)
         {
             entityEntry.State = EntityState.Added;
@@ -92,10 +102,15 @@ public class Repository : IRepository
                                     ? entities
                                     : entities.Select(_ =>
                                     {
-                                        if (_ is BaseEntityWithAuditInfo entity)
+                                        if (_ is BaseEntityWithAuditInfo auditableEntity)
                                         {
-                                            entity.CreatedDate = DateTimeOffset.Now;
-                                            entity.CreatedBy   = CurrentLoggedInUserResolver.CurrentUserName;
+                                            auditableEntity.CreatedDate =
+                                                auditableEntity.ModifiedDate = DateTimeOffset.Now;
+
+                                            if (string.IsNullOrEmpty(auditableEntity.CreatedBy))
+                                                auditableEntity.CreatedBy = CurrentLoggedInUserResolver.CurrentUserName;
+
+                                            auditableEntity.ModifiedBy = "RECORD_CREATED_EVENT";
                                         }
 
                                         return _;
@@ -116,6 +131,12 @@ public class Repository : IRepository
 
     public virtual void Update<T>(T entity) where T : class
     {
+        if (entity is BaseEntityWithAuditInfo auditableEntity)
+        {
+            auditableEntity.ModifiedDate = DateTimeOffset.Now;
+            auditableEntity.ModifiedBy   = CurrentLoggedInUserResolver.CurrentUserName;
+        }
+
         var entityEntry = DbContext.Entry(entity);
 
         if (entityEntry.State == EntityState.Detached)
@@ -130,14 +151,7 @@ public class Repository : IRepository
     {
         foreach (var entity in entities)
         {
-            var entityEntry = DbContext.Entry(entity);
-
-            if (entityEntry.State == EntityState.Detached)
-            {
-                DbContext.Set<T>().Attach(entity);
-            }
-
-            entityEntry.State = EntityState.Modified;
+            Update(entity);
         }
     }
 
@@ -281,12 +295,13 @@ public class Repository : IRepository
                                        .ToArray();
 
         EventPublisher.Publish(new DbContextBeforeSaveChanges
-        {
-            InsertedEntityEntries = insertedEntities,
-            UpdatedEntityEntries  = updatedEntities,
-            CurrentUserId         = CurrentLoggedInUserResolver.CurrentUserId,
-            CurrentUserName       = CurrentLoggedInUserResolver.CurrentUserName,
-        });
+                       {
+                           InsertedEntityEntries = insertedEntities,
+                           UpdatedEntityEntries  = updatedEntities,
+                           CurrentUserId         = CurrentLoggedInUserResolver.CurrentUserId,
+                           CurrentUserName       = CurrentLoggedInUserResolver.CurrentUserName,
+                       })
+                      .Wait();
     }
 
     public void OnAfterSaveChanges(EntityEntry[] insertedEntities, EntityEntry[] updatedEntities)

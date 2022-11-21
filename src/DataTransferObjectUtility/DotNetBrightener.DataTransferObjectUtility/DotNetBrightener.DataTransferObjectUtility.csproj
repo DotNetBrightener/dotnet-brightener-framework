@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<PackageId>DotNetBrightener.DataTransferObjectUtility</PackageId>
-		<VersionPrefix>2021.8.1</VersionPrefix>
+		<VersionPrefix>2022.11.0</VersionPrefix>
 		<VersionSuffix></VersionSuffix>
 		<Description>
 			A library that provides APIs to convert back and forth from entities to Data Transfer Objects (DTOs)
@@ -9,9 +9,8 @@
 		<PackageDescription>$(Description)</PackageDescription>
 
 		<PackageReleaseNotes>
-			* v2021.8.1: 
-				- Properties declared as virtual will not be updated
-				- Properties that are declared to be read-only will not be updated
+			* v2022.11.0: 
+				- Support ignoring properties with Javascript name convention (eg createdDate / CreatedDate)
 		</PackageReleaseNotes>
 	</PropertyGroup>
 
