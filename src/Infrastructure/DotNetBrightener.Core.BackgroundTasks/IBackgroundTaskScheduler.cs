@@ -123,9 +123,19 @@ public class BackgroundTaskScheduler : IBackgroundTaskScheduler, IDisposable
             if (declaringType == null)
                 return;
 
-            var invokingInstance = backgroundServiceProvider.TryGetService(declaringType);
+            _logger.LogInformation($"Trying to get instance of {declaringType}");
+            object invokingInstance = null;
 
-            if (invokingInstance == null)
+            try
+            {
+                invokingInstance = backgroundServiceProvider.TryGetService(declaringType);
+            }
+            catch (Exception ex) 
+            {
+                _logger.LogError(ex, $"Error while resolving instance of {declaringType}");
+            }
+
+            if (invokingInstance is null)
             {
                 _logger.LogError($"Unable to execute background queued task. Could not find the {declaringType.FullName} instance that can invoke the scheduled method");
 

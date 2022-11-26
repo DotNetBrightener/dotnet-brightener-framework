@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<VersionPrefix>2022.11.0</VersionPrefix>
+		<VersionPrefix>2022.10.2</VersionPrefix>
 		<PackageId>DotNetBrightener.Plugins.EventPubSub</PackageId>
 		<PackageDescription>
 			An event publisher / subscriber library for .Net Core Application

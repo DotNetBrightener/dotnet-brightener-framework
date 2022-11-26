@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using DotNetBrightener.Plugins.EventPubSub;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using NLog;
 using NLog.Common;
 using NLog.Layouts;
+using NLog.Loki;
 using NLog.Targets;
 
 namespace DotNetBrightener.Core.Logging;
@@ -22,6 +24,7 @@ public class EventLoggingWatcher : TargetWithLayout, IEventLogWatcher
 
     private readonly FileTarget           _fileTarget;
     private readonly ConsoleTarget        _consoleTarget;
+    private          LokiTarget           _lokiTarget;
     private readonly Queue<EventLogModel> _queue = new();
     private          IServiceScopeFactory _serviceScopeFactory;
     private          bool                 _serviceProviderSet;
@@ -51,6 +54,19 @@ public class EventLoggingWatcher : TargetWithLayout, IEventLogWatcher
         _serviceProviderSet = true;
     }
 
+    internal void SetLokiTarget(string lokiEndpoint)
+    {
+        if (_lokiTarget == null)
+        {
+            _lokiTarget = new LokiTarget
+            {
+                Layout = Layout.FromString(DefaultLogLayout)
+            };
+        }
+
+        _lokiTarget.Endpoint = lokiEndpoint;
+    }
+
     public List<EventLogModel> GetQueuedEventLogRecords()
     {
         List<EventLogModel> queuedEventLogRecords = new(_queue);
@@ -60,8 +76,11 @@ public class EventLoggingWatcher : TargetWithLayout, IEventLogWatcher
 
     protected override void Write(LogEventInfo logEvent)
     {
-        _fileTarget.WriteAsyncLogEvent(new AsyncLogEventInfo(logEvent, Continuation));
-        _consoleTarget.WriteAsyncLogEvent(new AsyncLogEventInfo(logEvent, Continuation));
+        var asyncLogEventInfo = new AsyncLogEventInfo(logEvent, Continuation);
+
+        _fileTarget.WriteAsyncLogEvent(asyncLogEventInfo);
+        _consoleTarget.WriteAsyncLogEvent(asyncLogEventInfo);
+        _lokiTarget?.WriteAsyncLogEvent(asyncLogEventInfo);
 
         var eventLogModel = new EventLogModel
         {
@@ -86,6 +105,19 @@ public class EventLoggingWatcher : TargetWithLayout, IEventLogWatcher
 
         var eventPublisher = scope.ServiceProvider
                                   .GetService<IEventPublisher>();
+
+        if (string.IsNullOrEmpty(eventLogModel.RequestUrl))
+        {
+            var httpContextAccessor = scope.ServiceProvider.GetService<IHttpContextAccessor>();
+
+            if (httpContextAccessor != null &&
+                httpContextAccessor.HttpContext != null)
+            {
+                eventLogModel.RequestUrl = httpContextAccessor.HttpContext.Request.GetRequestUrl();
+                eventLogModel.RemoteIpAddress = httpContextAccessor.HttpContext.GetClientIP();
+                eventLogModel.UserAgent = httpContextAccessor.HttpContext.Request.Headers.UserAgent;
+            }
+        }
 
         eventPublisher?.Publish(new EventLogEnqueueingEvent
                         {
