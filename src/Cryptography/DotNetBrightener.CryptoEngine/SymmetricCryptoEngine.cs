@@ -10,18 +10,16 @@ public static class SymmetricCryptoEngine
     {
         var toEncryptArray = Encoding.UTF8.GetBytes(textToEncrypt);
 
-        using (var hashmd5 = new MD5CryptoServiceProvider())
+        using (var hashmd5 = MD5.Create())
         {
             var keyArray = hashmd5.ComputeHash(Encoding.UTF8.GetBytes(encryptionKey));
             hashmd5.Clear();
 
-            using (var tdes = new TripleDESCryptoServiceProvider
-                   {
-                       Key = keyArray,              //set the secret key for the tripleDES algorithm
-                       Mode = CipherMode.ECB,       //mode of operation. there are other 4 modes. We choose ECB(Electronic code Book)
-                       Padding = PaddingMode.PKCS7  //padding mode(if any extra byte added)
-                   })
+            using (var tdes = TripleDES.Create())
             {
+                tdes.Key = keyArray;              //set the secret key for the tripleDES algorithm
+                tdes.Mode = CipherMode.ECB;       //mode of operation. there are other 4 modes. We choose ECB(Electronic code Book)
+                tdes.Padding = PaddingMode.PKCS7; //padding mode(if any extra byte added)
 
                 var cTransform = tdes.CreateEncryptor();
                 //transform the specified region of bytes array to resultArray
@@ -41,18 +39,16 @@ public static class SymmetricCryptoEngine
         var toEncryptArray = Convert.FromBase64String(textToDecrypt);
 
         //if hashing was used get the hash code with regards to your key
-        using (var hashmd5 = new MD5CryptoServiceProvider())
+        using (var hashmd5 = MD5.Create())
         {
             var keyArray = hashmd5.ComputeHash(Encoding.UTF8.GetBytes(encryptionKey));
             hashmd5.Clear();
 
-            using (var tdes = new TripleDESCryptoServiceProvider
-                   {
-                       Key = keyArray,               //set the secret key for the tripleDES algorithm
-                       Mode = CipherMode.ECB,        //mode of operation. there are other 4 modes. We choose ECB(Electronic code Book)
-                       Padding = PaddingMode.PKCS7   //padding mode(if any extra byte added)
-                   })
+            using (var tdes = TripleDES.Create())
             {
+                tdes.Key = keyArray;              //set the secret key for the tripleDES algorithm
+                tdes.Mode = CipherMode.ECB;       //mode of operation. there are other 4 modes. We choose ECB(Electronic code Book)
+                tdes.Padding = PaddingMode.PKCS7;
 
                 var cTransform = tdes.CreateDecryptor();
                 var resultArray = cTransform.TransformFinalBlock

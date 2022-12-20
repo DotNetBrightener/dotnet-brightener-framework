@@ -7,6 +7,7 @@ using Microsoft.Extensions.Hosting;
 using NLog;
 using NLog.Config;
 using NLog.Web;
+using System;
 using System.Collections.Generic;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -18,6 +19,8 @@ public static class LoggingEnableServiceCollectionExtensions
         hostBuilder.UseNLog()
                    .ConfigureLogging((context, builder) =>
                     {
+                        EventLoggingWatcher.Initialize(context.HostingEnvironment);
+
                         var logConfig = new LoggingConfiguration();
 
                         var loggingTarget = EventLoggingWatcher.Instance;
@@ -25,14 +28,13 @@ public static class LoggingEnableServiceCollectionExtensions
                         var logSettings = context.Configuration.GetSection("Logging:LogLevel")
                                                  .Get<Dictionary<string, LogLevel>>();
 
-                        var lokiEndpoint = context.Configuration.GetValue<string>("LokiEndpoint");
+                        LogLevel defaultLevel = null;
 
                         foreach (var setting in logSettings)
                         {
                             if (setting.Key == "Default")
                             {
-                                logConfig.AddRule(setting.Value, LogLevel.Fatal, loggingTarget, "*", true);
-
+                                defaultLevel = setting.Value;
                                 continue;
                             }
 
@@ -43,9 +45,16 @@ public static class LoggingEnableServiceCollectionExtensions
                                               true);
                         }
 
+                        if (defaultLevel != null)
+                        {
+                            logConfig.AddRule(defaultLevel, LogLevel.Fatal, loggingTarget, "*", true);
+                        }
+
+                        var lokiEndpoint = context.Configuration.GetValue<string>("LokiEndpoint");
+                        var lokiApplicationName = context.Configuration.GetValue<string>("LokiApplicationName");
                         if (!string.IsNullOrEmpty(lokiEndpoint))
                         {
-                            loggingTarget.SetLokiTarget(lokiEndpoint);
+                            loggingTarget.SetLokiTarget(lokiEndpoint, lokiApplicationName);
                         }
 
                         NLogBuilder.ConfigureNLog(logConfig);

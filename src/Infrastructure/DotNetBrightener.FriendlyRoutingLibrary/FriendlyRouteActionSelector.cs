@@ -423,13 +423,13 @@ public class FriendlyRouteActionSelector : IActionSelector
                 return 0;
             }
 
-            var hash = new HashCodeCombiner();
+            var hash = new HashCode();
             for (var i = 0; i < obj.Length; i++)
             {
                 hash.Add(obj[i], _valueComparer);
             }
 
-            return hash.CombinedHash;
+            return hash.ToHashCode();
         }
     }
 }

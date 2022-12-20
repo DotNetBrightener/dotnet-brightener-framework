@@ -9,6 +9,7 @@
 		<PackageDescription>
 			$(Description)
 		</PackageDescription>
+		<Platforms>AnyCPU;ARM64</Platforms>
 	</PropertyGroup>
 
 	<ItemGroup>

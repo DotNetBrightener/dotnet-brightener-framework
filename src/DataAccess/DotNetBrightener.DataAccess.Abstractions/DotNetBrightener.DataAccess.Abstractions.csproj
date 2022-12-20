@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<VersionPrefix>2022.11.0</VersionPrefix>
+		<Platforms>AnyCPU;ARM64</Platforms>
 	</PropertyGroup>
 	<PropertyGroup>
 		<RootNamespace>DotNetBrightener.DataAccess</RootNamespace>

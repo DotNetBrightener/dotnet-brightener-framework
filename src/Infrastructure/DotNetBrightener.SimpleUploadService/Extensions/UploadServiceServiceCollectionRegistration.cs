@@ -15,7 +15,6 @@ public static class UploadServiceServiceCollectionRegistration
     ///     Registers the Simple Upload APIs into the <paramref name="serviceCollection"/>
     /// </summary>
     /// <param name="serviceCollection">The <see cref="IServiceCollection"/></param>
-    /// <param name="configure"></param>
     /// <returns></returns>
     public static UploadServiceConfigurationBuilder RegisterSimpleUploadService(this IServiceCollection serviceCollection, 
                                                                                 string uploadFolderName = null)

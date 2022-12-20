@@ -5,6 +5,7 @@
 			A library that adds supports for friendly routing ASP.Net Core Application
 		</PackageDescription>
 		<RepositoryUrl>https://github.com/dotnetbrightener/dotnet-brightener-framework</RepositoryUrl>
+		<Platforms>AnyCPU;ARM64</Platforms>
 	</PropertyGroup>
 
 	<ItemGroup>

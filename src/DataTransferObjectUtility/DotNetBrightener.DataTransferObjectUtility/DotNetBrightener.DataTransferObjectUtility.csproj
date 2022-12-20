@@ -12,6 +12,8 @@
 			* v2022.11.0: 
 				- Support ignoring properties with Javascript name convention (eg createdDate / CreatedDate)
 		</PackageReleaseNotes>
+
+		<Platforms>AnyCPU;ARM64</Platforms>
 	</PropertyGroup>
 
 	<ItemGroup>

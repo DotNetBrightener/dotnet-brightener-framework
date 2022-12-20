@@ -18,7 +18,7 @@ public class TemplateTypeNotFoundException : Exception
     }
 
     public TemplateTypeNotFoundException(string templateTypeName, 
-                                         Exception? innerException)
+                                         Exception innerException)
         : this(templateTypeName,
                $"The requested template with type {templateTypeName} could not be found",
                innerException)
@@ -33,7 +33,7 @@ public class TemplateTypeNotFoundException : Exception
 
     public TemplateTypeNotFoundException(string templateTypeName, 
                                          string message, 
-                                         Exception? innerException)
+                                         Exception innerException)
         : base(message, innerException)
     {
         TemplateTypeName = templateTypeName;

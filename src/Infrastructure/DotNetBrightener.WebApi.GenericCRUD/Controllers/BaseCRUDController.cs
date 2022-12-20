@@ -29,7 +29,7 @@ public abstract class BaseCRUDController<TEntityType> : Controller where TEntity
     /// <summary>
     ///     The default query to fetch data
     /// </summary>
-    protected virtual Expression<Func<TEntityType, bool>>? DefaultQuery { get; set; }
+    protected virtual Expression<Func<TEntityType, bool>> DefaultQuery { get; set; }
 
     /// <summary>
     ///     The columns that will be always returned in case no columns is requested from the client
@@ -110,9 +110,9 @@ public abstract class BaseCRUDController<TEntityType> : Controller where TEntity
 
         var finalQuery = await PerformColumnsSelectorQuery(entityItemQuery);
 
-        var item = finalQuery.FirstOrDefault();
+        var item = finalQuery.FirstOrDefault() ?? null;
 
-        if (item == null)
+        if (item is null)
         {
             return StatusCode((int) HttpStatusCode.NotFound,
                               new 

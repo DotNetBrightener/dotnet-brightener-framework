@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
 namespace DotNetBrightener.TemplateEngine.Services
@@ -106,15 +107,93 @@ namespace DotNetBrightener.TemplateEngine.Services
             }
             else
             {
-                foreach (var templateRecord in templatesToUpdate)
+                //foreach (var templateRecord in templatesToUpdate)
+                //{
+                //    templateRecord.IsDeleted        = false;
+                //    templateRecord.Fields           = templateFields;
+                //    templateRecord.FromAssemblyName = assemblyName;
+                //}
+
+                //_repository.Update(templatesToUpdate);
+
+                _repository.UpdateMany(_ => _.TemplateType == type,
+                                       record => new TemplateRecord
+                                       {
+                                           IsDeleted        = false,
+                                           FieldsString     = string.Join(";", templateFields),
+                                           FromAssemblyName = assemblyName
+                                       });
+            }
+        }
+
+        public async Task RegisterTemplate<TTemplate>(string templateTitle, string templateContent) where TTemplate : ITemplateModel
+        {
+            if (!CheckCanProcessTemplate())
+                return;
+
+            _templateContainer.RegisterTemplate<TTemplate>();
+
+            var type = typeof(TTemplate).FullName;
+
+            var templateFields = GetTemplateFields<TTemplate>();
+            var assemblyName   = typeof(TTemplate).Assembly.GetName().Name;
+
+            _logger.LogInformation($"Registering template type {type}");
+
+            var templatesToUpdate = _repository.Fetch(x => x.TemplateType == type);
+
+            if (!templatesToUpdate.Any())
+            {
+                _logger.LogInformation($"No template type {type} registered. Inserting new record...");
+                var templateRecord = new TemplateRecord
                 {
-                    templateRecord.IsDeleted        = false;
-                    templateRecord.Fields           = templateFields;
-                    templateRecord.FromAssemblyName = assemblyName;
+                    TemplateType     = type,
+                    TemplateContent  = templateContent,
+                    TemplateTitle    = templateTitle,
+                    CreatedDate      = DateTimeOffset.Now,
+                    ModifiedDate     = DateTimeOffset.Now,
+                    Fields           = templateFields,
+                    FromAssemblyName = assemblyName
+                };
 
-                }
+                await _repository.InsertAsync(templateRecord);
+            }
+            else
+            {
+                _repository.UpdateMany(_ => _.TemplateType == type,
+                                       record => new TemplateRecord
+                                       {
+                                           IsDeleted        = false,
+                                           FieldsString     = string.Join(";", templateFields),
+                                           FromAssemblyName = assemblyName
+                                       });
 
-                _repository.Update(templatesToUpdate);
+                _repository.UpdateMany(_ => _.TemplateType == type && string.IsNullOrEmpty(_.TemplateContent),
+                                       record => new TemplateRecord
+                                       {
+                                           TemplateContent = templateContent
+                                       });
+
+                _repository.UpdateMany(_ => _.TemplateType == type && string.IsNullOrEmpty(_.TemplateTitle),
+                                       record => new TemplateRecord
+                                       {
+                                           TemplateTitle = templateTitle
+                                       });
+
+                //foreach (var templateRecord in templatesToUpdate)
+                //{
+                //    templateRecord.IsDeleted        = false;
+                //    templateRecord.Fields           = templateFields;
+                //    templateRecord.FromAssemblyName = assemblyName;
+
+                //    if (string.IsNullOrEmpty(templateRecord.TemplateTitle))
+                //        templateRecord.TemplateTitle = templateTitle;
+
+                //    if (string.IsNullOrEmpty(templateRecord.TemplateContent))
+                //        templateRecord.TemplateContent = templateContent;
+                //}
+
+                //_repository.Update(templatesToUpdate);
             }
         }
 

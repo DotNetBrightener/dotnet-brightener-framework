@@ -21,15 +21,13 @@ public class CryptoUtilities
     /// </returns>
     public static string CreateRandomToken(int saltSize = 64)
     {
-        var provider = new RNGCryptoServiceProvider();
         if (saltSize == 0)
         {
             var rnd = new Random();
             saltSize = rnd.Next(DefaultSaltSize, DefaultSaltSize * 5);
         }
 
-        var bytes = new byte[saltSize];
-        provider.GetBytes(bytes);
+        var bytes = RandomNumberGenerator.GetBytes(saltSize);
 
         return Convert.ToBase64String(bytes);
     }

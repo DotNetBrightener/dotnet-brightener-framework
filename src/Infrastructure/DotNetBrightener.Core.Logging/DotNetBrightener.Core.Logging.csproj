@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<VersionPrefix>2022.11.0</VersionPrefix>
+		<Platforms>AnyCPU;ARM64</Platforms>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -8,7 +9,6 @@
 		<PackageReference Include="DotNetBrightener.DataTransferObjectUtility" Version="2021.8.1" />
 		<PackageReference Include="DotNetBrightener.Plugins.EventPubSub" Version="2022.10.0" />
 		<PackageReference Include="NLog.Web.AspNetCore" Version="5.1.4" />
-		<PackageReference Include="NLog.Targets.Loki" Version="1.4.5" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -17,12 +17,11 @@ public static class PasswordUtilities
     /// <returns>Random string of password salt</returns>
     public static string CreatePasswordSalt()
     {
-        var provider       = new RNGCryptoServiceProvider();
         var rnd            = new Random();
         var randomSaltSite = rnd.Next(DefaultSaltSize, DefaultSaltSize * 5);
-        var bytes          = new byte[randomSaltSite];
-        provider.GetBytes(bytes);
-        var result = string.Concat(Convert.ToBase64String(bytes), GenerateRandomString());
+        var bytes          = RandomNumberGenerator.GetBytes(randomSaltSite);
+        var result         = string.Concat(Convert.ToBase64String(bytes), GenerateRandomString());
+
         return result;
     }
 
@@ -85,9 +84,9 @@ public static class PasswordUtilities
     /// <returns>An encrypted password</returns>
     public static string CreatePasswordHash(string password, string passwordSalt)
     {
-        var  passwordAndSalt = string.Concat(password, passwordSalt);
-        var  bytes           = Encoding.Unicode.GetBytes(passwordAndSalt);
-        SHA1 provider        = new SHA1Managed();
+        var        passwordAndSalt = string.Concat(password, passwordSalt);
+        var        bytes           = Encoding.Unicode.GetBytes(passwordAndSalt);
+        using SHA1 provider        = SHA1.Create();
         bytes = provider.ComputeHash(bytes);
         var result = Convert.ToBase64String(bytes);
 

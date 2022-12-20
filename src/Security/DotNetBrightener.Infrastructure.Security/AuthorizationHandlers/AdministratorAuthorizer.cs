@@ -9,12 +9,12 @@ namespace DotNetBrightener.Infrastructure.Security.AuthorizationHandlers;
 
 public class AdministratorAuthorizer : IAuthorizationHandler
 {
-    public async Task HandleAsync(AuthorizationHandlerContext context)
+    public Task HandleAsync(AuthorizationHandlerContext context)
     {
         var userRole = context?.User?.FindFirstValue(CommonUserClaimKeys.UserRole);
         if (userRole == null)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         // if user is an administrator, allow all permissions
@@ -22,6 +22,8 @@ public class AdministratorAuthorizer : IAuthorizationHandler
         {
             GrantAllPermissions(context);
         }
+
+        return Task.CompletedTask;
     }
 
     private static void GrantAllPermissions(AuthorizationHandlerContext context)
