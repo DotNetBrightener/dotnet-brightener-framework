@@ -3,6 +3,7 @@
 		<PackageDescription>
 			A Simple Upload API for ASP.NET Core Applications
 		</PackageDescription>
+		<Platforms>AnyCPU;ARM64</Platforms>
 	</PropertyGroup>
 	<ItemGroup>
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />

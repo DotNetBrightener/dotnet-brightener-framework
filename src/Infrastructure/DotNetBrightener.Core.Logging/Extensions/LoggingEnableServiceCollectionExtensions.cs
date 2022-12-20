@@ -1,27 +1,80 @@
 // ReSharper disable CheckNamespace
 
-using System;
 using DotNetBrightener.Core.Logging;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+using NLog;
+using NLog.Config;
+using NLog.Web;
+using System;
+using System.Collections.Generic;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
 public static class LoggingEnableServiceCollectionExtensions
 {
-    public static IServiceCollection RegisterLoggingService(this IServiceCollection serviceCollection)
+    public static IHostBuilder UseNLogLogging(this IHostBuilder hostBuilder)
     {
-        serviceCollection.AddLogging();
+        hostBuilder.UseNLog()
+                   .ConfigureLogging((context, builder) =>
+                    {
+                        EventLoggingWatcher.Initialize(context.HostingEnvironment);
 
-        serviceCollection.AddScoped<IEventLogDataService, EventLogDataService>();
-        serviceCollection.AddScoped<IQueueEventLogBackgroundProcessing, QueueEventLogBackgroundProcessing>();
+                        var logConfig = new LoggingConfiguration();
 
-        serviceCollection.AddSingleton<IEventLogWatcher>((provider) =>
-        {
-            var eventLogWatcher = EventLoggingWatcher.Instance;
-            eventLogWatcher.SetServiceScopeFactory(provider.GetService<IServiceScopeFactory>()!);
+                        var loggingTarget = EventLoggingWatcher.Instance;
 
-            return eventLogWatcher;
-        });
+                        var logSettings = context.Configuration.GetSection("Logging:LogLevel")
+                                                 .Get<Dictionary<string, LogLevel>>();
 
-        return serviceCollection;
+                        LogLevel defaultLevel = null;
+
+                        foreach (var setting in logSettings)
+                        {
+                            if (setting.Key == "Default")
+                            {
+                                defaultLevel = setting.Value;
+                                continue;
+                            }
+
+                            logConfig.AddRule(setting.Value,
+                                              LogLevel.Fatal,
+                                              loggingTarget,
+                                              setting.Key.Trim('.') + ".*",
+                                              true);
+                        }
+
+                        if (defaultLevel != null)
+                        {
+                            logConfig.AddRule(defaultLevel, LogLevel.Fatal, loggingTarget, "*", true);
+                        }
+
+                        var lokiEndpoint = context.Configuration.GetValue<string>("LokiEndpoint");
+                        var lokiApplicationName = context.Configuration.GetValue<string>("LokiApplicationName");
+                        if (!string.IsNullOrEmpty(lokiEndpoint))
+                        {
+                            loggingTarget.SetLokiTarget(lokiEndpoint, lokiApplicationName);
+                        }
+
+                        NLogBuilder.ConfigureNLog(logConfig);
+                        LogManager.Configuration.Variables["configDir"] = context.HostingEnvironment.ContentRootPath;
+                    })
+                   .ConfigureServices((hostBuilderContext, serviceCollection) =>
+                    {
+                        serviceCollection.AddScoped<IEventLogDataService, EventLogDataService>();
+                        serviceCollection
+                           .AddScoped<IQueueEventLogBackgroundProcessing, QueueEventLogBackgroundProcessing>();
+
+                        serviceCollection.AddSingleton<IEventLogWatcher>((provider) =>
+                        {
+                            var eventLogWatcher = EventLoggingWatcher.Instance;
+                            eventLogWatcher.SetServiceScopeFactory(provider.GetService<IServiceScopeFactory>()!);
+
+                            return eventLogWatcher;
+                        });
+                    });
+
+        return hostBuilder;
     }
 }

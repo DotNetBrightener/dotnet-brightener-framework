@@ -3,6 +3,7 @@
 	<PropertyGroup>
 		<Description>A library that helps configuring DotNetBrightener.CryptoEngine in ASP.Net Core applications with minimal efforts</Description>
 		<PackageDescription>$(Description)</PackageDescription>
+		<Platforms>AnyCPU;ARM64</Platforms>
 	</PropertyGroup>
 
 	<ItemGroup>

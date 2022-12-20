@@ -536,9 +536,9 @@ public static class RsaCryptoEngine
             byte[] signedBytes   = Convert.FromBase64String(signature);
             try
             {
-                SHA512Managed Hash = new SHA512Managed();
+                using var hash = SHA512.Create();
 
-                byte[] hashedData = Hash.ComputeHash(signedBytes);
+                byte[] hashedData = hash.ComputeHash(signedBytes);
 
                 success = rsa.VerifyData(bytesToVerify, CryptoConfig.MapNameToOID("SHA512"), signedBytes);
             }

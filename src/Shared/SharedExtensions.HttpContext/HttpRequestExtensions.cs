@@ -46,7 +46,6 @@ internal static class HttpRequestExtensions
     /// <summary>
     ///     Retrieves the IP Address from the client for the current Http Request
     /// </summary>
-    /// <param name="request">The current Http Request</param>
     /// <returns></returns>
     public static string GetClientIP(this HttpContext currentContext)
     {

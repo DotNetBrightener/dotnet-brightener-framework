@@ -8,6 +8,8 @@
 			2023.0.1: 
 				- Support NET7
 		</PackageReleaseNotes>
+
+		<Platforms>AnyCPU;ARM64</Platforms>
 	</PropertyGroup>
 	
 	<ItemGroup>

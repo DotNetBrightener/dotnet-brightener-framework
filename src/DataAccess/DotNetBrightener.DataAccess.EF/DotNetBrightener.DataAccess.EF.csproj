@@ -1,4 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<VersionPrefix>2022.11.0</VersionPrefix>
+		<Platforms>AnyCPU;ARM64</Platforms>
+	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="linq2db.EntityFrameworkCore" Version="6.10.0" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.0" />
