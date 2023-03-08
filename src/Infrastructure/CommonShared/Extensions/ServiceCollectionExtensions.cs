@@ -36,7 +36,6 @@ public static class ServiceCollectionExtensions
 
         serviceCollection.AddOptions();
         serviceCollection.AddLocalization();
-        serviceCollection.AddSystemDateTimeProvider();
         serviceCollection.AddCryptoEngine(configuration);
         
         serviceCollection.EnableCachingService();
