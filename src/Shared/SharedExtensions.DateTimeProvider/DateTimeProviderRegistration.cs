@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Microsoft.Extensions.DependencyInjection.Extensions;
+﻿namespace Microsoft.Extensions.DependencyInjection.Extensions;
 
 internal static class DateTimeProviderRegistration
 {

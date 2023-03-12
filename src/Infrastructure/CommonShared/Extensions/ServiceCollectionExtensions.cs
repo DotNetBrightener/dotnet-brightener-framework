@@ -1,8 +1,4 @@
-﻿using DotNetBrightener.CommonShared.BackgroundTasks;
-using DotNetBrightener.CommonShared.Mvc;
-using DotNetBrightener.CommonShared.Services;
-using DotNetBrightener.CommonShared.StartupTasks;
-using DotNetBrightener.Core.BackgroundTasks;
+﻿using DotNetBrightener.CommonShared.Mvc;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -16,7 +12,6 @@ using System.Reflection;
 using DotNetBrightener.Caching;
 using DotNetBrightener.Caching.Memory;
 using DotNetBrightener.CryptoEngine.DependencyInjection;
-using DotNetBrightener.Infrastructure.Security.Extensions;
 
 namespace DotNetBrightener.CommonShared.Extensions;
 

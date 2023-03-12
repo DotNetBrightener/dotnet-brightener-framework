@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
-using Microsoft.VisualBasic;
 using Newtonsoft.Json;
 
 namespace DotNetBrightener.CommonShared.Mvc;

@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.DotNet.PlatformAbstractions;
 using Microsoft.Extensions.Logging;
 
 namespace DotNetBrightener.FriendlyRoutingLibrary;

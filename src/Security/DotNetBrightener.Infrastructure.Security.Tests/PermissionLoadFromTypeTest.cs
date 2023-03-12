@@ -1,5 +1,4 @@
 using System.Linq;
-using DotNetBrightener.Infrastructure.Security.Extensions;
 using DotNetBrightener.Infrastructure.Security.Services;
 using NUnit.Framework;
 

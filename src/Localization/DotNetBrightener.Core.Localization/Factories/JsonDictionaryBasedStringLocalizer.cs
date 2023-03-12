@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using DotNetBrightener.Core.Localization.Services;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 
