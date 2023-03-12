@@ -27,6 +27,6 @@
 	</ItemGroup>
 
 	<ItemGroup Condition="$(Configuration)=='Release'">
-		<PackageReference Include="DotNetBrightener.Caching.Abstractions" Version="$(DNBLibraryVersion)" />
+		<PackageReference Include="DotNetBrightener.Caching.Abstractions" Version="$(LibVersion)" />
 	</ItemGroup>
 </Project>

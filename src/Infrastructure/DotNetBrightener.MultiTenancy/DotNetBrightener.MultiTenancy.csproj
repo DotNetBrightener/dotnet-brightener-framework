@@ -1,10 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<ItemGroup>
-		<PackageReference Include="DotNetBrightener.Caching.Abstractions" Version="2023.0.1" />
-		<PackageReference Include="DotNetBrightener.DataAccess.EF" Version="2023.0.1" />
-		<PackageReference Include="DotNetBrightener.Infrastructure.Security" Version="2023.0.1" />
-		<PackageReference Include="DotNetBrightener.Plugins.EventPubSub" Version="2023.0.1" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.0" />
+		<PackageReference Include="DotNetBrightener.Caching.Abstractions" Version="$(LibVersion)" />
+		<PackageReference Include="DotNetBrightener.DataAccess.EF" Version="$(LibVersion)" />
+		<PackageReference Include="DotNetBrightener.Infrastructure.Security" Version="$(LibVersion)" />
+		<PackageReference Include="DotNetBrightener.Plugins.EventPubSub" Version="$(LibVersion)" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.3" />
+	</ItemGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\..\Security\DotNetBrightener.Infrastructure.Security\DotNetBrightener.Infrastructure.Security.csproj" />
 	</ItemGroup>
 	<ItemGroup>
 	  <None Update="docs\readme.md">

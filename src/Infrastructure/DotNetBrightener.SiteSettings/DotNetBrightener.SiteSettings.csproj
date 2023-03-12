@@ -3,11 +3,11 @@
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="DotNetBrightener.Caching.Abstractions" Version="2023.0.1" />
-		<PackageReference Include="DotNetBrightener.DataAccess.Abstractions" Version="2023.0.1" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Localization" Version="7.0.0" />
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+		<PackageReference Include="DotNetBrightener.Caching.Abstractions" Version="$(LibVersion)" />
+		<PackageReference Include="DotNetBrightener.DataAccess.Abstractions" Version="$(LibVersion)" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.3" />
+		<PackageReference Include="Microsoft.Extensions.Localization" Version="7.0.3" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 	</ItemGroup>
 	<ItemGroup>
 	  <None Update="docs\readme.md">

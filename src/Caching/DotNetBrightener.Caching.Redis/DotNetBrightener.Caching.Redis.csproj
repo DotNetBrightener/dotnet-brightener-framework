@@ -15,8 +15,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-		<PackageReference Include="StackExchange.Redis" Version="2.6.70" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+		<PackageReference Include="StackExchange.Redis" Version="2.6.96" />
 	</ItemGroup>
 
 	<ItemGroup Condition="$(Configuration)=='Debug'">
@@ -24,6 +24,6 @@
 	</ItemGroup>
 
 	<ItemGroup Condition="$(Configuration)=='Release'">
-		<PackageReference Include="DotNetBrightener.Caching.Abstractions" Version="$(DNBLibraryVersion)" />
+		<PackageReference Include="DotNetBrightener.Caching.Abstractions" Version="$(LibVersion)" />
 	</ItemGroup>
 </Project>

@@ -1,14 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<ItemGroup>
-		<PackageReference Include="DotNetBrightener.DataAccess.Abstractions" Version="$(DNBLibraryVersion)" />
-		<PackageReference Include="DotNetBrightener.DataTransferObjectUtility" Version="$(DNBLibraryVersion)" />
-		<PackageReference Include="DotNetBrightener.Plugins.EventPubSub" Version="$(DNBLibraryVersion)" />
-		<PackageReference Include="NLog.Web.AspNetCore" Version="5.1.5" />
+		<PackageReference Include="DotNetBrightener.DataAccess.Abstractions" Version="$(LibVersion)" />
+		<PackageReference Include="DotNetBrightener.DataTransferObjectUtility" Version="$(LibVersion)" />
+		<PackageReference Include="DotNetBrightener.Plugins.EventPubSub" Version="$(LibVersion)" />
+		<PackageReference Include="NLog.Web.AspNetCore" Version="5.2.2" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\..\DataTransferObjectUtility\DotNetBrightener.DataTransferObjectUtility\DotNetBrightener.DataTransferObjectUtility.csproj" />
+	  <ProjectReference Include="..\..\EventPubSub\DotNetBrightener.Plugins.EventPubSub\DotNetBrightener.Plugins.EventPubSub.csproj" />
 	</ItemGroup>
 
 	<Import Project="..\..\Shared\SharedExtensions.Exception\SharedExtensions.Exception.projitems" Label="Shared" />

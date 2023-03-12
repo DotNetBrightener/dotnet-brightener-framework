@@ -109,6 +109,8 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SharedExtensions.MvcBuilder
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.SiteSettings", "Infrastructure\DotNetBrightener.SiteSettings\DotNetBrightener.SiteSettings.csproj", "{5B777C3C-FFE6-4C98-B9F6-DD7DE4F11FB4}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommonShared", "Infrastructure\CommonShared\CommonShared.csproj", "{955D542A-3924-4336-A903-C9D94C12B35A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -341,6 +343,14 @@ Global
 		{5B777C3C-FFE6-4C98-B9F6-DD7DE4F11FB4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5B777C3C-FFE6-4C98-B9F6-DD7DE4F11FB4}.Release|ARM64.ActiveCfg = Release|ARM64
 		{5B777C3C-FFE6-4C98-B9F6-DD7DE4F11FB4}.Release|ARM64.Build.0 = Release|ARM64
+		{955D542A-3924-4336-A903-C9D94C12B35A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{955D542A-3924-4336-A903-C9D94C12B35A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{955D542A-3924-4336-A903-C9D94C12B35A}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{955D542A-3924-4336-A903-C9D94C12B35A}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{955D542A-3924-4336-A903-C9D94C12B35A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{955D542A-3924-4336-A903-C9D94C12B35A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{955D542A-3924-4336-A903-C9D94C12B35A}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{955D542A-3924-4336-A903-C9D94C12B35A}.Release|ARM64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -386,6 +396,7 @@ Global
 		{EB78590D-83BE-404A-B554-1E436ECD64F7} = {7205287C-4CD6-4E4D-830D-46F0BBEBB605}
 		{FF19BE9F-9E7F-4B69-AC0C-F80EE2218228} = {7205287C-4CD6-4E4D-830D-46F0BBEBB605}
 		{5B777C3C-FFE6-4C98-B9F6-DD7DE4F11FB4} = {8BCFD1A4-6EB1-422B-8A50-E3CB83C8F600}
+		{955D542A-3924-4336-A903-C9D94C12B35A} = {8BCFD1A4-6EB1-422B-8A50-E3CB83C8F600}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CBA29A5C-A736-4EB9-8D61-8E76924706CD}
@@ -418,6 +429,12 @@ Global
 		Shared\SharedExtensions.DateTimeProvider\DateTimeExtensions.projitems*{8aa48c89-69ee-47db-8ce4-b7b40b36a210}*SharedItemsImports = 13
 		Shared\SharedExtensions.ServiceCollection\SharedExtensions.ServiceCollectionExtensions.projitems*{8cd77910-a209-4fff-a324-dfb73f91d4da}*SharedItemsImports = 13
 		Shared\SharedExtensions.XmlDocumentationHelper\SharedExtensions.XmlDocumentationHelper.projitems*{949e66b2-8674-450a-b45b-b5c0e6530e59}*SharedItemsImports = 13
+		Shared\SharedExtensions.Exception\SharedExtensions.Exception.projitems*{955d542a-3924-4336-a903-c9d94c12b35a}*SharedItemsImports = 5
+		Shared\SharedExtensions.Expression\SharedExtensions.Expression.projitems*{955d542a-3924-4336-a903-c9d94c12b35a}*SharedItemsImports = 5
+		Shared\SharedExtensions.Object\SharedExtensions.ObjectExtensions.projitems*{955d542a-3924-4336-a903-c9d94c12b35a}*SharedItemsImports = 5
+		Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{955d542a-3924-4336-a903-c9d94c12b35a}*SharedItemsImports = 5
+		Shared\SharedExtensions.ServiceCollection\SharedExtensions.ServiceCollectionExtensions.projitems*{955d542a-3924-4336-a903-c9d94c12b35a}*SharedItemsImports = 5
+		Shared\SharedExtensions.String\StringExtensions.projitems*{955d542a-3924-4336-a903-c9d94c12b35a}*SharedItemsImports = 5
 		Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{9833380d-01cd-426d-9af7-6f11c8f13782}*SharedItemsImports = 5
 		Shared\SharedExtensions.String\StringExtensions.projitems*{9833380d-01cd-426d-9af7-6f11c8f13782}*SharedItemsImports = 5
 		Shared\SharedExtensions.ServiceCollection\SharedExtensions.ServiceCollectionExtensions.projitems*{b57f410a-9dc3-4b02-bd94-b7de5ce96a9f}*SharedItemsImports = 5

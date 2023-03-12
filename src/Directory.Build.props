@@ -2,7 +2,7 @@
 	<PropertyGroup>
 		<TargetFramework>net7.0</TargetFramework>
 		<VersionPrefix>2023.0.1</VersionPrefix>
-		<VersionSuffix></VersionSuffix>
+		<VersionSuffix>test-1</VersionSuffix>
 		<VersionSuffix Condition="'$(VersionSuffix)'!='' AND '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
 		<Copyright>© $([System.DateTime]::Now.ToString(yyyy)) DotNet Brightener</Copyright>
 		<Authors>DotNet Brightener &lt;admin@dotnetbrightener.com&gt;</Authors>
@@ -13,6 +13,7 @@
 
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<PackageOutputPath>$(SolutionDir)/nupkg</PackageOutputPath>
 		<RepositoryUrl>https://github.com/dotnetbrightener/dotnet-brightener-framework</RepositoryUrl>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -21,6 +22,7 @@
 		<PackageIcon>dotnet-brightener-logo.png</PackageIcon>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<PackageReadmeFile>readme.md</PackageReadmeFile>
+		<LibVersion>$(Version)</LibVersion>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">	
