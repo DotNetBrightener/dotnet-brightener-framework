@@ -3,8 +3,8 @@
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="DotNetBrightener.Caching.Abstractions" Version="$(LibVersion)" />
-		<PackageReference Include="DotNetBrightener.DataAccess.Abstractions" Version="$(LibVersion)" />
+		<PackageReference Include="DotNetBrightener.Caching.Abstractions" Version="$(Version)" />
+		<PackageReference Include="DotNetBrightener.DataAccess.Abstractions" Version="$(Version)" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.3" />
 		<PackageReference Include="Microsoft.Extensions.Localization" Version="7.0.3" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />

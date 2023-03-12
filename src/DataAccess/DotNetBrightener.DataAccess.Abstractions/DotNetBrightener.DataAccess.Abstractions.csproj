@@ -14,7 +14,7 @@
 	</ItemGroup>
 
 	<ItemGroup Condition="$(Configuration)=='Release'">
-		<PackageReference Include="DotNetBrightener.DataTransferObjectUtility" Version="$(LibVersion)" />
+		<PackageReference Include="DotNetBrightener.DataTransferObjectUtility" Version="$(Version)" />
 	</ItemGroup>
 
 	<Import Project="..\..\Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems" Label="Shared" />

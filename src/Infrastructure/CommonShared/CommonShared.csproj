@@ -1,24 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<VersionPrefix>2023.0.1</VersionPrefix>
 		<Rootnamespace>DotNetBrightener.CommonShared</Rootnamespace>
+		<LibVersion>2023.0.1-test-1</LibVersion>
 	</PropertyGroup>
 	<ItemGroup>
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="DotNetBrightener.Caching.Abstractions" Version="2023.0.1-test-1" />
-		<PackageReference Include="DotNetBrightener.Caching.Memory" Version="2023.0.1-test-1" />
-		<PackageReference Include="DotNetBrightener.Core.BackgroundTasks" Version="2023.0.1-test-1" />
-		<PackageReference Include="DotNetBrightener.Core.Logging" Version="2023.0.1-test-1" />
-		<PackageReference Include="DotNetBrightener.Core.StartupTask" Version="2023.0.1-test-1" />
-		<PackageReference Include="DotNetBrightener.CryptoEngine" Version="2023.0.1-test-1" />
-		<PackageReference Include="DotNetBrightener.CryptoEngine.DependencyInjection" Version="2023.0.1-test-1" />
-		<PackageReference Include="DotNetBrightener.DataAccess.EF" Version="2023.0.1-test-1" />
-		<PackageReference Include="DotNetBrightener.Infrastructure.Security" Version="2023.0.1-test-1" />
-		<PackageReference Include="DotNetBrightener.Plugins.EventPubSub" Version="2023.0.1-test-1" />
-		<PackageReference Include="DotNetBrightener.Plugins.EventPubSub.DependencyInjection" Version="2022.11.0" />
+		<PackageReference Include="DotNetBrightener.Caching.Abstractions" Version="$(Version)" />
+		<PackageReference Include="DotNetBrightener.Caching.Memory" Version="$(Version)" />
+		<PackageReference Include="DotNetBrightener.Core.BackgroundTasks" Version="$(Version)" />
+		<PackageReference Include="DotNetBrightener.Core.Logging" Version="$(Version)" />
+		<PackageReference Include="DotNetBrightener.Core.StartupTask" Version="$(Version)" />
+		<PackageReference Include="DotNetBrightener.CryptoEngine" Version="$(Version)" />
+		<PackageReference Include="DotNetBrightener.CryptoEngine.DependencyInjection" Version="$(Version)" />
+		<PackageReference Include="DotNetBrightener.DataAccess.EF" Version="$(Version)" />
+		<PackageReference Include="DotNetBrightener.Infrastructure.Security" Version="$(Version)" />
+		<PackageReference Include="DotNetBrightener.Plugins.EventPubSub" Version="$(Version)" />
+		<PackageReference Include="DotNetBrightener.Plugins.EventPubSub.DependencyInjection" Version="$(Version)" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="7.0.0" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
 		<PackageReference Include="NLog.Web.AspNetCore" Version="5.2.2" />

@@ -18,14 +18,9 @@
 	</ItemGroup>
 
 
-	<ItemGroup Condition="$(Configuration)=='Debug'">
-		<ProjectReference Include="..\DotNetBrightener.DataAccess.Abstractions\DotNetBrightener.DataAccess.Abstractions.csproj" />
-		<ProjectReference Include="..\..\EventPubSub\DotNetBrightener.Plugins.EventPubSub\DotNetBrightener.Plugins.EventPubSub.csproj" />
-	</ItemGroup>
-
-	<ItemGroup Condition="$(Configuration)=='Release'">
-		<PackageReference Include="DotNetBrightener.DataAccess.Abstractions" Version="2023.0.1" />
-		<PackageReference Include="DotNetBrightener.Plugins.EventPubSub" Version="2023.0.1" />
+	<ItemGroup>
+		<PackageReference Include="DotNetBrightener.DataAccess.Abstractions" Version="$(Version)" />
+		<PackageReference Include="DotNetBrightener.Plugins.EventPubSub" Version="$(Version)" />
 	</ItemGroup>
 
 

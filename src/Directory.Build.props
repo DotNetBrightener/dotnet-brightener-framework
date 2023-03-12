@@ -22,11 +22,6 @@
 		<PackageIcon>dotnet-brightener-logo.png</PackageIcon>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<PackageReadmeFile>readme.md</PackageReadmeFile>
-		<LibVersion>$(Version)</LibVersion>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">	
-		<LibVersion>$(Version)</LibVersion>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

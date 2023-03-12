@@ -15,7 +15,7 @@
 	</ItemGroup>
 
 	<ItemGroup Condition="$(Configuration)=='Release'">
-		<PackageReference Include="DotNetBrightener.CryptoEngine" Version="$(LibVersion)" />
+		<PackageReference Include="DotNetBrightener.CryptoEngine" Version="$(Version)" />
 	</ItemGroup>
 
 </Project>

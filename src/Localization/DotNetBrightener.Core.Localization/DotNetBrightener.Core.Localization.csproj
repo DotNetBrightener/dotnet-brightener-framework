@@ -17,16 +17,8 @@
 		<PackageReference Include="Microsoft.Extensions.DependencyModel" Version="7.0.0" />
 
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+		<PackageReference Include="DotNetBrightener.Caching.Abstractions" Version="$(Version)" />
 	</ItemGroup>
-
-	<ItemGroup Condition="$(Configuration)=='Debug'">
-		<ProjectReference Include="..\..\Caching\DotNetBrightener.Caching\DotNetBrightener.Caching.Abstractions.csproj" />
-	</ItemGroup>
-
-	<ItemGroup Condition="$(Configuration)=='Release'">
-		<PackageReference Include="DotNetBrightener.Caching.Abstractions" Version="$(LibVersion)" />
-	</ItemGroup>
-
 
 	<ItemGroup>
 		<None Update="docs\readme.md">

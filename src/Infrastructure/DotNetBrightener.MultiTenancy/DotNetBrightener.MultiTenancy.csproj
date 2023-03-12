@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<ItemGroup>
-		<PackageReference Include="DotNetBrightener.Caching.Abstractions" Version="$(LibVersion)" />
-		<PackageReference Include="DotNetBrightener.DataAccess.EF" Version="$(LibVersion)" />
-		<PackageReference Include="DotNetBrightener.Infrastructure.Security" Version="$(LibVersion)" />
-		<PackageReference Include="DotNetBrightener.Plugins.EventPubSub" Version="$(LibVersion)" />
+		<PackageReference Include="DotNetBrightener.Caching.Abstractions" Version="$(Version)" />
+		<PackageReference Include="DotNetBrightener.DataAccess.EF" Version="$(Version)" />
+		<PackageReference Include="DotNetBrightener.Infrastructure.Security" Version="$(Version)" />
+		<PackageReference Include="DotNetBrightener.Plugins.EventPubSub" Version="$(Version)" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.3" />
 	</ItemGroup>
 	<ItemGroup>

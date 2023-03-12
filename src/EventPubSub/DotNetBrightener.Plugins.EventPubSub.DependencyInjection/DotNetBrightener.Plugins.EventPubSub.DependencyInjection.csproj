@@ -8,7 +8,7 @@
 	</ItemGroup>
 
 	<ItemGroup Condition="$(Configuration)=='Release'">
-		<PackageReference Include="DotNetBrightener.Plugins.EventPubSub" Version="$(LibVersion)" />
+		<PackageReference Include="DotNetBrightener.Plugins.EventPubSub" Version="$(Version)" />
 	</ItemGroup>
 
 	<Import Project="..\..\Shared\SharedExtensions.ServiceCollection\SharedExtensions.ServiceCollectionExtensions.projitems" Label="Shared" />

@@ -13,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using DotNetBrightener.Caching;
 using DotNetBrightener.Caching.Memory;
 using DotNetBrightener.CryptoEngine.DependencyInjection;
 using DotNetBrightener.Infrastructure.Security.Extensions;

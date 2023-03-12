@@ -9,8 +9,8 @@
 	</ItemGroup>
 
 	<ItemGroup Condition="$(Configuration)=='Release'">
-		<PackageReference Include="DotNetBrightener.DataAccess.Abstractions" Version="2023.0.1" />
-		<PackageReference Include="DotNetBrightener.DataAccess.Dapper" Version="2023.0.1" />
+		<PackageReference Include="DotNetBrightener.DataAccess.Abstractions" Version="$(Version)" />
+		<PackageReference Include="DotNetBrightener.DataAccess.Dapper" Version="$(Version)" />
 	</ItemGroup>
 
 	<ItemGroup>

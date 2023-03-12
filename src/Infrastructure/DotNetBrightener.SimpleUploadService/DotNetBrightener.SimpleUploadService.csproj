@@ -9,7 +9,7 @@
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="DotNetBrightener.Plugins.EventPubSub" Version="$(LibVersion)" />
+		<PackageReference Include="DotNetBrightener.Plugins.EventPubSub" Version="$(Version)" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 	</ItemGroup>
 	<ItemGroup>
