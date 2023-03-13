@@ -2,15 +2,8 @@
 	<ItemGroup>
 		<PackageReference Include="Npgsql" Version="7.0.2" />
 	</ItemGroup>
-
-	<ItemGroup Condition="$(Configuration)=='Debug'">
-		<ProjectReference Include="..\DotNetBrightener.DataAccess.Abstractions\DotNetBrightener.DataAccess.Abstractions.csproj" />
+	<ItemGroup>
 		<ProjectReference Include="..\DotNetBrightener.DataAccess.Dapper\DotNetBrightener.DataAccess.Dapper.csproj" />
-	</ItemGroup>
-
-	<ItemGroup Condition="$(Configuration)=='Release'">
-		<PackageReference Include="DotNetBrightener.DataAccess.Abstractions" Version="$(Version)" />
-		<PackageReference Include="DotNetBrightener.DataAccess.Dapper" Version="$(Version)" />
 	</ItemGroup>
 
 	<ItemGroup>

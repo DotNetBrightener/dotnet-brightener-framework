@@ -1,7 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<VersionPrefix>2022.10.0</VersionPrefix>
-		<DNBLibraryVersion>2022.10.0</DNBLibraryVersion>
 		<PackageId>DotNetBrightener.Core.Localization</PackageId>
 		<Description>A library that helps configuring Localization in ASP.Net Core applications with minimal efforts</Description>
 		<PackageDescription>$(Description)</PackageDescription>
@@ -17,7 +15,10 @@
 		<PackageReference Include="Microsoft.Extensions.DependencyModel" Version="7.0.0" />
 
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-		<PackageReference Include="DotNetBrightener.Caching.Abstractions" Version="$(Version)" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\..\Caching\DotNetBrightener.Caching\DotNetBrightener.Caching.Abstractions.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

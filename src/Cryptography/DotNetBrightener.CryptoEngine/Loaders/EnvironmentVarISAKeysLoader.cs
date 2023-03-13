@@ -25,7 +25,8 @@ public class EnvironmentVarISAKeysLoader : IRSAKeysLoader
 
     public Tuple<string, string> LoadOrInitializeKeyPair()
     {
-        var privateKeyValueFromEnvVar = _configuration[_cryptoConfig.RsaEnvironmentVariableName];
+        var privateKeyValueFromEnvVar = Environment.GetEnvironmentVariable(_cryptoConfig.RsaEnvironmentVariableName) ??
+                                        _configuration[_cryptoConfig.RsaEnvironmentVariableName];
 
         if (string.IsNullOrEmpty(privateKeyValueFromEnvVar))
         {

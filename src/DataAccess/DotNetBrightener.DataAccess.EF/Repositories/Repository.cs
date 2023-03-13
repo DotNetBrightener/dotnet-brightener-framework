@@ -252,19 +252,19 @@ public class Repository : IRepository
 
     public int CommitChanges()
     {
+        if (!DbContext.ChangeTracker.HasChanges())
+        {
+            return 0;
+        }
+
         EntityEntry[] insertedEntities = Array.Empty<EntityEntry>();
         EntityEntry[] updatedEntities  = Array.Empty<EntityEntry>();
 
         try
         {
             OnBeforeSaveChanges(out insertedEntities, out updatedEntities);
-
-            if (DbContext.ChangeTracker.HasChanges())
-            {
-                return DbContext.SaveChanges();
-            }
-
-            return 0;
+            
+            return DbContext.SaveChanges();
         }
         catch (ObjectDisposedException)
         {
@@ -277,7 +277,8 @@ public class Repository : IRepository
     }
 
 
-    public void OnBeforeSaveChanges(out EntityEntry[] insertedEntities, out EntityEntry[] updatedEntities)
+    public void OnBeforeSaveChanges(out EntityEntry[] insertedEntities, 
+                                    out EntityEntry[] updatedEntities)
     {
         if (!DbContext.ChangeTracker.HasChanges())
         {
@@ -287,11 +288,15 @@ public class Repository : IRepository
             return;
         }
 
-        EntityEntry[] entityEntries = DbContext.ChangeTracker.Entries().ToArray();
+        EntityEntry[] entityEntries = DbContext.ChangeTracker
+                                               .Entries()
+                                               .ToArray();
 
-        insertedEntities = entityEntries.Where(e => e.State == EntityState.Added).ToArray();
+        insertedEntities = entityEntries.Where(e => e.State == EntityState.Added)
+                                        .ToArray();
 
-        updatedEntities = entityEntries.Where(e => e.State == EntityState.Modified || e.State == EntityState.Deleted)
+        updatedEntities = entityEntries.Where(e => e.State == EntityState.Modified || 
+                                                   e.State == EntityState.Deleted)
                                        .ToArray();
 
         EventPublisher.Publish(new DbContextBeforeSaveChanges

@@ -1,5 +1,5 @@
-﻿using DotNetBrightener.TemplateEngine.Services;
-using Microsoft.AspNetCore.Builder;
+﻿using System;
+using DotNetBrightener.TemplateEngine.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DotNetBrightener.TemplateEngine.DependencyInjection;
@@ -10,11 +10,11 @@ public static class ApplicationBuilderExtensions
     ///     Registers template helpers and templates into the system
     ///     before the application finishes launching
     /// </summary>
-    /// <param name="app"></param>
+    /// <param name="serviceProvider"></param>
     /// <returns></returns>
-    public static void RegisterTemplateAndHelpers(this ApplicationBuilder app)
+    public static void RegisterTemplateAndHelpers(this IServiceProvider serviceProvider)
     {
-        using var scope = app.ApplicationServices.CreateScope();
+        using var scope = serviceProvider.CreateScope();
 
         var sp                         = scope.ServiceProvider;
         var templateRegistration       = sp.GetService<ITemplateRegistrationService>();

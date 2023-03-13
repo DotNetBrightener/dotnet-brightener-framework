@@ -1,19 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<ItemGroup>
-		<PackageReference Include="DotNetBrightener.Caching.Abstractions" Version="$(Version)" />
-		<PackageReference Include="DotNetBrightener.DataAccess.EF" Version="$(Version)" />
-		<PackageReference Include="DotNetBrightener.Infrastructure.Security" Version="$(Version)" />
-		<PackageReference Include="DotNetBrightener.Plugins.EventPubSub" Version="$(Version)" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.3" />
+		<ProjectReference Include="..\..\Caching\DotNetBrightener.Caching\DotNetBrightener.Caching.Abstractions.csproj" />
+		<ProjectReference Include="..\..\DataAccess\DotNetBrightener.DataAccess.EF\DotNetBrightener.DataAccess.EF.csproj" />
+		<ProjectReference Include="..\..\EventPubSub\DotNetBrightener.Plugins.EventPubSub\DotNetBrightener.Plugins.EventPubSub.csproj" />
+		<ProjectReference Include="..\..\Security\DotNetBrightener.Infrastructure.Security\DotNetBrightener.Infrastructure.Security.csproj" />
 	</ItemGroup>
 	<ItemGroup>
-	  <ProjectReference Include="..\..\Security\DotNetBrightener.Infrastructure.Security\DotNetBrightener.Infrastructure.Security.csproj" />
-	</ItemGroup>
-	<ItemGroup>
-	  <None Update="docs\readme.md">
-	    <PackagePath>\</PackagePath>
-	    <Pack>true</Pack>
-	  </None>
+		<None Update="docs\readme.md">
+			<PackagePath>\</PackagePath>
+			<Pack>true</Pack>
+		</None>
 	</ItemGroup>
 
 	<Import Project="..\..\Shared\SharedExtensions.Object\SharedExtensions.ObjectExtensions.projitems" Label="Shared" />

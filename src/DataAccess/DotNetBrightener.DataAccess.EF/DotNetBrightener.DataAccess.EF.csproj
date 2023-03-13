@@ -19,8 +19,8 @@
 
 
 	<ItemGroup>
-		<PackageReference Include="DotNetBrightener.DataAccess.Abstractions" Version="$(Version)" />
-		<PackageReference Include="DotNetBrightener.Plugins.EventPubSub" Version="$(Version)" />
+		<ProjectReference Include="..\..\EventPubSub\DotNetBrightener.Plugins.EventPubSub\DotNetBrightener.Plugins.EventPubSub.csproj" />
+		<ProjectReference Include="..\DotNetBrightener.DataAccess.Abstractions\DotNetBrightener.DataAccess.Abstractions.csproj" />
 	</ItemGroup>
 
 

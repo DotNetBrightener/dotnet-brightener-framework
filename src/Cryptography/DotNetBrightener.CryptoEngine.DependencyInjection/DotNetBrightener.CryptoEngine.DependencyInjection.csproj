@@ -10,12 +10,8 @@
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
 	</ItemGroup>
 
-	<ItemGroup Condition="$(Configuration)=='Debug'">
+	<ItemGroup>
 		<ProjectReference Include="..\DotNetBrightener.CryptoEngine\DotNetBrightener.CryptoEngine.csproj" />
-	</ItemGroup>
-
-	<ItemGroup Condition="$(Configuration)=='Release'">
-		<PackageReference Include="DotNetBrightener.CryptoEngine" Version="$(Version)" />
 	</ItemGroup>
 
 </Project>

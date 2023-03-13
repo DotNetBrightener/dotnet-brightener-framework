@@ -1,15 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System;
+﻿using System;
+using Microsoft.EntityFrameworkCore;
 
-namespace DotNetBrightener.CommonShared.Data;
-
-/// <summary>
-///     Marks the implementation of this interface as the DbContext that provides migration definitions for its based <typeparamref name="TBaseDbContext"/>
-/// </summary>
-/// <typeparam name="TBaseDbContext">
-///     The DbContext that defines all the models and entities
-/// </typeparam>
-public interface IMigrationDefinitionDbContext<TBaseDbContext> where TBaseDbContext : DbContext { }
+namespace DotNetBrightener.DataAccess.EF.Migrations;
 
 /// <summary>
 ///     Represents the <see cref="DbContext"/> that can defines the entities and should have migrations applied

@@ -1,10 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<Rootnamespace>DotNetBrightener.CommonShared</Rootnamespace>
-		<LibVersion>2023.0.1-test-1</LibVersion>
 	</PropertyGroup>
 	<ItemGroup>
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="7.0.0" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
+		<PackageReference Include="NLog.Web.AspNetCore" Version="5.2.2" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+		<PackageReference Include="System.Linq.Dynamic.Core" Version="1.3.1" />
+		<PackageReference Include="TimeZoneConverter" Version="6.1.0" />
+		<PackageReference Include="System.Text.Encoding.CodePages" Version="7.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -19,18 +29,10 @@
 		<PackageReference Include="DotNetBrightener.Infrastructure.Security" Version="$(Version)" />
 		<PackageReference Include="DotNetBrightener.Plugins.EventPubSub" Version="$(Version)" />
 		<PackageReference Include="DotNetBrightener.Plugins.EventPubSub.DependencyInjection" Version="$(Version)" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="7.0.0" />
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
-		<PackageReference Include="NLog.Web.AspNetCore" Version="5.2.2" />
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-		<PackageReference Include="System.Linq.Dynamic.Core" Version="1.3.1" />
-		<PackageReference Include="TimeZoneConverter" Version="6.1.0" />
-		<PackageReference Include="System.Text.Encoding.CodePages" Version="7.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\DotNetBrightener.SiteSettings\DotNetBrightener.SiteSettings.csproj" />
+	  <ProjectReference Include="..\DotNetBrightener.TemplateEngine\DotNetBrightener.TemplateEngine.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

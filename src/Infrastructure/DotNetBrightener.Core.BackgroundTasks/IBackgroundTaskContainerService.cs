@@ -22,14 +22,14 @@ public interface IBackgroundTaskContainerService
 
 public class BackgroundTaskContainerService : IBackgroundTaskContainerService, IDisposable
 {
-    private readonly IServiceProvider _serviceResolver;
-    private readonly Timer            _timer;
-    private readonly ILogger          _logger;
+    private readonly IServiceScopeFactory _serviceResolver;
+    private readonly Timer                _timer;
+    private readonly ILogger              _logger;
 
     public BackgroundTaskContainerService(ILogger<BackgroundTaskContainerService> logger,
-                                          IBackgroundServiceProvider              backgroundServiceProvider)
+                                          IServiceScopeFactory                    serviceScopeFactory)
     {
-        _serviceResolver = backgroundServiceProvider;
+        _serviceResolver = serviceScopeFactory;
         _logger          = logger;
         _timer           = new Timer();
 

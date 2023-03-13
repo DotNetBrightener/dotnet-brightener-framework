@@ -1,6 +1,7 @@
 ﻿using DotNetBrightener.Core.BackgroundTasks;
 using DotNetBrightener.Core.StartupTask;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace DotNetBrightener.CommonShared.StartupTasks;
 
@@ -9,20 +10,22 @@ public class BackgroundTaskEnableStartupTask : IStartupTask, IDependency
     public int Order => 1000;
 
     private readonly IBackgroundTaskContainerService _backgroundTaskContainerService;
-    private readonly IBackgroundTaskScheduler        _backgroundTaskScheduler;
+    private readonly ILogger                         _logger;
 
-    public BackgroundTaskEnableStartupTask(IBackgroundTaskContainerService backgroundTaskContainerService,
-                                           IBackgroundTaskScheduler        backgroundTaskScheduler)
+    public BackgroundTaskEnableStartupTask(IBackgroundTaskContainerService backgroundTaskContainerService, 
+                                           ILogger<BackgroundTaskEnableStartupTask> logger)
+
     {
         _backgroundTaskContainerService = backgroundTaskContainerService;
-        _backgroundTaskScheduler        = backgroundTaskScheduler;
+        _logger                    = logger;
     }
 
     public Task Execute()
     {
-        _backgroundTaskScheduler.Activate();
+        _logger.LogInformation($"Activating background task container...");
         _backgroundTaskContainerService.Activate();
 
+        _logger.LogInformation($"Activated background task container.");
         return Task.CompletedTask;
     }
 }

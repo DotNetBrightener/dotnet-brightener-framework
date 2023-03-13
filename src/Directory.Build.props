@@ -9,8 +9,6 @@
 		<Company>DotNet Brightener</Company>
 		<LangVersion>latest</LangVersion>
 
-		<DNBLibraryVersion>$(VersionPrefix)</DNBLibraryVersion>
-
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<PackageOutputPath>$(SolutionDir)/nupkg</PackageOutputPath>
@@ -26,6 +24,7 @@
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
 		<DefineConstants>TRACE;RELEASE</DefineConstants>
+		<PackageOutputPath>$(SolutionDir)/nupkg_release</PackageOutputPath>
 	</PropertyGroup>
 
 	<ItemGroup>
