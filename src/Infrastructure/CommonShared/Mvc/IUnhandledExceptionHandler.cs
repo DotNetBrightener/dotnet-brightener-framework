@@ -1,6 +1,6 @@
-﻿using DotNetBrightener.CommonShared.Exceptions;
+﻿using DotNetBrightener.WebApp.CommonShared.Exceptions;
 
-namespace DotNetBrightener.CommonShared.Mvc;
+namespace DotNetBrightener.WebApp.CommonShared.Mvc;
 
 public interface IUnhandledExceptionHandler
 {

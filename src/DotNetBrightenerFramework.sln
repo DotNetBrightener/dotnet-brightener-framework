@@ -109,7 +109,7 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SharedExtensions.MvcBuilder
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.SiteSettings", "Infrastructure\DotNetBrightener.SiteSettings\DotNetBrightener.SiteSettings.csproj", "{5B777C3C-FFE6-4C98-B9F6-DD7DE4F11FB4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommonShared", "Infrastructure\CommonShared\CommonShared.csproj", "{955D542A-3924-4336-A903-C9D94C12B35A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.WebApp.CommonShared", "Infrastructure\CommonShared\DotNetBrightener.WebApp.CommonShared.csproj", "{955D542A-3924-4336-A903-C9D94C12B35A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

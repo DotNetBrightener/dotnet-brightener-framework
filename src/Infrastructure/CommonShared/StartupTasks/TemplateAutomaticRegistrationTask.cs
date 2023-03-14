@@ -3,7 +3,7 @@ using DotNetBrightener.Core.StartupTask;
 using DotNetBrightener.TemplateEngine.Services;
 using Microsoft.Extensions.Logging;
 
-namespace DotNetBrightener.CommonShared.StartupTasks;
+namespace DotNetBrightener.WebApp.CommonShared.StartupTasks;
 
 public class TemplateAutomaticRegistrationTask : IStartupTask, IDependency
 {

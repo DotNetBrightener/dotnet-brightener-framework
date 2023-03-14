@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
-using DotNetBrightener.CommonShared.Exceptions;
-using DotNetBrightener.CommonShared.Models;
-using DotNetBrightener.CommonShared.Services;
+using DotNetBrightener.WebApp.CommonShared.Exceptions;
+using DotNetBrightener.WebApp.CommonShared.Models;
+using DotNetBrightener.WebApp.CommonShared.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
 
-namespace DotNetBrightener.CommonShared.Mvc;
+namespace DotNetBrightener.WebApp.CommonShared.Mvc;
 
 public class UnhandledExceptionResponseHandler : IExceptionFilter, IActionFilterProvider
 {

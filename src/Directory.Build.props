@@ -2,7 +2,7 @@
 	<PropertyGroup>
 		<TargetFramework>net7.0</TargetFramework>
 		<VersionPrefix>2023.0.1</VersionPrefix>
-		<VersionSuffix>test-1</VersionSuffix>
+		<VersionSuffix></VersionSuffix>
 		<VersionSuffix Condition="'$(VersionSuffix)'!='' AND '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
 		<Copyright>© $([System.DateTime]::Now.ToString(yyyy)) DotNet Brightener</Copyright>
 		<Authors>DotNet Brightener &lt;admin@dotnetbrightener.com&gt;</Authors>

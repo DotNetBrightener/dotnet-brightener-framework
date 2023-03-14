@@ -4,7 +4,7 @@ using DotNetBrightener.DataAccess.EF.Migrations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace DotNetBrightener.CommonShared.Data;
+namespace DotNetBrightener.WebApp.CommonShared.Data;
 
 public static class ServiceCollectionExtensions
 {

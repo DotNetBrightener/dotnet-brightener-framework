@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace DotNetBrightener.CommonShared.Exceptions;
+namespace DotNetBrightener.WebApp.CommonShared.Exceptions;
 
 public class BaseNotFoundException<T> : ExceptionWithStatusCode where T : class
 {

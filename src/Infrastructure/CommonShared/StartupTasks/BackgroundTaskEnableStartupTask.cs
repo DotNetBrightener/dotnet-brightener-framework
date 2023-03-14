@@ -1,9 +1,9 @@
-﻿using DotNetBrightener.Core.BackgroundTasks;
+﻿using System.Threading.Tasks;
+using DotNetBrightener.Core.BackgroundTasks;
 using DotNetBrightener.Core.StartupTask;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
-namespace DotNetBrightener.CommonShared.StartupTasks;
+namespace DotNetBrightener.WebApp.CommonShared.StartupTasks;
 
 public class BackgroundTaskEnableStartupTask : IStartupTask, IDependency
 {

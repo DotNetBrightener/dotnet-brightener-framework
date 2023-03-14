@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net;
 
-namespace DotNetBrightener.CommonShared.Exceptions;
+namespace DotNetBrightener.WebApp.CommonShared.Exceptions;
 
 public class ExceptionWithStatusCode : Exception
 {
