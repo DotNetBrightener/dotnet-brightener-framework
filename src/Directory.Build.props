@@ -1,9 +1,10 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<PropertyGroup>
 		<TargetFramework>net7.0</TargetFramework>
-		<VersionPrefix>2023.0.1</VersionPrefix>
-		<VersionSuffix></VersionSuffix>
-		<VersionSuffix Condition="'$(VersionSuffix)'!='' AND '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
+		<VersionPrefix>2023.0.2</VersionPrefix>
+		<VersionSuffix>alpha</VersionSuffix>
+		<BuildNumber>1</BuildNumber>
+		<VersionSuffix Condition="'$(VersionSuffix)' != '' AND '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
 		<Copyright>© $([System.DateTime]::Now.ToString(yyyy)) DotNet Brightener</Copyright>
 		<Authors>DotNet Brightener &lt;admin@dotnetbrightener.com&gt;</Authors>
 		<Company>DotNet Brightener</Company>

@@ -33,5 +33,6 @@ public static class CryptoEngineServiceCollectionExtensions
 
         serviceCollection.AddScoped<IRSAKeysLoader, EnvironmentVarISAKeysLoader>();
         serviceCollection.AddScoped<ICryptoEngine, DefaultCryptoEngine>();
+        serviceCollection.AddScoped<IPasswordValidationProvider, DefaultPasswordValidationProvider>();
     }
 }

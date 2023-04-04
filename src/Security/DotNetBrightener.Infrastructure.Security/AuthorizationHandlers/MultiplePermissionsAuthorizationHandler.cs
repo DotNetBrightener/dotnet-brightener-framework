@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using DotNetBrightener.Infrastructure.Security.Permissions;
 using DotNetBrightener.Infrastructure.Security.Requirements;
 using Microsoft.AspNetCore.Authorization;
 
@@ -17,14 +18,16 @@ public class MultiplePermissionsAuthorizationHandler : AuthorizationHandler<Perm
         }
 
         if (context.HasSucceeded)
+        {
             // stop processing if already authorized
             return Task.CompletedTask;
+        }
 
         // user must have granted access to ALL given permissions
         foreach (var permissionKey in requirement.PermissionsToAuthorize)
         {
             // if user does not have any of requested permission
-            if (!context.User.HasClaim(CommonUserClaimKeys.UserPermission, permissionKey))
+            if (!context.User.HasClaim(Permission.ClaimType, permissionKey))
             {
                 context.Fail();
 

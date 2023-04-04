@@ -7,5 +7,5 @@ public class DefaultPermissions: AutomaticPermissionProvider
     /// <summary>
     ///     Granted permissions management rights
     /// </summary>
-    public static string ManagePermissions => "System.Permissions.ManagePermissions";
+    public const string ManagePermissions = "System.Permissions.ManagePermissions";
 }

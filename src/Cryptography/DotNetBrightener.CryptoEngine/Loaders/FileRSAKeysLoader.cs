@@ -1,7 +1,4 @@
-﻿// 
-// Copyright (c) 2022 DotNetBrightener.
-
-using Microsoft.Extensions.FileProviders;
+﻿using Microsoft.Extensions.FileProviders;
 using System;
 using System.IO;
 using System.Security.Cryptography;

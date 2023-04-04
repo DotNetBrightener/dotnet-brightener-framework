@@ -13,9 +13,9 @@ namespace DotNetBrightener.SimpleUploadService.Services;
 public interface IUploadServiceProvider
 {
     /// <summary>
-    ///     The order of the provider. The higher number will be higher prioritized.
+    ///     The priority of the provider. The higher number will be higher prioritized.
     /// </summary>
-    int Order { get; }
+    int Priority { get; }
 
     IImageResizer ImageResizer { get; }
 
@@ -44,13 +44,13 @@ public class DefaultUploadServiceProvider : IUploadServiceProvider
         ImageResizer         = imageResizer;
     }
 
-    public int           Order        => 0;
+    public int           Priority     => 0;
     public IImageResizer ImageResizer { get; }
 
-    public async Task<FileObjectModel> ProcessUpload(Stream             fileUploadStream,
-                                                     UploadRequestModel uploadRequestModel,
-                                                     string             fileName,
-                                                     string             baseUrl)
+    public virtual async Task<FileObjectModel> ProcessUpload(Stream             fileUploadStream,
+                                                             UploadRequestModel uploadRequestModel,
+                                                             string             fileName,
+                                                             string             baseUrl)
     {
         try
         {
@@ -58,24 +58,23 @@ public class DefaultUploadServiceProvider : IUploadServiceProvider
 
             _contentTypeProvider.TryGetContentType(fileName, out var contentType);
 
-            if (!contentType.Contains("image"))
+            if (contentType is null ||
+                !contentType.Contains("image") ||
+                uploadRequestModel.ThumbnailGenerateRequests is null ||
+                !uploadRequestModel.ThumbnailGenerateRequests.Any())
                 return fileResult;
+            
+            await this.ProcessThumbnail(fileUploadStream, uploadRequestModel);
 
-            if (uploadRequestModel.ThumbnailGenerateRequests != null &&
-                uploadRequestModel.ThumbnailGenerateRequests.Any())
-            {
-                await this.ProcessThumbnail(fileUploadStream, uploadRequestModel);
-
-                Parallel.ForEach(uploadRequestModel.ThumbnailGenerateRequests,
-                                 async (thumbnailRequest) =>
-                                 {
-                                     await ProcessUploadThumbnail(thumbnailRequest.GeneratedThumbnailStream,
-                                                                  fileName,
-                                                                  baseUrl,
-                                                                  thumbnailRequest.ThumbnailWidth,
-                                                                  thumbnailRequest.ThumbnailHeight);
-                                 });
-            }
+            Parallel.ForEach(uploadRequestModel.ThumbnailGenerateRequests,
+                             async (thumbnailRequest) =>
+                             {
+                                 await ProcessUploadThumbnail(thumbnailRequest.GeneratedThumbnailStream,
+                                                              fileName,
+                                                              baseUrl,
+                                                              thumbnailRequest.ThumbnailWidth,
+                                                              thumbnailRequest.ThumbnailHeight);
+                             });
 
             return fileResult;
         }
@@ -92,12 +91,12 @@ public class DefaultUploadServiceProvider : IUploadServiceProvider
         }
     }
 
-    public async Task<string> GenerateSecuredUrl(string absoluteUrl)
+    public virtual async Task<string> GenerateSecuredUrl(string absoluteUrl)
     {
         return absoluteUrl;
     }
 
-    private FileObjectModel CreateFileResult(IFileInfo mediaFile, string currentRequestUrl)
+    protected virtual FileObjectModel CreateFileResult(IFileInfo mediaFile, string currentRequestUrl)
     {
         _contentTypeProvider.TryGetContentType(mediaFile.Name, out var contentType);
 
@@ -116,11 +115,11 @@ public class DefaultUploadServiceProvider : IUploadServiceProvider
         };
     }
 
-    private async Task ProcessUploadThumbnail(Stream fileUploadStream,
-                                              string originalFileName,
-                                              string baseUrl,
-                                              int    thumbWidth  = 0,
-                                              int    thumbHeight = 0)
+    protected virtual async Task ProcessUploadThumbnail(Stream fileUploadStream,
+                                                        string originalFileName,
+                                                        string baseUrl,
+                                                        int    thumbWidth  = 0,
+                                                        int    thumbHeight = 0)
     {
         string saveFolderPath;
 

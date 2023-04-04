@@ -252,16 +252,16 @@ public class Repository : IRepository
 
     public int CommitChanges()
     {
-        if (!DbContext.ChangeTracker.HasChanges())
-        {
-            return 0;
-        }
-
         EntityEntry[] insertedEntities = Array.Empty<EntityEntry>();
         EntityEntry[] updatedEntities  = Array.Empty<EntityEntry>();
 
         try
         {
+            if (!DbContext.ChangeTracker.HasChanges())
+            {
+                return 0;
+            }
+
             OnBeforeSaveChanges(out insertedEntities, out updatedEntities);
             
             return DbContext.SaveChanges();
@@ -272,7 +272,9 @@ public class Repository : IRepository
         }
         finally
         {
-            OnAfterSaveChanges(insertedEntities, updatedEntities);
+            if (insertedEntities.Length != 0 &&
+                updatedEntities.Length != 0)
+                OnAfterSaveChanges(insertedEntities, updatedEntities);
         }
     }
 

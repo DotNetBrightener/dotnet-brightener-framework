@@ -39,12 +39,12 @@ public abstract class BaseDataService<TEntity> : IBaseDataService<TEntity> where
         return query;
     }
 
-    public void Insert(TEntity entity)
+    public virtual void Insert(TEntity entity)
     {
         InsertAsync(entity).Wait();
     }
 
-    public void Insert(IEnumerable<TEntity> entities)
+    public virtual void Insert(IEnumerable<TEntity> entities)
     {
         InsertAsync(entities).Wait();
     }

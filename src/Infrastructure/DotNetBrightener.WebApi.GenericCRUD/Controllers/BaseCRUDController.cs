@@ -12,6 +12,7 @@ using System.Linq.Expressions;
 using System.Net;
 using System.Threading.Tasks;
 using DotNetBrightener.DataTransferObjectUtility;
+using System.Globalization;
 
 namespace DotNetBrightener.WebApi.GenericCRUD.Controllers;
 
@@ -50,10 +51,15 @@ public abstract class BaseCRUDController<TEntityType> : Controller where TEntity
     {
         DataService         = dataService;
         HttpContextAccessor = httpContextAccessor;
-        AlwaysReturnColumns = new [ ]
+        AlwaysReturnColumns = Array.Empty<string>();
+
+        if (typeof(BaseEntity).IsAssignableFrom(typeof(TEntityType)))
         {
-            nameof(BaseEntity.Id)
-        };
+            AlwaysReturnColumns = new[]
+            {
+                nameof(BaseEntity.Id)
+            };
+        }
 
         if (typeof(BaseEntityWithAuditInfo).IsAssignableFrom(typeof(TEntityType)))
         {
@@ -356,10 +362,17 @@ public abstract class BaseCRUDController<TEntityType> : Controller where TEntity
             return entitiesQuery;
 
         var predicateStatement = PredicateBuilder.True<TIn>();
+        var textInfo           = new CultureInfo("en-US", false).TextInfo;
 
         foreach (var filter in deepPropertiesSearchFilters)
         {
             var property = typeof(TIn).GetProperty(filter.Key);
+
+            if (property == null)
+            {
+                var filterKeyTitleCase = textInfo.ToTitleCase(filter.Key);
+                property = typeof(TIn).GetProperty(filterKeyTitleCase);
+            }
 
             if (property == null)
                 continue;

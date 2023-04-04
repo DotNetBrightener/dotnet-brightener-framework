@@ -25,7 +25,7 @@ public class UploadService : IUploadService
                          IEventPublisher                     eventPublisher)
     {
         _eventPublisher         = eventPublisher;
-        _uploadServiceProviders = uploadServiceProviders.OrderByDescending(_ => _.Order);
+        _uploadServiceProviders = uploadServiceProviders.OrderByDescending(_ => _.Priority);
     }
 
     public async Task<FileObjectModel> Upload(Stream             fileUploadStream,

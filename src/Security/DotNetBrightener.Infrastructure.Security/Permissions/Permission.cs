@@ -11,7 +11,7 @@ namespace DotNetBrightener.Infrastructure.Security.Permissions;
 public class Permission
 {
     /// <summary>
-    ///		The identififer of for the <see cref="Claim" /> that represents the permission claim
+    ///		The identifier of for the <see cref="Claim" /> that represents the permission claim
     /// </summary>
     public const string ClaimType = "Permission";
 
