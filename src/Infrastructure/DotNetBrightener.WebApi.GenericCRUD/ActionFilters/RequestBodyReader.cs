@@ -14,17 +14,17 @@ namespace DotNetBrightener.WebApi.GenericCRUD.ActionFilters;
 
 /// <summary>
 ///     The filter called before the action execution, to read the request body into a string.
-///     In the action, obtain the body by calling the
-///     <see cref="ObtainBody"/> method.
+///     In the action, obtain the body by calling the <see cref="ObtainBody"/> method.
 /// </summary>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
-public class RequestBodyToStringAttribute: Attribute, 
-                                           IAuthorizationFilter, 
-                                           IAsyncAuthorizationFilter
+public class RequestBodyReader
+    : Attribute,
+      IAuthorizationFilter,
+      IAsyncAuthorizationFilter
 {
     private const string RequestBodyKey = "request_body";
 
-    private static readonly string[] SupportedMethods = 
+    private static readonly string[] SupportedMethods =
     {
         "POST", "PATCH", "PUT"
     };
@@ -42,7 +42,7 @@ public class RequestBodyToStringAttribute: Attribute,
 
         var syncIoFeature = context.HttpContext.Features.Get<IHttpBodyControlFeature>();
 
-        if (syncIoFeature == null) 
+        if (syncIoFeature == null)
             return;
 
         syncIoFeature.AllowSynchronousIO = true;
@@ -51,7 +51,7 @@ public class RequestBodyToStringAttribute: Attribute,
 
         req.EnableBuffering();
 
-        if (!req.Body.CanSeek) 
+        if (!req.Body.CanSeek)
             return;
 
         req.Body.Seek(0, SeekOrigin.Begin);
@@ -69,7 +69,7 @@ public class RequestBodyToStringAttribute: Attribute,
 
             httpContextAccessor.StoreValue(RequestBodyKey, bodyStreamString);
         }
-                
+
         // rewind the body back to beginning so it can be processed by other filters.
         req.Body.Seek(0, SeekOrigin.Begin);
     }
@@ -81,9 +81,18 @@ public class RequestBodyToStringAttribute: Attribute,
 
     public static TModel ObtainBodyAs<TModel>(IHttpContextAccessor httpContextAccessor)
     {
+        var bodyObject = httpContextAccessor.RetrieveValue<TModel>();
+
+        if (bodyObject is not null)
+            return bodyObject;
+
         var bodyString = httpContextAccessor.RetrieveValue<string>(RequestBodyKey);
 
-        return JsonConvert.DeserializeObject<TModel>(bodyString);
+        bodyObject = JsonConvert.DeserializeObject<TModel>(bodyString);
+
+        httpContextAccessor.StoreValue(bodyObject);
+
+        return bodyObject;
     }
 
     public static JObject ObtainBodyAsJObject(IHttpContextAccessor httpContextAccessor)

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 
-namespace DotNetBrightener.WebApi.GenericCRUD.Controllers;
+namespace DotNetBrightener.WebApi.GenericCRUD.Models;
 
 /// <summary>
 ///     Represents the default query model that can be read by the API to apply properties filter, ordering and pagination queries
