@@ -1,7 +1,7 @@
-﻿using DotNetBrightener.Infrastructure.ApiKeyAuthentication.Middlewares;
+﻿using DotNetBrightener.Infrastructure.ApiKeyAuthentication.Constants;
+using DotNetBrightener.Infrastructure.ApiKeyAuthentication.Middlewares;
 using DotNetBrightener.Infrastructure.ApiKeyAuthentication.Permissions;
 using DotNetBrightener.Infrastructure.ApiKeyAuthentication.Services;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 // ReSharper disable once CheckNamespace
@@ -10,8 +10,6 @@ namespace Microsoft.Extensions.DependencyInjection;
 public class ApiKeyAuthConfigurationBuilder
 {
     internal IServiceCollection ServiceCollection { get; set; }
-
-    internal IMvcBuilder MvcBuilder { get; set; }
 
     public ApiKeyAuthConfigurationBuilder UseApiStore<TApiStoreService>()
         where TApiStoreService : class, IApiKeyStoreService
@@ -29,18 +27,18 @@ public static class ServiceCollectionExtensions
     {
         var apiKeyAuthConfBuider = new ApiKeyAuthConfigurationBuilder
         {
-            MvcBuilder        = mvcBuilder,
             ServiceCollection = mvcBuilder.Services
         };
 
         mvcBuilder.RegisterMeAsMvcModule();
         mvcBuilder.Services.RegisterPermissionProvider<ApiKeyAuthPermissions>();
+        mvcBuilder.Services
+                  .AddScoped<ApiKeyAuthenticationHandler>();
+
+        mvcBuilder.Services
+                  .AddAuthentication()
+                  .AddScheme<ApiKeyAuthenticationOptions, ApiKeyAuthenticationHandler>(ApiKeyAuthenticationOptions.AuthenticationScheme, null);
 
         return apiKeyAuthConfBuider;
-    }
-
-    public static void UseApiKeyAuthentication(this IApplicationBuilder appBuilder)
-    {
-        appBuilder.UseMiddleware<ApiKeyAuthMiddleware>();
     }
 }

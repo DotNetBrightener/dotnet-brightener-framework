@@ -1,18 +1,18 @@
 ﻿using DotNetBrightener.DataAccess.Models;
 using DotNetBrightener.DataAccess.Services;
 using DotNetBrightener.DataTransferObjectUtility;
+using DotNetBrightener.WebApi.GenericCRUD.Extensions;
 using DotNetBrightener.WebApi.GenericCRUD.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using System.Net;
 using System.Threading.Tasks;
-using DotNetBrightener.WebApi.GenericCRUD.Extensions;
 
 namespace DotNetBrightener.WebApi.GenericCRUD.Controllers;
 
@@ -93,7 +93,10 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
 
         var totalRecords = DynamicQueryableExtensions.Count(entitiesQuery);
 
-        var orderedQuery = AddOrderingAndPaginationQuery(entitiesQuery, out var pageSize, out var pageIndex);
+        var orderedQuery = AddOrderingAndPaginationQuery(entitiesQuery,
+                                                         out var pageSize,
+                                                         out var pageIndex).AsNoTracking();
+
         var finalQuery   = await PerformColumnsSelectorQuery(orderedQuery);
 
         Response.Headers.Add("Result-Totals", totalRecords.ToString());
@@ -120,7 +123,8 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
         Expression<Func<TEntityType, bool>> expression =
             ExpressionExtensions.BuildPredicate<TEntityType>(id, OperatorComparer.Equals, EntityIdColumnName);
 
-        var entityItemQuery = DynamicQueryableExtensions.Where(DataService.FetchActive(DefaultQuery), expression);
+        var entityItemQuery = DynamicQueryableExtensions.Where(DataService.FetchActive(DefaultQuery), expression)
+                                                        .AsNoTracking();
 
         var finalQuery = await PerformColumnsSelectorQuery(entityItemQuery);
 

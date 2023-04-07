@@ -33,7 +33,7 @@ public class ApiKeyAuthorizeAttribute: Attribute, IAsyncAuthorizationFilter
         var isApiKeyAuthorized =
             context.HttpContext.User.Identities.Any(_ => _.IsAuthenticated &&
                                                          _.AuthenticationType ==
-                                                         ApiKeyAuthConstants.ApiTokenAuthScheme);
+                                                         ApiKeyAuthenticationOptions.AuthenticationScheme);
 
         if (!isApiKeyAuthorized)
         {
@@ -51,7 +51,7 @@ public class ApiKeyAuthorizeAttribute: Attribute, IAsyncAuthorizationFilter
 
         var apiKeySchemeIdentity =
             context.HttpContext.User.Identities.First(_ => _.AuthenticationType ==
-                                                           ApiKeyAuthConstants.ApiTokenAuthScheme);
+                                                           ApiKeyAuthenticationOptions.AuthenticationScheme);
         var expiryValue = apiKeySchemeIdentity.FindFirst("exp")?.Value;
 
         if (expiryValue != null &&

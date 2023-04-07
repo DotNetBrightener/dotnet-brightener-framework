@@ -51,20 +51,18 @@ public static class ServiceCollectionExtensions
             Console.WriteLine($"JWT Private Signing Key = {signingKeyPairs.Item2}");
 
             throw new
-                DataException($"No JWT Signing Key is configured. Please check Admin Console to obtain the generated JWT Private Signing Key and configure it in appsettings.json or Environment Variable named 'JwtTokenPrivateKey'");
+                DataException($"No JWT Signing Key is configured. " +
+                              $"Please check Admin Console to obtain the generated JWT Private Signing Key " +
+                              $"and configure it in appsettings.json or Environment Variable named 'JwtTokenPrivateKey'");
         }
 
         serviceCollection.AddSingleton(tokenConfiguration);
+        
+        var serviceProvider       = serviceCollection.BuildServiceProvider();
+        var contextAccessor       = serviceProvider.GetService<IHttpContextAccessor>();
 
-        var authenticationBuilder = serviceCollection.AddAuthentication(o =>
-        {
-            o.DefaultChallengeScheme    = JwtBearerDefaults.AuthenticationScheme;
-            o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        });
-
-        var serviceProvider = serviceCollection.BuildServiceProvider();
-        var contextAccessor = serviceProvider.GetService<IHttpContextAccessor>();
-        authenticationBuilder.AddJwtBearer(cfg => ConfigureJwtOptions(cfg, contextAccessor!));
+        serviceCollection.AddAuthentication()
+                         .AddJwtBearer(cfg => ConfigureJwtOptions(cfg, contextAccessor!));
     }
 
     public static IServiceCollection RegisterAuthAudienceValidator<TValidator>(
