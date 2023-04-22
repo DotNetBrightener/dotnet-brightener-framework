@@ -197,9 +197,16 @@ public class BackgroundTaskScheduler : IBackgroundTaskScheduler, IDisposable
                 {
                     var invokeResult = Task.Run(async () =>
                     {
-                        var result = await (dynamic)taskToRun.Action.Invoke(invokingInstance, taskToRun.Parameters);
+                        try
+                        {
+                            var result = await (dynamic)taskToRun.Action.Invoke(invokingInstance, taskToRun.Parameters);
 
-                        return result;
+                            return result;
+                        }
+                        catch
+                        {
+                            return null;
+                        }
                     });
 
                     taskToRun.TaskResult = invokeResult;

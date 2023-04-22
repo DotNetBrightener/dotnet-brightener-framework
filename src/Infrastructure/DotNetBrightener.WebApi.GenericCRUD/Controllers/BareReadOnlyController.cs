@@ -5,7 +5,6 @@ using DotNetBrightener.WebApi.GenericCRUD.Extensions;
 using DotNetBrightener.WebApi.GenericCRUD.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -85,7 +84,8 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
         return await GetListResult(DefaultQuery);
     }
 
-    protected virtual async Task<IActionResult> GetListResult(Expression<Func<TEntityType, bool>> queryExpression = null)
+    protected virtual async Task<IActionResult> GetListResult(Expression<Func<TEntityType, bool>> queryExpression =
+                                                                  null)
     {
         var entitiesQuery = DataService.FetchActive(queryExpression);
 
@@ -95,16 +95,16 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
 
         var orderedQuery = AddOrderingAndPaginationQuery(entitiesQuery,
                                                          out var pageSize,
-                                                         out var pageIndex).AsNoTracking();
+                                                         out var pageIndex);
 
-        var finalQuery   = await PerformColumnsSelectorQuery(orderedQuery);
+        var finalQuery = await PerformColumnsSelectorQuery(orderedQuery);
 
         Response.Headers.Add("Result-Totals", totalRecords.ToString());
         Response.Headers.Add("Result-PageIndex", pageIndex.ToString());
         Response.Headers.Add("Result-PageSize", pageSize.ToString());
 
         var result = finalQuery.ToDynamicArray();
-        Response.Headers.Add("Result-Count", result.Count().ToString());
+        Response.Headers.Add("Result-Count", result.Length.ToString());
 
         // add expose header to support CORS
         Response.Headers.Add("Access-Control-Expose-Headers",
@@ -123,13 +123,11 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
         Expression<Func<TEntityType, bool>> expression =
             ExpressionExtensions.BuildPredicate<TEntityType>(id, OperatorComparer.Equals, EntityIdColumnName);
 
-        var entityItemQuery = DynamicQueryableExtensions.Where(DataService.FetchActive(DefaultQuery), expression)
-                                                        .AsNoTracking();
+        var entityItemQuery = DataService.FetchActive(DefaultQuery).Where(expression);
 
         var finalQuery = await PerformColumnsSelectorQuery(entityItemQuery);
 
-        var item = finalQuery.ToDynamicArray()
-                             .FirstOrDefault();
+        var item = (await finalQuery.ToDynamicArrayAsync()).FirstOrDefault();
 
         if (item == null)
         {
