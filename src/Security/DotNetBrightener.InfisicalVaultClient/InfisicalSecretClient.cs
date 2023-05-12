@@ -157,8 +157,6 @@ public class InfisicalSecretClient
             var responseStream = await response.Content.ReadAsStringAsync();
             var data           = JsonConvert.DeserializeObject<TResult>(responseStream);
 
-            Console.WriteLine($"Data received: {responseStream}");
-
             return data;
         }
 

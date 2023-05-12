@@ -1,7 +1,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<PropertyGroup>
 		<TargetFramework>net7.0</TargetFramework>
-		<VersionPrefix>2023.0.6</VersionPrefix>
+		<VersionPrefix>2023.0.7</VersionPrefix>
 		<VersionSuffix>alpha</VersionSuffix>
 		<BuildNumber>1</BuildNumber>
 		<VersionSuffix Condition="'$(VersionSuffix)' != '' AND '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
