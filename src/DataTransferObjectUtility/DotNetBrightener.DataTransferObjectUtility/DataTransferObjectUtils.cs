@@ -477,6 +477,6 @@ public static class DataTransferObjectUtils
 
     internal static bool HasAttribute<TAttribute>(this MemberInfo type) where TAttribute : Attribute
     {
-        return type != null && type.GetCustomAttribute<TAttribute>() != null;
+        return type?.GetCustomAttribute<TAttribute>() != null;
     }
 }

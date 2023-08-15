@@ -81,14 +81,13 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
         if (!(await CanRetrieveList()))
             throw new UnauthorizedAccessException();
 
-        return await GetListResult(DefaultQuery);
+        var entitiesQuery = DataService.FetchActive(DefaultQuery);
+
+        return await GetListResult(entitiesQuery);
     }
 
-    protected virtual async Task<IActionResult> GetListResult(Expression<Func<TEntityType, bool>> queryExpression =
-                                                                  null)
+    protected virtual async Task<IActionResult> GetListResult(IQueryable<TEntityType> entitiesQuery)
     {
-        var entitiesQuery = DataService.FetchActive(queryExpression);
-
         entitiesQuery = await ApplyDeepFilters(entitiesQuery);
 
         var totalRecords = DynamicQueryableExtensions.Count(entitiesQuery);

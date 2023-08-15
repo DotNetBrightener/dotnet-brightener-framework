@@ -96,8 +96,8 @@ namespace DotNetBrightener.TemplateEngine.Services
                     TemplateType     = type,
                     TemplateContent  = "",
                     TemplateTitle    = "",
-                    CreatedDate      = DateTimeOffset.Now,
-                    ModifiedDate     = DateTimeOffset.Now,
+                    CreatedDate      = DateTimeOffset.UtcNow,
+                    ModifiedDate     = DateTimeOffset.UtcNow,
                     Fields           = templateFields,
                     FromAssemblyName = assemblyName
                 };
@@ -149,8 +149,8 @@ namespace DotNetBrightener.TemplateEngine.Services
                     TemplateType     = type,
                     TemplateContent  = templateContent,
                     TemplateTitle    = templateTitle,
-                    CreatedDate      = DateTimeOffset.Now,
-                    ModifiedDate     = DateTimeOffset.Now,
+                    CreatedDate      = DateTimeOffset.UtcNow,
+                    ModifiedDate     = DateTimeOffset.UtcNow,
                     Fields           = templateFields,
                     FromAssemblyName = assemblyName
                 };

@@ -59,7 +59,7 @@ public class ApiKeyAuthorizeAttribute: Attribute, IAsyncAuthorizationFilter
         {
             var expiredDate = DateTimeOffset.FromUnixTimeSeconds(unixExpiryInMinutes);
 
-            if (expiredDate < DateTimeOffset.Now)
+            if (expiredDate < DateTimeOffset.UtcNow)
             {
                 context.Result = new ObjectResult(new
                 {

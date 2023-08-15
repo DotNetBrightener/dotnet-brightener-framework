@@ -9,6 +9,7 @@ using System;
 using System.Linq.Expressions;
 using System.Net;
 using System.Threading.Tasks;
+using DotNetBrightener.WebApi.GenericCRUD.Models;
 
 namespace DotNetBrightener.WebApi.GenericCRUD.Controllers;
 
@@ -24,8 +25,7 @@ public abstract class BaseCRUDController<TEntityType> : BareReadOnlyController<T
 
     [HttpPost("")]
     [RequestBodyReader]
-    public virtual async Task<IActionResult> CreateItem([FromBody]
-                                                        TEntityType model)
+    public virtual async Task<IActionResult> CreateItem([FromBody] TEntityType model)
     {
         if (!(await AuthorizedCreateItem(model)))
             throw new UnauthorizedAccessException();
@@ -38,27 +38,10 @@ public abstract class BaseCRUDController<TEntityType> : BareReadOnlyController<T
 
         if (model is BaseEntity baseEntity)
         {
-            if (model is BaseEntityWithAuditInfo auditableEntity)
-            {
-                return StatusCode((int)HttpStatusCode.Created,
-                                  new
-                                  {
-                                      EntityId = baseEntity.Id,
-                                      auditableEntity.CreatedDate,
-                                      auditableEntity.CreatedBy,
-                                      auditableEntity.ModifiedDate,
-                                      auditableEntity.ModifiedBy
-                                  });
-            }
-
-            return StatusCode((int) HttpStatusCode.Created,
-                              new
-                              {
-                                  EntityId = baseEntity.Id
-                              });
+            return StatusCode((int)HttpStatusCode.Created, GetCreatedResult(baseEntity));
         }
 
-        return StatusCode((int) HttpStatusCode.Created);
+        return StatusCode((int)HttpStatusCode.Created);
     }
 
     [HttpPut("{id:long}")]
@@ -216,5 +199,25 @@ public abstract class BaseCRUDController<TEntityType> : BareReadOnlyController<T
     protected virtual Task PostUpdateEntity(TEntityType entity)
     {
         return Task.CompletedTask;
+    }
+
+    protected virtual CreatedEntityResultModel GetCreatedResult(BaseEntity baseEntity)
+    {
+        if (baseEntity is BaseEntityWithAuditInfo auditableEntity)
+        {
+            return new CreatedEntityResultModel
+            {
+                EntityId     = baseEntity.Id,
+                CreatedDate  = auditableEntity.CreatedDate,
+                CreatedBy    = auditableEntity.CreatedBy,
+                ModifiedDate = auditableEntity.ModifiedDate,
+                ModifiedBy   = auditableEntity.ModifiedBy
+            };
+        }
+
+        return new CreatedEntityResultModel
+        {
+            EntityId = baseEntity.Id,
+        };
     }
 }

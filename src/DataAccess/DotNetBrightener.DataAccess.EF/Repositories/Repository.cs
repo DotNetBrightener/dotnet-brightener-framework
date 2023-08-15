@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
 using DotNetBrightener.DataAccess.EF.Events;
 using DotNetBrightener.DataAccess.Exceptions;
 using DotNetBrightener.DataAccess.Models;
@@ -12,6 +8,10 @@ using LinqToDB;
 using LinqToDB.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
 
 namespace DotNetBrightener.DataAccess.EF.Repositories;
 
@@ -75,7 +75,7 @@ public class Repository : IRepository
     {
         if (entity is BaseEntityWithAuditInfo auditableEntity)
         {
-            auditableEntity.CreatedDate = auditableEntity.ModifiedDate = DateTimeOffset.Now;
+            auditableEntity.CreatedDate = auditableEntity.ModifiedDate = DateTimeOffset.UtcNow;
 
             if (string.IsNullOrEmpty(auditableEntity.CreatedBy))
                 auditableEntity.CreatedBy = CurrentLoggedInUserResolver.CurrentUserName;
@@ -84,7 +84,7 @@ public class Repository : IRepository
         }
 
         var entityEntry = DbContext.Entry(entity);
-        
+
         if (entityEntry.State != EntityState.Detached)
         {
             entityEntry.State = EntityState.Added;
@@ -105,7 +105,7 @@ public class Repository : IRepository
                                         if (_ is BaseEntityWithAuditInfo auditableEntity)
                                         {
                                             auditableEntity.CreatedDate =
-                                                auditableEntity.ModifiedDate = DateTimeOffset.Now;
+                                                auditableEntity.ModifiedDate = DateTimeOffset.UtcNow;
 
                                             if (string.IsNullOrEmpty(auditableEntity.CreatedBy))
                                                 auditableEntity.CreatedBy = CurrentLoggedInUserResolver.CurrentUserName;
@@ -116,7 +116,7 @@ public class Repository : IRepository
                                         return _;
                                     });
 
-        var result = DbContext.BulkCopy(entitiesToInserts);
+        DbContext.BulkCopy(entitiesToInserts);
     }
 
     public virtual int CopyRecords<TSource, TTarget>(Expression<Func<TSource, bool>>    conditionExpression,
@@ -133,7 +133,7 @@ public class Repository : IRepository
     {
         if (entity is BaseEntityWithAuditInfo auditableEntity)
         {
-            auditableEntity.ModifiedDate = DateTimeOffset.Now;
+            auditableEntity.ModifiedDate = DateTimeOffset.UtcNow;
             auditableEntity.ModifiedBy   = CurrentLoggedInUserResolver.CurrentUserName;
         }
 
@@ -183,19 +183,18 @@ public class Repository : IRepository
 
         if (expectedAffectedRows.HasValue)
         {
-            using (var dbTransaction = DbContext.Database.BeginTransaction())
+            using var dbTransaction = DbContext.Database.BeginTransaction();
+
+            updatedRecords = PerformUpdate();
+
+            if (updatedRecords != expectedAffectedRows.Value)
             {
-                updatedRecords = PerformUpdate();
+                dbTransaction.Rollback();
 
-                if (updatedRecords != expectedAffectedRows.Value)
-                {
-                    dbTransaction.Rollback();
-
-                    throw new ExpectedAffectedRecordMismatchException(expectedAffectedRows.Value, updatedRecords);
-                }
-
-                dbTransaction.Commit();
+                throw new ExpectedAffectedRecordMismatchException(expectedAffectedRows.Value, updatedRecords);
             }
+
+            dbTransaction.Commit();
         }
         else
         {
@@ -208,19 +207,18 @@ public class Repository : IRepository
     public virtual void DeleteOne<T>(Expression<Func<T, bool>> conditionExpression, bool forceHardDelete = false)
         where T : class
     {
-        using (var dbTransaction = DbContext.Database.BeginTransaction())
+        using var dbTransaction = DbContext.Database.BeginTransaction();
+
+        var affectedRecords = DeleteMany(conditionExpression, forceHardDelete);
+
+        if (affectedRecords != 1)
         {
-            var affectedRecords = DeleteMany(conditionExpression, forceHardDelete);
+            dbTransaction.Rollback();
 
-            if (affectedRecords != 1)
-            {
-                dbTransaction.Rollback();
-
-                throw new ExpectedAffectedRecordMismatchException(1, affectedRecords);
-            }
-
-            dbTransaction.Commit();
+            throw new ExpectedAffectedRecordMismatchException(1, affectedRecords);
         }
+
+        dbTransaction.Commit();
     }
 
     public virtual int DeleteMany<T>(Expression<Func<T, bool>> conditionExpression,
@@ -243,7 +241,7 @@ public class Repository : IRepository
                                     new
                                     {
                                         IsDeleted = true,
-                                        Deleted   = DateTimeOffset.Now
+                                        Deleted   = DateTimeOffset.UtcNow
                                     });
         }
 
@@ -263,7 +261,7 @@ public class Repository : IRepository
             }
 
             OnBeforeSaveChanges(out insertedEntities, out updatedEntities);
-            
+
             return DbContext.SaveChanges();
         }
         catch (ObjectDisposedException)
@@ -279,7 +277,7 @@ public class Repository : IRepository
     }
 
 
-    public void OnBeforeSaveChanges(out EntityEntry[] insertedEntities, 
+    public void OnBeforeSaveChanges(out EntityEntry[] insertedEntities,
                                     out EntityEntry[] updatedEntities)
     {
         if (!DbContext.ChangeTracker.HasChanges())
@@ -297,7 +295,7 @@ public class Repository : IRepository
         insertedEntities = entityEntries.Where(e => e.State == EntityState.Added)
                                         .ToArray();
 
-        updatedEntities = entityEntries.Where(e => e.State == EntityState.Modified || 
+        updatedEntities = entityEntries.Where(e => e.State == EntityState.Modified ||
                                                    e.State == EntityState.Deleted)
                                        .ToArray();
 
@@ -334,63 +332,55 @@ public class Repository : IRepository
     private Expression<Func<T, T>> AppendAuditInfoToExpression<T>(Expression<Func<T, T>> updateExpression)
         where T : class
     {
-        if (updateExpression.Body is not MemberInitExpression memberInitExpression)
-        {
-            return updateExpression;
-        }
 
-        if (!typeof(BaseEntityWithAuditInfo).IsAssignableFrom(typeof(T)))
+        if (!typeof(BaseEntityWithAuditInfo).IsAssignableFrom(typeof(T)) ||
+            updateExpression.Body is not MemberInitExpression memberInitExpression)
             return updateExpression;
+
+        var memberAssignmentList = new List<MemberBinding>(memberInitExpression.Bindings);
 
         var destinationType = typeof(T);
-        var constructorInfo = destinationType.GetConstructor(new Type[0]);
 
-        if (constructorInfo == null)
+        if (memberAssignmentList.All(_ => _.Member.Name != nameof(BaseEntityWithAuditInfo.ModifiedBy)))
         {
-            throw new InvalidOperationException($"Cannot find the constructor of the target type");
+            // assign value to field LastUpdateBy
+            var updatedByUserFieldName = nameof(BaseEntityWithAuditInfo.ModifiedBy);
+            var updatedByUserField     = destinationType.GetProperty(updatedByUserFieldName);
+
+            if (updatedByUserField != null)
+            {
+                memberAssignmentList.Add(Expression.Bind(
+                                                         updatedByUserField,
+                                                         Expression.Constant(CurrentLoggedInUserResolver
+                                                                                .CurrentUserName,
+                                                                             updatedByUserField.PropertyType)
+                                                        )
+                                        );
+            }
         }
 
-        var newExpression        = Expression.New(constructorInfo);
-        var memberAssignmentList = new List<MemberAssignment>();
-
-        foreach (var memberBinding in memberInitExpression.Bindings.OfType<MemberAssignment>())
+        if (memberAssignmentList.All(_ => _.Member.Name != nameof(BaseEntityWithAuditInfo.ModifiedDate)))
         {
-            memberAssignmentList.Add(memberBinding);
+            // assign value to field LastUpdate
+            var lastUpdateFieldName = nameof(BaseEntityWithAuditInfo.ModifiedDate);
+
+            var updatedDateField = destinationType.GetProperty(lastUpdateFieldName);
+
+            if (updatedDateField != null)
+            {
+                memberAssignmentList.Add(Expression.Bind(
+                                                         updatedDateField,
+                                                         Expression.Constant(DateTimeOffset.UtcNow,
+                                                                             updatedDateField.PropertyType)
+                                                        )
+                                        );
+            }
         }
 
-        // assign value to field LastUpdateBy
-        var updatedByUserFieldName = nameof(BaseEntityWithAuditInfo.ModifiedBy);
-        var updatedByUserField     = destinationType.GetProperty(updatedByUserFieldName);
+        memberInitExpression = memberInitExpression.Update(memberInitExpression.NewExpression, memberAssignmentList);
 
-        if (updatedByUserField != null)
-        {
-            memberAssignmentList.Add(Expression.Bind(
-                                                     updatedByUserField,
-                                                     Expression.Constant(CurrentLoggedInUserResolver.CurrentUserName,
-                                                                         updatedByUserField.PropertyType)
-                                                    )
-                                    );
-        }
+        updateExpression = updateExpression.Update(memberInitExpression, updateExpression.Parameters);
 
-        // assign value to field LastUpdate
-        var lastUpdateFieldName = nameof(BaseEntityWithAuditInfo.ModifiedDate);
-
-        var updatedDateField = destinationType.GetProperty(lastUpdateFieldName);
-
-        if (updatedDateField != null)
-        {
-            memberAssignmentList.Add(Expression.Bind(
-                                                     updatedDateField,
-                                                     Expression.Constant(DateTimeOffset.Now,
-                                                                         updatedDateField.PropertyType)
-                                                    )
-                                    );
-        }
-
-        Expression<Func<T, T>> memberInitFactory =
-            Expression.Lambda<Func<T, T>>(Expression.MemberInit(newExpression, memberAssignmentList),
-                                          Expression.Parameter(destinationType));
-
-        return memberInitFactory;
+        return updateExpression;
     }
 }
