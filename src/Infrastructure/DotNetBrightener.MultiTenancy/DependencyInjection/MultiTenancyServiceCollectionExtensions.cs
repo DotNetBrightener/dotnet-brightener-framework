@@ -1,14 +1,13 @@
-﻿using DotNetBrightener.DataAccess.Services;
+﻿using DotNetBrightener.DataAccess.EF.Events;
+using DotNetBrightener.DataAccess.Services;
+using DotNetBrightener.MultiTenancy;
+using DotNetBrightener.MultiTenancy.Events;
 using DotNetBrightener.MultiTenancy.Permissions;
 using DotNetBrightener.MultiTenancy.Services;
+using DotNetBrightener.Plugins.EventPubSub;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System;
-using DotNetBrightener.DataAccess.EF.Events;
-using DotNetBrightener.MultiTenancy;
-using DotNetBrightener.MultiTenancy.BackgroundTaskService;
-using DotNetBrightener.Plugins.EventPubSub;
-using DotNetBrightener.MultiTenancy.Events;
 
 // ReSharper disable CheckNamespace
 
@@ -18,8 +17,6 @@ public static class MultiTenancyServiceCollectionExtensions
 {
     public static MultiTenantConfiguration EnableMultiTenancy(this IServiceCollection serviceCollection)
     {
-        serviceCollection.AddSingleton<IBackgroundTaskScheduler, BackgroundTaskScheduler>();
-
         serviceCollection.AddScoped<ITenantAccessor, TenantAccessor>();
         serviceCollection.AddScoped<ITenantEntityMappingService, TenantEntityMappingService>();
         serviceCollection.AddScoped<ITenantDataService, TenantDataService>();

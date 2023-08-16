@@ -15,6 +15,6 @@ internal class BackgroundServiceProvider : IBackgroundServiceProvider
 
     public object GetService(Type serviceType)
     {
-        return _serviceProvider.TryGetService(serviceType);
+        return _serviceProvider.TryGet(serviceType);
     }
 }

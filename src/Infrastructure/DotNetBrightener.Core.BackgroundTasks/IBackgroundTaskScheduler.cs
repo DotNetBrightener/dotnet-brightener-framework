@@ -102,11 +102,13 @@ public class BackgroundTaskScheduler : IBackgroundTaskScheduler, IDisposable
         // current implementation disallows re-entrancy
         if (!Monitor.TryEnter(_timer))
         {
+            _logger.LogInformation("Timer is being locked for another execution. Exiting...");
             return;
         }
 
         try
         {
+            _logger.LogInformation("Stop and lock timer for execution.");
             _timer.Stop();
             DoWork();
         }
@@ -175,7 +177,7 @@ public class BackgroundTaskScheduler : IBackgroundTaskScheduler, IDisposable
 
             try
             {
-                invokingInstance = backgroundServiceProvider.TryGetService(declaringType);
+                invokingInstance = backgroundServiceProvider.TryGet(declaringType);
             }
             catch (Exception ex)
             {
@@ -193,6 +195,8 @@ public class BackgroundTaskScheduler : IBackgroundTaskScheduler, IDisposable
 
             Task ExecuteMethod()
             {
+                _logger.LogInformation($"Executing task: {taskToRun.Action.DeclaringType?.FullName}.{taskToRun.Action.Name}()");
+
                 if (isAwaitable)
                 {
                     var invokeResult = Task.Run(async () =>
@@ -214,7 +218,6 @@ public class BackgroundTaskScheduler : IBackgroundTaskScheduler, IDisposable
                     return taskToRun.TaskResult;
                 }
 
-
                 taskToRun.Action.Invoke(invokingInstance, taskToRun.Parameters);
 
                 return Task.CompletedTask;
@@ -226,7 +229,7 @@ public class BackgroundTaskScheduler : IBackgroundTaskScheduler, IDisposable
             }
             catch (Exception exception)
             {
-                _logger.LogError(exception, $"Error occurred when executing background queued task.");
+                _logger.LogError(exception, $"Error occurred when executing background queued task {taskToRun.Action.DeclaringType?.FullName}.{taskToRun.Action.Name}().");
             }
         }
     }
