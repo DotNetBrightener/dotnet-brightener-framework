@@ -65,12 +65,23 @@ public class BaseQueryModel
     ///     Retrieves the collection of columns (properties) of the entity to retrieve from the REST API request
     /// </summary>
     public string [ ] OrderedColumns { get; private set; } = Array.Empty<string>();
-    
+
+    public bool DeletedRecordsOnly { get; set; } = false;
+
     public static BaseQueryModel FromQuery(IQueryCollection query)
     {
         var queryDictionary = query.ToDictionary(_ => _.Key,
                                                  _ => _.Value.ToString());
 
         return queryDictionary.ToQueryModel<BaseQueryModel>();
+    }
+
+    public static TOutputModel FromQuery<TOutputModel>(IQueryCollection query)
+        where TOutputModel : BaseQueryModel, new()
+    {
+        var queryDictionary = query.ToDictionary(_ => _.Key,
+                                                 _ => _.Value.ToString());
+
+        return queryDictionary.ToQueryModel<TOutputModel>();
     }
 }

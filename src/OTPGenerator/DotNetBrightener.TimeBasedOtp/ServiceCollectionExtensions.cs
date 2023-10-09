@@ -1,4 +1,4 @@
-﻿using DotNetBrightener.TimeBaseOtp;
+﻿using DotNetBrightener.TimeBasedOtp;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.Extensions.DependencyInjection;

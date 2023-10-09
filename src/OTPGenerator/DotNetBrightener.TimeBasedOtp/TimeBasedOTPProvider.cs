@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Caching;
 
-namespace DotNetBrightener.TimeBaseOtp;
+namespace DotNetBrightener.TimeBasedOtp;
 
 internal class TimeBasedOTPProvider: IOTPProvider
 {

@@ -78,10 +78,24 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
     [HttpGet("")]
     public virtual async Task<IActionResult> GetList()
     {
-        if (!(await CanRetrieveList()))
+        if (!await CanRetrieveList())
             throw new UnauthorizedAccessException();
 
-        var entitiesQuery = DataService.FetchActive(DefaultQuery);
+        var adminQuery = BaseQueryModel.FromQuery(Request.Query);
+
+        if (adminQuery?.DeletedRecordsOnly == true &&
+            !await CanRetrieveDeletedItems())
+        {
+            return StatusCode((int)HttpStatusCode.Forbidden,
+                              new
+                              {
+                                  ErrorMessage = $"Requested for deleted items with is not allowed"
+                              });
+        }
+
+        var entitiesQuery = adminQuery?.DeletedRecordsOnly == true
+                                ? DataService.Fetch(DefaultQuery)
+                                : DataService.FetchActive(DefaultQuery);
 
         return await GetListResult(entitiesQuery);
     }
@@ -116,13 +130,24 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
     [HttpGet("{id:long}")]
     public virtual async Task<IActionResult> GetItem(long id)
     {
-        if (!(await CanRetrieveItem(id)))
+        if (!await CanRetrieveItem(id))
             throw new UnauthorizedAccessException();
 
         Expression<Func<TEntityType, bool>> expression =
             ExpressionExtensions.BuildPredicate<TEntityType>(id, OperatorComparer.Equals, EntityIdColumnName);
 
-        var entityItemQuery = DataService.FetchActive(DefaultQuery).Where(expression);
+        var adminQuery = BaseQueryModel.FromQuery(Request.Query);
+
+        if (adminQuery?.DeletedRecordsOnly == true && !await CanRetrieveDeletedItems())
+        {
+            adminQuery.DeletedRecordsOnly = false;
+        }
+
+        var entityItemQuery = adminQuery?.DeletedRecordsOnly == true
+                                  ? DataService.Fetch(DefaultQuery)
+                                  : DataService.FetchActive(DefaultQuery);
+
+        entityItemQuery = entityItemQuery.Where(expression);
 
         var finalQuery = await PerformColumnsSelectorQuery(entityItemQuery);
 
@@ -161,6 +186,17 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
     protected virtual async Task<bool> CanRetrieveItem(long id)
     {
         return true;
+    }
+
+    /// <summary>
+    ///     Considers if the current user can perform the <see cref="GetItem"/> action on deleted records
+    /// </summary>
+    /// <returns>
+    ///     <c>true</c> if user is authorized to perform the action; otherwise, <c>false</c>
+    /// </returns>
+    protected virtual async Task<bool> CanRetrieveDeletedItems()
+    {
+        return HttpContext.User.IsInRole("Administrator");
     }
 
 

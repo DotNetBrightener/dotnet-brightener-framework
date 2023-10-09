@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace DotNetBrightener.TimeBaseOtp;
+namespace DotNetBrightener.TimeBasedOtp;
 
 public class OneTimePasswordException : Exception
 {

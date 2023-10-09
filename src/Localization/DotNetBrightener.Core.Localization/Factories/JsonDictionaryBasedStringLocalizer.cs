@@ -166,7 +166,7 @@ public class JsonDictionaryBasedStringLocalizer : IStringLocalizer
     public static string FormatWith(string format, IFormatProvider provider, object source)
     {
         if (format == null)
-            throw new ArgumentNullException("format");
+            throw new ArgumentNullException(nameof(format));
 
         var r = new Regex(@"(?<start>\{)+(?<property>[\w\.\[\]]+)(?<format>:[^}]+)?(?<end>\})+",
                           RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);

@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace DotNetBrightener.TimeBaseOtp;
+namespace DotNetBrightener.TimeBasedOtp;
 
 public class Base32Encoder
 {

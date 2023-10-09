@@ -1,5 +1,6 @@
 ﻿using DotNetBrightener.Core.Localization;
 
+// ReSharper disable once CheckNamespace
 namespace Microsoft.Extensions.FileProviders;
 
 public static class FileInfoExtensions

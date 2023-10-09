@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 using NSubstitute;
 using NUnit.Framework;
 
-namespace DotNetBrightener.TimeBaseOtp.Tests;
+namespace DotNetBrightener.TimeBasedOtp.Tests;
 
 [TestFixture]
 public class TimeBasedOtpTest
@@ -17,7 +17,7 @@ public class TimeBasedOtpTest
     public void Setup()
     {
         _secret  = "8STItbyoq7XXE8IMtdaR54bh";
-        _secretWithSpace = Regex.Replace(_secret, ".{4}", "$0 ");
+        _secretWithSpace = Regex.Replace(_secret, ".{4}", "$0 ").Trim();
         _sut     = new TimeBasedOTPProvider(_dateTimeProvider, true);
     }
 
