@@ -1,4 +1,5 @@
 using DotNetBrightener.DataAccess.EF.Events;
+using DotNetBrightener.DataAccess.EF.Extensions;
 using DotNetBrightener.DataAccess.Exceptions;
 using DotNetBrightener.DataAccess.Models;
 using DotNetBrightener.DataAccess.Services;
@@ -12,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace DotNetBrightener.DataAccess.EF.Repositories;
 
@@ -98,23 +100,20 @@ public class Repository : IRepository
     public virtual void Insert<T>(IEnumerable<T> entities)
         where T : class
     {
-        var entitiesToInserts = !typeof(BaseEntityWithAuditInfo).IsAssignableFrom(typeof(T))
-                                    ? entities
-                                    : entities.Select(_ =>
-                                    {
-                                        if (_ is BaseEntityWithAuditInfo auditableEntity)
-                                        {
-                                            auditableEntity.CreatedDate =
-                                                auditableEntity.ModifiedDate = DateTimeOffset.UtcNow;
+        var entitiesToInserts = entities.Select(_ =>
+        {
+            if (_ is not BaseEntityWithAuditInfo auditableEntity) return _;
 
-                                            if (string.IsNullOrEmpty(auditableEntity.CreatedBy))
-                                                auditableEntity.CreatedBy = CurrentLoggedInUserResolver.CurrentUserName;
+            auditableEntity.CreatedDate =
+                auditableEntity.ModifiedDate = DateTimeOffset.UtcNow;
 
-                                            auditableEntity.ModifiedBy = "RECORD_CREATED_EVENT";
-                                        }
+            if (string.IsNullOrEmpty(auditableEntity.CreatedBy))
+                auditableEntity.CreatedBy = CurrentLoggedInUserResolver.CurrentUserName;
 
-                                        return _;
-                                    });
+            auditableEntity.ModifiedBy = "RECORD_CREATED_EVENT";
+
+            return _;
+        });
 
         DbContext.BulkCopy(entitiesToInserts);
     }
@@ -174,11 +173,11 @@ public class Repository : IRepository
 
         int updatedRecords;
 
-        var finalUpdateExpression = AppendAuditInfoToExpression(updateExpression);
-
         int PerformUpdate()
         {
-            return query.Update(finalUpdateExpression);
+            var updateQueryBuilder = PrepareUpdatePropertiesBuilder(updateExpression);
+
+            return query.ExecutePatchUpdate(updateQueryBuilder);
         }
 
         if (expectedAffectedRows.HasValue)
@@ -225,25 +224,18 @@ public class Repository : IRepository
                                      bool                      forceHardDelete = false)
         where T : class
     {
+        const string isDeletedFieldName = nameof(BaseEntityWithAuditInfo.IsDeleted);
+
         forceHardDelete =
-            forceHardDelete || !typeof(T).HasProperty<bool>(nameof(BaseEntityWithAuditInfo.IsDeleted));
+            forceHardDelete || !typeof(T).HasProperty<bool>(isDeletedFieldName);
 
-        var query = Fetch(conditionExpression);
-        int updatedRecords;
-
-        if (forceHardDelete)
-        {
-            updatedRecords = query.Delete();
-        }
-        else
-        {
-            updatedRecords = Update(conditionExpression,
-                                    new
-                                    {
-                                        IsDeleted = true,
-                                        Deleted   = DateTimeOffset.UtcNow
-                                    });
-        }
+        var updatedRecords = forceHardDelete
+                                 ? Fetch(conditionExpression).ExecuteDelete()
+                                 : Update(conditionExpression,
+                                          new
+                                          {
+                                              IsDeleted = true
+                                          });
 
         return updatedRecords;
     }
@@ -329,58 +321,62 @@ public class Repository : IRepository
         GC.SuppressFinalize(this);
     }
 
-    private Expression<Func<T, T>> AppendAuditInfoToExpression<T>(Expression<Func<T, T>> updateExpression)
-        where T : class
+    private SetPropertyBuilder<T> PrepareUpdatePropertiesBuilder<T>(Expression<Func<T, T>> updateExpression)
     {
-
-        if (!typeof(BaseEntityWithAuditInfo).IsAssignableFrom(typeof(T)) ||
-            updateExpression.Body is not MemberInitExpression memberInitExpression)
-            return updateExpression;
+        if (updateExpression.Body is not MemberInitExpression memberInitExpression)
+            throw new InvalidOperationException("Invalid expression type for updating entity");
 
         var memberAssignmentList = new List<MemberBinding>(memberInitExpression.Bindings);
 
-        var destinationType = typeof(T);
+        var setPropBuilder = new SetPropertyBuilder<T>();
 
-        if (memberAssignmentList.All(_ => _.Member.Name != nameof(BaseEntityWithAuditInfo.ModifiedBy)))
+        bool hasModifiedDate = false, hasModifiedBy = false;
+
+        foreach (MemberAssignment binding in memberAssignmentList.OfType<MemberAssignment>())
         {
-            // assign value to field LastUpdateBy
-            var updatedByUserFieldName = nameof(BaseEntityWithAuditInfo.ModifiedBy);
-            var updatedByUserField     = destinationType.GetProperty(updatedByUserFieldName);
+            var propertyInfo = (PropertyInfo)binding.Member;
 
-            if (updatedByUserField != null)
+            var value = Expression.Lambda(binding.Expression)
+                                  .Compile()
+                                  .DynamicInvoke();
+
+            if (propertyInfo.Name == nameof(BaseEntityWithAuditInfo.ModifiedDate) &&
+                propertyInfo.PropertyType == typeof(DateTimeOffset?))
             {
-                memberAssignmentList.Add(Expression.Bind(
-                                                         updatedByUserField,
-                                                         Expression.Constant(CurrentLoggedInUserResolver
-                                                                                .CurrentUserName,
-                                                                             updatedByUserField.PropertyType)
-                                                        )
-                                        );
+                hasModifiedDate = true;
             }
+
+            if (propertyInfo.Name == nameof(BaseEntityWithAuditInfo.ModifiedBy) &&
+                propertyInfo.PropertyType == typeof(string))
+            {
+                hasModifiedBy = true;
+            }
+
+            var setPropMethod = typeof(SetPropertyBuilder<T>)
+               .GetMethod(nameof(SetPropertyBuilder<T>.SetPropertyByName));
+
+            setPropMethod?.MakeGenericMethod(propertyInfo.PropertyType)
+                          .Invoke(setPropBuilder,
+                                  new[]
+                                  {
+                                      propertyInfo.Name, value
+                                  });
         }
 
-        if (memberAssignmentList.All(_ => _.Member.Name != nameof(BaseEntityWithAuditInfo.ModifiedDate)))
+        if (!hasModifiedDate &&
+            typeof(T).IsAssignableTo(typeof(BaseEntityWithAuditInfo)))
         {
-            // assign value to field LastUpdate
-            var lastUpdateFieldName = nameof(BaseEntityWithAuditInfo.ModifiedDate);
-
-            var updatedDateField = destinationType.GetProperty(lastUpdateFieldName);
-
-            if (updatedDateField != null)
-            {
-                memberAssignmentList.Add(Expression.Bind(
-                                                         updatedDateField,
-                                                         Expression.Constant(DateTimeOffset.UtcNow,
-                                                                             updatedDateField.PropertyType)
-                                                        )
-                                        );
-            }
+            setPropBuilder.SetPropertyByName<DateTimeOffset?>(nameof(BaseEntityWithAuditInfo.ModifiedDate),
+                                                              DateTimeOffset.UtcNow);
         }
 
-        memberInitExpression = memberInitExpression.Update(memberInitExpression.NewExpression, memberAssignmentList);
+        if (!hasModifiedBy &&
+            typeof(T).HasProperty<string>(nameof(BaseEntityWithAuditInfo.ModifiedBy)))
+        {
+            setPropBuilder.SetPropertyByName(nameof(BaseEntityWithAuditInfo.ModifiedBy),
+                                             CurrentLoggedInUserResolver.CurrentUserName);
+        }
 
-        updateExpression = updateExpression.Update(memberInitExpression, updateExpression.Parameters);
-
-        return updateExpression;
+        return setPropBuilder;
     }
 }
