@@ -1,6 +1,6 @@
+using DotNetBrightener.WebApi.GenericCRUD.Models;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -11,6 +11,72 @@ namespace DotNetBrightener.WebApi.GenericCRUD.Extensions;
 
 public static class QueryableDeepFilterExtensions
 {
+    /// <summary>
+    ///     Add addition query into initial one to order the result, and optionally pagination
+    /// </summary>
+    /// <param name="entitiesQuery">The initial query</param>
+    /// <returns>
+    ///     The new query with extra operations e.g ordering / pagination from <see cref="filterDictionary"/>
+    /// </returns>
+    public static IQueryable<TIn> AddOrderingAndPaginationQuery<TIn>(this IQueryable<TIn> entitiesQuery,
+                                                                     Dictionary<string, string> filterDictionary,
+                                                                     string entityIdColumnName,
+                                                                     out int pageSize,
+                                                                     out int pageIndex)
+        where TIn : class
+    {
+        var paginationQuery = filterDictionary.ToQueryModel<BaseQueryModel>();
+
+        pageSize = paginationQuery.PageSize;
+
+        if (pageSize == 0)
+        {
+            pageSize = 20;
+        }
+
+        pageIndex = paginationQuery.PageIndex;
+
+        var orderedEntitiesQuery = entitiesQuery.OrderBy(ExpressionExtensions
+                                                            .BuildMemberAccessExpression<TIn>(entityIdColumnName));
+
+        if (paginationQuery.OrderedColumns.Length > 0)
+        {
+            var sortIndex = 0;
+
+            foreach (var orderByColumn in paginationQuery.OrderedColumns)
+            {
+                var actualColumnName = orderByColumn;
+
+                if (orderByColumn.StartsWith("-"))
+                {
+                    actualColumnName = orderByColumn.Substring(1);
+                    var orderByColumnExpr =
+                        ExpressionExtensions.BuildMemberAccessExpression<TIn>(actualColumnName);
+
+                    orderedEntitiesQuery = sortIndex == 0
+                                               ? entitiesQuery.OrderByDescending(orderByColumnExpr)
+                                               : orderedEntitiesQuery.ThenByDescending(orderByColumnExpr);
+                }
+                else
+                {
+                    var orderByColumnExpr =
+                        ExpressionExtensions.BuildMemberAccessExpression<TIn>(actualColumnName);
+                    orderedEntitiesQuery = sortIndex == 0
+                                               ? entitiesQuery.OrderBy(orderByColumnExpr)
+                                               : orderedEntitiesQuery.ThenBy(orderByColumnExpr);
+                }
+
+                sortIndex++;
+            }
+        }
+
+        var itemsToSkip = pageIndex * pageSize;
+        var itemsToTake = pageSize;
+
+        return orderedEntitiesQuery.Skip(itemsToSkip)
+                                   .Take(itemsToTake);
+    }
+
     /// <summary>
     ///     Generates an <see cref="IQueryable{TIn}"/> for the given query, from the filter dictionary
     /// </summary>

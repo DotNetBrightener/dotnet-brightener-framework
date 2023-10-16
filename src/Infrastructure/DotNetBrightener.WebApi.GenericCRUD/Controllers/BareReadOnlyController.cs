@@ -218,56 +218,14 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
                                                                          out int         pageIndex)
         where TIn : class
     {
-        var paginationQuery = BaseQueryModel.FromQuery(Request.Query);
 
-        pageSize = paginationQuery.PageSize;
+        var filterDictionary = Request.Query.ToDictionary(_ => _.Key,
+                                                          _ => _.Value.ToString());
 
-        if (pageSize == 0)
-        {
-            pageSize = 20;
-        }
-
-        pageIndex = paginationQuery.PageIndex;
-
-        var orderedEntitiesQuery = entitiesQuery.OrderBy(ExpressionExtensions
-                                                            .BuildMemberAccessExpression<TIn>(EntityIdColumnName));
-
-        if (paginationQuery.OrderedColumns.Length > 0)
-        {
-            var sortIndex = 0;
-
-            foreach (var orderByColumn in paginationQuery.OrderedColumns)
-            {
-                var actualColumnName = orderByColumn;
-
-                if (orderByColumn.StartsWith("-"))
-                {
-                    actualColumnName = orderByColumn.Substring(1);
-                    var orderByColumnExpr =
-                        ExpressionExtensions.BuildMemberAccessExpression<TIn>(actualColumnName);
-
-                    orderedEntitiesQuery = sortIndex == 0
-                                               ? entitiesQuery.OrderByDescending(orderByColumnExpr)
-                                               : orderedEntitiesQuery.ThenByDescending(orderByColumnExpr);
-                }
-                else
-                {
-                    var orderByColumnExpr =
-                        ExpressionExtensions.BuildMemberAccessExpression<TIn>(actualColumnName);
-                    orderedEntitiesQuery = sortIndex == 0
-                                               ? entitiesQuery.OrderBy(orderByColumnExpr)
-                                               : orderedEntitiesQuery.ThenBy(orderByColumnExpr);
-                }
-
-                sortIndex++;
-            }
-        }
-
-        var itemsToSkip = pageIndex * pageSize;
-        var itemsToTake = pageSize;
-
-        return orderedEntitiesQuery.Skip(itemsToSkip)
-                                   .Take(itemsToTake);
+        return entitiesQuery.AddOrderingAndPaginationQuery(filterDictionary,
+                                                           EntityIdColumnName,
+                                                           out pageSize,
+                                                           out pageIndex);
     }
 
     /// <summary>
