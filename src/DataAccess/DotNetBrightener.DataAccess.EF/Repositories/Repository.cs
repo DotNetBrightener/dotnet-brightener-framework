@@ -38,11 +38,23 @@ public class Repository : IRepository
         return Fetch(expression).SingleOrDefault();
     }
 
+    public virtual T GetFirst<T>(Expression<Func<T, bool>> expression) where T : class
+    {
+        return Fetch(expression).FirstOrDefault();
+    }
+
     public virtual TResult Get<T, TResult>(Expression<Func<T, bool>>    expression,
                                            Expression<Func<T, TResult>> propertiesPickupExpression)
         where T : class
     {
         return Fetch(expression, propertiesPickupExpression).SingleOrDefault();
+    }
+
+    public virtual TResult GetFirst<T, TResult>(Expression<Func<T, bool>>    expression,
+                                                Expression<Func<T, TResult>> propertiesPickupExpression)
+        where T : class
+    {
+        return Fetch(expression, propertiesPickupExpression).FirstOrDefault();
     }
 
     public virtual IQueryable<T> Fetch<T>(Expression<Func<T, bool>> expression = null)
@@ -336,10 +348,6 @@ public class Repository : IRepository
         {
             var propertyInfo = (PropertyInfo)binding.Member;
 
-            var value = Expression.Lambda(binding.Expression)
-                                  .Compile()
-                                  .DynamicInvoke();
-
             if (propertyInfo.Name == nameof(BaseEntityWithAuditInfo.ModifiedDate) &&
                 propertyInfo.PropertyType == typeof(DateTimeOffset?))
             {
@@ -353,13 +361,14 @@ public class Repository : IRepository
             }
 
             var setPropMethod = typeof(SetPropertyBuilder<T>)
-               .GetMethod(nameof(SetPropertyBuilder<T>.SetPropertyByName));
+               .GetMethod(nameof(SetPropertyBuilder<T>.SetPropertyByNameAndExpression));
+
 
             setPropMethod?.MakeGenericMethod(propertyInfo.PropertyType)
                           .Invoke(setPropBuilder,
-                                  new[]
+                                  new object[]
                                   {
-                                      propertyInfo.Name, value
+                                      propertyInfo.Name, Expression.Lambda(binding.Expression, updateExpression.Parameters)
                                   });
         }
 

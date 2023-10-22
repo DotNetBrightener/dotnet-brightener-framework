@@ -123,6 +123,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.InfisicalV
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.InfisicalVaultClient.Tests", "Security\DotNetBrightener.InfisicalVaultClient.Tests\DotNetBrightener.InfisicalVaultClient.Tests.csproj", "{CA2AE0BA-1296-4B33-9108-17B87CF40706}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_Demos & Tests", "_Demos & Tests", "{6E580008-435A-4396-A928-507321CEAE45}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetBrightener.DataAccess.EF.Tests", "..\demos & tests\DotNetBrightener.DataAccess.EF.Tests\DotNetBrightener.DataAccess.EF.Tests.csproj", "{39CD575A-DD3D-42D1-B644-52DA127FBAA0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -411,6 +415,14 @@ Global
 		{CA2AE0BA-1296-4B33-9108-17B87CF40706}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CA2AE0BA-1296-4B33-9108-17B87CF40706}.Release|ARM64.ActiveCfg = Release|ARM64
 		{CA2AE0BA-1296-4B33-9108-17B87CF40706}.Release|ARM64.Build.0 = Release|ARM64
+		{39CD575A-DD3D-42D1-B644-52DA127FBAA0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{39CD575A-DD3D-42D1-B644-52DA127FBAA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{39CD575A-DD3D-42D1-B644-52DA127FBAA0}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{39CD575A-DD3D-42D1-B644-52DA127FBAA0}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{39CD575A-DD3D-42D1-B644-52DA127FBAA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{39CD575A-DD3D-42D1-B644-52DA127FBAA0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{39CD575A-DD3D-42D1-B644-52DA127FBAA0}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{39CD575A-DD3D-42D1-B644-52DA127FBAA0}.Release|ARM64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -463,6 +475,7 @@ Global
 		{F1B6F426-1EA7-4571-8F9A-2FC5CCE1DCC5} = {A8260E20-A153-47F4-AD48-3C711C1C1796}
 		{1BDF655B-BBED-41AF-8957-62EAAF2253C1} = {A8260E20-A153-47F4-AD48-3C711C1C1796}
 		{CA2AE0BA-1296-4B33-9108-17B87CF40706} = {A8260E20-A153-47F4-AD48-3C711C1C1796}
+		{39CD575A-DD3D-42D1-B644-52DA127FBAA0} = {6E580008-435A-4396-A928-507321CEAE45}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CBA29A5C-A736-4EB9-8D61-8E76924706CD}

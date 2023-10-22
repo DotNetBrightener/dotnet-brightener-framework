@@ -39,8 +39,25 @@ public class SetPropertyBuilder<TSource>
                                                                     TProperty value) =>
         SetProperty(GetPropertyExpression<TProperty>(propertyName), _ => value);
 
-    public SetPropertyBuilder<TSource> SetProperty<TProperty>(Expression<Func<TSource, TProperty>> propertyExpression,
-                                                              Expression<Func<TSource, TProperty>> valueExpression)
+
+    /// <summary>
+    ///     Executes setting given value to the property from the given expression
+    /// </summary>
+    /// <typeparam name="TProperty">The type of the property</typeparam>
+    /// <param name="propertyName">Name of the property</param>
+    /// <param name="valueExpression">Expression on how to set the property</param>
+    /// <returns>
+    ///     The same instance so that multiple calls to
+    ///     <see cref="SetPropertyByNameAndExpression{TProperty}" />
+    ///     can be chained.
+    /// </returns>
+    public SetPropertyBuilder<TSource> SetPropertyByNameAndExpression<TProperty>(string propertyName,
+                                                                                 Expression<Func<TSource, TProperty>>
+                                                                                     valueExpression) =>
+        SetProperty(GetPropertyExpression<TProperty>(propertyName), valueExpression);
+
+    private SetPropertyBuilder<TSource> SetProperty<TProperty>(Expression<Func<TSource, TProperty>> propertyExpression,
+                                                               Expression<Func<TSource, TProperty>> valueExpression)
     {
         SetPropertyCalls = SetPropertyCalls.Update(
                                                    body: Expression.Call(
