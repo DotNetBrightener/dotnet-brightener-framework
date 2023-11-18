@@ -2,7 +2,7 @@
 
 namespace DotNetBrightener.WebApp.CommonShared.Mvc;
 
-public interface IUnhandledExceptionHandler
+public interface IUnhandledExceptionHandler: IDependency
 {
     public void HandleException(UnhandledExceptionContext context);
 }

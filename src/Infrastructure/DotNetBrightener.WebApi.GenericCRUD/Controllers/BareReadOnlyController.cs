@@ -89,7 +89,7 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
             return StatusCode((int)HttpStatusCode.Forbidden,
                               new
                               {
-                                  ErrorMessage = $"Requested for deleted items with is not allowed"
+                                  ErrorMessage = $"Requesting for deleted entries is not allowed."
                               });
         }
 

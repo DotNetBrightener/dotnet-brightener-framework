@@ -42,7 +42,7 @@ public static class ServiceCollectionExtensions
 
         serviceCollection.EnableBackgroundTaskServices();
         
-        //serviceCollection.RegisterLoggingService(configuration);
+        serviceCollection.RegisterExceptionHandler<DefaultUnhandledExceptionHandler>();
         serviceCollection.RegisterFilterProvider<UnhandledExceptionResponseHandler>();
     }
 

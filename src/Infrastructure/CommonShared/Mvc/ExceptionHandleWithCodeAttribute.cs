@@ -69,7 +69,7 @@ public class ExceptionHandleWithCodeAttribute : ExceptionFilterAttribute
 
             errorResult.ErrorMessage     = T[exception.Message];
             errorResult.FullErrorMessage = exception.GetFullExceptionMessage();
-            errorResult.Data             = exception;
+            errorResult.Data             = exception.Data;
 
             var statusCode = StatusCode;
             if (exception is ExceptionWithStatusCode exceptionWithCode)

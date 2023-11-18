@@ -27,7 +27,7 @@ public abstract class BaseCRUDController<TEntityType> : BareReadOnlyController<T
     [RequestBodyReader]
     public virtual async Task<IActionResult> CreateItem([FromBody] TEntityType model)
     {
-        if (!(await AuthorizedCreateItem(model)))
+        if (!await AuthorizedCreateItem(model))
             throw new UnauthorizedAccessException();
 
         await PreCreateItem(model);
@@ -48,23 +48,13 @@ public abstract class BaseCRUDController<TEntityType> : BareReadOnlyController<T
     [RequestBodyReader]
     public virtual async Task<IActionResult> UpdateItem(long id)
     {
-        if (!(await CanUpdateItem(id)))
+        var (canUpdate, entity, result) = await CanUpdateItem(id);
+
+        if (result is not null)
+            return result;
+
+        if (!canUpdate || entity is null)
             throw new UnauthorizedAccessException();
-
-        var expression =
-            ExpressionExtensions.BuildPredicate<TEntityType>(id, OperatorComparer.Equals, EntityIdColumnName);
-
-        var entity = DataService.Get(expression);
-
-        if (entity == null)
-        {
-            return StatusCode((int)HttpStatusCode.NotFound,
-                              new
-                              {
-                                  ErrorMessage =
-                                      $"The requested  {typeof(TEntityType).Name} resource with provided identifier cannot be found"
-                              });
-        }
 
         var entityToUpdate = RequestBodyReader.ObtainBodyAsJObject(HttpContextAccessor);
 
@@ -100,7 +90,21 @@ public abstract class BaseCRUDController<TEntityType> : BareReadOnlyController<T
     [HttpDelete("{id:long}")]
     public virtual async Task<IActionResult> DeleteItem(long id)
     {
-        if (!(await CanDeleteItem(id)))
+        if (!await CanDeleteItem(id))
+            throw new UnauthorizedAccessException();
+
+        var expression =
+            ExpressionExtensions.BuildPredicate<TEntityType>(id, OperatorComparer.Equals, EntityIdColumnName);
+
+        DataService.DeleteOne(expression);
+
+        return StatusCode((int) HttpStatusCode.OK);
+    }
+
+    [HttpPut("{id:long}/undelete")]
+    public virtual async Task<IActionResult> RestoreDeletedItem(long id)
+    {
+        if (!await CanRestoreDeletedItem(id))
             throw new UnauthorizedAccessException();
 
         var expression =
@@ -135,18 +139,35 @@ public abstract class BaseCRUDController<TEntityType> : BareReadOnlyController<T
     /// <returns>
     ///     <c>true</c> if user is authorized to perform the action; otherwise, <c>false</c>
     /// </returns>
-    protected virtual async Task<bool> CanUpdateItem(long id)
+    protected virtual async Task<(bool, TEntityType, IActionResult)> CanUpdateItem(long id)
     {
-        return true;
+        var expression = ExpressionExtensions.BuildPredicate<TEntityType>(id, OperatorComparer.Equals, EntityIdColumnName);
+        var entity = DataService.Get(expression);
+
+
+        return (true, entity, entity is null ? NotFound() : null);
     }
 
     /// <summary>
     ///     Considers if the current user can perform the <see cref="DeleteItem"/> action
     /// </summary>
+    /// <param name="id">The identifier of the entry to check for deletion permission</param>
     /// <returns>
     ///     <c>true</c> if user is authorized to perform the action; otherwise, <c>false</c>
     /// </returns>
     protected virtual async Task<bool> CanDeleteItem(long id)
+    {
+        return true;
+    }
+
+    /// <summary>
+    ///     Considers if the current user can perform the <see cref="RestoreDeletedItem"/> action
+    /// </summary>
+    /// <param name="id">The identifier of the entry to check for deletion permission</param>
+    /// <returns>
+    ///     <c>true</c> if user is authorized to perform the action; otherwise, <c>false</c>
+    /// </returns>
+    protected virtual async Task<bool> CanRestoreDeletedItem(long id)
     {
         return true;
     }
@@ -205,19 +226,9 @@ public abstract class BaseCRUDController<TEntityType> : BareReadOnlyController<T
     {
         if (baseEntity is BaseEntityWithAuditInfo auditableEntity)
         {
-            return new CreatedEntityResultModel
-            {
-                EntityId     = baseEntity.Id,
-                CreatedDate  = auditableEntity.CreatedDate,
-                CreatedBy    = auditableEntity.CreatedBy,
-                ModifiedDate = auditableEntity.ModifiedDate,
-                ModifiedBy   = auditableEntity.ModifiedBy
-            };
+            return new CreatedEntityResultModel(auditableEntity);
         }
 
-        return new CreatedEntityResultModel
-        {
-            EntityId = baseEntity.Id,
-        };
+        return new CreatedEntityResultModel(baseEntity);
     }
 }

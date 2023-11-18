@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net;
-using DotNetBrightener.WebApp.CommonShared.Exceptions;
+﻿using DotNetBrightener.WebApp.CommonShared.Exceptions;
 using DotNetBrightener.WebApp.CommonShared.Models;
 using DotNetBrightener.WebApp.CommonShared.Services;
 using Microsoft.AspNetCore.Http;
@@ -9,8 +6,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
-using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
 
 namespace DotNetBrightener.WebApp.CommonShared.Mvc;
 
@@ -24,9 +24,9 @@ public class UnhandledExceptionResponseHandler : IExceptionFilter, IActionFilter
     private readonly IStringLocalizer                        T;
 
     public UnhandledExceptionResponseHandler(ILogger<UnhandledExceptionResponseHandler> logger,
-                                             IErrorResultFactory errorResultFactory,
                                              IEnumerable<IUnhandledExceptionHandler> unhandledExceptionHandlers,
-                                             IStringLocalizer<UnhandledExceptionResponseHandler> localizer)
+                                             IStringLocalizer<UnhandledExceptionResponseHandler> localizer,
+                                             IErrorResultFactory errorResultFactory)
     {
         _logger                     = logger;
         _errorResultFactory         = errorResultFactory;
@@ -36,78 +36,54 @@ public class UnhandledExceptionResponseHandler : IExceptionFilter, IActionFilter
 
     public void OnException(ExceptionContext context)
     {
-        ContentResult defaultResult = null;
-        var           errorResult   = _errorResultFactory.InstantiateErrorResult<DefaultErrorResult>();
+        ContentResult defaultResult;
+
+        var           errorResult = _errorResultFactory.InstantiateErrorResult<DefaultErrorResult>();
         
         if (!string.IsNullOrEmpty(context.Exception.Message))
         {
             errorResult.ErrorMessage = T[context.Exception.Message];
         }
 
-        if (context.Exception is ExceptionWithStatusCode exception)
-        {
-            var exceptionType = exception.GetType().FullName;
+        errorResult.FullErrorMessage = context.Exception.GetFullExceptionMessage();
+        errorResult.Data             = context.Exception.Data;
+        int statusCode = (int)HttpStatusCode.InternalServerError;
 
-            if (exceptionType != typeof(ExceptionWithStatusCode).FullName)
+        switch (context.Exception)
+        {
+            case ExceptionWithStatusCode exception:
             {
-                errorResult.ErrorType = exceptionType;
+                var exceptionType = exception.GetType().FullName;
+
+                if (exceptionType != typeof(ExceptionWithStatusCode).FullName)
+                {
+                    errorResult.ErrorType = exceptionType;
+                }
+
+                statusCode = (int)exception.StatusCode;
+
+                break;
             }
+            case UnauthorizedAccessException:
+                statusCode = (int)HttpStatusCode.Unauthorized;
 
-            defaultResult = new ContentResult
-            {
-                Content     = JsonConvert.SerializeObject(errorResult, DefaultJsonSerializer.DefaultJsonSerializerSettings),
-                ContentType = ApplicationJsonType,
-                StatusCode  = (int) exception.StatusCode
-            };
+                break;
+            case BadHttpRequestException httpRequestException:
+                statusCode = httpRequestException.StatusCode;
+
+                break;
+            default:
+                errorResult.ErrorType = context.Exception.GetType().FullName;
+
+                break;
         }
 
-        else if (context.Exception is UnauthorizedAccessException)
+        defaultResult = new ContentResult
         {
-            defaultResult = new ContentResult
-            {
-                Content     = JsonConvert.SerializeObject(errorResult, DefaultJsonSerializer.DefaultJsonSerializerSettings),
-                ContentType = ApplicationJsonType,
-                StatusCode  = (int) HttpStatusCode.Unauthorized
-            };
-        }
-
-        else if (context.Exception is BadHttpRequestException httpRequestException)
-        {
-            defaultResult = new ContentResult
-            {
-                Content     = JsonConvert.SerializeObject(errorResult, DefaultJsonSerializer.DefaultJsonSerializerSettings),
-                ContentType = ApplicationJsonType,
-                StatusCode  = httpRequestException.StatusCode
-            };
-        }
-
-        else
-        {
-            _logger.LogError(context.Exception, "Unhandled Exception Occurred");
-
-            errorResult.ErrorType        = context.Exception.GetType().FullName;
-            errorResult.FullErrorMessage = context.Exception.GetFullExceptionMessage();
-            errorResult.Data             = context.Exception;
-
-            defaultResult = new ContentResult
-            {
-                Content     = JsonConvert.SerializeObject(errorResult, DefaultJsonSerializer.DefaultJsonSerializerSettings),
-                ContentType = ApplicationJsonType,
-                StatusCode  = (int) HttpStatusCode.InternalServerError
-            };
-        }
-
-        if (context.HttpContext
-                   .Request
-                   .GetTypedHeaders()
-                   .Accept.Contains(MediaTypeHeaderValue.Parse(ApplicationJsonType)))
-        {
-
-            context.ExceptionHandled = true;
-            context.Result           = defaultResult;
-
-            return;
-        }
+            Content     = JsonConvert.SerializeObject(errorResult, DefaultJsonSerializer.DefaultJsonSerializerSettings),
+            ContentType = ApplicationJsonType,
+            StatusCode  = statusCode
+        };
 
         var exceptionContext = new UnhandledExceptionContext
         {
@@ -117,15 +93,19 @@ public class UnhandledExceptionResponseHandler : IExceptionFilter, IActionFilter
             StatusCode       = (HttpStatusCode) defaultResult.StatusCode
         };
 
-        foreach (var handler in _unhandledExceptionHandlers)
+        if (_unhandledExceptionHandlers.Any())
         {
-            handler.HandleException(exceptionContext);
-
-            if (exceptionContext.ProcessResult != null)
+            foreach (var handler in _unhandledExceptionHandlers)
             {
-                break;
+                handler.HandleException(exceptionContext);
+
+                if (exceptionContext.ProcessResult != null)
+                    break;
             }
         }
+
+        _logger.LogError(context.Exception, 
+                         $"Unhandled Exception Occurred. Responded with HttpStatusCode {exceptionContext.StatusCode}");
 
         context.ExceptionHandled = true;
         context.Result           = exceptionContext.ProcessResult ?? defaultResult;
