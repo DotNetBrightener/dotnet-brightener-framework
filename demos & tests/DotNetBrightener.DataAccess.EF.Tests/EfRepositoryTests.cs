@@ -2,16 +2,43 @@ using DotNetBrightener.DataAccess.EF.Extensions;
 using DotNetBrightener.DataAccess.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using System.ComponentModel.DataAnnotations;
 
 namespace DotNetBrightener.DataAccess.EF.Tests;
+
+public class TestEntity
+{
+    [Key]
+    public long Id { get; set; }
+
+
+    [MaxLength(512)]
+    public string Value { get; set; }
+}
+
+public class TestDbContext : DbContext
+{
+    public TestDbContext(DbContextOptions<TestDbContext> options)
+        : base(options)
+    {
+
+    }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<TestEntity>();
+    }
+}
 
 public class EfRepositoryTests
 {
     private ServiceProvider _serviceProvider;
 
-    private static readonly string DateTimeString = DateTime.Now.ToString("yyyyMMddHHmmss");
+    //private static readonly string DateTimeString = DateTime.Now.ToString("yyyyMMddHHmmss");
 
-    private static readonly string ConnectionString = $"Data Source=192.168.20.163;Initial Catalog=dnb_testdb_{DateTimeString};User ID=sa;Password=sCpTXbW8jbSbbUpILfZVulTiwqcPyJWt;MultipleActiveResultSets=True;Encrypt=True;TrustServerCertificate=True;";
+    //private static readonly string ConnectionString = $"Data Source=192.168.20.163;Initial Catalog=dnb_testdb_{DateTimeString};User ID=sa;Password=sCpTXbW8jbSbbUpILfZVulTiwqcPyJWt;MultipleActiveResultSets=True;Encrypt=True;TrustServerCertificate=True;";
+
+    private static readonly string ConnectionString = $"Data Source=TestDb.db;";
 
     [SetUp]
     public void Setup()
@@ -21,12 +48,11 @@ public class EfRepositoryTests
         serviceCollection.AddEntityFrameworkDataServices<TestDbContext>(new DatabaseConfiguration
                                                                         {
                                                                             ConnectionString = ConnectionString,
-                                                                            DatabaseProvider = DatabaseProvider.MsSql
+                                                                            DatabaseProvider = DatabaseProvider.Sqlite
                                                                         },
                                                                         optionBuilder =>
                                                                         {
-                                                                            optionBuilder
-                                                                               .UseSqlServer(ConnectionString);
+                                                                            optionBuilder.UseSqlite(ConnectionString);
                                                                         });
 
         serviceCollection.AddLogging();
@@ -42,6 +68,8 @@ public class EfRepositoryTests
     {
         var dbContext = _serviceProvider.GetService<TestDbContext>();
         dbContext!.Database.EnsureDeleted();
+
+        _serviceProvider.Dispose();
     }
 
     [Test]

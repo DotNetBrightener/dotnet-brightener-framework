@@ -1,4 +1,5 @@
 ﻿using System;
+using DotNetBrightener.DataAccess.EF.Converters;
 using Microsoft.EntityFrameworkCore;
 
 namespace DotNetBrightener.DataAccess.EF.Migrations;
@@ -21,6 +22,16 @@ public abstract class MigrationEnabledDbContext : DbContext
         base.OnConfiguring(optionsBuilder);
 
         OptionsBuilder?.Invoke(optionsBuilder);
+    }
+
+    protected override void ConfigureConventions(ModelConfigurationBuilder builder)
+    {
+        base.ConfigureConventions(builder);
+        builder.Properties<DateOnly>()
+               .HaveConversion<DateOnlyConverter>();
+                
+        builder.Properties<TimeOnly>()
+               .HaveConversion<TimeOnlyConverter>();
     }
 
     protected void SetConfigureDbOptionsBuilder(Action<DbContextOptionsBuilder> optionsBuilder)

@@ -1,5 +1,4 @@
 ﻿#nullable enable
-
 using System;
 
 namespace DotNetBrightener.WebApp.CommonShared.ResultType;

@@ -100,33 +100,6 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
         return await GetListResult(entitiesQuery);
     }
 
-    protected virtual async Task<IActionResult> GetListResult(IQueryable<TEntityType> entitiesQuery)
-    {
-        entitiesQuery = await ApplyDeepFilters(entitiesQuery);
-
-        var totalRecords = DynamicQueryableExtensions.Count(entitiesQuery);
-
-        var orderedQuery = AddOrderingAndPaginationQuery(entitiesQuery,
-                                                         out var pageSize,
-                                                         out var pageIndex);
-
-        var finalQuery = await PerformColumnsSelectorQuery(orderedQuery);
-
-        Response.Headers.Add("Result-Totals", totalRecords.ToString());
-        Response.Headers.Add("Result-PageIndex", pageIndex.ToString());
-        Response.Headers.Add("Result-PageSize", pageSize.ToString());
-
-        var result = finalQuery.ToDynamicArray();
-        Response.Headers.Add("Result-Count", result.Length.ToString());
-
-        // add expose header to support CORS
-        Response.Headers.Add("Access-Control-Expose-Headers",
-                             "Result-Totals,Result-PageIndex,Result-PageSize,Result-Count," +
-                             "Result-Totals,Result-PageIndex,Result-PageSize,Result-Count".ToLower());
-
-        return Ok(result);
-    }
-
     [HttpGet("{id:long}")]
     public virtual async Task<IActionResult> GetItem(long id)
     {
@@ -199,8 +172,50 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
         return HttpContext.User.IsInRole("Administrator");
     }
 
+    protected virtual Task<IActionResult> GetListResult(IQueryable<TEntityType> entitiesQuery)
+        => GetListResult<TEntityType>(entitiesQuery);
 
-    protected virtual Task<IQueryable<TEntityType>> ApplyDeepFilters(IQueryable<TEntityType> entitiesQuery)
+    protected virtual async Task<IActionResult> GetListResult<TIn>(IQueryable<TIn> entitiesQuery) where TIn : class
+    {
+        entitiesQuery = await ApplyDeepFilters(entitiesQuery);
+
+        var totalRecords = DynamicQueryableExtensions.Count(entitiesQuery);
+
+        var orderedQuery = AddOrderingAndPaginationQuery(entitiesQuery,
+                                                         out var pageSize,
+                                                         out var pageIndex);
+
+        var finalQuery = await PerformColumnsSelectorQuery(orderedQuery);
+
+        return PagedListResult<TIn>(finalQuery, totalRecords, pageIndex, pageSize);
+    }
+
+    protected virtual IActionResult PagedListResult<TIn>(IQueryable finalQuery,
+                                                         int        totalRecords,
+                                                         int        pageIndex,
+                                                         int        pageSize)
+        where TIn : class
+    {
+        Response.Headers.Add("Result-Totals", totalRecords.ToString());
+        Response.Headers.Add("Result-PageIndex", pageIndex.ToString());
+        Response.Headers.Add("Result-PageSize", pageSize.ToString());
+
+        var result = finalQuery.ToDynamicArray();
+        Response.Headers.Add("Result-Count", result.Length.ToString());
+
+        // add expose header to support CORS
+        Response.Headers.Add("Access-Control-Expose-Headers",
+                             "Result-Totals,Result-PageIndex,Result-PageSize,Result-Count," +
+                             "Result-Totals,Result-PageIndex,Result-PageSize,Result-Count".ToLower());
+
+        return Ok(result);
+    }
+
+    protected virtual Task<IQueryable<TEntityType>> ApplyDeepFilters(IQueryable<TEntityType> entitiesQuery) =>
+        ApplyDeepFilters<TEntityType>(entitiesQuery);
+
+    protected virtual Task<IQueryable<TIn>> ApplyDeepFilters<TIn>(IQueryable<TIn> entitiesQuery)
+        where TIn : class
     {
         var deepPropertiesSearchFilters = Request.Query.ToDictionary(_ => _.Key,
                                                                      _ => _.Value.ToString());
