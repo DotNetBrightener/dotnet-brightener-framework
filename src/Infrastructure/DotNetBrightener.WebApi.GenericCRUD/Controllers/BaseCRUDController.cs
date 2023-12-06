@@ -58,7 +58,7 @@ public abstract class BaseCRUDController<TEntityType> : BareReadOnlyController<T
 
         var entityToUpdate = RequestBodyReader.ObtainBodyAsJObject(HttpContextAccessor);
 
-        await UpdateEntity(entity, entityToUpdate);
+        var auditTrail = await UpdateEntity(entity, entityToUpdate);
 
         DataService.Update(entity);
 
@@ -186,13 +186,16 @@ public abstract class BaseCRUDController<TEntityType> : BareReadOnlyController<T
     ///     The data came from the request contains the changes needed.
     /// </param>
     /// <returns></returns>
-    protected virtual Task UpdateEntity(TEntityType entityToPersist, object dataToUpdate)
+    protected virtual Task<AuditTrail<TEntityType>> UpdateEntity(TEntityType entityToPersist, object dataToUpdate)
     {
         var ignoreProperties = typeof(TEntityType).GetPropertiesWithNoClientSideUpdate();
 
-        DataTransferObjectUtils.UpdateEntityFromDto(entityToPersist, dataToUpdate, ignoreProperties);
+        DataTransferObjectUtils.UpdateEntityFromDto(entityToPersist,
+                                                    dataToUpdate,
+                                                    out var auditTrail,
+                                                    ignoreProperties);
 
-        return Task.CompletedTask;
+        return Task.FromResult(auditTrail);
     }
 
     /// <summary>

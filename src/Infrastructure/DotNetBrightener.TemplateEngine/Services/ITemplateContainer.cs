@@ -7,71 +7,70 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace DotNetBrightener.TemplateEngine.Services
+namespace DotNetBrightener.TemplateEngine.Services;
+
+public interface ITemplateContainer
 {
-    public interface ITemplateContainer
+    void RegisterTemplate<TTemplateType>();
+
+    List<Type> GetAllTemplateTypes();
+
+    Type GetTemplateTypeByName(string templateTypeName);
+
+    TemplateListItemModel GetTemplateInformation(string templateTypeName);
+}
+
+public class TemplateContainer : ITemplateContainer
+{
+    private readonly ConcurrentDictionary<string, Type> _templateTypesList = new ConcurrentDictionary<string, Type>();
+
+    public void RegisterTemplate<TTemplateType>()
     {
-        void RegisterTemplate<TTemplateType>();
+        var typeName = typeof(TTemplateType).FullName;
+        if (typeName == null)
+            return;
 
-        List<Type> GetAllTemplateTypes();
-
-        Type GetTemplateTypeByName(string templateTypeName);
-
-        TemplateListItemModel GetTemplateInformation(string templateTypeName);
+        _templateTypesList.TryAdd(typeName, typeof(TTemplateType));
     }
 
-    public class TemplateContainer : ITemplateContainer
+    public List<Type> GetAllTemplateTypes()
     {
-        private readonly ConcurrentDictionary<string, Type> _templateTypesList = new ConcurrentDictionary<string, Type>();
+        return _templateTypesList.Values.ToList();
+    }
 
-        public void RegisterTemplate<TTemplateType>()
-        {
-            var typeName = typeof(TTemplateType).FullName;
-            if (typeName == null)
-                return;
+    public Type GetTemplateTypeByName(string templateTypeName)
+    {
+        if (_templateTypesList.TryGetValue(templateTypeName, out var templateType))
+            return templateType;
 
-            _templateTypesList.TryAdd(typeName, typeof(TTemplateType));
-        }
+        return null;
+    }
 
-        public List<Type> GetAllTemplateTypes()
-        {
-            return _templateTypesList.Values.ToList();
-        }
+    public TemplateListItemModel GetTemplateInformation(string templateTypeName)
+    {
+        var templateType = GetTemplateTypeByName(templateTypeName);
 
-        public Type GetTemplateTypeByName(string templateTypeName)
-        {
-            if (_templateTypesList.TryGetValue(templateTypeName, out var templateType))
-                return templateType;
-
-            return null;
-        }
-
-        public TemplateListItemModel GetTemplateInformation(string templateTypeName)
-        {
-            var templateType = GetTemplateTypeByName(templateTypeName);
-
-            if (templateType == null)
-                throw new TemplateTypeNotFoundException(templateTypeName);
+        if (templateType == null)
+            throw new TemplateTypeNotFoundException(templateTypeName);
             
-            var templateInformation = new TemplateListItemModel
-                                      {
-                                          TemplateName = GetFormattedTemplateName(templateType.Name),
-                                          TemplateType = templateTypeName
-                                      };
-
-            var templateDescriptionAttribute = templateType.GetCustomAttribute<TemplateDescriptionAttribute>();
-            if (templateDescriptionAttribute != null)
-            {
-                templateInformation.TemplateDescription = templateDescriptionAttribute.TemplateDescription;
-                templateInformation.TemplateDescriptionKey = templateDescriptionAttribute.TemplateDescriptionKey;
-            }
-
-            return templateInformation;
-        }
-
-        private string GetFormattedTemplateName(string templateTypeName)
+        var templateInformation = new TemplateListItemModel
         {
-            return templateTypeName.CamelFriendly();
+            TemplateName = GetFormattedTemplateName(templateType.Name),
+            TemplateType = templateTypeName
+        };
+
+        var templateDescriptionAttribute = templateType.GetCustomAttribute<TemplateDescriptionAttribute>();
+        if (templateDescriptionAttribute != null)
+        {
+            templateInformation.TemplateDescription    = templateDescriptionAttribute.TemplateDescription;
+            templateInformation.TemplateDescriptionKey = templateDescriptionAttribute.TemplateDescriptionKey;
         }
+
+        return templateInformation;
+    }
+
+    private string GetFormattedTemplateName(string templateTypeName)
+    {
+        return templateTypeName.CamelFriendly();
     }
 }

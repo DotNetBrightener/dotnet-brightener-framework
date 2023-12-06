@@ -1,7 +1,6 @@
-﻿namespace DotNetBrightener.TemplateEngine.Services
-{
-	public interface ITemplateModel 
-    {
+﻿namespace DotNetBrightener.TemplateEngine.Services;
 
-    }
+public interface ITemplateModel 
+{
+
 }

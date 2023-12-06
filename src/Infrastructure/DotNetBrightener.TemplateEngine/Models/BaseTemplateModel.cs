@@ -1,14 +1,13 @@
 ﻿using System;
 using DotNetBrightener.TemplateEngine.Services;
 
-namespace DotNetBrightener.TemplateEngine.Models
+namespace DotNetBrightener.TemplateEngine.Models;
+
+public abstract class BaseTemplateModel : ITemplateModel
 {
-	public abstract class BaseTemplateModel : ITemplateModel
-    {
-        public string SiteUrl { get; set; }
+    public string SiteUrl { get; set; }
 
-        public string Today => DateTime.Today.ToString("MM/dd/yyyy");
+    public string Today => DateTime.Today.ToString("MM/dd/yyyy");
 
-        public string CurrentDateTime => DateTimeOffset.Now.ToString("MM/dd/yyyy hh:mm:ss tt, ddd");
-    }
+    public string CurrentDateTime => DateTimeOffset.Now.ToString("MM/dd/yyyy hh:mm:ss tt, ddd");
 }

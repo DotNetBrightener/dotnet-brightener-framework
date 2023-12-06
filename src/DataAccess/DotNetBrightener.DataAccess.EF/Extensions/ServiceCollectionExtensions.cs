@@ -25,8 +25,9 @@ public static class ServiceCollectionExtensions
             if (dbConfiguration.UseLazyLoading)
                 configure.UseLazyLoadingProxies();
         });
-        
+
         serviceCollection.AddScoped<DbContext, TDbContext>();
+
         serviceCollection.AddScoped<IRepository, Repository>();
 
         serviceCollection.TryAddScoped<ICurrentLoggedInUserResolver, DefaultCurrentUserResolver>();

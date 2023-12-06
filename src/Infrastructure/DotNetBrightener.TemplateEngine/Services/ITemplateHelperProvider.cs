@@ -1,13 +1,12 @@
 ﻿using System.IO;
 
-namespace DotNetBrightener.TemplateEngine.Services
+namespace DotNetBrightener.TemplateEngine.Services;
+
+public interface ITemplateHelperProvider 
 {
-    public interface ITemplateHelperProvider 
-    {
-        string HelperName { get; }
+    string HelperName { get; }
 
-        string UsageHint { get; }
+    string UsageHint { get; }
 
-        void ResolveTemplate(TextWriter output, object context, object[] arguments);
-    }
+    void ResolveTemplate(TextWriter output, object context, object[] arguments);
 }

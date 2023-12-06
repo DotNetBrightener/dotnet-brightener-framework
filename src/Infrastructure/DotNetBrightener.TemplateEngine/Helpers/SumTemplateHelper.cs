@@ -1,30 +1,29 @@
 ﻿using System.IO;
 using DotNetBrightener.TemplateEngine.Services;
 
-namespace DotNetBrightener.TemplateEngine.Helpers
+namespace DotNetBrightener.TemplateEngine.Helpers;
+
+public class SumTemplateHelper: ITemplateHelperProvider
 {
-    public class SumTemplateHelper: ITemplateHelperProvider
+    public string HelperName => "sum";
+
+    public string UsageHint => "{{sum {your-values}}}";
+
+    public void ResolveTemplate(TextWriter output, object context, object[] arguments)
     {
-        public string HelperName => "sum";
+        if (context == null)
+            return;
 
-        public string UsageHint => "{{sum {your-values}}}";
-
-        public void ResolveTemplate(TextWriter output, object context, object[] arguments)
+        decimal result = 0;
+        foreach (var argument in arguments)
         {
-            if (context == null)
-                return;
-
-            decimal result = 0;
-            foreach (var argument in arguments)
+            if (decimal.TryParse(argument.ToString(), out var val))
             {
-                if (decimal.TryParse(argument.ToString(), out var val))
-                {
-                    result += val;
-                }
+                result += val;
             }
-
-            output.Write(result);
-
         }
+
+        output.Write(result);
+
     }
 }

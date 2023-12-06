@@ -1,11 +1,10 @@
 ﻿using System;
 
-namespace DotNetBrightener.TemplateEngine.Attributes
-{
-    public class TemplateDescriptionAttribute: Attribute
-    {
-        public string TemplateDescription { get; set; }
+namespace DotNetBrightener.TemplateEngine.Attributes;
 
-        public string TemplateDescriptionKey { get; set; }
-    }
+public class TemplateDescriptionAttribute: Attribute
+{
+    public string TemplateDescription { get; set; }
+
+    public string TemplateDescriptionKey { get; set; }
 }
