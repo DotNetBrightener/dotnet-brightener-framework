@@ -225,11 +225,6 @@ public static class QueryableDeepFilterExtensions
                                                                               PropertyPathInfo property)
         where TIn : class
     {
-        if (filterValue.Split(",").Length == 2)
-        {
-            return null;
-        }
-
         Expression<Func<TIn, bool>> subQuery         = PredicateBuilder.True<TIn>();
         var                         filterWholeValue = filterValue;
 
