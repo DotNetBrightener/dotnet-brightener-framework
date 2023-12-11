@@ -8,4 +8,9 @@ public class DefaultPermissions: AutomaticPermissionProvider
     ///     Granted permissions management rights
     /// </summary>
     public const string ManagePermissions = "System.Permissions.ManagePermissions";
+
+    /// <summary>
+    ///     Permission to impersonate other users
+    /// </summary>
+    public const string Impersonation = "System.Permissions.ImpersonateAsOtherUser";
 }
