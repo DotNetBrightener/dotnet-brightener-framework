@@ -24,9 +24,9 @@ public interface ITemplateService
     /// <typeparam name="TTemplate">The type of <see cref="instance"/> object</typeparam>
     /// <param name="instance">The model used to parse the template content</param>
     /// <returns></returns>
-    TemplateModelDto LoadAndParseTemplate<TTemplate>(TTemplate instance) where TTemplate : ITemplateModel;
+    TemplateModelDto LoadAndParseTemplate<TTemplate>(TTemplate instance, bool isHtml = true) where TTemplate : ITemplateModel;
 
-    string ParseTemplate(string template, dynamic instance);
+    string ParseTemplate(string template, dynamic instance, bool isHtml = true);
 }
 
 public class TemplateService : ITemplateService
@@ -106,7 +106,7 @@ public class TemplateService : ITemplateService
         };
     }
 
-    public TemplateModelDto LoadAndParseTemplate<TTemplate>(TTemplate instance) where TTemplate : ITemplateModel
+    public TemplateModelDto LoadAndParseTemplate<TTemplate>(TTemplate instance, bool isHtml = true) where TTemplate : ITemplateModel
     {
         var template = LoadTemplate(instance.GetType().FullName ?? typeof(TTemplate).FullName);
 
@@ -128,15 +128,15 @@ public class TemplateService : ITemplateService
             }
         }
 
-        template.TemplateContent = _templateParserService.ParseTemplate(template.TemplateContent, instance);
-        template.TemplateTitle   = _templateParserService.ParseTemplate(template.TemplateTitle, instance);
+        template.TemplateContent = _templateParserService.ParseTemplate(template.TemplateContent, instance, isHtml);
+        template.TemplateTitle = _templateParserService.ParseTemplate(template.TemplateTitle, instance);
 
         template.TemplateTitle = WebUtility.HtmlDecode(template.TemplateTitle);
 
         return template;
     }
 
-    public string ParseTemplate(string template, dynamic instance)
+    public string ParseTemplate(string template, dynamic instance, bool isHtml = true)
     {
         try
         {

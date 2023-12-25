@@ -1,8 +1,9 @@
-using System;
 using DotNetBrightener.TemplateEngine.Helpers;
 using DotNetBrightener.TemplateEngine.Services;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
+using System;
+using System.Collections.Generic;
 
 namespace DotNetBrightener.TemplateEngine.Tests;
 
@@ -38,12 +39,23 @@ public class TemplateEngineParserTest
     {
         var templateParserService = _serviceProvider.GetService<ITemplateParserService>();
 
-        var result = templateParserService.ParseTemplate("{{#each this}}<p>{{this}}</p>{{/each}}",
-                                                         new[]
-                                                         {
-                                                             "111 Adam's MHS Test St., NorthPole, AK 66666"
-                                                         });
-        Assert.AreEqual("<p>111 Adam's MHS Test St., NorthPole, AK 66666</p>", result);
+        var expectation = new Dictionary<string, string>();
+
+        expectation.Add("’", "'");
+        expectation.Add("&", "&");
+        expectation.Add("\"", "\"");
+        expectation.Add("<", "<");
+        expectation.Add(">", ">");
+        expectation.Add("€", "€");
+        expectation.Add("£", "£");
+        expectation.Add("®", "®");
+        expectation.Add("©", "©");
+
+        foreach (var (key, expectedValue) in expectation)
+        {
+            var parsedValue = templateParserService.ParseTemplate("{{this}}", key, false);
+            Assert.That(expectedValue, Is.EqualTo(parsedValue));
+        }
     }
 
     [Test]
@@ -55,7 +67,8 @@ public class TemplateEngineParserTest
                                                          new
                                                          {
                                                              Address = "111 Adam’s MHS Test St., NorthPole, AK 66666"
-                                                         });
-        Assert.AreEqual("Welcome to your home. 111 Adam's MHS Test St., NorthPole, AK 66666", result);
+                                                         },
+                                                         isHtml: false);
+        Assert.That("Welcome to your home. 111 Adam's MHS Test St., NorthPole, AK 66666", Is.EqualTo(result));
     }
 }
