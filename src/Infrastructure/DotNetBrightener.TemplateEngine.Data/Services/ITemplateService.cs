@@ -1,14 +1,16 @@
-﻿using DotNetBrightener.TemplateEngine.Entity;
-using DotNetBrightener.TemplateEngine.Models;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Extensions;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using DotNetBrightener.TemplateEngine.Data.Entity;
+using DotNetBrightener.TemplateEngine.Data.Models;
 using DotNetBrightener.TemplateEngine.Exceptions;
+using DotNetBrightener.TemplateEngine.Models;
+using DotNetBrightener.TemplateEngine.Services;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 
-namespace DotNetBrightener.TemplateEngine.Services;
+namespace DotNetBrightener.TemplateEngine.Data.Services;
 
 public interface ITemplateService 
 {
@@ -118,7 +120,7 @@ public class TemplateService : ITemplateService
             return null;
         }
 
-        if (instance is Models.BaseTemplateModel baseTemplateModel)
+        if (instance is BaseTemplateModel baseTemplateModel)
         {
             if (_httpContextAccessor.HttpContext?.Request != null &&
                 string.IsNullOrEmpty(baseTemplateModel.SiteUrl))

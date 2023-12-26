@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Newtonsoft.Json;
 
 namespace DotNetBrightener.WebApp.CommonShared.Extensions;
 
@@ -44,6 +45,34 @@ public static class ServiceCollectionExtensions
         
         serviceCollection.RegisterExceptionHandler<DefaultUnhandledExceptionHandler>();
         serviceCollection.RegisterFilterProvider<UnhandledExceptionResponseHandler>();
+    }
+
+    public static IMvcBuilder AddCommonMvcApp(this IServiceCollection serviceCollection,
+                                              IConfiguration          configuration = null)
+    {
+        var mvcBuilder = serviceCollection.AddControllersWithViews(mvcOption =>
+                                           {
+                                               mvcOption.RegisterFilterProviders(serviceCollection);
+                                               mvcOption.ModelBinderProviders
+                                                        .Insert(0, new CommaSeparatedArrayModelBinderProvider());
+                                           })
+                                          .AddRazorRuntimeCompilation()
+                                          .AddNewtonsoftJson(config =>
+                                           {
+                                               config.SerializerSettings.ContractResolver =
+                                                   DefaultJsonSerializer.DefaultJsonSerializerSettings
+                                                                        .ContractResolver;
+                                               config.SerializerSettings.ReferenceLoopHandling =
+                                                   DefaultJsonSerializer.DefaultJsonSerializerSettings
+                                                                        .ReferenceLoopHandling;
+                                               config.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+                                           });
+
+
+        mvcBuilder.AddViewLocalization();
+        mvcBuilder.AddDataAnnotationsLocalization();
+
+        return mvcBuilder;
     }
 
     public static void RegisterExceptionHandler<T>(this IServiceCollection serviceCollection)

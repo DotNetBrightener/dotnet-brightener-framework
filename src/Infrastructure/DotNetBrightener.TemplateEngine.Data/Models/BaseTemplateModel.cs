@@ -1,7 +1,7 @@
 ﻿using System;
-using DotNetBrightener.TemplateEngine.Services;
+using DotNetBrightener.TemplateEngine.Models;
 
-namespace DotNetBrightener.TemplateEngine.Models;
+namespace DotNetBrightener.TemplateEngine.Data.Models;
 
 public abstract class BaseTemplateModel : ITemplateModel
 {

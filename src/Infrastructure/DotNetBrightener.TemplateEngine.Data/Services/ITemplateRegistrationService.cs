@@ -1,14 +1,21 @@
-﻿using DotNetBrightener.TemplateEngine.Entity;
-using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DotNetBrightener.TemplateEngine.Data.Entity;
+using DotNetBrightener.TemplateEngine.Models;
+using Microsoft.Extensions.Logging;
 
-namespace DotNetBrightener.TemplateEngine.Services;
+namespace DotNetBrightener.TemplateEngine.Data.Services;
 
+/// <summary>
+///     Represents the service that is responsible for registering templates
+/// </summary>
 public interface ITemplateRegistrationService 
 {
+    /// <summary>
+    ///     Automatically detects and registers templates via <see cref="ITemplateProvider" />
+    /// </summary>
     Task RegisterTemplates();
 }
 
@@ -39,6 +46,8 @@ public class TemplateRegistrationService : ITemplateRegistrationService, ITempla
         {
             var assemblyQualifiedName = templateProvider.GetType().Assembly.GetName().Name;
 
+            // mark all templates from the assembly of the provider as deleted,
+            // as they'll be re-registered again
             _repository.UpdateMany(
                                    model => model.FromAssemblyName == assemblyQualifiedName,
                                    model => new TemplateRecord
@@ -55,19 +64,17 @@ public class TemplateRegistrationService : ITemplateRegistrationService, ITempla
     {
         try
         {
-            _repository.Fetch().Count();
-
-            return true;
+            return _repository.Fetch().Count() > -1;
         }
         catch (InvalidOperationException exception)
         {
-            _logger.LogWarning(exception, "Error occurs while checking for template record table");
-
             if (exception.Message.Contains($"Cannot create a DbSet for '{nameof(TemplateRecord)}'"))
             {
+                _logger.LogInformation("No template record table available in database, ignoring registration.");
                 return false;
             }
 
+            _logger.LogWarning(exception, "Error occurs while checking for template record table");
             throw;
         }
     }
@@ -106,15 +113,6 @@ public class TemplateRegistrationService : ITemplateRegistrationService, ITempla
         }
         else
         {
-            //foreach (var templateRecord in templatesToUpdate)
-            //{
-            //    templateRecord.IsDeleted        = false;
-            //    templateRecord.Fields           = templateFields;
-            //    templateRecord.FromAssemblyName = assemblyName;
-            //}
-
-            //_repository.Update(templatesToUpdate);
-
             _repository.UpdateMany(_ => _.TemplateType == type,
                                    record => new TemplateRecord
                                    {
@@ -178,25 +176,10 @@ public class TemplateRegistrationService : ITemplateRegistrationService, ITempla
                                    {
                                        TemplateTitle = templateTitle
                                    });
-
-            //foreach (var templateRecord in templatesToUpdate)
-            //{
-            //    templateRecord.IsDeleted        = false;
-            //    templateRecord.Fields           = templateFields;
-            //    templateRecord.FromAssemblyName = assemblyName;
-
-            //    if (string.IsNullOrEmpty(templateRecord.TemplateTitle))
-            //        templateRecord.TemplateTitle = templateTitle;
-
-            //    if (string.IsNullOrEmpty(templateRecord.TemplateContent))
-            //        templateRecord.TemplateContent = templateContent;
-            //}
-
-            //_repository.Update(templatesToUpdate);
         }
     }
 
-    private List<string> GetTemplateFields<TTemplate>() where TTemplate : ITemplateModel
+    private static List<string> GetTemplateFields<TTemplate>() where TTemplate : ITemplateModel
     {
         var type = typeof(TTemplate);
 
@@ -205,10 +188,10 @@ public class TemplateRegistrationService : ITemplateRegistrationService, ITempla
         return fieldNamesFromType;
     }
 
-    private List<string> GetFieldNamesFromType(Type         type,
-                                               string       name          = "",
-                                               List<string> recursiveList = null,
-                                               int          level         = 0)
+    private static List<string> GetFieldNamesFromType(Type         type,
+                                                      string       name          = "",
+                                                      List<string> recursiveList = null,
+                                                      int          level         = 0)
     {
         if (recursiveList == null)
             recursiveList = new List<string>();

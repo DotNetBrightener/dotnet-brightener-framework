@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using DotNetBrightener.CryptoEngine;
 using DotNetBrightener.Infrastructure.Security;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -15,8 +17,17 @@ namespace DotNetBrightener.Infrastructure.JwtAuthentication;
 
 public static class ServiceCollectionExtensions
 {
-    public static void AddJwtBearerAuthentication(this IServiceCollection serviceCollection,
-                                                  IConfiguration          configuration)
+    /// <summary>
+    ///     Registers JWT Authentication to the service collection
+    /// </summary>
+    /// <param name="serviceCollection"></param>
+    /// <param name="configuration"></param>
+    /// <param name="includeCookieSupport"></param>
+    /// <returns></returns>
+    /// <exception cref="DataException"></exception>
+    public static AuthenticationBuilder AddJwtBearerAuthentication(this IServiceCollection serviceCollection,
+                                                                   IConfiguration          configuration,
+                                                                   bool                    includeCookieSupport = true)
     {
 
         serviceCollection
@@ -57,14 +68,27 @@ public static class ServiceCollectionExtensions
         }
 
         serviceCollection.AddSingleton(tokenConfiguration);
-        
-        var serviceProvider       = serviceCollection.BuildServiceProvider();
-        var contextAccessor       = serviceProvider.GetService<IHttpContextAccessor>();
 
-        serviceCollection.AddAuthentication()
-                         .AddJwtBearer(cfg => ConfigureJwtOptions(cfg, contextAccessor!));
+        var serviceProvider = serviceCollection.BuildServiceProvider();
+        var contextAccessor = serviceProvider.GetService<IHttpContextAccessor>();
+
+        var builder = serviceCollection.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                                       .AddJwtBearer(cfg => ConfigureJwtOptions(cfg, contextAccessor!));
+
+        if (includeCookieSupport)
+            builder.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme);
+
+        return builder;
     }
 
+    /// <summary>
+    ///     Registers the audience validator for JWT to the service collection
+    /// </summary>
+    /// <typeparam name="TValidator">The type of the audience validator</typeparam>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/></param>
+    /// <returns>
+    ///     The same instance of <paramref name="serviceCollection"/> for chaining operations
+    /// </returns>
     public static IServiceCollection RegisterAuthAudienceValidator<TValidator>(
         this IServiceCollection serviceCollection)
         where TValidator : class, IAuthAudienceValidator

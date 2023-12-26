@@ -1,7 +1,7 @@
 ﻿using DotNetBrightener.DataAccess.Services;
-using DotNetBrightener.TemplateEngine.Entity;
+using DotNetBrightener.TemplateEngine.Data.Entity;
 
-namespace DotNetBrightener.TemplateEngine.Services;
+namespace DotNetBrightener.TemplateEngine.Data.Services;
 
 public interface ITemplateRecordDataService : IBaseDataService<TemplateRecord>
 {

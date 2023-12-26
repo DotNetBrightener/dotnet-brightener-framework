@@ -1,10 +1,10 @@
-﻿using DotNetBrightener.DataAccess.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+using DotNetBrightener.DataAccess.Models;
 
-namespace DotNetBrightener.TemplateEngine.Entity;
+namespace DotNetBrightener.TemplateEngine.Data.Entity;
 
 public class TemplateRecord : BaseEntityWithAuditInfo
 {

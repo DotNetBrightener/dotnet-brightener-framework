@@ -24,7 +24,7 @@ public class AllSchemesAuthenticationMiddleware
     public IAuthenticationSchemeProvider Schemes { get; set; }
 
     /// <summary>
-    /// Invokes the middleware performing authentication.
+    ///     Invokes the middleware performing authentication.
     /// </summary>
     /// <param name="context">The <see cref="HttpContext"/>.</param>
     public async Task Invoke(HttpContext context)
@@ -57,15 +57,11 @@ public class AllSchemesAuthenticationMiddleware
                 context.User = authenticateResult.Principal;
             }
 
-            if (authenticateResult?.Succeeded ?? false)
+            if (authenticateResult?.Succeeded == true)
             {
                 var authFeatures = new AuthenticationFeatures(authenticateResult);
                 context.Features.Set<IHttpAuthenticationFeature>(authFeatures);
                 context.Features.Set<IAuthenticateResultFeature>(authFeatures);
-            }
-
-            if (authenticateResult?.Succeeded == true)
-            {
                 break;
             }
         }
