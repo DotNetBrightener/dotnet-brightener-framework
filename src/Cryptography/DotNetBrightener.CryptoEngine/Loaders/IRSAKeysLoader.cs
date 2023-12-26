@@ -1,7 +1,4 @@
-﻿// 
-// Copyright (c) 2022 DotNetBrightener.
-
-using System;
+﻿using System;
 
 namespace DotNetBrightener.CryptoEngine.Loaders;
 

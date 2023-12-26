@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Net;
-using DotNetBrightener.CommonShared.Models;
+using DotNetBrightener.WebApp.CommonShared.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace DotNetBrightener.CommonShared.Exceptions;
+namespace DotNetBrightener.WebApp.CommonShared.Exceptions;
 
 public class UnhandledExceptionContext
 {

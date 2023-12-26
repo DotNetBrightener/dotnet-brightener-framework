@@ -1,16 +1,15 @@
 ﻿using System;
 using System.Net;
-using DotNetBrightener.CommonShared.Exceptions;
-using DotNetBrightener.CommonShared.Models;
-using DotNetBrightener.CommonShared.Services;
+using DotNetBrightener.WebApp.CommonShared.Exceptions;
+using DotNetBrightener.WebApp.CommonShared.Models;
+using DotNetBrightener.WebApp.CommonShared.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
-using Microsoft.VisualBasic;
 using Newtonsoft.Json;
 
-namespace DotNetBrightener.CommonShared.Mvc;
+namespace DotNetBrightener.WebApp.CommonShared.Mvc;
 
 /// <summary>
 ///     Marks a controller to handle exception with given status code
@@ -70,7 +69,7 @@ public class ExceptionHandleWithCodeAttribute : ExceptionFilterAttribute
 
             errorResult.ErrorMessage     = T[exception.Message];
             errorResult.FullErrorMessage = exception.GetFullExceptionMessage();
-            errorResult.Data             = exception;
+            errorResult.Data             = exception.Data;
 
             var statusCode = StatusCode;
             if (exception is ExceptionWithStatusCode exceptionWithCode)

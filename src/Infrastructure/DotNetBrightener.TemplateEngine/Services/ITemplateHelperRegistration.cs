@@ -3,40 +3,39 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace DotNetBrightener.TemplateEngine.Services
+namespace DotNetBrightener.TemplateEngine.Services;
+
+public interface ITemplateHelperRegistration
 {
-    public interface ITemplateHelperRegistration
+    void RegisterHelpers();
+}
+
+public class TemplateHelperRegistration : ITemplateHelperRegistration
+{
+    private readonly IEnumerable<ITemplateHelperProvider> _templateHelperProviders;
+
+    public TemplateHelperRegistration(IEnumerable<ITemplateHelperProvider> templateHelperProviders)
     {
-        void RegisterHelpers();
+        _templateHelperProviders = templateHelperProviders;
     }
 
-    public class TemplateHelperRegistration : ITemplateHelperRegistration
+    public void RegisterHelpers()
     {
-        private readonly IEnumerable<ITemplateHelperProvider> _templateHelperProviders;
-
-        public TemplateHelperRegistration(IEnumerable<ITemplateHelperProvider> templateHelperProviders)
+        foreach (var templateHelperProvider in _templateHelperProviders)
         {
-            _templateHelperProviders = templateHelperProviders;
+            RegisterHelper(templateHelperProvider.HelperName,
+                           (writer, context, arg3) =>
+                           {
+                               templateHelperProvider.ResolveTemplate(writer.CreateWrapper(),
+                                                                      context,
+                                                                      arg3.ToArray());
+                           });
         }
+    }
 
-        public void RegisterHelpers()
-        {
-            foreach (var templateHelperProvider in _templateHelperProviders)
-            {
-                RegisterHelper(templateHelperProvider.HelperName,
-                               (writer, context, arg3) =>
-                               {
-                                   templateHelperProvider.ResolveTemplate(writer.CreateWrapper(),
-                                                                          context,
-                                                                          arg3.ToArray());
-                               });
-            }
-        }
-
-        private void RegisterHelper(string helperName, Action<EncodedTextWriter, Context, Arguments> resolveToken)
-        {
-            Handlebars.RegisterHelper(helperName,
-                                      (output, context, arguments) => resolveToken(output, context, arguments));
-        }
+    private void RegisterHelper(string helperName, Action<EncodedTextWriter, Context, Arguments> resolveToken)
+    {
+        Handlebars.RegisterHelper(helperName,
+                                  (output, context, arguments) => resolveToken(output, context, arguments));
     }
 }

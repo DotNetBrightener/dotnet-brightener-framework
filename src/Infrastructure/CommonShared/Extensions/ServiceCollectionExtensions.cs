@@ -1,8 +1,9 @@
-﻿using DotNetBrightener.CommonShared.BackgroundTasks;
-using DotNetBrightener.CommonShared.Mvc;
-using DotNetBrightener.CommonShared.Services;
-using DotNetBrightener.CommonShared.StartupTasks;
-using DotNetBrightener.Core.BackgroundTasks;
+﻿using System.Linq;
+using System.Net;
+using System.Reflection;
+using DotNetBrightener.Caching.Memory;
+using DotNetBrightener.CryptoEngine.DependencyInjection;
+using DotNetBrightener.WebApp.CommonShared.Mvc;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -10,13 +11,8 @@ using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using System.Linq;
-using System.Net;
-using System.Reflection;
-using DotNetBrightener.Caching.Memory;
-using DotNetBrightener.CryptoEngine.DependencyInjection;
 
-namespace DotNetBrightener.CommonShared.Extensions;
+namespace DotNetBrightener.WebApp.CommonShared.Extensions;
 
 public static class ServiceCollectionExtensions
 {
@@ -36,7 +32,6 @@ public static class ServiceCollectionExtensions
 
         serviceCollection.AddOptions();
         serviceCollection.AddLocalization();
-        serviceCollection.AddSystemDateTimeProvider();
         serviceCollection.AddCryptoEngine(configuration);
         
         serviceCollection.EnableCachingService();
@@ -47,7 +42,7 @@ public static class ServiceCollectionExtensions
 
         serviceCollection.EnableBackgroundTaskServices();
         
-        //serviceCollection.RegisterLoggingService(configuration);
+        serviceCollection.RegisterExceptionHandler<DefaultUnhandledExceptionHandler>();
         serviceCollection.RegisterFilterProvider<UnhandledExceptionResponseHandler>();
     }
 

@@ -1,4 +1,4 @@
-﻿namespace DotNetBrightener.TimeBaseOtp;
+﻿namespace DotNetBrightener.TimeBasedOtp;
 
 public interface IOTPProvider
 {

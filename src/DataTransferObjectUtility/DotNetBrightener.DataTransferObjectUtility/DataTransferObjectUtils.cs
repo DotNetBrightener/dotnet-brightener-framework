@@ -12,6 +12,22 @@ using System.Reflection;
 
 namespace DotNetBrightener.DataTransferObjectUtility;
 
+public class AuditProperty
+{
+    public string PropertyName { get; set; }
+
+    public object OldValue { get; set; }
+
+    public object NewValue { get; set; }
+}
+
+public class AuditTrail<T>
+{
+    public string Identifier { get; set; }
+
+    public List<AuditProperty> AuditProperties { get; set; } = new List<AuditProperty>();
+}
+
 public static class DataTransferObjectUtils
 {
     /// <summary>
@@ -34,8 +50,34 @@ public static class DataTransferObjectUtils
     /// </returns>
     public static T UpdateEntityFromDtoExpression<T>(T               entityObject,
                                                      Func<T, object> updateExpression,
-                                                     params string[] ignoreProperties) where T : class
+                                                     params string[] ignoreProperties) where T : class =>
+        UpdateEntityFromDtoExpression(entityObject, updateExpression, out _, ignoreProperties);
+
+    /// <summary>
+    ///     Updates the given <see cref="entityObject"/> by the values provided in the <seealso cref="dataTransferObject"/>
+    /// </summary>
+    /// <typeparam name="T">
+    ///     The type of the <see cref="entityObject"/>
+    /// </typeparam>
+    /// <param name="entityObject">
+    ///     The object to be updated
+    /// </param>
+    /// <param name="updateExpression">
+    ///     The expression to describe the data to apply updates to <see cref="entityObject"/>, with accesses to the <seealso cref="entityObject"/>
+    /// </param>
+    /// <param name="ignoreProperties">
+    ///     The properties that should not be updated by this method
+    /// </param>
+    /// <returns>
+    ///     The <see cref="entityObject"/> itself
+    /// </returns>
+    public static T UpdateEntityFromDtoExpression<T>(T                   entityObject,
+                                                     Func<T, object>     updateExpression,
+                                                     out    AuditTrail<T> auditTrail,
+                                                     params string[]     ignoreProperties) where T : class
     {
+        auditTrail = new AuditTrail<T>();
+
         Type entityType = typeof(T);
 
         var dataTransferObject = updateExpression(entityObject);
@@ -49,6 +91,73 @@ public static class DataTransferObjectUtils
 
             if (!TryPickPropAndValue(entityType, propertyInfo, out var destinationProp, out var value))
                 continue;
+
+            var oldValue = destinationProp.GetValue(entityObject);
+
+            auditTrail.AuditProperties.Add(new AuditProperty
+            {
+                PropertyName = propertyInfo.Name,
+                OldValue     = oldValue,
+                NewValue     = value
+            });
+
+            destinationProp.SetValue(entityObject, value);
+        }
+
+        return entityObject;
+    }
+
+    /// <summary>
+    ///     Updates the given <see cref="entityObject"/> by the values provided in the <seealso cref="dataTransferObject"/>
+    /// </summary>
+    /// <typeparam name="T">
+    ///     The type of the <see cref="entityObject"/>
+    /// </typeparam>
+    /// <param name="entityObject">
+    ///     The object to be updated
+    /// </param>
+    /// <param name="dataTransferObject">
+    ///     The object contains the data to apply updates to <see cref="entityObject"/>
+    /// </param>
+    /// <param name="ignoreProperties">
+    ///     The properties that should not be updated by this method
+    /// </param>
+    /// <returns>
+    ///     The <see cref="entityObject"/> itself
+    /// </returns>
+    public static T UpdateEntityFromDto<T>(T               entityObject,
+                                           object          dataTransferObject,
+                                           out AuditTrail<T> auditTrail,
+                                           params string[] ignoreProperties) where T : class
+    {
+        auditTrail = new AuditTrail<T>();
+
+        Type entityType = typeof(T);
+
+        var jobject           = JObject.FromObject(dataTransferObject);
+        var propertiesFromDto = jobject.Properties();
+
+        foreach (var propertyInfo in propertiesFromDto)
+        {
+            if (ignoreProperties.Contains(propertyInfo.Name))
+                continue;
+
+            var csConventionName = propertyInfo.Name[0].ToString().ToUpper() + propertyInfo.Name.Substring(1);
+
+            if (ignoreProperties.Contains(csConventionName))
+                continue;
+
+            if (!TryPickPropAndValue(entityType, propertyInfo, out var destinationProp, out var value))
+                continue;
+
+            var oldValue = destinationProp.GetValue(entityObject);
+
+            auditTrail.AuditProperties.Add(new AuditProperty
+            {
+                PropertyName = propertyInfo.Name,
+                OldValue     = oldValue,
+                NewValue     = value
+            });
 
             destinationProp.SetValue(entityObject, value);
         }
@@ -77,30 +186,7 @@ public static class DataTransferObjectUtils
     public static T UpdateEntityFromDto<T>(T               entityObject,
                                            object          dataTransferObject,
                                            params string[] ignoreProperties) where T : class
-    {
-        Type entityType = typeof(T);
-
-        var jobject           = JObject.FromObject(dataTransferObject);
-        var propertiesFromDto = jobject.Properties();
-
-        foreach (var propertyInfo in propertiesFromDto)
-        {
-            if (ignoreProperties.Contains(propertyInfo.Name))
-                continue;
-
-            var csConventionName = propertyInfo.Name[0].ToString().ToUpper() + propertyInfo.Name.Substring(1);
-
-            if (ignoreProperties.Contains(csConventionName))
-                continue;
-
-            if (!TryPickPropAndValue(entityType, propertyInfo, out var destinationProp, out var value))
-                continue;
-
-            destinationProp.SetValue(entityObject, value);
-        }
-
-        return entityObject;
-    }
+        => UpdateEntityFromDto(entityObject, dataTransferObject, out _, ignoreProperties);
 
     /// <summary>
     ///     Generates the member init expression for <typeparamref name="T"/> type from the given <seealso cref="dataTransferObject"/>
@@ -477,6 +563,6 @@ public static class DataTransferObjectUtils
 
     internal static bool HasAttribute<TAttribute>(this MemberInfo type) where TAttribute : Attribute
     {
-        return type != null && type.GetCustomAttribute<TAttribute>() != null;
+        return type?.GetCustomAttribute<TAttribute>() != null;
     }
 }

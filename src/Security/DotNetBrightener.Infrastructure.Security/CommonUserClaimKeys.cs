@@ -33,11 +33,6 @@ public class CommonUserClaimKeys
     public const string UserRoleId = "USER_ROLE_ID";
 
     /// <summary>
-    ///     The identifier of the <see cref="Claim"/> that represents a permission that the user is granted
-    /// </summary>
-    public const string UserPermission = "USER_PERMISSION";
-
-    /// <summary>
     ///     The identifier of the <see cref="Claim"/> that represents the identifier of the log in session
     /// </summary>
     public const string SessionId = "SESSION_ID";

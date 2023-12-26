@@ -13,8 +13,8 @@ public class TranslationFileInfo : PhysicalFileInfo, ITranslationFileInfo
 
     public TranslationFileInfo(FileInfo info) : base(info)
     {
-        _lazyTranslationLoader = new Lazy<TranslationDictionary>(() => InternalRetrieveDictionary());
-        _translationEntries    = new Lazy<CultureDictionaryJsonFormat>(() => InternalLoadDictionaryEntries());
+        _lazyTranslationLoader = new Lazy<TranslationDictionary>(InternalRetrieveDictionary);
+        _translationEntries    = new Lazy<CultureDictionaryJsonFormat>(InternalLoadDictionaryEntries);
     }
 
     public string ModuleId { get; set; }

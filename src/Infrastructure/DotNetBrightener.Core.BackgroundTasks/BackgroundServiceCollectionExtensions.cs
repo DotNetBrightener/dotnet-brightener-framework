@@ -1,4 +1,5 @@
 ﻿using DotNetBrightener.Core.BackgroundTasks;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.Extensions.DependencyInjection;
@@ -35,6 +36,7 @@ public static class BackgroundServiceCollectionExtensions
         where TBackgroundTask : class, IBackgroundTask
     {
         services.AddScoped<IBackgroundTask, TBackgroundTask>();
+        services.TryAddScoped<TBackgroundTask, TBackgroundTask>();
 
         return services;
     }

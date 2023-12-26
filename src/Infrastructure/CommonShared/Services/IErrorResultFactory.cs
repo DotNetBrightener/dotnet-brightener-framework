@@ -1,7 +1,7 @@
 ﻿using System;
-using DotNetBrightener.CommonShared.Models;
+using DotNetBrightener.WebApp.CommonShared.Models;
 
-namespace DotNetBrightener.CommonShared.Services;
+namespace DotNetBrightener.WebApp.CommonShared.Services;
 
 public interface IErrorResultFactory: IDependency
 {

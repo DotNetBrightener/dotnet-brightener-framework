@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace DotNetBrightener.Core.BackgroundTasks;
 
@@ -16,7 +17,11 @@ internal class BackgroundQueuedTask
     /// <summary>
     ///     The parameters to send to the action
     /// </summary>
-    public object [ ] Parameters { get; set; }
+    public object[] Parameters { get; set; }
 
-    internal IServiceProvider ServiceProvider { get; set; }
+    public string TaskIdentifier { get; set; } = Guid.NewGuid().ToString();
+
+    public DateTimeOffset? StartedOn { get; set; }
+
+    internal Task<dynamic> TaskResult { get; set; }
 }

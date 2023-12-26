@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -8,7 +9,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
 
 namespace DotNetBrightener.Infrastructure.Security.ActionFilters;
 
@@ -33,6 +33,12 @@ public class PermissionAuthorizeAttribute: Attribute, IAsyncAuthorizationFilter
         if (context.ActionDescriptor is not ControllerActionDescriptor cad)
             return;
 
+        if (cad.MethodInfo.GetCustomAttribute<AllowAnonymousAttribute>() != null ||
+            cad.ControllerTypeInfo.GetCustomAttribute<AllowAnonymousAttribute>() != null)
+        {
+            return;
+        }
+
         if (context.HttpContext.RetrieveValue<bool>(PermissionProcessed))
         {
             return;
@@ -56,17 +62,30 @@ public class PermissionAuthorizeAttribute: Attribute, IAsyncAuthorizationFilter
             return;
         }
 
+        if (context.HttpContext.User.Identity?.IsAuthenticated != true)
+        {
+            context.Result = new UnauthorizedResult();
+            return;
+        }
+
         var authorizationService = context.HttpContext.RequestServices.GetService<IAuthorizationService>();
 
         if (!await authorizationService.AuthorizePermissionAsync(context.HttpContext.User,
                                                                   string.Join(",", permissionsToValidate)))
         {
-            context.Result = new UnauthorizedObjectResult(new
+            context.Result = new ObjectResult(new
             {
-                ErrorMessage = $"Unauthorized access to restricted resource",
-                FullErrorMessage =
-                    $"Unauthorized access to restricted resource. Required permissions {string.Join(", ", permissionsToValidate)}",
-            });
+                ErrorMessage     = $"Unauthorized access to restricted resource",
+                FullErrorMessage = $"Unauthorized access to restricted resource.",
+                Data = new
+                {
+                    RequiredPermissions = permissionsToValidate
+                }
+            })
+            {
+                StatusCode = (int)HttpStatusCode.Forbidden
+            };
+
         }
 
         context.HttpContext.StoreValue(PermissionProcessed, true);

@@ -1,3 +1,4 @@
+using System.Linq;
 using NUnit.Framework;
 
 namespace DotNetBrightener.DataTransferObjectUtility.Tests;
@@ -27,12 +28,25 @@ public class DtoUpdateEntityTest
             Age  = 1,
             Name = "originalName"
         };
-            
-        DataTransferObjectUtils.UpdateEntityFromDto<User>(user, updateDto);
-            
-        Assert.AreEqual(2, user.Age);
-        Assert.AreEqual(1, user.Id);
-        Assert.AreEqual("Updated Name", user.Name);
+
+        DataTransferObjectUtils.UpdateEntityFromDto<User>(user, updateDto, out var auditTrail);
+
+        Assert.That(2, Is.EqualTo(user.Age));
+        Assert.That(1, Is.EqualTo(user.Id));
+        Assert.That("Updated Name", Is.EqualTo(user.Name));
+
+        var idProp = auditTrail.AuditProperties.FirstOrDefault(_ => _.PropertyName == nameof(User.Id));
+        Assert.That(idProp, Is.Null);
+
+        var ageProp = auditTrail.AuditProperties.FirstOrDefault(_ => _.PropertyName == nameof(User.Age));
+        Assert.That(ageProp, Is.Not.Null);
+        Assert.That(1, Is.EqualTo(ageProp.OldValue));
+        Assert.That(2, Is.EqualTo(ageProp.NewValue));
+
+        var nameProp = auditTrail.AuditProperties.FirstOrDefault(_ => _.PropertyName == nameof(User.Name));
+        Assert.That(nameProp, Is.Null);
+        Assert.That("originalName", Is.EqualTo(nameProp.OldValue));
+        Assert.That("Updated Name", Is.EqualTo(nameProp.NewValue));
     }
 
     [Test]
@@ -50,11 +64,23 @@ public class DtoUpdateEntityTest
                                                                     {
                                                                         Age  = u.Age + 1,
                                                                         Name = "Updated " + u.Name
-                                                                    });
+                                                                    },
+                                                                    out var auditTrail);
             
-        Assert.AreEqual(2, user.Age);
-        Assert.AreEqual(1, user.Id);
-        Assert.AreEqual("Updated originalName", user.Name);
+        Assert.That(2, Is.EqualTo(user.Age));
+        Assert.That(1, Is.EqualTo(user.Id));
+        Assert.That("Updated originalName", Is.EqualTo(user.Name));
+
+
+        var ageProp = auditTrail.AuditProperties.FirstOrDefault(_ => _.PropertyName == nameof(User.Age));
+        Assert.That(ageProp, Is.Not.Null);
+        Assert.That(1, Is.EqualTo(ageProp.OldValue));
+        Assert.That(2, Is.EqualTo(ageProp.NewValue));
+
+        var nameProp = auditTrail.AuditProperties.FirstOrDefault(_ => _.PropertyName == nameof(User.Name));
+        Assert.That(nameProp, Is.Not.Null);
+        Assert.That("originalName", Is.EqualTo(nameProp.OldValue));
+        Assert.That("Updated originalName", Is.EqualTo(nameProp.NewValue));
     }
 
     private class User

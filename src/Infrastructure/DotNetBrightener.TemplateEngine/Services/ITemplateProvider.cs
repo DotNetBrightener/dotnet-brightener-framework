@@ -1,18 +1,17 @@
 ﻿using System.Threading.Tasks;
 
-namespace DotNetBrightener.TemplateEngine.Services
+namespace DotNetBrightener.TemplateEngine.Services;
+
+public interface ITemplateProvider 
 {
-	public interface ITemplateProvider 
-    {
-        Task RegisterTemplates(ITemplateStore templateStore);
-    }
+    Task RegisterTemplates(ITemplateStore templateStore);
+}
 
-    public class DefaultTemplateProvider : ITemplateProvider
+public class DefaultTemplateProvider : ITemplateProvider
+{
+    public Task RegisterTemplates(ITemplateStore templateStore)
     {
-        public Task RegisterTemplates(ITemplateStore templateStore)
-        {
-            return Task.CompletedTask;
+        return Task.CompletedTask;
 
-        }
     }
 }

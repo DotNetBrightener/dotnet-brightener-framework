@@ -1,193 +1,67 @@
 ﻿using DotNetBrightener.DataAccess.Attributes;
 using DotNetBrightener.DataAccess.Models;
 using DotNetBrightener.DataAccess.Services;
+using DotNetBrightener.DataTransferObjectUtility;
 using DotNetBrightener.WebApi.GenericCRUD.ActionFilters;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using System.Net;
 using System.Threading.Tasks;
-using DotNetBrightener.DataTransferObjectUtility;
+using DotNetBrightener.WebApi.GenericCRUD.Models;
 
 namespace DotNetBrightener.WebApi.GenericCRUD.Controllers;
 
 // ReSharper disable once InconsistentNaming
-public abstract class BaseCRUDController<TEntityType> : Controller where TEntityType : class
+public abstract class BaseCRUDController<TEntityType> : BareReadOnlyController<TEntityType> where TEntityType : class
 {
-    /// <summary>
-    ///     Specifies the name of the entity Id's column
-    /// </summary>
-    protected virtual string EntityIdColumnName => nameof(BaseEntity.Id);
-
-    protected readonly IBaseDataService<TEntityType> DataService;
-    protected readonly IHttpContextAccessor          HttpContextAccessor;
-
-    /// <summary>
-    ///     The default query to fetch data
-    /// </summary>
-    protected virtual Expression<Func<TEntityType, bool>> DefaultQuery { get; set; }
-
-    /// <summary>
-    ///     The columns that will be always returned in case no columns is requested from the client
-    /// </summary>
-    protected string [ ] AlwaysReturnColumns;
-
-    /// <summary>
-    ///     Defines the default column of the data to return in case no columns is requested from the client
-    /// </summary>
-    /// <remarks>
-    ///     This list will be concat with the <seealso cref="AlwaysReturnColumns"/>.
-    ///     If this list is not specified, all available properties of the entity will be returned
-    /// </remarks>
-    protected virtual string [ ] DefaultColumnsToReturn { get; } = Array.Empty<string>();
-
     protected BaseCRUDController(IBaseDataService<TEntityType> dataService,
                                  IHttpContextAccessor          httpContextAccessor)
+        : base(dataService, httpContextAccessor)
     {
-        DataService         = dataService;
-        HttpContextAccessor = httpContextAccessor;
-        AlwaysReturnColumns = new [ ]
-        {
-            nameof(BaseEntity.Id)
-        };
-
-        if (typeof(BaseEntityWithAuditInfo).IsAssignableFrom(typeof(TEntityType)))
-        {
-            AlwaysReturnColumns = AlwaysReturnColumns.Concat(new [ ]
-                                                      {
-                                                          nameof(BaseEntityWithAuditInfo.CreatedDate),
-                                                          nameof(BaseEntityWithAuditInfo.CreatedBy),
-                                                          nameof(BaseEntityWithAuditInfo.ModifiedDate),
-                                                          nameof(BaseEntityWithAuditInfo.ModifiedBy),
-                                                      })
-                                                     .ToArray();
-        }
-    }
-
-    [HttpGet("")]
-    public virtual async Task<IActionResult> GetList()
-    {
-        if (!(await CanRetrieveList()))
-            throw new UnauthorizedAccessException();
-
-        var entitiesQuery = DataService.FetchActive(DefaultQuery);
-        entitiesQuery = await ApplyDeepFilters(entitiesQuery);
-
-        var totalRecords = DynamicQueryableExtensions.Count(entitiesQuery);
-
-        var orderedQuery = AddOrderingAndPaginationQuery(entitiesQuery, out var pageSize, out var pageIndex);
-        var finalQuery   = await PerformColumnsSelectorQuery(orderedQuery);
-
-        Response.Headers.Add("Result-Totals", totalRecords.ToString());
-        Response.Headers.Add("Result-PageIndex", pageIndex.ToString());
-        Response.Headers.Add("Result-PageSize", pageSize.ToString());
-
-        var result = finalQuery.ToDynamicArray();
-        Response.Headers.Add("Result-Count", result.Count().ToString());
-
-        // add expose header to support CORS
-        Response.Headers.Add("Access-Control-Expose-Headers",
-                             "Result-Totals,Result-PageIndex,Result-PageSize,Result-Count," +
-                             "Result-Totals,Result-PageIndex,Result-PageSize,Result-Count".ToLower());
-
-        return Ok(result);
-    }
-
-    [HttpGet("{id:long}")]
-    public virtual async Task<IActionResult> GetItem(long id)
-    {
-        if (!(await CanRetrieveItem(id)))
-            throw new UnauthorizedAccessException();
-
-        Expression<Func<TEntityType, bool>> expression =
-            ExpressionExtensions.BuildPredicate<TEntityType>(id, OperatorComparer.Equals, EntityIdColumnName);
-
-        var entityItemQuery = DynamicQueryableExtensions.Where(DataService.FetchActive(DefaultQuery), expression);
-
-        var finalQuery = await PerformColumnsSelectorQuery(entityItemQuery);
-
-        var item = finalQuery.FirstOrDefault() ?? null;
-
-        if (item is null)
-        {
-            return StatusCode((int) HttpStatusCode.NotFound,
-                              new 
-                              {
-                                  ErrorMessage =
-                                      $"The requested  {typeof(TEntityType).Name} resource with provided identifier cannot be found"
-                              });
-        }
-
-        return Ok(item);
+        
     }
 
     [HttpPost("")]
-    [RequestBodyToString]
-    public virtual async Task<IActionResult> CreateItem([FromBody]
-                                                        TEntityType model)
+    [RequestBodyReader]
+    public virtual async Task<IActionResult> CreateItem([FromBody] TEntityType model)
     {
-        if (!(await AuthorizedCreateItem(model)))
+        if (!await AuthorizedCreateItem(model))
             throw new UnauthorizedAccessException();
 
         await PreCreateItem(model);
+
         await DataService.InsertAsync(model);
+
         await PostCreateItem(model);
 
         if (model is BaseEntity baseEntity)
         {
-            if (model is BaseEntityWithAuditInfo auditableEntity)
-            {
-                return StatusCode((int)HttpStatusCode.Created,
-                                  new
-                                  {
-                                      EntityId = baseEntity.Id,
-                                      auditableEntity.CreatedDate,
-                                      auditableEntity.CreatedBy,
-                                      auditableEntity.ModifiedDate,
-                                      auditableEntity.ModifiedBy
-                                  });
-            }
-
-            return StatusCode((int) HttpStatusCode.Created,
-                              new
-                              {
-                                  EntityId = baseEntity.Id
-                              });
+            return StatusCode((int)HttpStatusCode.Created, GetCreatedResult(baseEntity));
         }
 
-        return StatusCode((int) HttpStatusCode.Created);
+        return StatusCode((int)HttpStatusCode.Created);
     }
 
     [HttpPut("{id:long}")]
-    [RequestBodyToString]
+    [RequestBodyReader]
     public virtual async Task<IActionResult> UpdateItem(long id)
     {
-        if (!(await CanUpdateItem(id)))
+        var (canUpdate, entity, result) = await CanUpdateItem(id);
+
+        if (result is not null)
+            return result;
+
+        if (!canUpdate || entity is null)
             throw new UnauthorizedAccessException();
 
-        var expression =
-            ExpressionExtensions.BuildPredicate<TEntityType>(id, OperatorComparer.Equals, EntityIdColumnName);
+        var entityToUpdate = RequestBodyReader.ObtainBodyAsJObject(HttpContextAccessor);
 
-        var entity = DataService.Get(expression);
+        var auditTrail = await UpdateEntity(entity, entityToUpdate);
 
-        if (entity == null)
-        {
-            return StatusCode((int)HttpStatusCode.NotFound,
-                              new
-                              {
-                                  ErrorMessage =
-                                      $"The requested  {typeof(TEntityType).Name} resource with provided identifier cannot be found"
-                              });
-        }
-
-        var entityToUpdate = RequestBodyToStringAttribute.ObtainBodyAsJObject(HttpContextAccessor);
-
-        await UpdateEntity(entity, entityToUpdate);
         DataService.Update(entity);
+
         await PostUpdateEntity(entity);
 
         if (entity is BaseEntity baseEntity)
@@ -198,8 +72,6 @@ public abstract class BaseCRUDController<TEntityType> : Controller where TEntity
                                   new
                                   {
                                       EntityId = baseEntity.Id,
-                                      auditableEntity.CreatedDate,
-                                      auditableEntity.CreatedBy,
                                       auditableEntity.ModifiedDate,
                                       auditableEntity.ModifiedBy
                                   });
@@ -218,7 +90,7 @@ public abstract class BaseCRUDController<TEntityType> : Controller where TEntity
     [HttpDelete("{id:long}")]
     public virtual async Task<IActionResult> DeleteItem(long id)
     {
-        if (!(await CanDeleteItem(id)))
+        if (!await CanDeleteItem(id))
             throw new UnauthorizedAccessException();
 
         var expression =
@@ -229,26 +101,18 @@ public abstract class BaseCRUDController<TEntityType> : Controller where TEntity
         return StatusCode((int) HttpStatusCode.OK);
     }
 
-    /// <summary>
-    ///     Considers if the current user can perform the <see cref="GetList"/> action
-    /// </summary>
-    /// <returns>
-    ///     <c>true</c> if user is authorized to perform the action; otherwise, <c>false</c>
-    /// </returns>
-    protected virtual async Task<bool> CanRetrieveList()
+    [HttpPut("{id:long}/undelete")]
+    public virtual async Task<IActionResult> RestoreDeletedItem(long id)
     {
-        return true;
-    }
+        if (!await CanRestoreDeletedItem(id))
+            throw new UnauthorizedAccessException();
 
-    /// <summary>
-    ///     Considers if the current user can perform the <see cref="GetItem"/> action
-    /// </summary>
-    /// <returns>
-    ///     <c>true</c> if user is authorized to perform the action; otherwise, <c>false</c>
-    /// </returns>
-    protected virtual async Task<bool> CanRetrieveItem(long id)
-    {
-        return true;
+        var expression =
+            ExpressionExtensions.BuildPredicate<TEntityType>(id, OperatorComparer.Equals, EntityIdColumnName);
+
+        DataService.DeleteOne(expression);
+
+        return StatusCode((int) HttpStatusCode.OK);
     }
 
     /// <summary>
@@ -275,18 +139,35 @@ public abstract class BaseCRUDController<TEntityType> : Controller where TEntity
     /// <returns>
     ///     <c>true</c> if user is authorized to perform the action; otherwise, <c>false</c>
     /// </returns>
-    protected virtual async Task<bool> CanUpdateItem(long id)
+    protected virtual async Task<(bool, TEntityType, IActionResult)> CanUpdateItem(long id)
     {
-        return true;
+        var expression = ExpressionExtensions.BuildPredicate<TEntityType>(id, OperatorComparer.Equals, EntityIdColumnName);
+        var entity = DataService.Get(expression);
+
+
+        return (true, entity, entity is null ? NotFound() : null);
     }
 
     /// <summary>
     ///     Considers if the current user can perform the <see cref="DeleteItem"/> action
     /// </summary>
+    /// <param name="id">The identifier of the entry to check for deletion permission</param>
     /// <returns>
     ///     <c>true</c> if user is authorized to perform the action; otherwise, <c>false</c>
     /// </returns>
     protected virtual async Task<bool> CanDeleteItem(long id)
+    {
+        return true;
+    }
+
+    /// <summary>
+    ///     Considers if the current user can perform the <see cref="RestoreDeletedItem"/> action
+    /// </summary>
+    /// <param name="id">The identifier of the entry to check for deletion permission</param>
+    /// <returns>
+    ///     <c>true</c> if user is authorized to perform the action; otherwise, <c>false</c>
+    /// </returns>
+    protected virtual async Task<bool> CanRestoreDeletedItem(long id)
     {
         return true;
     }
@@ -305,13 +186,16 @@ public abstract class BaseCRUDController<TEntityType> : Controller where TEntity
     ///     The data came from the request contains the changes needed.
     /// </param>
     /// <returns></returns>
-    protected virtual Task UpdateEntity(TEntityType entityToPersist, object dataToUpdate)
+    protected virtual Task<AuditTrail<TEntityType>> UpdateEntity(TEntityType entityToPersist, object dataToUpdate)
     {
         var ignoreProperties = typeof(TEntityType).GetPropertiesWithNoClientSideUpdate();
 
-        DataTransferObjectUtils.UpdateEntityFromDto(entityToPersist, dataToUpdate, ignoreProperties);
+        DataTransferObjectUtils.UpdateEntityFromDto(entityToPersist,
+                                                    dataToUpdate,
+                                                    out var auditTrail,
+                                                    ignoreProperties);
 
-        return Task.CompletedTask;
+        return Task.FromResult(auditTrail);
     }
 
     /// <summary>
@@ -341,287 +225,13 @@ public abstract class BaseCRUDController<TEntityType> : Controller where TEntity
         return Task.CompletedTask;
     }
 
-    protected virtual Task<IQueryable<TEntityType>> ApplyDeepFilters(IQueryable<TEntityType> entitiesQuery)
+    protected virtual CreatedEntityResultModel GetCreatedResult(BaseEntity baseEntity)
     {
-        return ApplyDeepFilters<TEntityType>(entitiesQuery);
-    }
-
-    protected virtual async Task<IQueryable<TIn>> ApplyDeepFilters<TIn>(IQueryable<TIn> entitiesQuery)
-        where TIn : class
-    {
-        var deepPropertiesSearchFilters = Request.Query.ToDictionary(_ => _.Key,
-                                                                     _ => _.Value.ToString());
-
-        if (deepPropertiesSearchFilters.Keys.Count == 0)
-            return entitiesQuery;
-
-        var predicateStatement = PredicateBuilder.True<TIn>();
-
-        foreach (var filter in deepPropertiesSearchFilters)
+        if (baseEntity is BaseEntityWithAuditInfo auditableEntity)
         {
-            var property = typeof(TIn).GetProperty(filter.Key);
-
-            if (property == null)
-                continue;
-
-            if (property.PropertyType == typeof(string))
-            {
-                var filterValue = filter.Value.Replace("*", "");
-
-                if (filter.Value.StartsWith("*") &&
-                    filter.Value.EndsWith("*"))
-                {
-                    var predicateQuery =
-                        ExpressionExtensions.BuildPredicate<TIn>(filterValue,
-                                                                 OperatorComparer.Contains,
-                                                                 property.Name);
-                    predicateStatement = predicateStatement.And(predicateQuery);
-                }
-
-                else if (filter.Value.EndsWith("*"))
-                {
-                    var predicateQuery =
-                        ExpressionExtensions.BuildPredicate<TIn>(filterValue,
-                                                                 OperatorComparer.StartsWith,
-                                                                 property.Name);
-                    predicateStatement = predicateStatement.And(predicateQuery);
-                }
-
-                else if (filter.Value.StartsWith("*"))
-                {
-                    var predicateQuery =
-                        ExpressionExtensions.BuildPredicate<TIn>(filterValue,
-                                                                 OperatorComparer.EndsWith,
-                                                                 property.Name);
-                    predicateStatement = predicateStatement.And(predicateQuery);
-                }
-            }
+            return new CreatedEntityResultModel(auditableEntity);
         }
 
-        return entitiesQuery.Where(predicateStatement);
-    }
-
-    /// <summary>
-    ///     Add addition query into initial one to order the result, and optionally pagination
-    /// </summary>
-    /// <param name="entitiesQuery">The initial query</param>
-    /// <returns>The new query with additional operation, if any</returns>
-    protected virtual IQueryable<TIn> AddOrderingAndPaginationQuery<TIn>(IQueryable<TIn> entitiesQuery,
-                                                                         out int         pageSize,
-                                                                         out int         pageIndex)
-        where TIn : class
-    {
-        var paginationQuery = BaseQueryModel.FromQuery(Request.Query);
-
-        pageSize = paginationQuery.PageSize;
-
-        if (pageSize == 0)
-        {
-            pageSize = 20;
-        }
-
-        pageIndex = paginationQuery.PageIndex;
-
-        var orderedEntitiesQuery = entitiesQuery.OrderBy(ExpressionExtensions
-                                                            .BuildMemberAccessExpression<TIn>(EntityIdColumnName));
-
-        if (paginationQuery.OrderedColumns.Length > 0)
-        {
-            var sortIndex = 0;
-
-            foreach (var orderByColumn in paginationQuery.OrderedColumns)
-            {
-                var actualColumnName = orderByColumn;
-
-                if (orderByColumn.StartsWith("-"))
-                {
-                    actualColumnName = orderByColumn.Substring(1);
-                    var orderByColumnExpr =
-                        ExpressionExtensions.BuildMemberAccessExpression<TIn>(actualColumnName);
-
-                    orderedEntitiesQuery = sortIndex == 0
-                                               ? entitiesQuery.OrderByDescending(orderByColumnExpr)
-                                               : orderedEntitiesQuery.ThenByDescending(orderByColumnExpr);
-                }
-                else
-                {
-                    var orderByColumnExpr =
-                        ExpressionExtensions.BuildMemberAccessExpression<TIn>(actualColumnName);
-                    orderedEntitiesQuery = sortIndex == 0
-                                               ? entitiesQuery.OrderBy(orderByColumnExpr)
-                                               : orderedEntitiesQuery.ThenBy(orderByColumnExpr);
-                }
-
-                sortIndex++;
-            }
-        }
-
-        var itemsToSkip = pageIndex * pageSize;
-        var itemsToTake = pageSize;
-
-        return orderedEntitiesQuery.Skip(itemsToSkip)
-                                   .Take(itemsToTake);
-    }
-
-    /// <summary>
-    ///     Add addition query into initial one to retrieve only provided columns from query string
-    /// </summary>
-    /// <param name="entitiesQuery">The initial query</param>
-    /// <returns>The new query with additional operation, if any</returns>
-    protected virtual Task<IQueryable> PerformColumnsSelectorQuery<TIn>(IQueryable<TIn> entitiesQuery) where TIn: class
-    {
-        var paginationQuery = BaseQueryModel.FromQuery(Request.Query);
-
-        string [ ] columnsToReturn = paginationQuery.FilteredColumns;
-
-        if (columnsToReturn.Length == 0 &&
-            DefaultColumnsToReturn.Any())
-        {
-            columnsToReturn = DefaultColumnsToReturn.Concat(AlwaysReturnColumns)
-                                                    .Where(_ => !string.IsNullOrEmpty(_))
-                                                    .Distinct()
-                                                    .ToArray();
-        }
-
-        return ApplyPickColumnsQuery(entitiesQuery, columnsToReturn);
-    }
-
-    /// <summary>
-    ///     Add addition query into initial one to retrieve the entity with only given <seealso cref="columnsToReturn"/>
-    /// </summary>
-    /// <param name="entitiesQuery">
-    ///     The initial query
-    /// </param>
-    /// <param name="columnsToReturn">
-    ///     List of properties of the entity to query
-    /// </param>
-    /// <returns>The new query with additional operation, if any</returns>
-    protected virtual async Task<IQueryable> ApplyPickColumnsQuery<TIn>(IQueryable<TIn> entitiesQuery,
-                                                                        string [ ]      columnsToReturn)
-        where TIn : class
-    {
-        if (columnsToReturn == null ||
-            columnsToReturn.Length == 0)
-            return entitiesQuery;
-
-        if (typeof(BaseEntity).IsAssignableFrom(typeof(TEntityType)) &&
-            columnsToReturn.All(_ => !_.Equals(nameof(BaseEntity.Id), StringComparison.OrdinalIgnoreCase)))
-        {
-            // always return Id even if the client does not ask
-            columnsToReturn = new List<string>
-                {
-                    nameof(BaseEntity.Id)
-                }.Concat(columnsToReturn)
-                 .ToArray();
-        }
-
-        var filteredResult =
-            entitiesQuery.Select(DataTransferObjectUtils.BuildDtoSelectorExpressionFromEntity<TIn>(columnsToReturn));
-
-        return filteredResult;
-    }
-
-    /// <summary>
-    ///     Returns the property access name from the given selector
-    /// </summary>
-    /// <param name="selector">
-    ///     The selector describes how to pick the property / column from the <typeparamref name="TEntityType"/>
-    /// </param>
-    protected static string PickProperty(Expression<Func<TEntityType, object>> selector) =>
-        PickProperty<TEntityType>(selector);
-
-
-    /// <summary>
-    ///     Returns the property access name from the given selector
-    /// </summary>
-    /// <param name="selector">
-    ///     The selector describes how to pick the property / column from the <typeparamref name="TEntityType"/>
-    /// </param>
-    protected static string PickProperty<TIn>(Expression<Func<TIn, object>> selector)
-    {
-        return selector.Body switch
-        {
-            MemberExpression mae                                  => mae.Member.Name,
-            UnaryExpression {Operand: MemberExpression subSelect} => subSelect.Member.Name,
-            _                                                     => ""
-        };
-    }
-
-    /// <summary>
-    ///     Returns the property access name from the given selector and sub-sequence selector
-    /// </summary>
-    /// <param name="selector">
-    ///     The selector describes how to pick the property / column from the <typeparamref name="TEntityType"/>
-    /// </param>
-    protected static string PickProperty<TNext>(Expression<Func<TEntityType, TNext>> selector,
-                                                Expression<Func<TNext, object>>      subSelector)
-        => PickProperty<TEntityType, TNext>(selector, subSelector);
-
-    /// <summary>
-    ///     Returns the property access name from the given selector and sub-sequence selector
-    /// </summary>
-    /// <param name="selector">
-    ///     The selector describes how to pick the property / column from the <typeparamref name="TEntityType"/>
-    /// </param>
-    protected static string PickProperty<TNext>(Expression<Func<TEntityType, IEnumerable<TNext>>> selector,
-                                                Expression<Func<TNext, object>>                   subSelector)
-        => PickProperty<TEntityType, TNext>(selector, subSelector);
-
-    /// <summary>
-    ///     Returns the property access name from the given selector and sub-sequence selector
-    /// </summary>
-    /// <param name="selector">
-    ///     The selector describes how to pick the property / column from the <typeparamref name="TEntityType"/>
-    /// </param>
-    protected static string PickProperty<TIn, TNext>(Expression<Func<TIn, IEnumerable<TNext>>> selector,
-                                                     Expression<Func<TNext, object>>           subSelector)
-    {
-        string initProp = selector.Body switch
-        {
-            MemberExpression mae => mae.Member.Name,
-            UnaryExpression {Operand: MemberExpression mainSelect} =>
-                mainSelect.Member.Name,
-            _ => ""
-        };
-
-        if (string.IsNullOrEmpty(initProp))
-            return "";
-
-        return subSelector.Body switch
-        {
-            MemberExpression subSelectorBody => initProp + "." + subSelectorBody.Member.Name,
-            UnaryExpression {Operand: MemberExpression subSelect} => initProp + "." +
-                                                                     subSelect.Member.Name,
-            _ => ""
-        };
-    }
-
-    /// <summary>
-    ///     Returns the property access name from the given selector and sub-sequence selector
-    /// </summary>
-    /// <param name="selector">
-    ///     The selector describes how to pick the property / column from the <typeparamref name="TEntityType"/>
-    /// </param>
-    protected static string PickProperty<TIn, TNext>(Expression<Func<TIn, TNext>>    selector,
-                                                     Expression<Func<TNext, object>> subSelector)
-    {
-        string initProp = selector.Body switch
-        {
-            MemberExpression mae => mae.Member.Name,
-            UnaryExpression {Operand: MemberExpression mainSelect} =>
-                mainSelect.Member.Name,
-            _ => ""
-        };
-
-        if (string.IsNullOrEmpty(initProp))
-            return "";
-
-        return subSelector.Body switch
-        {
-            MemberExpression subSelectorBody => initProp + "." + subSelectorBody.Member.Name,
-            UnaryExpression {Operand: MemberExpression subSelect} => initProp + "." +
-                                                                     subSelect.Member.Name,
-            _ => ""
-        };
+        return new CreatedEntityResultModel(baseEntity);
     }
 }

@@ -1,12 +1,13 @@
-﻿using DotNetBrightener.Core.StartupTask;
+﻿using System.Threading.Tasks;
+using DotNetBrightener.Core.StartupTask;
 using DotNetBrightener.DataAccess.EF.Extensions;
+using DotNetBrightener.DataAccess.EF.Migrations;
 using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
 
-namespace DotNetBrightener.CommonShared.Data;
+namespace DotNetBrightener.WebApp.CommonShared.Data;
 
 public class AutoMigrateDbStartupTask<TDbContext> : IStartupTask
-    where TDbContext : DbContext
+    where TDbContext : DbContext, IMigrationDefinitionDbContext
 {
     private readonly TDbContext _dbContext;
 

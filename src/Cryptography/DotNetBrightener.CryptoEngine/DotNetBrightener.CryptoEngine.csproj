@@ -1,25 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<VersionPrefix>2022.5.2</VersionPrefix>
 		<Description>A library provides the APIs for Asymetric Encryption and Symetric Encryption methods</Description>
 		<PackageDescription>$(Description)</PackageDescription>
 
 		<PackageReleaseNotes>
-			2022.5.2: 
-				- Added ability to generate inline PEM format
+			2023.0.1: 
+				- Support NET7
 		</PackageReleaseNotes>
 
 		<Platforms>AnyCPU;ARM64</Platforms>
 	</PropertyGroup>
 	
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0" />
-		<PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="6.0.0" />
-		<PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="6.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="7.0.0" />
+		<PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="7.0.0" />
+		<PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="7.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Options" Version="7.0.1" />
 		<PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
-		<PackageReference Include="System.Security.Cryptography.Xml" Version="6.0.1" />
+		<PackageReference Include="System.Security.Cryptography.Xml" Version="7.0.1" />
 	</ItemGroup>
 
 </Project>

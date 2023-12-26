@@ -3,7 +3,6 @@
 using DotNetBrightener.SimpleUploadService.Extensions;
 using DotNetBrightener.SimpleUploadService.IO;
 using DotNetBrightener.SimpleUploadService.Services;
-using System;
 using DotNetBrightener.SimpleUploadService;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 

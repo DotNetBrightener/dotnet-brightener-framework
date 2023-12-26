@@ -1,9 +1,10 @@
-﻿using System;
-using DotNetBrightener.DataAccess.EF.Repositories;
+﻿using DotNetBrightener.DataAccess.EF.Repositories;
 using DotNetBrightener.DataAccess.Services;
 using LinqToDB.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using System;
 
 namespace DotNetBrightener.DataAccess.EF.Extensions;
 
@@ -24,10 +25,13 @@ public static class ServiceCollectionExtensions
             if (dbConfiguration.UseLazyLoading)
                 configure.UseLazyLoadingProxies();
         });
-        
+
         serviceCollection.AddScoped<DbContext, TDbContext>();
 
         serviceCollection.AddScoped<IRepository, Repository>();
+
+        serviceCollection.TryAddScoped<ICurrentLoggedInUserResolver, DefaultCurrentUserResolver>();
+
         LinqToDBForEFTools.Initialize();
     }
 }

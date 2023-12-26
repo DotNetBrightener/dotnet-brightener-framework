@@ -24,6 +24,14 @@ public interface IBaseDataService<TEntity>: IDisposable
 
 
     /// <summary>
+    ///     Generates a fetch query to the given entity table with the deleted records, optionally provides the condition for filtering
+    /// </summary>
+    /// <param name="expression">The condition for filtering records in the query</param>
+    /// <returns>An IQueryable of the collection of the requested entities, which are deleted</returns>
+    IQueryable<TEntity> FetchDeletedRecords(Expression<Func<TEntity, bool>> expression = null);
+
+
+    /// <summary>
     ///     Generates a fetch query to the given entity table with the non-deleted records, optionally provides the condition for filtering
     /// </summary>
     /// <param name="expression">The condition for filtering records in the query</param>

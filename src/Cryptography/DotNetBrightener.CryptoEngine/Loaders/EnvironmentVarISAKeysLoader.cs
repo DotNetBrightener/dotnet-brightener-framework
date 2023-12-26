@@ -1,7 +1,4 @@
-﻿// 
-// Copyright (c) 2022 DotNetBrightener.
-
-using System;
+﻿using System;
 using System.Security.Cryptography;
 using DotNetBrightener.CryptoEngine.Options;
 using Microsoft.Extensions.Configuration;
@@ -25,12 +22,15 @@ public class EnvironmentVarISAKeysLoader : IRSAKeysLoader
 
     public Tuple<string, string> LoadOrInitializeKeyPair()
     {
-        var privateKeyValueFromEnvVar = _configuration[_cryptoConfig.RsaEnvironmentVariableName];
+        var privateKeyValueFromEnvVar = Environment.GetEnvironmentVariable(_cryptoConfig.RsaEnvironmentVariableName) ??
+                                        _configuration[_cryptoConfig.RsaEnvironmentVariableName];
 
         if (string.IsNullOrEmpty(privateKeyValueFromEnvVar))
         {
+            var keyPair = RsaCryptoEngine.GenerateKeyPair();
+
             throw new
-                CryptographicException($"Private Key for RSA Crypto Engine is not configured. Please add private key value to Environment Variable with name '${_cryptoConfig.RsaEnvironmentVariableName}'");
+                CryptographicException($"Private Key for RSA Crypto Engine is not configured. Please add private key value below to Environment Variable with name '${_cryptoConfig.RsaEnvironmentVariableName}': {keyPair.Item2}");
         }
 
         var isXmlFormat = privateKeyValueFromEnvVar.Contains("<?xml ");

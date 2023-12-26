@@ -1,5 +1,4 @@
 using System.Linq;
-using DotNetBrightener.Infrastructure.Security.Extensions;
 using DotNetBrightener.Infrastructure.Security.Services;
 using NUnit.Framework;
 
@@ -19,12 +18,12 @@ public class PermissionLoadFromTypeTest
     {
         var loadedPermissions = new SomePermissionsList().GetPermissions()
                                                          .ToArray();
-            
-        Assert.AreEqual(SomePermissionsList.Permission1, loadedPermissions[0].PermissionKey);
-        Assert.AreEqual("Description for Permission 1", loadedPermissions[0].Description);
 
-        Assert.AreEqual(SomePermissionsList.Permission2, loadedPermissions[1].PermissionKey);
-        Assert.AreEqual("Description for Permission 2", loadedPermissions[1].Description);
+        Assert.That(SomePermissionsList.Permission1, Is.EqualTo(loadedPermissions[0].PermissionKey));
+        Assert.That("Description for Permission 1", Is.EqualTo(loadedPermissions[0].Description));
+
+        Assert.That(SomePermissionsList.Permission2, Is.EqualTo(loadedPermissions[1].PermissionKey));
+        Assert.That("Description for Permission 2", Is.EqualTo(loadedPermissions[1].Description));
     }
 
     private class SomePermissionsList: AutomaticPermissionProvider

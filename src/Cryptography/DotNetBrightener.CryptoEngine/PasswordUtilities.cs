@@ -92,17 +92,4 @@ public static class PasswordUtilities
 
         return result;
     }
-
-    public static string CreateRandomToken()
-    {
-        var dataToHash      = GenerateRandomString(10);
-        var dataToHashBytes = Encoding.ASCII.GetBytes(dataToHash);
-
-        using (var md5 = MD5.Create())
-        {
-            var hashed = md5.ComputeHash(dataToHashBytes);
-
-            return BitConverter.ToString(hashed).Replace("-", "");
-        }
-    }
 }

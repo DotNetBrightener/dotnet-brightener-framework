@@ -1,6 +1,6 @@
 ﻿namespace DotNetBrightener.Infrastructure.Security;
 
-public class DefaultUserRoles
+public static class DefaultUserRoles
 {
     public const string AdministratorRoleName = "Administrator";
                 

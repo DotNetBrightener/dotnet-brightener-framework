@@ -1,20 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-	<PropertyGroup>
-		<VersionPrefix>2022.10.0</VersionPrefix>
-		<Platforms>AnyCPU;ARM64</Platforms>
-	</PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="DotNetBrightener.Caching.Abstractions" Version="2022.10.0" />
-		<PackageReference Include="DotNetBrightener.DataAccess.EF" Version="2022.10.1" />
-		<PackageReference Include="DotNetBrightener.Infrastructure.Security" Version="2022.10.0" />
-		<PackageReference Include="DotNetBrightener.Plugins.EventPubSub" Version="2022.10.0" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.10" />
+		<ProjectReference Include="..\..\Caching\DotNetBrightener.Caching\DotNetBrightener.Caching.Abstractions.csproj" />
+		<ProjectReference Include="..\..\DataAccess\DotNetBrightener.DataAccess.EF\DotNetBrightener.DataAccess.EF.csproj" />
+		<ProjectReference Include="..\..\EventPubSub\DotNetBrightener.Plugins.EventPubSub\DotNetBrightener.Plugins.EventPubSub.csproj" />
+		<ProjectReference Include="..\..\Security\DotNetBrightener.Infrastructure.Security\DotNetBrightener.Infrastructure.Security.csproj" />
+		<ProjectReference Include="..\DotNetBrightener.Core.BackgroundTasks\DotNetBrightener.Core.BackgroundTasks.csproj" />
 	</ItemGroup>
 	<ItemGroup>
-	  <None Update="docs\readme.md">
-	    <PackagePath>\</PackagePath>
-	    <Pack>true</Pack>
-	  </None>
+		<None Update="docs\readme.md">
+			<PackagePath>\</PackagePath>
+			<Pack>true</Pack>
+		</None>
 	</ItemGroup>
 
 	<Import Project="..\..\Shared\SharedExtensions.Object\SharedExtensions.ObjectExtensions.projitems" Label="Shared" />

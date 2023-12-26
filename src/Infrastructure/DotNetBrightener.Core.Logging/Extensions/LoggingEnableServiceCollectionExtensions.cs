@@ -1,13 +1,11 @@
 // ReSharper disable CheckNamespace
 
 using DotNetBrightener.Core.Logging;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using NLog;
 using NLog.Config;
 using NLog.Web;
-using System;
 using System.Collections.Generic;
 
 namespace Microsoft.Extensions.DependencyInjection;

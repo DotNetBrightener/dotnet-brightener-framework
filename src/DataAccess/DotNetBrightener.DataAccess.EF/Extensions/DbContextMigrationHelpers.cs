@@ -18,9 +18,11 @@ public static class DbContextMigrationHelpers
     public static void AutoMigrateDbSchema(this DbContext dbMigrationContext, ILogger logger = null)
     {
         logger?.LogInformation($"Getting pending migrations for {dbMigrationContext.GetType().Name}");
+
         var pendingMigrations = dbMigrationContext.Database
                                                   .GetPendingMigrations()
                                                   .ToArray();
+
         logger?.LogInformation($"{dbMigrationContext.GetType().Name} has {pendingMigrations.Length} pending migrations");
 
         if (pendingMigrations.Any())
@@ -33,7 +35,11 @@ public static class DbContextMigrationHelpers
 
                 foreach (var pendingMigration in pendingMigrations)
                 {
+                    logger?.LogInformation($"Executing migration {pendingMigration}...");
+                    
                     migrator.Migrate(pendingMigration);
+
+                    logger?.LogInformation($"Migration {pendingMigration} executed.");
                 }
             }
             catch (System.Exception exception)

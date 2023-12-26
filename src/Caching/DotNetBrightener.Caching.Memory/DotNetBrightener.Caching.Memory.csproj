@@ -1,7 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<VersionPrefix>2022.10.0</VersionPrefix>
-		<DNBLibraryVersion>2022.10.0</DNBLibraryVersion>
 		<PackageId>DotNetBrightener.Caching.Memory</PackageId>
 		<Description>
 			A library that provides mechanism for caching data using memory cache
@@ -9,26 +7,12 @@
 		<PackageDescription>
 			$(Description)
 		</PackageDescription>
-		<Platforms>AnyCPU;ARM64</Platforms>
 	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-		<DefineConstants>TRACE;RELEASE</DefineConstants>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
-	  <DefineConstants>TRACE;RELEASE</DefineConstants>
-	</PropertyGroup>
+	<ItemGroup>
+	  <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="7.0.0" />
+	</ItemGroup>
 
 	<ItemGroup>
-		<FrameworkReference Include="Microsoft.AspNetCore.App" />
-	</ItemGroup>
-
-	<ItemGroup Condition="$(Configuration)=='Debug'">
-		<ProjectReference Include="..\DotNetBrightener.Caching\DotNetBrightener.Caching.Abstractions.csproj" />
-	</ItemGroup>
-
-	<ItemGroup Condition="$(Configuration)=='Release'">
-		<PackageReference Include="DotNetBrightener.Caching.Abstractions" Version="$(DNBLibraryVersion)" />
+	  <ProjectReference Include="..\DotNetBrightener.Caching\DotNetBrightener.Caching.Abstractions.csproj" />
 	</ItemGroup>
 </Project>

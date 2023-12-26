@@ -1,12 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Newtonsoft.Json;
 
-namespace DotNetBrightener.CommonShared.Mvc;
+namespace DotNetBrightener.WebApp.CommonShared.Mvc;
 
 public class ETagFilterAttribute : Attribute, IActionFilter
 {
@@ -33,11 +33,17 @@ public class ETagFilterAttribute : Attribute, IActionFilter
                 var etag = ETagGenerator.GetETag(context.HttpContext.Request.Path.ToString(),
                                                  Encoding.UTF8.GetBytes(content));
 
-                if (context.HttpContext.Request.Headers.Keys.Contains("If-None-Match") && context.HttpContext.Request.Headers["If-None-Match"].ToString() == etag)
+                if (context.HttpContext.Request.Headers.Keys.Contains("If-None-Match") &&
+                    context.HttpContext.Request.Headers["If-None-Match"].ToString() == etag)
                 {
                     context.Result = new StatusCodeResult(304);
                 }
-                context.HttpContext.Response.Headers.Add("ETag", new[] { etag });
+
+                context.HttpContext.Response.Headers.Add("ETag",
+                                                         new[]
+                                                         {
+                                                             etag
+                                                         });
             }
         }
     }

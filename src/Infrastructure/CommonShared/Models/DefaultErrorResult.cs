@@ -1,4 +1,4 @@
-﻿namespace DotNetBrightener.CommonShared.Models;
+﻿namespace DotNetBrightener.WebApp.CommonShared.Models;
 
 public class DefaultErrorResult
 {

@@ -1,11 +1,13 @@
-﻿using System;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Timer = System.Timers.Timer;
 
 namespace DotNetBrightener.Core.BackgroundTasks;
@@ -17,24 +19,29 @@ public interface IBackgroundTaskScheduler
 {
     void Activate();
 
-    void EnqueueTask(MethodInfo methodAction, params object [ ] parameters);
+    string EnqueueTask(MethodInfo methodAction, params object[] parameters);
+
+    QueuedTaskResult GetTaskProcessResult(string taskIdentifier);
+
+    void RemoveTaskResult(string taskIdentifier);
 }
 
 public class BackgroundTaskScheduler : IBackgroundTaskScheduler, IDisposable
 {
-    private readonly Queue<BackgroundQueuedTask> _tasks = new Queue<BackgroundQueuedTask>();
-    private readonly IServiceProvider            _serviceResolver;
-    private readonly Timer                       _timer;
-    private readonly ILogger                     _logger;
+    private readonly Queue<BackgroundQueuedTask>                        _tasks        = new();
+    private readonly ConcurrentDictionary<string, BackgroundQueuedTask> _runningTasks = new();
+    private readonly IServiceScopeFactory                               _serviceResolver;
+    private readonly Timer                                              _timer;
+    private readonly ILogger                                            _logger;
 
     public BackgroundTaskScheduler(ILogger<BackgroundTaskScheduler> logger,
-                                   IBackgroundServiceProvider       backgroundServiceProvider)
+                                   IServiceScopeFactory backgroundServiceProvider)
     {
-        _serviceResolver =  backgroundServiceProvider;
-        _logger          =  logger;
-        _timer           =  new Timer();
-        _timer.Interval  =  TimeSpan.FromSeconds(3).TotalMilliseconds;
-        _timer.Elapsed   += Elapsed;
+        _serviceResolver = backgroundServiceProvider;
+        _logger = logger;
+        _timer = new Timer();
+        _timer.Interval = TimeSpan.FromSeconds(3).TotalMilliseconds;
+        _timer.Elapsed += Elapsed;
     }
 
     public void Activate()
@@ -45,13 +52,49 @@ public class BackgroundTaskScheduler : IBackgroundTaskScheduler, IDisposable
         }
     }
 
-    public void EnqueueTask(MethodInfo methodAction, params object[] parameters)
+    public string EnqueueTask(MethodInfo methodAction, params object[] parameters)
     {
-        _tasks.Enqueue(new BackgroundQueuedTask
+        var queuedTask = new BackgroundQueuedTask
         {
-            Action     = methodAction,
+            Action = methodAction,
             Parameters = parameters
-        });
+        };
+        _tasks.Enqueue(queuedTask);
+
+        if (!_timer.Enabled)
+        {
+            Activate();
+        }
+
+        return queuedTask.TaskIdentifier;
+    }
+
+    public QueuedTaskResult GetTaskProcessResult(string taskIdentifier)
+    {
+        var queuedTask = _tasks.FirstOrDefault(_ => _.TaskIdentifier == taskIdentifier);
+
+        if (queuedTask == null)
+        {
+            _runningTasks.TryGetValue(taskIdentifier, out queuedTask);
+        }
+
+        if (queuedTask == null)
+            return null;
+
+        return new QueuedTaskResult
+        {
+            TaskIdentifier = taskIdentifier,
+            Started = queuedTask.StartedOn,
+            TaskResult = queuedTask.TaskResult
+        };
+    }
+
+    public void RemoveTaskResult(string taskIdentifier)
+    {
+        if (_runningTasks.TryGetValue(taskIdentifier, out _))
+        {
+            _runningTasks.TryRemove(taskIdentifier, out _);
+        }
     }
 
     void Elapsed(object sender, ElapsedEventArgs e)
@@ -59,10 +102,14 @@ public class BackgroundTaskScheduler : IBackgroundTaskScheduler, IDisposable
         // current implementation disallows re-entrancy
         if (!Monitor.TryEnter(_timer))
         {
+            _logger.LogInformation("Timer is being locked for another execution. Exiting...");
             return;
         }
+
         try
         {
+            _logger.LogInformation("Stop and lock timer for execution.");
+            _timer.Stop();
             DoWork();
         }
         catch (Exception ex)
@@ -71,6 +118,12 @@ public class BackgroundTaskScheduler : IBackgroundTaskScheduler, IDisposable
         }
         finally
         {
+            if (_tasks.Count > 0 &&
+                !_timer.Enabled)
+            {
+                _timer.Start();
+            }
+
             Monitor.Exit(_timer);
         }
     }
@@ -79,12 +132,11 @@ public class BackgroundTaskScheduler : IBackgroundTaskScheduler, IDisposable
     {
         if (_tasks.Count == 0)
         {
-            return;
-        }
-
-        if (_serviceResolver == null)
-        {
-            _logger.LogError($"No service provider available to resolve tasks");
+            if (_timer.Enabled)
+            {
+                lock (_timer)
+                    _timer.Stop();
+            }
             return;
         }
 
@@ -96,8 +148,6 @@ public class BackgroundTaskScheduler : IBackgroundTaskScheduler, IDisposable
 
             if (taskToRun != null)
             {
-                taskToRun.ServiceProvider = _serviceResolver;
-
                 tasksList.Add(RunTask(taskToRun));
             }
 
@@ -110,11 +160,10 @@ public class BackgroundTaskScheduler : IBackgroundTaskScheduler, IDisposable
 
     private async Task RunTask(BackgroundQueuedTask taskToRun)
     {
-        var serviceResolver = taskToRun.ServiceProvider;
-        if (serviceResolver == null)
-            return;
+        taskToRun.StartedOn = DateTimeOffset.UtcNow;
+        _runningTasks.TryAdd(taskToRun.TaskIdentifier, taskToRun);
 
-        using (var backgroundScope = serviceResolver.CreateScope())
+        using (var backgroundScope = _serviceResolver.CreateScope())
         {
             var backgroundServiceProvider = backgroundScope.ServiceProvider;
 
@@ -128,9 +177,9 @@ public class BackgroundTaskScheduler : IBackgroundTaskScheduler, IDisposable
 
             try
             {
-                invokingInstance = backgroundServiceProvider.TryGetService(declaringType);
+                invokingInstance = backgroundServiceProvider.TryGet(declaringType);
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error while resolving instance of {declaringType}");
             }
@@ -144,17 +193,34 @@ public class BackgroundTaskScheduler : IBackgroundTaskScheduler, IDisposable
 
             var isAwaitable = taskToRun.Action.ReturnType.GetMethod(nameof(Task.GetAwaiter)) != null;
 
-            async Task ExecuteMethod()
+            Task ExecuteMethod()
             {
+                _logger.LogInformation($"Executing task: {taskToRun.Action.DeclaringType?.FullName}.{taskToRun.Action.Name}()");
+
                 if (isAwaitable)
                 {
-                    await (dynamic) taskToRun.Action.Invoke(invokingInstance, taskToRun.Parameters);
+                    var invokeResult = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            var result = await (dynamic)taskToRun.Action.Invoke(invokingInstance, taskToRun.Parameters);
 
-                    return;
+                            return result;
+                        }
+                        catch
+                        {
+                            return null;
+                        }
+                    });
+
+                    taskToRun.TaskResult = invokeResult;
+
+                    return taskToRun.TaskResult;
                 }
 
-
                 taskToRun.Action.Invoke(invokingInstance, taskToRun.Parameters);
+
+                return Task.CompletedTask;
             }
 
             try
@@ -163,11 +229,7 @@ public class BackgroundTaskScheduler : IBackgroundTaskScheduler, IDisposable
             }
             catch (Exception exception)
             {
-                _logger.LogError(exception, $"Error occured when executing background queued task.");
-            }
-            finally
-            {
-                taskToRun.ServiceProvider = null;
+                _logger.LogError(exception, $"Error occurred when executing background queued task {taskToRun.Action.DeclaringType?.FullName}.{taskToRun.Action.Name}().");
             }
         }
     }

@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace DotNetBrightener.CommonShared.Mvc;
+namespace DotNetBrightener.WebApp.CommonShared.Mvc;
 
 public static class MvcOptionsExtensions
 {

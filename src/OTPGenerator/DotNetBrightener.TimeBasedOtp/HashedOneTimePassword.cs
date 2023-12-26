@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 
-namespace DotNetBrightener.TimeBaseOtp;
+namespace DotNetBrightener.TimeBasedOtp;
 
 internal static class HashedOneTimePassword
 {

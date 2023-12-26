@@ -26,6 +26,20 @@ public interface IRepository : IDisposable
         where T : class;
 
     /// <summary>
+    ///     Retrieves first found record of type <typeparamref name="T"/> with the given <paramref name="expression"/>
+    /// </summary>
+    /// <typeparam name="T">
+    ///     The type of the entity
+    /// </typeparam>
+    /// <param name="expression">
+    ///     The expression describes how to pick/filter the records
+    /// </param>
+    /// <returns>
+    ///     The first found record of specified <see cref="T"/> if found, otherwise, <c>null</c>
+    /// </returns>
+    T GetFirst<T>(Expression<Func<T, bool>> expression) where T : class;
+
+    /// <summary>
     ///     Retrieves a specific record of type <typeparamref name="T"/> with the given <paramref name="expression"/>
     /// </summary>
     /// <typeparam name="T">
@@ -45,6 +59,28 @@ public interface IRepository : IDisposable
     /// </returns>
     TResult Get<T, TResult>(Expression<Func<T, bool>>    expression,
                             Expression<Func<T, TResult>> propertiesPickupExpression)
+        where T : class;
+
+    /// <summary>
+    ///     Retrieves the first found record of type <typeparamref name="T"/> with the given <paramref name="expression"/>
+    /// </summary>
+    /// <typeparam name="T">
+    ///     The type of the entity
+    /// </typeparam>
+    /// <typeparam name="TResult">
+    ///     The type of the result object
+    /// </typeparam>
+    /// <param name="expression">
+    ///     The expression describes how to pick/filter the records
+    /// </param>
+    /// <param name="propertiesPickupExpression">
+    ///     The expression describes how to transfer the record to the result object
+    /// </param>
+    /// <returns>
+    ///     The first found record of specified <see cref="T"/> if found, otherwise, <c>null</c>
+    /// </returns>
+    TResult GetFirst<T, TResult>(Expression<Func<T, bool>>    expression,
+                                 Expression<Func<T, TResult>> propertiesPickupExpression)
         where T : class;
 
     /// <summary>

@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using DotNetBrightener.Core.Localization.Services;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 
@@ -167,7 +166,7 @@ public class JsonDictionaryBasedStringLocalizer : IStringLocalizer
     public static string FormatWith(string format, IFormatProvider provider, object source)
     {
         if (format == null)
-            throw new ArgumentNullException("format");
+            throw new ArgumentNullException(nameof(format));
 
         var r = new Regex(@"(?<start>\{)+(?<property>[\w\.\[\]]+)(?<format>:[^}]+)?(?<end>\})+",
                           RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);

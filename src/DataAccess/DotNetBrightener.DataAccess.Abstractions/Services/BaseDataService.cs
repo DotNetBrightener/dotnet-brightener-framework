@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
-using System.Reflection;
 using System.Threading.Tasks;
 using DotNetBrightener.DataAccess.Models;
 
@@ -28,6 +27,18 @@ public abstract class BaseDataService<TEntity> : IBaseDataService<TEntity> where
         return Repository.Fetch(expression);
     }
 
+    public IQueryable<TEntity> FetchDeletedRecords(Expression<Func<TEntity, bool>> expression = null)
+    {
+        IQueryable<TEntity> query = Repository.Fetch(expression);
+
+        if (typeof(TEntity).HasProperty<bool>(nameof(BaseEntityWithAuditInfo.IsDeleted)))
+        {
+            query = query.Where("IsDeleted == True");
+        }
+
+        return query;
+    }
+
     public IQueryable<TEntity> FetchActive(Expression<Func<TEntity, bool>> expression = null)
     {
         IQueryable<TEntity> query = Repository.Fetch(expression);
@@ -40,12 +51,12 @@ public abstract class BaseDataService<TEntity> : IBaseDataService<TEntity> where
         return query;
     }
 
-    public void Insert(TEntity entity)
+    public virtual void Insert(TEntity entity)
     {
         InsertAsync(entity).Wait();
     }
 
-    public void Insert(IEnumerable<TEntity> entities)
+    public virtual void Insert(IEnumerable<TEntity> entities)
     {
         InsertAsync(entities).Wait();
     }

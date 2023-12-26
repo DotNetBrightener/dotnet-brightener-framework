@@ -62,17 +62,17 @@ public class CacheKey
     #endregion
 
     /// <summary>
-    /// Cache key
+    ///     Cache key
     /// </summary>
     public string Key { get; protected set; }
 
     /// <summary>
-    /// Prefixes to remove by prefix functionality
+    ///     Prefixes to remove by prefix functionality
     /// </summary>
     public List<string> Prefixes { get; protected set; } = new List<string>();
 
     /// <summary>
-    /// Cache time in minutes
+    ///     Cache time in minutes
     /// </summary>
     public int CacheTime { get; set; } = CacheDefaultSettings.CacheTime;
 }

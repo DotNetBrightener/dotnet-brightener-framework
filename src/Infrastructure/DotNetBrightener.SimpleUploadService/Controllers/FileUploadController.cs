@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using DotNetBrightener.SimpleUploadService.Models;
 using DotNetBrightener.SimpleUploadService.Services;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
