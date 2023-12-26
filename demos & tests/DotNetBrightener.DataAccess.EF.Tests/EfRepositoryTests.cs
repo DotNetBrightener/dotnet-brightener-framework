@@ -77,7 +77,7 @@ public class EfRepositoryTests
     {
         var repository = _serviceProvider.GetService<IRepository>();
 
-        Assert.IsNotNull(repository);
+        Assert.That(repository, Is.Not.Null);
 
         var testInstance = new TestEntity
         {
@@ -96,7 +96,7 @@ public class EfRepositoryTests
 
         var storedInstance = dbContext!.Set<TestEntity>().FirstOrDefault(_ => _.Id == testInstance.Id);
 
-        Assert.IsNotNull(storedInstance);
+        Assert.That(storedInstance, Is.Not.Null);
 
         Assert.That(storedInstance!.Value, Is.EqualTo(testInstance.Value + "_updated"));
     }
@@ -106,7 +106,7 @@ public class EfRepositoryTests
     {
         var repository = _serviceProvider.GetService<IRepository>();
 
-        Assert.IsNotNull(repository);
+        Assert.That(repository, Is.Not.Null);
 
         var testInstance = new TestEntity
         {
@@ -125,7 +125,7 @@ public class EfRepositoryTests
 
         var storedInstance = dbContext!.Set<TestEntity>().FirstOrDefault(_ => _.Id == testInstance.Id);
 
-        Assert.IsNotNull(storedInstance);
+        Assert.That(storedInstance, Is.Not.Null);
 
         Assert.That(storedInstance!.Value, Is.EqualTo("_updated"));
     }
