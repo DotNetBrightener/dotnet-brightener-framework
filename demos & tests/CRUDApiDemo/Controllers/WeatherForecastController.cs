@@ -1,4 +1,5 @@
 using DotNetBrightener.WebApi.GenericCRUD.Extensions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CRUDApiDemo.Controllers;
@@ -43,6 +44,7 @@ public class WeatherForecastController : ControllerBase
     }
 
     [HttpGet(Name = "GetWeatherForecast")]
+    [Authorize]
     public async Task<IEnumerable<WeatherForecast>> Get()
     {
         var deepPropertiesSearchFilters = Request.Query.ToDictionary(_ => _.Key,

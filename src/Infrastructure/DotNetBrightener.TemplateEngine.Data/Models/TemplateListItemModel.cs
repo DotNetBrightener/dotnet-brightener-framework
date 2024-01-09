@@ -1,4 +1,4 @@
-﻿namespace DotNetBrightener.TemplateEngine.Models;
+﻿namespace DotNetBrightener.TemplateEngine.Data.Models;
 
 public class TemplateListItemModel
 {

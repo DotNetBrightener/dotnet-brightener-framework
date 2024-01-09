@@ -19,12 +19,15 @@ public class DefaultAuthAudienceValidator : IAuthAudienceValidator
 
     public void RegisterAudienceValidator(IAuthAudiencesContainer audiencesContainer)
     {
-        var enableOrigins = _configuration.GetValue<string>(JwtAuthConstants.EnableOriginsConfigurationName)
-                                          .Split(new[]
-                                                 {
-                                                     ";", ","
-                                                 },
-                                                 StringSplitOptions.RemoveEmptyEntries);
-        audiencesContainer.RegisterValidAudience(enableOrigins);
+        var enableOrigins = _configuration.GetValue<string>(JwtAuthConstants.EnableOriginsConfigurationName);
+
+        if (string.IsNullOrEmpty(enableOrigins))
+            return;
+
+        audiencesContainer.RegisterValidAudience(enableOrigins.Split(new[]
+                                                                     {
+                                                                         ";", ","
+                                                                     },
+                                                                     StringSplitOptions.RemoveEmptyEntries));
     }
 }

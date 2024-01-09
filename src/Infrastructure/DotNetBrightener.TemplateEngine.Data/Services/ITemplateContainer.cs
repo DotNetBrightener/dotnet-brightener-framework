@@ -1,22 +1,43 @@
-﻿using DotNetBrightener.TemplateEngine.Attributes;
-using DotNetBrightener.TemplateEngine.Exceptions;
-using DotNetBrightener.TemplateEngine.Models;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using DotNetBrightener.TemplateEngine.Attributes;
+using DotNetBrightener.TemplateEngine.Data.Models;
+using DotNetBrightener.TemplateEngine.Exceptions;
 
-namespace DotNetBrightener.TemplateEngine.Services;
+namespace DotNetBrightener.TemplateEngine.Data.Services;
 
+/// <summary>
+///     Represents the container of the templates
+/// </summary>
 public interface ITemplateContainer
 {
+    /// <summary>
+    ///     Registers the template with the given type to the container
+    /// </summary>
+    /// <typeparam name="TTemplateType">Type of the template</typeparam>
     void RegisterTemplate<TTemplateType>();
 
+    /// <summary>
+    ///     Retrieves all the registered template types
+    /// </summary>
+    /// <returns></returns>
     List<Type> GetAllTemplateTypes();
 
+    /// <summary>
+    ///    Retrieves the template type by its name
+    /// </summary>
+    /// <param name="templateTypeName"></param>
+    /// <returns></returns>
     Type GetTemplateTypeByName(string templateTypeName);
 
+    /// <summary>
+    ///    Retrieves the template information by its name
+    /// </summary>
+    /// <param name="templateTypeName"></param>
+    /// <returns></returns>
     TemplateListItemModel GetTemplateInformation(string templateTypeName);
 }
 
@@ -69,7 +90,7 @@ public class TemplateContainer : ITemplateContainer
         return templateInformation;
     }
 
-    private string GetFormattedTemplateName(string templateTypeName)
+    private static string GetFormattedTemplateName(string templateTypeName)
     {
         return templateTypeName.CamelFriendly();
     }

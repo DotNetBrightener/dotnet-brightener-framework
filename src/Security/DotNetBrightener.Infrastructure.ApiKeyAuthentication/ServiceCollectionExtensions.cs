@@ -11,7 +11,7 @@ public class ApiKeyAuthConfigurationBuilder
 {
     internal IServiceCollection ServiceCollection { get; set; }
 
-    public ApiKeyAuthConfigurationBuilder UseApiStore<TApiStoreService>()
+    public ApiKeyAuthConfigurationBuilder UseApiTokenStore<TApiStoreService>()
         where TApiStoreService : class, IApiKeyStoreService
     {
         ServiceCollection.RemoveAll<IApiKeyStoreService>();
@@ -31,7 +31,9 @@ public static class ServiceCollectionExtensions
         };
 
         mvcBuilder.RegisterMeAsMvcModule();
-        mvcBuilder.Services.RegisterPermissionProvider<ApiKeyAuthPermissions>();
+        mvcBuilder.Services
+                  .RegisterPermissionProvider<ApiKeyAuthPermissions>();
+
         mvcBuilder.Services
                   .AddScoped<ApiKeyAuthenticationHandler>();
 

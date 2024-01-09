@@ -1,12 +1,13 @@
-﻿using System;
+﻿// ReSharper disable CheckNamespace
+
 using DotNetBrightener.Core.Localization.Factories;
 using DotNetBrightener.Core.Localization.Middlewares;
 using DotNetBrightener.Core.Localization.Services;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
+using System;
 
-namespace DotNetBrightener.Core.Localization.Extensions;
+namespace Microsoft.Extensions.DependencyInjection;
 
 public static class LocalizationModuleExtensions
 {

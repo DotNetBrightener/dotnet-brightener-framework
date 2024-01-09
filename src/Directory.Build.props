@@ -1,9 +1,9 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<PropertyGroup>
-		<TargetFramework>net7.0</TargetFramework>
-		<VersionPrefix>2023.0.28</VersionPrefix>
-		<VersionSuffix>alpha</VersionSuffix>
-		<BuildNumber>1</BuildNumber>
+		<TargetFramework>net8.0</TargetFramework>
+		<VersionPrefix>2024.0.1</VersionPrefix>
+		<VersionSuffix></VersionSuffix>
+		<BuildNumber></BuildNumber>
 		<VersionSuffix Condition="'$(VersionSuffix)' != '' AND '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
 		<Copyright>© $([System.DateTime]::Now.ToString(yyyy)) DotNet Brightener</Copyright>
 		<Authors>DotNet Brightener &lt;admin@dotnetbrightener.com&gt;</Authors>
@@ -27,6 +27,7 @@
 		<DefineConstants>TRACE;RELEASE</DefineConstants>
 		<PackageOutputPath>$(SolutionDir)/nupkg_release</PackageOutputPath>
 		<VersionSuffix></VersionSuffix>
+		<BuildNumber></BuildNumber>
 		<VersionSuffix Condition="'$(VersionSuffix)' != '' AND '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
 	</PropertyGroup>
 

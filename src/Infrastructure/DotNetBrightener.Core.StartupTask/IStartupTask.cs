@@ -13,7 +13,7 @@ public interface IStartupTask
     int Order { get; }
 
     /// <summary>
-    ///     The execution logic
+    ///     Executes the task
     /// </summary>
     /// <returns></returns>
     Task Execute();
