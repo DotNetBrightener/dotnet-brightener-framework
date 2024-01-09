@@ -30,6 +30,7 @@ public abstract class BaseEntityWithAuditInfo : BaseEntity
     ///     The name or identifier of the user who created the entity
     /// </summary>
     [NoClientSideUpdate]
+    [MaxLength(255)]
     public string CreatedBy { get; set; }
 
     /// <summary>
@@ -42,5 +43,6 @@ public abstract class BaseEntityWithAuditInfo : BaseEntity
     ///     The name or identifier of the user who modified the entity
     /// </summary>
     [NoClientSideUpdate]
+    [MaxLength(255)]
     public string ModifiedBy { get; set; }
 }
