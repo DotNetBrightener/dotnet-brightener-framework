@@ -51,6 +51,8 @@ Add the following packages to the projects, following the instruction below
 | -- | -- |
 | DotNetBrightener.WebApi.GenericCRUD | Web API |
 | DotNetBrightener.WebApi.GenericCRUD.Generator | Web API, Service |
+| DotNetBrightener.Plugins.EventPubSub | Web API, Service |
+| DotNetBrightener.Plugins.EventPubSub.DependencyInjection | Web API |
 | DotNetBrightener.DataAccess.Abstractions | Core (Entity) |
 | DotNetBrightener.DataAccess.EF | Database |
 
@@ -143,6 +145,33 @@ public class CRUDWebApiGeneratorRegistration
 The name `CRUDWebApiGeneratorRegistration` is strictly required as the generator library will look for that file in order to understand what to generate.
 
 In the `Entities` list in the class, provide all the entities that needed to generate the CRUD Web API Controllers for.
+
+# Other configurations
+
+In `Program.cs` (if you use minimal API), or `ConfigureService()` method in `Startup.cs` if you use traditional template of ASP.NET Web Application, you will need to add .NET Logging module and `EventPubSubService` from `DotNetBrightener` library, like the following:
+
+```cs
+// Program.cs
+builder.Services.AddLogging();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddEventPubSubService();
+
+```
+
+```cs
+// Startup.cs
+public void ConfigureServices(IServiceCollection services)
+{
+	// omitted code
+	
+	services.AddHttpContextAccessor();
+	services.AddLogging();
+	services.AddEventPubSubService();
+	
+	// omitted code
+}
+
+```
 
 # Build and Run Project
 
