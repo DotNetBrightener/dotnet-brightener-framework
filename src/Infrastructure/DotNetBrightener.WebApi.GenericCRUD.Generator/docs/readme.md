@@ -87,7 +87,7 @@ namespace CRUDWebApiWithGeneratorDemo.Core.Entities;
 
 public class Product: BaseEntity
 {
-	[MaxLength(255)]
+    [MaxLength(255)]
     public string Name { get; set; }
 
 	// omitted code
@@ -149,3 +149,36 @@ In the `Entities` list in the class, provide all the entities that needed to gen
 As you followed the instruction so far, upon building and running the project, the needed classes will be automatically generated. By default, .NET WebAPI project includes the OpenAPI library, which will detect the available APIs and you can see the following when the project is launch:
 
 ![[swagger_screenshot.png]]
+
+# Auto-Generated Web APIs
+
+The generator will generate the following APIs for each entity
+
+> GET /api/{entity-name} - Get all entities
+
+This API accepts the following query string parameters
+
+| Parameter | Type | Description |
+| -- | -- | -- |
+| columns | string[], separate by commas | The columns / fields of the entity to retrieve |
+| pageSize | number | The number of records to return in one page, default is 20 |
+| pageIndex | number | The index of the page to return, default is 0 |
+| orderBy | string | The column to sort the result by, in ascending order. If the value starts with a hyphen (`-`) and followed by the column name, the result is sorted in descending order. |
+| {column_name} | any | The filter expression to filter the result by the {column_name}. Eg: createdBy=user* will filter the result to return the records that have CreatedBy value starts with 'user'. |
+
+
+> GET /api/{entity-name}/{id} - Get entity by id
+
+This API accepts the following query string parameters
+
+| Parameter | Type | Description |
+| -- | -- | -- |
+| columns | string[], separate by commas | The columns / fields of the entity to retrieve |
+
+> POST /api/{entity-name} - Create new entity
+
+> PUT /api/{entity-name}/{id} - Update entity by id
+
+> DELETE /api/{entity-name}/{id} - Delete entity by id
+
+> PUT /api/{entity-name}/{id}/undelete - Restore entity by id
