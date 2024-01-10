@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="DotNetBrightener.DataAccess.Abstractions" Version="2024.0.2-alpha-1" />
+		<PackageReference Include="DotNetBrightener.WebApi.GenericCRUD.Generator" Version="2024.0.2-alpha-1" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
+
+	</ItemGroup>
+
+
+	<ItemGroup>
+		<ProjectReference Include="..\CRUDWebApiWithGeneratorDemo.Core\CRUDWebApiWithGeneratorDemo.Core.csproj" />
+	</ItemGroup>
+
+</Project>

@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Bogus" Version="35.3.0" />
+		<PackageReference Include="DotNetBrightener.DataAccess.Abstractions" Version="2024.0.2-alpha-1" />
+		<PackageReference Include="DotNetBrightener.WebApi.GenericCRUD" Version="2024.0.2-alpha-1" />
+		<PackageReference Include="DotNetBrightener.Plugins.EventPubSub" Version="2024.0.2-alpha-1" />
+		<PackageReference Include="DotNetBrightener.Plugins.EventPubSub.DependencyInjection" Version="2024.0.2-alpha-1" />
+		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.0" />
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+		<PackageReference Include="DotNetBrightener.WebApi.GenericCRUD.Generator" Version="2024.0.2-alpha-1" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+		<ProjectReference Include="..\CRUDWebApiWithGeneratorDemo.Core\CRUDWebApiWithGeneratorDemo.Core.csproj" />
+		<ProjectReference Include="..\CRUDWebApiWithGeneratorDemo.Database\CRUDWebApiWithGeneratorDemo.Database.csproj" />
+		<ProjectReference Include="..\CRUDWebApiWithGeneratorDemo.Services\CRUDWebApiWithGeneratorDemo.Services.csproj" />
+	</ItemGroup>
+
+</Project>
+
