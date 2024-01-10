@@ -28,7 +28,7 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
     protected virtual Expression<Func<TEntityType, bool>> DefaultQuery { get; set; }
 
     /// <summary>
-    ///     The columns that will be always returned in case no columns is requested from the client
+    ///     The columns that will always be returned in case no columns is requested from the client
     /// </summary>
     protected string[] AlwaysReturnColumns;
 

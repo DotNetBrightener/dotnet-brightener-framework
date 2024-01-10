@@ -20,6 +20,9 @@ public class MainAppDbContext : DbContext
     {
         modelBuilder.Entity<Product>();
         modelBuilder.Entity<ProductCategory>();
-        modelBuilder.Entity<ProductDocument>();
+        var document = modelBuilder.Entity<ProductDocument>();
+
+        document.Property(_ => _.Price)
+                .HasColumnType("decimal");
     }
 }

@@ -111,15 +111,24 @@ namespace CRUDWebApiWithGeneratorDemo.Database.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(1024)
+                        .HasColumnType("nvarchar(1024)");
+
+                    b.Property<int?>("DisplayOrder")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("FileGuid")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("FileName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<string>("FileUrl")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(2048)
+                        .HasColumnType("nvarchar(2048)");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
@@ -130,6 +139,9 @@ namespace CRUDWebApiWithGeneratorDemo.Database.Migrations
 
                     b.Property<DateTimeOffset?>("ModifiedDate")
                         .HasColumnType("datetimeoffset");
+
+                    b.Property<decimal?>("Price")
+                        .HasColumnType("decimal");
 
                     b.HasKey("Id");
 

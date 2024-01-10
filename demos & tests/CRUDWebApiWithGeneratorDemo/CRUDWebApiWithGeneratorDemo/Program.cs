@@ -17,6 +17,7 @@ builder.Services.AddEventPubSubService();
 // register the generated data services
 builder.Services.AddScoped<IProductCategoryDataService, ProductCategoryDataService>();
 builder.Services.AddScoped<IProductDataService, ProductDataService>();
+builder.Services.AddScoped<IProductDocumentDataService, ProductDocumentDataService>();
 
 var dbConfiguration = new DatabaseConfiguration
 {
@@ -68,6 +69,7 @@ using (var scope = app.Services.CreateScope())
     app.Logger.LogInformation("Seeding database data...");
     var productService = scope.ServiceProvider.GetRequiredService<IProductDataService>();
     var productCategoryService = scope.ServiceProvider.GetRequiredService<IProductCategoryDataService>();
+    var productDocumentDataService = scope.ServiceProvider.GetRequiredService<IProductDocumentDataService>();
 
     if (!productCategoryService.Fetch().Any())
     {
@@ -110,6 +112,30 @@ using (var scope = app.Services.CreateScope())
         }
 
         productService.Insert(productsList);
+    }
+
+    if (!productDocumentDataService.Fetch().Any())
+    {
+        var faker = new Faker();
+
+        var productsList = new List<ProductDocument>();
+
+        for (var i = 0; i < 512; i++)
+        {
+            var product = new ProductDocument()
+            {
+                FileName     = faker.System.CommonFileName(),
+                Description  = faker.Company.Bs(),
+                FileUrl      = faker.System.DirectoryPath(),
+                FileGuid     = Guid.NewGuid(),
+                DisplayOrder = new Random().Next(1, 1000),
+                Price        = decimal.Parse(faker.Commerce.Price())
+            };
+
+            productsList.Add(product);
+        }
+
+        productDocumentDataService.Insert(productsList);
     }
 }
 

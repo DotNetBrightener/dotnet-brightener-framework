@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CRUDWebApiWithGeneratorDemo.Database.Migrations
 {
     [DbContext(typeof(MainAppDbContext))]
-    [Migration("20240109065657_InitializeDatabase")]
+    [Migration("20240110075505_InitializeDatabase")]
     partial class InitializeDatabase
     {
         /// <inheritdoc />
@@ -95,6 +95,60 @@ namespace CRUDWebApiWithGeneratorDemo.Database.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ProductCategory");
+                });
+
+            modelBuilder.Entity("CRUDWebApiWithGeneratorDemo.Core.Entities.ProductDocument", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTimeOffset?>("CreatedDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1024)
+                        .HasColumnType("nvarchar(1024)");
+
+                    b.Property<int?>("DisplayOrder")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("FileGuid")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("FileUrl")
+                        .IsRequired()
+                        .HasMaxLength(2048)
+                        .HasColumnType("nvarchar(2048)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTimeOffset?>("ModifiedDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<decimal?>("Price")
+                        .HasColumnType("decimal");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ProductDocument");
                 });
 #pragma warning restore 612, 618
         }

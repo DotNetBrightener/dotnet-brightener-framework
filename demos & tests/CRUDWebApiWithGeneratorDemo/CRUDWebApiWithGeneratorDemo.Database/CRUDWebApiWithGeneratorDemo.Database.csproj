@@ -7,8 +7,8 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="DotNetBrightener.DataAccess.Abstractions" Version="2024.0.2-alpha-1" />
-		<PackageReference Include="DotNetBrightener.DataAccess.EF" Version="2024.0.2-alpha-1" />
+		<!--<PackageReference Include="DotNetBrightener.DataAccess.Abstractions" Version="2024.0.2" />
+		<PackageReference Include="DotNetBrightener.DataAccess.EF" Version="2024.0.2" />-->
 	</ItemGroup>
 
 	<ItemGroup>
@@ -23,6 +23,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\..\..\src\DataAccess\DotNetBrightener.DataAccess.Abstractions\DotNetBrightener.DataAccess.Abstractions.csproj" />
+		<ProjectReference Include="..\..\..\src\DataAccess\DotNetBrightener.DataAccess.EF\DotNetBrightener.DataAccess.EF.csproj" />
 		<ProjectReference Include="..\CRUDWebApiWithGeneratorDemo.Core\CRUDWebApiWithGeneratorDemo.Core.csproj" />
 	</ItemGroup>
 
