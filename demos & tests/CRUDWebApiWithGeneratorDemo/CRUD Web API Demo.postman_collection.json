@@ -1,0 +1,82 @@
+{
+	"info": {
+		"_postman_id": "23536f35-8936-462f-bc80-bbbde8fa3085",
+		"name": "CRUD Web API Demo",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "241765",
+		"_collection_link": "https://justin-workspace.postman.co/workspace/Justin's-Own-Workspace~95b9d317-6596-454a-8f15-d653f7d8f2fa/collection/241765-23536f35-8936-462f-bc80-bbbde8fa3085?action=share&source=collection_link&creator=241765"
+	},
+	"item": [
+		{
+			"name": "GET Product List",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:7077/api/Product?columns=name,description,createdDate&name=*Sausages*",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "7077",
+					"path": [
+						"api",
+						"Product"
+					],
+					"query": [
+						{
+							"key": "columns",
+							"value": "name,description,createdDate"
+						},
+						{
+							"key": "name",
+							"value": "*Sausages*"
+						},
+						{
+							"key": "pageSize",
+							"value": "300",
+							"disabled": true
+						},
+						{
+							"key": "pageIndex",
+							"value": "0",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET Product Category",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:7077/api/ProductCategory?columns=name,description,createdDate",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "7077",
+					"path": [
+						"api",
+						"ProductCategory"
+					],
+					"query": [
+						{
+							"key": "columns",
+							"value": "name,description,createdDate"
+						},
+						{
+							"key": "name",
+							"value": "*ball*",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

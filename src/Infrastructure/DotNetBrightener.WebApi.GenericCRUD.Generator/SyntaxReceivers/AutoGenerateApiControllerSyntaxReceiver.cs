@@ -86,18 +86,18 @@ public class AutoGenerateApiControllerSyntaxReceiver : ISyntaxContextReceiver
                         if (expressionSyntax.Expression is TypeOfExpressionSyntax typeOfExpressionSyntax)
                         {
                             var extractedType = semanticModel.GetTypeInfo(typeOfExpressionSyntax.Type).Type;
-                            if (extractedType is ITypeSymbol typeS)
+
+                            if (extractedType is ITypeSymbol typeS &&
+                                typeS.ContainingNamespace.ToDisplayString() != "<global namespace>")
                             {
                                 Models.Add(new CodeGenerationInfo
                                 {
-                                    ControllerAssembly = generatedAssemblyName,
-                                    ControllerNamespace = $"{generatedAssemblyName}.Controllers",
-                                    ControllerPath = $"{Path.Combine(assemblyDirectory, "Controllers")}",
-
-                                    TargetEntity = typeS.Name,
+                                    ControllerAssembly    = generatedAssemblyName,
+                                    ControllerNamespace   = $"{generatedAssemblyName}.Controllers",
+                                    ControllerPath        = $"{Path.Combine(assemblyDirectory, "Controllers")}",
+                                    TargetEntity          = typeS.Name,
                                     TargetEntityNamespace = typeS.ContainingNamespace.ToDisplayString(),
-
-                                    DataServiceNamespace = dataServiceNamespace
+                                    DataServiceNamespace  = dataServiceNamespace
                                 });
                             }
                         }

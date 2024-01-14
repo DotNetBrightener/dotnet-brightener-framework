@@ -1,6 +1,7 @@
 using DotNetBrightener.WebApi.GenericCRUD.Models;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace DotNetBrightener.WebApi.GenericCRUD.Extensions;
 
-public static class QueryableDeepFilterExtensions
+public static partial class QueryableDeepFilterExtensions
 {
     /// <summary>
     ///     Add addition query into initial one to order the result, and optionally pagination
@@ -18,11 +19,11 @@ public static class QueryableDeepFilterExtensions
     /// <returns>
     ///     The new query with extra operations e.g ordering / pagination from <see cref="filterDictionary"/>
     /// </returns>
-    public static IQueryable<TIn> AddOrderingAndPaginationQuery<TIn>(this IQueryable<TIn> entitiesQuery,
+    public static IQueryable<TIn> AddOrderingAndPaginationQuery<TIn>(this IQueryable<TIn>       entitiesQuery,
                                                                      Dictionary<string, string> filterDictionary,
-                                                                     string entityIdColumnName,
-                                                                     out int pageSize,
-                                                                     out int pageIndex)
+                                                                     string                     entityIdColumnName,
+                                                                     out int                    pageSize,
+                                                                     out int                    pageIndex)
         where TIn : class
     {
         var paginationQuery = filterDictionary.ToQueryModel<BaseQueryModel>();
@@ -95,11 +96,11 @@ public static class QueryableDeepFilterExtensions
         if (filterDictionary.Keys.Count == 0)
             return entitiesQuery;
 
-        var predicateStatement = PredicateBuilder.True<TIn>();
+        Expression<Func<TIn, bool>> predicateStatement = null;
 
         foreach (var filter in filterDictionary)
         {
-            var          fieldName = filter.Key;
+            var fieldName = filter.Key;
             var property  = ObtainPropertyPath<TIn>(fieldName);
 
             if (property == null)
@@ -107,19 +108,44 @@ public static class QueryableDeepFilterExtensions
 
             var propertyUnderlingType = property.PropertyUnderlyingType;
 
-            // only support single filter with string type
             if (propertyUnderlingType == typeof(string))
             {
                 var predicateQuery = BuildStringPredicateQuery<TIn>(filter.Value, property);
 
-                predicateStatement = predicateStatement.And(predicateQuery);
+                if (predicateQuery is null)
+                    continue;
+
+                predicateStatement =
+                    predicateStatement != null ? predicateStatement.And(predicateQuery) : predicateQuery;
 
                 continue;
             }
-            
-            var filterValues = filter.Value.Split(",",
-                                                  StringSplitOptions.TrimEntries |
-                                                  StringSplitOptions.RemoveEmptyEntries);
+
+            if (propertyUnderlingType == typeof(bool))
+            {
+                var predicateQuery = BuildBooleanPredicateQuery<TIn>(filter.Value, property);
+
+                if (predicateQuery is null)
+                    continue;
+
+                predicateStatement =
+                    predicateStatement != null ? predicateStatement.And(predicateQuery) : predicateQuery;
+
+                continue;
+            }
+
+            if (propertyUnderlingType == typeof(Guid))
+            {
+                var predicateQuery = BuildGuidPredicateQuery<TIn>(filter.Value, property);
+
+                if (predicateQuery is null)
+                    continue;
+
+                predicateStatement =
+                    predicateStatement != null ? predicateStatement.And(predicateQuery) : predicateQuery;
+
+                continue;
+            }
 
             if (propertyUnderlingType == typeof(int) ||
                 propertyUnderlingType == typeof(long) ||
@@ -128,158 +154,35 @@ public static class QueryableDeepFilterExtensions
                 propertyUnderlingType == typeof(decimal))
             {
 
-                var predicateQuery = BuildNumericPredicateQuery<TIn>(filterValues, property);
+                var predicateQuery = BuildNumericPredicateQuery<TIn>(filter.Value, property);
 
-                predicateStatement = predicateStatement.And(predicateQuery);
+                if (predicateQuery is null)
+                    continue;
+
+                predicateStatement =
+                    predicateStatement != null ? predicateStatement.And(predicateQuery) : predicateQuery;
 
                 continue;
             }
+
+            var filterValues = filter.Value.Split(",",
+                                                  StringSplitOptions.TrimEntries |
+                                                  StringSplitOptions.RemoveEmptyEntries);
 
             if (propertyUnderlingType == typeof(DateTime) ||
                 propertyUnderlingType == typeof(DateTimeOffset))
             {
-
-                Expression<Func<TIn, bool>> predicateQuery = null;
-
-                foreach (var value in filterValues)
-                {
-                    OperatorComparer? operation = GetComparisonOperations(value);
-
-                    if (operation == null)
-                        continue;
-
-                    Expression<Func<TIn, bool>> subPredicateQuery      = null;
-                    var                         filterValueSegments = value.Split("_");
-
-                    var filterValueActualSegment = filterValueSegments[^1];
-
-                    if (propertyUnderlingType == typeof(DateTime))
-                    {
-                        if (!DateTime.TryParse(filterValueActualSegment, out var filterValue))
-                        {
-                            throw new InvalidOperationException($"Date format cannot be recognized.");
-                        }
-
-                        subPredicateQuery = ExpressionExtensions.BuildPredicate<TIn>(filterValue,
-                                                                                     operation!.Value,
-                                                                                     property.Path);
-                    }
-                    else
-                    {
-                        if (!DateTimeOffset.TryParse(filterValueActualSegment, out var filterValue))
-                        {
-                            throw new InvalidOperationException($"Date format cannot be recognized.");
-                        }
-
-                        subPredicateQuery = ExpressionExtensions.BuildPredicate<TIn>(filterValue,
-                                                                                     operation!.Value,
-                                                                                     property.Path);
-
-                    }
-
-                    predicateQuery = predicateQuery != null ? predicateQuery.And(subPredicateQuery) : subPredicateQuery;
-                }
+                var predicateQuery = BuildDateTimePredicateQuery<TIn>(filterValues, propertyUnderlingType, property);
 
                 if (predicateQuery != null)
                 {
-                    predicateStatement = predicateStatement.And(predicateQuery);
+                    predicateStatement =
+                        predicateStatement != null ? predicateStatement.And(predicateQuery) : predicateQuery;
                 }
             }
         }
 
-        return entitiesQuery.Where(predicateStatement);
-    }
-
-    private static Expression<Func<TIn, bool>> BuildNumericPredicateQuery<TIn>(string[]         filterValues,
-                                                                               PropertyPathInfo property)
-        where TIn : class
-    {
-        Expression<Func<TIn, bool>> predicateQuery = null;
-
-        foreach (var value in filterValues)
-        {
-            OperatorComparer? operation = GetComparisonOperations(value);
-
-            if (operation == null)
-                continue;
-
-            var filterValueSegments      = value.Split("_");
-            var filterValueActualSegment = filterValueSegments[^1];
-            var filterValue              = Regex.Replace(filterValueActualSegment, "[^0-9.]", "");
-            var targetTypedFilterValue   = Convert.ChangeType(filterValue, property.PropertyUnderlyingType);
-
-            if (targetTypedFilterValue == null)
-                continue;
-
-            var subQuery = ExpressionExtensions.BuildPredicate<TIn>(targetTypedFilterValue,
-                                                                    operation!.Value,
-                                                                    property.Path);
-
-            predicateQuery = predicateQuery != null ? predicateQuery.And(subQuery) : subQuery;
-        }
-
-        return predicateQuery;
-    }
-
-    private static Expression<Func<TIn, bool>> BuildStringPredicateQuery<TIn>(string           filterValue,
-                                                                              PropertyPathInfo property)
-        where TIn : class
-    {
-        Expression<Func<TIn, bool>> subQuery         = PredicateBuilder.True<TIn>();
-        var                         filterWholeValue = filterValue;
-
-        var filterWithOperation = filterWholeValue.Split("_",
-                                                         StringSplitOptions.RemoveEmptyEntries |
-                                                         StringSplitOptions.TrimEntries);
-
-        OperatorComparer operation = OperatorComparer.Equals;
-
-        if (filterWithOperation.Length == 2)
-        {
-            filterWholeValue = filterWithOperation[1];
-
-            operation = filterWithOperation[0].ToCompareOperator(false) ?? OperatorComparer.Equals;
-        }
-
-        var escapedFilterValue = filterWholeValue.Replace("*", "");
-
-        if (filterWholeValue.StartsWith("*") &&
-            filterWholeValue.EndsWith("*"))
-        {
-            operation = OperatorComparer.Contains;
-        }
-
-        else if (filterWholeValue.EndsWith("*"))
-        {
-            operation = OperatorComparer.StartsWith;
-        }
-
-        else if (filterWholeValue.StartsWith("*"))
-        {
-            operation = OperatorComparer.EndsWith;
-        }
-
-        var predicateQuery =
-            ExpressionExtensions.BuildPredicate<TIn>(escapedFilterValue,
-                                                     operation,
-                                                     property.Path);
-        subQuery = subQuery.And(predicateQuery);
-
-        return subQuery;
-    }
-
-    private static OperatorComparer? GetComparisonOperations(string filterValue)
-    {
-        var segments = filterValue.Split('_');
-
-        if (segments.Length == 1)
-        {
-            return OperatorComparer.Equals;
-        }
-
-        var comparisonOperations = segments[0].ToCompareOperator(false);
-
-        return comparisonOperations;
+        return predicateStatement == null ? entitiesQuery : entitiesQuery.Where(predicateStatement);
     }
 
     private static PropertyPathInfo ObtainPropertyPath<TIn>(string fieldAccessPath) where TIn : class
@@ -291,11 +194,13 @@ public static class QueryableDeepFilterExtensions
     {
         var nestedFields = fieldPath.Split('.', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-        PropertyInfo property         = null;
-        var          outputFieldPaths = new List<string>();
-        Type         detectingType    = fromType;
+        PropertyInfo property              = null;
+        var          outputFieldPaths      = new List<string>();
+        Type         detectingType         = fromType;
+        Type         nullableDetectingType = null;
+        var          isNullable            = false;
 
-        for (var i = 0; i < nestedFields.Length;i++)
+        for (var i = 0; i < nestedFields.Length; i++)
         {
             var fieldName = nestedFields[i];
 
@@ -310,6 +215,8 @@ public static class QueryableDeepFilterExtensions
 
             if (propertyUnderlingType.FullName!.Contains("System.Nullable`1"))
             {
+                isNullable            = true;
+                nullableDetectingType = propertyUnderlingType;
                 propertyUnderlingType = propertyUnderlingType.GetGenericArguments()
                                                              .FirstOrDefault();
 
@@ -338,10 +245,12 @@ public static class QueryableDeepFilterExtensions
 
         var obtainPropertyPath = new PropertyPathInfo
         {
-            Path                   = string.Join(".", outputFieldPaths),
-            DeclaredType           = fromType,
-            DestinationProperty    = property,
-            PropertyUnderlyingType = detectingType
+            Path                           = string.Join(".", outputFieldPaths),
+            DeclaredType                   = fromType,
+            DestinationProperty            = property,
+            PropertyUnderlyingType         = detectingType,
+            NullablePropertyUnderlyingType = nullableDetectingType,
+            IsNullable                     = isNullable
         };
 
         return obtainPropertyPath;
@@ -370,5 +279,9 @@ public class PropertyPathInfo
 
     public Type PropertyUnderlyingType { get; set; }
 
+    public Type NullablePropertyUnderlyingType { get; set; }
+
     public PropertyInfo DestinationProperty { get; set; }
+
+    public bool IsNullable { get; set; }
 }
