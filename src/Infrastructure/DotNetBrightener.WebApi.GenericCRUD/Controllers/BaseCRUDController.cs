@@ -3,13 +3,13 @@ using DotNetBrightener.DataAccess.Models;
 using DotNetBrightener.DataAccess.Services;
 using DotNetBrightener.DataTransferObjectUtility;
 using DotNetBrightener.WebApi.GenericCRUD.ActionFilters;
+using DotNetBrightener.WebApi.GenericCRUD.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Linq.Expressions;
 using System.Net;
 using System.Threading.Tasks;
-using DotNetBrightener.WebApi.GenericCRUD.Models;
 
 namespace DotNetBrightener.WebApi.GenericCRUD.Controllers;
 
@@ -23,11 +23,24 @@ public abstract class BaseCRUDController<TEntityType> : BareReadOnlyController<T
         
     }
 
+    /// <summary>
+    ///    Creates a new <typeparamref name="TEntityType" /> record in the database with the provided data
+    /// </summary>
+    /// <typeparam name="TEntityType">The type of entity record</typeparam>
+    /// <param name="model">
+    ///     The data to be inserted into the database
+    /// </param> 
+    /// <response code="201">The new record is created successfully.</response>
+    /// <response code="401">Unauthorized request to create a new <typeparamref name="TEntityType"/> record.</response> 
+    /// <response code="500">Unknown internal server error.</response>
     [HttpPost("")]
     [RequestBodyReader]
+    [ProducesResponseType<CreatedEntityResultModel>(201)]
+    [ProducesResponseType(401)]
+    [ProducesResponseType(500)]
     public virtual async Task<IActionResult> CreateItem([FromBody] TEntityType model)
     {
-        if (!await AuthorizedCreateItem(model))
+        if (!await CanCreateItem(model))
             throw new UnauthorizedAccessException();
 
         await PreCreateItem(model);
@@ -44,9 +57,25 @@ public abstract class BaseCRUDController<TEntityType> : BareReadOnlyController<T
         return StatusCode((int)HttpStatusCode.Created);
     }
 
+    /// <summary>
+    ///     Updates the <typeparamref name="TEntityType"/> record in the database with the provided data
+    /// </summary>
+    /// <typeparam name="TEntityType">The type of entity record</typeparam>
+    /// <param name="id">
+    ///     The identifier of the <typeparamref name="TEntityType"/> record to update
+    /// </param>
+    /// <param name="entityItem">
+    ///     The data of updated <typeparamref name="TEntityType"/> record
+    /// </param> 
+    /// <response code="200">The record is updated successfully.</response>
+    /// <response code="401">Unauthorized request to update the <typeparamref name="TEntityType"/> record.</response> 
+    /// <response code="500">Unknown internal server error.</response>
     [HttpPut("{id:long}")]
     [RequestBodyReader]
-    public virtual async Task<IActionResult> UpdateItem(long id)
+    [ProducesResponseType(200)]
+    [ProducesResponseType(401)]
+    [ProducesResponseType(500)]
+    public virtual async Task<IActionResult> UpdateItem(long id, [FromBody] TEntityType entityItem)
     {
         var (canUpdate, entity, result) = await CanUpdateItem(id);
 
@@ -87,6 +116,16 @@ public abstract class BaseCRUDController<TEntityType> : BareReadOnlyController<T
         return StatusCode((int)HttpStatusCode.OK);
     }
 
+    /// <summary>
+    ///     Deletes the <typeparamref name="TEntityType"/> record from the database
+    /// </summary>
+    /// <typeparam name="TEntityType">The type of entity record</typeparam>
+    /// <param name="id">
+    ///     The identifier of the <typeparamref name="TEntityType"/> record to delete
+    /// </param> 
+    /// <response code="200">The record is deleted successfully.</response>
+    /// <response code="401">Unauthorized request to delete <typeparamref name="TEntityType"/> record.</response> 
+    /// <response code="500">Unknown internal server error.</response>
     [HttpDelete("{id:long}")]
     public virtual async Task<IActionResult> DeleteItem(long id)
     {
@@ -101,6 +140,16 @@ public abstract class BaseCRUDController<TEntityType> : BareReadOnlyController<T
         return StatusCode((int) HttpStatusCode.OK);
     }
 
+    /// <summary>
+    ///     Restores the deleted <typeparamref name="TEntityType"/> record from the database
+    /// </summary>
+    /// <typeparam name="TEntityType">The type of entity record</typeparam>
+    /// <param name="id">
+    ///     The identifier of the deleted <typeparamref name="TEntityType"/> record
+    /// </param> 
+    /// <response code="200">The record is restored successfully.</response>
+    /// <response code="401">Unauthorized request restore the <typeparamref name="TEntityType"/> record.</response> 
+    /// <response code="500">Unknown internal server error.</response>
     [HttpPut("{id:long}/undelete")]
     public virtual async Task<IActionResult> RestoreDeletedItem(long id)
     {
@@ -110,10 +159,12 @@ public abstract class BaseCRUDController<TEntityType> : BareReadOnlyController<T
         var expression =
             ExpressionExtensions.BuildPredicate<TEntityType>(id, OperatorComparer.Equals, EntityIdColumnName);
 
-        DataService.DeleteOne(expression);
+        DataService.RestoreOne(expression);
 
         return StatusCode((int) HttpStatusCode.OK);
     }
+
+    protected async Task<bool> AuthorizedCreateItem(TEntityType entityItem) => await CanCreateItem(entityItem);
 
     /// <summary>
     ///     Considers if the current user is authorized to do the <see cref="CreateItem"/> action
@@ -128,7 +179,7 @@ public abstract class BaseCRUDController<TEntityType> : BareReadOnlyController<T
     /// <returns>
     ///     <c>true</c> if user is authorized to perform the action; otherwise, <c>false</c>
     /// </returns>
-    protected virtual async Task<bool> AuthorizedCreateItem(TEntityType entityItem)
+    protected virtual async Task<bool> CanCreateItem(TEntityType entityItem)
     {
         return true;
     }
@@ -220,6 +271,13 @@ public abstract class BaseCRUDController<TEntityType> : BareReadOnlyController<T
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    ///     Performs some actions after the item has been updated into the database.
+    ///     Exception thrown in this method will not prevent the entity record from being updated,
+    ///     unless the <seealso cref="UpdateItem"/> method is overriden
+    /// </summary>
+    /// <param name="entity">The entity object that was inserted into the database</param>
+    /// <returns></returns>
     protected virtual Task PostUpdateEntity(TEntityType entity)
     {
         return Task.CompletedTask;

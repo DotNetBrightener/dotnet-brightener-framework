@@ -24,7 +24,66 @@ public partial class ProductController
         : this(dataService, httpContextAccessor)
     {
         _logger = logger;
+        _logger.LogInformation("{Controller} created", this.GetType().Name);
     }
 
-    // Implement or override APIs here
+
+    public override partial Task<IActionResult> GetList()
+    {
+        // override the base method to add your custom logic of loading collection of Product here
+
+        return base.GetList();
+    }
+
+    #region Override Authorization Methods
+
+    protected override Task<bool> CanRetrieveList()
+    {
+        // override the base method to add your custom logic of checking
+        // if the current user can retrieve the list of Product records
+
+        return base.CanRetrieveList();
+    }
+
+    protected override Task<bool> CanRetrieveItem(long id)
+    {
+        // override the base method to add your custom logic of checking
+        // if the current user can retrieve the Product item by its id
+
+        return base.CanRetrieveItem(id);
+    }
+
+    protected override Task<bool> CanCreateItem(Product entityItem)
+    {
+        // override the base method to add your custom logic of checking
+        // if the current user can create a new Product item
+
+        return base.CanCreateItem(entityItem);
+    }
+
+    protected override Task<(bool, Product, IActionResult)> CanUpdateItem(long id)
+    {
+        // override the base method to add your custom logic of checking
+        // if the current user can update the Product item
+
+        return base.CanUpdateItem(id);
+    }
+
+    protected override Task<bool> CanDeleteItem(long id)
+    {
+        // override the base method to add your custom logic of checking
+        // if the current user can delete the Product item
+
+        return base.CanDeleteItem(id);
+    }
+
+    protected override Task<bool> CanRestoreDeletedItem(long id)
+    {
+        // override the base method to add your custom logic of checking
+        // if the current user can restore the Product item
+
+        return base.CanRestoreDeletedItem(id);
+    }
+
+    #endregion
 }

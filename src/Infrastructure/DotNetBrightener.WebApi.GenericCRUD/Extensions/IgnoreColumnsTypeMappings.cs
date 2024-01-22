@@ -2,8 +2,9 @@
 using System;
 using System.Collections.Concurrent;
 using System.Linq;
+using DotNetBrightener.DataAccess.Models;
 
-namespace DotNetBrightener.WebApi.GenericCRUD.Controllers;
+namespace DotNetBrightener.WebApi.GenericCRUD.Extensions;
 
 internal static class IgnoreColumnsTypeMappings
 {

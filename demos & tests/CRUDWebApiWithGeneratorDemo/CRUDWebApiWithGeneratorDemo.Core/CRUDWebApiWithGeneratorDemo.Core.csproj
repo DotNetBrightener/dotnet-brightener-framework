@@ -7,10 +7,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<!--<PackageReference Include="DotNetBrightener.DataAccess.Abstractions" Version="2024.0.2" />-->
-	</ItemGroup>
-
-	<ItemGroup>
 	  <ProjectReference Include="..\..\..\src\DataAccess\DotNetBrightener.DataAccess.Abstractions\DotNetBrightener.DataAccess.Abstractions.csproj" />
 	</ItemGroup>
 

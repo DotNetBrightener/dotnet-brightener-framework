@@ -1,3 +1,5 @@
+using System.Reflection;
+using DotNetBrightener.WebApi.GenericCRUD.Extensions;
 using Bogus;
 using CRUDWebApiWithGeneratorDemo.Core.Entities;
 using CRUDWebApiWithGeneratorDemo.Database.DbContexts;
@@ -9,10 +11,10 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
+builder.Host.UseNLogLogging();
 builder.Services.AddLogging();
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddEventPubSubService();
+
 
 // register the generated data services
 builder.Services.AddScoped<IProductCategoryDataService, ProductCategoryDataService>();
@@ -38,7 +40,13 @@ builder.Services
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    SwaggerConfiguration.RegisterGenericCRUDDocumentation(c.IncludeXmlComments);
+
+    var filePath = Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml");
+    c.IncludeXmlComments(filePath, true);
+});
 
 var app = builder.Build();
 

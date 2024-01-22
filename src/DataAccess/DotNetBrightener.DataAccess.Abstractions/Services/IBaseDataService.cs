@@ -68,6 +68,10 @@ public interface IBaseDataService<TEntity>: IDisposable
     /// <param name="entity">The record to update</param>
     void Update(TEntity entity);
 
+    /// <summary>
+    ///     Updates multiple records of the entity to the database
+    /// </summary>
+    /// <param name="entities">The records to update</param>
     void Update(IEnumerable<TEntity> entities);
 
     /// <summary>
@@ -83,29 +87,45 @@ public interface IBaseDataService<TEntity>: IDisposable
     /// </summary>
     /// <param name="filterExpression">The expression for selecting the records to update</param>
     /// <param name="updateExpression">The expression that describes the update instruction</param>
-    void UpdateMany(Expression<Func<TEntity, bool>>    filterExpression,
-                    Expression<Func<TEntity, TEntity>> updateExpression);
+    int UpdateMany(Expression<Func<TEntity, bool>>    filterExpression,
+                   Expression<Func<TEntity, TEntity>> updateExpression);
 
     /// <summary>
     ///     Delete the matched record with the given filter expression, expected only one record affected
     /// </summary>
     /// <param name="filterExpression">
-    ///     The expression for selecting the record to delete
+    ///     The expression describes how to get the record to delete
     /// </param>
     /// <param name="forceHardDelete">
     ///     Indicates whether the deletion is permanent. Default is <c>False</c> which marks the record as deleted
     /// </param>
     void DeleteOne(Expression<Func<TEntity, bool>> filterExpression, bool forceHardDelete = false);
 
+    /// <summary>
+    ///     Restore the matched deleted record with the given filter expression, expected only one record affected
+    /// </summary>
+    /// <param name="filterExpression">
+    ///     The expression for selecting the record to restore
+    /// </param>
+    void RestoreOne(Expression<Func<TEntity, bool>> filterExpression);
+
 
     /// <summary>
     ///     Delete multiple matched records with the given filter expression
     /// </summary>
     /// <param name="filterExpression">
-    ///     The expression for selecting the records to delete
+    ///     The expression describes how to get the records to delete
     /// </param>
     /// <param name="forceHardDelete">
     ///     Indicates whether the deletion is permanent. Default is <c>False</c> which marks the records as deleted
     /// </param>
     int DeleteMany(Expression<Func<TEntity, bool>> filterExpression, bool forceHardDelete = false);
+
+    /// <summary>
+    ///     Restore the matched deleted records with the given filter expression
+    /// </summary>
+    /// <param name="filterExpression">
+    ///     The expression describes how to get the records to restore
+    /// </param>
+    int RestoreMany(Expression<Func<TEntity, bool>> filterExpression);
 }

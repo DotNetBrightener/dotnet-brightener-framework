@@ -11,12 +11,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Threading.Tasks;
-using Microsoft.Data.SqlClient;
 
 namespace DotNetBrightener.DataAccess.EF.Repositories;
 
@@ -25,14 +22,18 @@ public class Repository : IRepository
     protected readonly DbContext                    DbContext;
     protected readonly ICurrentLoggedInUserResolver CurrentLoggedInUserResolver;
     protected readonly IEventPublisher              EventPublisher;
+    protected readonly IAuditingContainer           AuditingContainer;
+    private const      string                       RecordCreatedEvent = "RECORD_CREATED_EVENT";
 
     public Repository(DbContext                    dbContext,
                       ICurrentLoggedInUserResolver currentLoggedInUserResolver,
-                      IEventPublisher              eventPublisher)
+                      IEventPublisher              eventPublisher,
+                      IAuditingContainer           auditingContainer)
     {
         DbContext                   = dbContext;
         CurrentLoggedInUserResolver = currentLoggedInUserResolver;
         EventPublisher              = eventPublisher;
+        AuditingContainer      = auditingContainer;
     }
 
     public virtual T Get<T>(Expression<Func<T, bool>> expression)
@@ -97,7 +98,7 @@ public class Repository : IRepository
             if (string.IsNullOrEmpty(auditableEntity.CreatedBy))
                 auditableEntity.CreatedBy = CurrentLoggedInUserResolver.CurrentUserName;
 
-            auditableEntity.ModifiedBy = "RECORD_CREATED_EVENT";
+            auditableEntity.ModifiedBy = RecordCreatedEvent;
         }
 
         var entityEntry = DbContext.Entry(entity);
@@ -125,7 +126,7 @@ public class Repository : IRepository
             if (string.IsNullOrEmpty(auditableEntity.CreatedBy))
                 auditableEntity.CreatedBy = CurrentLoggedInUserResolver.CurrentUserName;
 
-            auditableEntity.ModifiedBy = "RECORD_CREATED_EVENT";
+            auditableEntity.ModifiedBy = RecordCreatedEvent;
 
             return _;
         });
@@ -251,6 +252,46 @@ public class Repository : IRepository
                                           {
                                               IsDeleted = true
                                           });
+
+        return updatedRecords;
+    }
+
+    public void RestoreOne<T>(Expression<Func<T, bool>> conditionExpression) where T : class
+    {
+        if (!typeof(T).HasProperty<bool>(nameof(BaseEntityWithAuditInfo.IsDeleted)))
+        {
+            throw new
+                NotSupportedException($"The entity type {typeof(T).Name} does not support soft-delete. Therefore, the deletion cannot be reverted");
+        }
+
+        using var dbTransaction = DbContext.Database.BeginTransaction();
+
+        var affectedRecords = RestoreMany(conditionExpression);
+
+        if (affectedRecords != 1)
+        {
+            dbTransaction.Rollback();
+
+            throw new ExpectedAffectedRecordMismatchException(1, affectedRecords);
+        }
+
+        dbTransaction.Commit();
+    }
+
+    public virtual int RestoreMany<T>(Expression<Func<T, bool>> conditionExpression)
+        where T : class
+    {
+        if (!typeof(T).HasProperty<bool>(nameof(BaseEntityWithAuditInfo.IsDeleted)))
+        {
+            throw new
+                NotSupportedException($"The entity type {typeof(T).Name} does not support soft-delete. Therefore, the deletion cannot be reverted");
+        }
+
+        var updatedRecords = Update(conditionExpression,
+                                    new
+                                    {
+                                        IsDeleted = false
+                                    });
 
         return updatedRecords;
     }

@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using System.Linq.Expressions;
+using DotNetBrightener.DataAccess.Services;
 
 namespace DotNetBrightener.MultiTenancy.Services;
 
@@ -29,16 +30,17 @@ public class TenantSupportedRepository : Repository
                                      IEventPublisher                    eventPublisher,
                                      ITenantAccessor                    tenantAccessor,
                                      IServiceProvider                   backgroundServiceProvider,
+                                     IAuditingContainer                 auditingContainer,
                                      ILogger<TenantSupportedRepository> logger)
-        : base(dbContext, currentLoggedInUserResolver, eventPublisher)
+        : base(dbContext, currentLoggedInUserResolver, eventPublisher, auditingContainer)
     {
         _tenantAccessor = tenantAccessor;
-        _logger    = logger;
+        _logger         = logger;
 
         if (HasTenantMapping is null)
         {
             lock (LockObj)
-                CheckTenantMappingTable(backgroundServiceProvider);
+                CheckTenantMappingTable(backgroundServiceProvider, dbContext.GetType());
         }
     }
 
@@ -57,6 +59,7 @@ public class TenantSupportedRepository : Repository
            )
         {
             _logger.LogDebug($"No multi-tenant mapping support for entity of type {typeof(T).FullName}");
+
             return query;
         }
 
@@ -81,21 +84,24 @@ public class TenantSupportedRepository : Repository
                                                 grouped.entity,
                                                 tenantEntityMapping
                                             })
-                                .Where(_ => _.tenantEntityMapping == null ||
-                                            currentTenantIdValue == _.tenantEntityMapping.TenantId)
-                                .Select(_ => _.entity);
+                                .Where(joined => joined.tenantEntityMapping == null ||
+                                                 currentTenantIdValue == joined.tenantEntityMapping.TenantId)
+                                .Select(joined => joined.entity);
 
         return joinedResult;
     }
 
-    private static void CheckTenantMappingTable(IServiceProvider backgroundServiceProvider)
+    private static void CheckTenantMappingTable(IServiceProvider backgroundServiceProvider, Type dbContextType)
     {
         using var scope = backgroundServiceProvider.CreateScope();
 
-        var dbContext = scope.ServiceProvider.GetService<DbContext>();
+        var serviceType = scope.ServiceProvider.GetService(dbContextType);
 
         try
         {
+            if (serviceType is not DbContext dbContext)
+                return;
+
             // ReSharper disable once ReturnValueOfPureMethodIsNotUsed
             dbContext!.Set<TenantEntityMapping>().Count();
 

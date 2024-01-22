@@ -25,6 +25,8 @@ public class AuditTrail<T>
 {
     public string Identifier { get; set; }
 
+    public string TypeName { get; set; } = typeof(T).FullName;
+
     public List<AuditProperty> AuditProperties { get; set; } = new List<AuditProperty>();
 }
 

@@ -2,7 +2,6 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -92,12 +91,13 @@ public class AutoGenerateApiControllerSyntaxReceiver : ISyntaxContextReceiver
                             {
                                 Models.Add(new CodeGenerationInfo
                                 {
-                                    ControllerAssembly    = generatedAssemblyName,
-                                    ControllerNamespace   = $"{generatedAssemblyName}.Controllers",
-                                    ControllerPath        = $"{Path.Combine(assemblyDirectory, "Controllers")}",
-                                    TargetEntity          = typeS.Name,
-                                    TargetEntityNamespace = typeS.ContainingNamespace.ToDisplayString(),
-                                    DataServiceNamespace  = dataServiceNamespace
+                                    ControllerAssembly     = generatedAssemblyName,
+                                    ControllerNamespace    = $"{generatedAssemblyName}.Controllers",
+                                    ControllerPath         = $"{Path.Combine(assemblyDirectory, "Controllers")}",
+                                    ControllerAssemblyPath = $"{assemblyDirectory}",
+                                    TargetEntity           = typeS.Name,
+                                    TargetEntityNamespace  = typeS.ContainingNamespace.ToDisplayString(),
+                                    DataServiceNamespace   = dataServiceNamespace
                                 });
                             }
                         }

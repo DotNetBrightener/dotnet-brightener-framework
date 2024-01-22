@@ -64,12 +64,17 @@ public class EventLoggingWatcher : TargetWithLayout, IEventLogWatcher
         _serviceProviderSet  = true;
     }
 
-    internal void SetLokiTarget(string lokiEndpoint, string applicationName = null)
+    internal void SetLokiTarget(string lokiEndpoint,
+                                string applicationName = null,
+                                string userName        = null,
+                                string password        = null)
     {
         _lokiTarget = new LokiTarget
         {
             Endpoint = Layout.FromString(lokiEndpoint),
             Layout   = Layout.FromString(DefaultLogLayout),
+            UserName = userName,
+            Password = password,
             Labels =
             {
                 new LokiTargetLabel

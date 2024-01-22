@@ -12,6 +12,7 @@ using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using System.Net;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace DotNetBrightener.WebApi.GenericCRUD.Controllers;
 
@@ -39,12 +40,16 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
     ///     This list will be concat with the <seealso cref="AlwaysReturnColumns"/>.
     ///     If this list is not specified, all available properties of the entity will be returned
     /// </remarks>
-    protected virtual string[] DefaultColumnsToReturn { get; } = Array.Empty<string>();
+    protected virtual string[] DefaultColumnsToReturn { get; } =
+        EntityMetadataExtractor.GetDefaultColumns<TEntityType>();
+
+    /// <summary>
+    ///     Specifies the list of columns that will always be ignored in the response
+    /// </summary>
+    protected virtual string[] AlwaysIgnoreColumns => IgnoreColumnsTypeMappings.RetrieveIgnoreColumns<TEntityType>();
 
     protected readonly IBaseDataService<TEntityType> DataService;
     protected readonly IHttpContextAccessor          HttpContextAccessor;
-
-    private readonly string[] _alwaysIgnoreColumns = IgnoreColumnsTypeMappings.RetrieveIgnoreColumns<TEntityType>();
 
     protected BareReadOnlyController(IBaseDataService<TEntityType> dataService,
                                      IHttpContextAccessor          httpContextAccessor)
@@ -75,15 +80,69 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
         }
     }
 
+    /// <summary>
+    ///     Retrieves the metadata of the <typeparamref name="TEntityType" />
+    /// </summary>
+    /// <response code="200">
+    ///     The metadata information of the <typeparamref name="TEntityType"/> record.
+    /// </response>
+    /// <response code="401">
+    ///     Unauthorized request to retrieve metadata information of <typeparamref name="TEntityType"/> API.
+    /// </response> 
+    /// <response code="500">
+    ///     Unknown internal server error.
+    /// </response>
+    [ProducesResponseType(typeof(EntityMetadata<>), 200)]
+    [ProducesResponseType(401)]
+    [ProducesResponseType(500)]
+    [HttpGet("_metadata")]
+    public virtual async Task<IActionResult> GetMetadata()
+    {
+        if (!await CanRetrieveEndpointMetadata())
+            throw new UnauthorizedAccessException();
+
+        var metadata = EntityMetadataExtractor.ExtractMetadata<TEntityType>();
+
+        return Ok(metadata);
+    }
+
+    /// <summary>
+    ///     Retrieves the collection of records of type <typeparamref name="TEntityType" />.
+    /// </summary>
+    /// <typeparam name="TEntityType">The type of the entity associated with this controller</typeparam>
+    /// <response code="200">
+    ///     The collection of records of type <typeparamref name="TEntityType" />.
+    /// </response>
+    /// <response code="401">
+    ///     Unauthorized request to retrieve filtered collection of <typeparamref name="TEntityType" />.records.
+    /// </response> 
+    /// <response code="500">
+    ///     Unknown internal server error.
+    /// </response>
+    [ProducesResponseType(typeof(IQueryable<>), 200)]
+    [ProducesResponseType(401)]
+    [ProducesResponseType(500)]
     [HttpGet("")]
     public virtual async Task<IActionResult> GetList()
     {
         if (!await CanRetrieveList())
             throw new UnauthorizedAccessException();
 
-        var adminQuery = BaseQueryModel.FromQuery(Request.Query);
+        var currentRequestQueryStrings = BaseQueryModel.FromQuery(Request.Query);
 
-        if (adminQuery?.DeletedRecordsOnly == true &&
+        if (!await VerifyPickColumns<TEntityType>(currentRequestQueryStrings.FilteredColumns,
+                                                  out string[] invalidColumns))
+        {
+            return StatusCode((int)HttpStatusCode.Forbidden,
+                              new
+                              {
+                                  ErrorMessage =
+                                      $"Some of the requested columns are not valid. The invalid columns are: [{string.Join(", ", invalidColumns)}].",
+                                  Data = invalidColumns
+                              });
+        }
+
+        if (currentRequestQueryStrings?.DeletedRecordsOnly == true &&
             !await CanRetrieveDeletedItems())
         {
             return StatusCode((int)HttpStatusCode.Forbidden,
@@ -93,30 +152,49 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
                               });
         }
 
-        var entitiesQuery = adminQuery?.DeletedRecordsOnly == true
+        var entitiesQuery = currentRequestQueryStrings?.DeletedRecordsOnly == true
                                 ? DataService.FetchDeletedRecords(DefaultQuery)
                                 : DataService.FetchActive(DefaultQuery);
 
         return await GetListResult(entitiesQuery);
     }
 
+    /// <summary>
+    ///     Retrieves the <typeparamref name="TEntityType"></typeparamref> record with the given <paramref name="id"/>
+    /// </summary>
+    /// <param name="id">The identifier of the <typeparamref name="TEntityType"></typeparamref> record</param>
+    /// <returns></returns>
+    /// <exception cref="UnauthorizedAccessException"></exception>
     [HttpGet("{id:long}")]
     public virtual async Task<IActionResult> GetItem(long id)
     {
         if (!await CanRetrieveItem(id))
             throw new UnauthorizedAccessException();
 
+        var currentRequestQueryStrings = BaseQueryModel.FromQuery(Request.Query);
+
+        if (!await VerifyPickColumns<TEntityType>(currentRequestQueryStrings.FilteredColumns, 
+                                                  out string[] invalidColumns))
+        {
+            return StatusCode((int)HttpStatusCode.Forbidden,
+                              new
+                              {
+                                  ErrorMessage =
+                                      $"Some of the requested columns are not valid. The invalid columns are: [{string.Join(", ", invalidColumns)}].",
+                                  Data = invalidColumns
+                              });
+        }
+
+        if (currentRequestQueryStrings?.DeletedRecordsOnly == true &&
+            !await CanRetrieveDeletedItems())
+        {
+            currentRequestQueryStrings.DeletedRecordsOnly = false;
+        }
+
         Expression<Func<TEntityType, bool>> expression =
             ExpressionExtensions.BuildPredicate<TEntityType>(id, OperatorComparer.Equals, EntityIdColumnName);
 
-        var adminQuery = BaseQueryModel.FromQuery(Request.Query);
-
-        if (adminQuery?.DeletedRecordsOnly == true && !await CanRetrieveDeletedItems())
-        {
-            adminQuery.DeletedRecordsOnly = false;
-        }
-
-        var entityItemQuery = adminQuery?.DeletedRecordsOnly == true
+        var entityItemQuery = currentRequestQueryStrings?.DeletedRecordsOnly == true
                                   ? DataService.FetchDeletedRecords(DefaultQuery)
                                   : DataService.FetchActive(DefaultQuery);
 
@@ -137,6 +215,17 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
         }
 
         return Ok(item);
+    }
+
+    /// <summary>
+    ///     Considers if the current user can perform the <see cref="GetMetadata"/> action
+    /// </summary>
+    /// <returns>
+    ///     <c>true</c> if user is authorized to perform the action; otherwise, <c>false</c>
+    /// </returns>
+    protected virtual async Task<bool> CanRetrieveEndpointMetadata()
+    {
+        return true;
     }
 
     /// <summary>
@@ -172,6 +261,44 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
         return HttpContext.User.IsInRole("Administrator");
     }
 
+
+    /// <summary>
+    ///     Verifies if the columns requested to be returned are valid
+    /// </summary>
+    /// <typeparam name="TIn"></typeparam>
+    /// <param name="queriedColumns">
+    ///     The columns defined in the query string
+    /// </param>
+    /// <param name="invalidColumns">
+    ///     The array of invalid columns returned after the verification
+    /// </param>
+    /// <returns>
+    ///     <c>true</c> if the requested columns are valid; otherwise, <c>false</c>
+    /// </returns>
+    protected virtual Task<bool> VerifyPickColumns<TIn>(string[] queriedColumns, out string[] invalidColumns)
+    {
+        invalidColumns = queriedColumns
+                        .Where(_ => AlwaysIgnoreColumns.Any(ignoreColumn =>
+                                                                ignoreColumn.Equals(_,
+                                                                                    StringComparison
+                                                                                       .OrdinalIgnoreCase)))
+                        .ToArray();
+
+        var availableColumns = EntityMetadataExtractor.GetDefaultColumns<TIn>();
+
+        invalidColumns = queriedColumns
+                        .Where(requestingColumn => !availableColumns
+                                                      .Any(property =>
+                                                               property.Equals(requestingColumn,
+                                                                               StringComparison
+                                                                                  .OrdinalIgnoreCase)))
+                        .Concat(invalidColumns)
+                        .Distinct()
+                        .ToArray();
+
+        return Task.FromResult(invalidColumns.Length == 0);
+    }
+
     protected virtual Task<IActionResult> GetListResult(IQueryable<TEntityType> entitiesQuery)
         => GetListResult<TEntityType>(entitiesQuery);
 
@@ -196,17 +323,17 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
                                                          int        pageSize)
         where TIn : class
     {
-        Response.Headers.Add("Result-Totals", totalRecords.ToString());
-        Response.Headers.Add("Result-PageIndex", pageIndex.ToString());
-        Response.Headers.Add("Result-PageSize", pageSize.ToString());
+        Response.Headers.Append("Result-Totals", totalRecords.ToString());
+        Response.Headers.Append("Result-PageIndex", pageIndex.ToString());
+        Response.Headers.Append("Result-PageSize", pageSize.ToString());
 
         var result = finalQuery.ToDynamicArray();
-        Response.Headers.Add("Result-Count", result.Length.ToString());
+        Response.Headers.Append("Result-Count", result.Length.ToString());
 
         // add expose header to support CORS
-        Response.Headers.Add("Access-Control-Expose-Headers",
-                             "Result-Totals,Result-PageIndex,Result-PageSize,Result-Count," +
-                             "Result-Totals,Result-PageIndex,Result-PageSize,Result-Count".ToLower());
+        Response.Headers.Append("Access-Control-Expose-Headers",
+                                "Result-Totals,Result-PageIndex,Result-PageSize,Result-Count," +
+                                "Result-Totals,Result-PageIndex,Result-PageSize,Result-Count".ToLower());
 
         return Ok(result);
     }
@@ -253,14 +380,14 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
         var paginationQuery = BaseQueryModel.FromQuery(Request.Query);
 
         string[] columnsToReturn = paginationQuery.FilteredColumns
-                                                  .Except(_alwaysIgnoreColumns)
+                                                  .Except(AlwaysIgnoreColumns)
                                                   .ToArray();
 
-        if (columnsToReturn.Length == 0 &&
-            DefaultColumnsToReturn.Any())
+        if (columnsToReturn.Length == 0)
         {
             columnsToReturn = DefaultColumnsToReturn.Concat(AlwaysReturnColumns)
                                                     .Where(_ => !string.IsNullOrEmpty(_))
+                                                    .Except(AlwaysIgnoreColumns)
                                                     .Distinct()
                                                     .ToArray();
         }
@@ -286,7 +413,7 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
             columnsToReturn.Length == 0)
             return entitiesQuery;
 
-        columnsToReturn = columnsToReturn.Except(_alwaysIgnoreColumns)
+        columnsToReturn = columnsToReturn.Except(AlwaysIgnoreColumns)
                                          .ToArray();
 
         if (typeof(BaseEntity).IsAssignableFrom(typeof(TEntityType)) &&
@@ -408,5 +535,22 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
                                                                        subSelect.Member.Name,
             _ => ""
         };
+    }
+
+    // filters 
+
+    public override void OnActionExecuting(ActionExecutingContext context)
+    {
+        if (!DefaultColumnsToReturn.Any())
+        {
+            context.Result = StatusCode((int)HttpStatusCode.InternalServerError,
+                                        new
+                                        {
+                                            ErrorMessage =
+                                                "Internal Server Error. The DefaultColumnsToReturn variable must have values"
+                                        });
+        }
+
+        base.OnActionExecuting(context);
     }
 }

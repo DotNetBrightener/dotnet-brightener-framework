@@ -27,7 +27,7 @@ public abstract class BaseEntityWithAuditInfo : BaseEntity
     public DateTimeOffset? CreatedDate { get; set; }
 
     /// <summary>
-    ///     The name or identifier of the user who created the entity
+    ///     The name or identifier of the user who created the record
     /// </summary>
     [NoClientSideUpdate]
     [MaxLength(255)]
@@ -40,7 +40,7 @@ public abstract class BaseEntityWithAuditInfo : BaseEntity
     public DateTimeOffset? ModifiedDate { get; set; }
 
     /// <summary>
-    ///     The name or identifier of the user who modified the entity
+    ///     The name or identifier of the user who modified the record
     /// </summary>
     [NoClientSideUpdate]
     [MaxLength(255)]

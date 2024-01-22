@@ -1,11 +1,9 @@
 using DotNetBrightener.WebApi.GenericCRUD.Models;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlTypes;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace DotNetBrightener.WebApi.GenericCRUD.Extensions;
@@ -258,13 +256,24 @@ public static partial class QueryableDeepFilterExtensions
 
     private static PropertyInfo GetPropertyFromType(Type fromType, ref string fieldName)
     {
-        PropertyInfo property;
-        property = fromType.GetProperty(fieldName);
+        var property = fromType.GetProperty(fieldName);
 
         if (property == null)
         {
             fieldName = fieldName.First().ToString().ToUpper() + fieldName.Substring(1);
             property  = fromType.GetProperty(fieldName);
+        }
+
+        if (property == null)
+        {
+            var s = fieldName;
+            property = fromType.GetProperties()
+                               .FirstOrDefault(_ => _.Name.Equals(s, StringComparison.OrdinalIgnoreCase));
+
+            if (property != null)
+            {
+                fieldName = property.Name;
+            }
         }
 
         return property;

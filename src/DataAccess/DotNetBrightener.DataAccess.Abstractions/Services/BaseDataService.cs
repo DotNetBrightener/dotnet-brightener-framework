@@ -1,10 +1,10 @@
-﻿using System;
+﻿using DotNetBrightener.DataAccess.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using DotNetBrightener.DataAccess.Models;
 
 namespace DotNetBrightener.DataAccess.Services;
 
@@ -92,16 +92,24 @@ public abstract class BaseDataService<TEntity> : IBaseDataService<TEntity> where
         Repository.CommitChanges();
     }
 
-    public virtual void UpdateMany(Expression<Func<TEntity, bool>>    filterExpression,
-                                   Expression<Func<TEntity, TEntity>> updateExpression)
+    public virtual int UpdateMany(Expression<Func<TEntity, bool>>    filterExpression,
+                                  Expression<Func<TEntity, TEntity>> updateExpression)
     {
-        Repository.Update(filterExpression, updateExpression);
+        var affectedRecords = Repository.Update(filterExpression, updateExpression);
         Repository.CommitChanges();
+
+        return affectedRecords;
     }
 
     public virtual void DeleteOne(Expression<Func<TEntity, bool>> filterExpression, bool forceHardDelete = false)
     {
         Repository.DeleteOne(filterExpression, forceHardDelete);
+        Repository.CommitChanges();
+    }
+
+    public virtual void RestoreOne(Expression<Func<TEntity, bool>> filterExpression)
+    {
+        Repository.RestoreOne(filterExpression);
         Repository.CommitChanges();
     }
 
@@ -111,6 +119,14 @@ public abstract class BaseDataService<TEntity> : IBaseDataService<TEntity> where
         Repository.CommitChanges();
 
         return updatedRecords;
+    }
+
+    public virtual int RestoreMany(Expression<Func<TEntity, bool>> filterExpression)
+    {
+        var affectedRecords = Repository.RestoreMany(filterExpression);
+        Repository.CommitChanges();
+
+        return affectedRecords;
     }
 
     public void Dispose()

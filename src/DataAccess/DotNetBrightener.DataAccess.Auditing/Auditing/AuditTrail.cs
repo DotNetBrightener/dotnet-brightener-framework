@@ -1,38 +1,36 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace DotNetBrightener.DataAccess.Auditing.Auditing;
 
-
-public class AuditProperty
-{
-    public string PropertyName { get; set; }
-
-    public object OldValue { get; set; }
-
-    public object NewValue { get; set; }
-}
-
-public class AuditTrail<T>
-{
-    public string Identifier { get; set; }
-
-    public List<AuditProperty> AuditProperties { get; set; } = new List<AuditProperty>();
-}
-
+/// <summary>
+///     Represents the entity for audit trail.
+/// </summary>
 public class AuditEntity
 {
     [Key]
-    public long Id { get; set; }
+    public Guid Id { get; set; }
 
+    [MaxLength(256)]
     public string EntityType { get; set; }
 
+    [MaxLength(2048)]
+    public string EntityTypeFullName { get; set; }
+
+    [MaxLength(128)]
     public string EntityIdentifier { get; set; }
+
+    [MaxLength(64)]
+    public string Action { get; set; }
 
     public string Changes { get; set; }
 
+    public string Exception { get; set; }
+
+    public bool IsSuccess { get; set; }
+
     public DateTimeOffset? Timestamp { get; set; }
 
+    [MaxLength(255)]
     public string UserName { get; set; }
 }

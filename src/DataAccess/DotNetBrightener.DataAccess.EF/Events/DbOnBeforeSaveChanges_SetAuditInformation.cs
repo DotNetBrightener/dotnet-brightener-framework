@@ -56,6 +56,7 @@ public class DbOnBeforeSaveChanges_SetAuditInformation : IEventHandler<DbContext
             try
             {
                 var lastUpdatedByPropName = nameof(BaseEntityWithAuditInfo.ModifiedBy);
+
                 if (entry.Properties.Any(_ => _.Metadata.Name == lastUpdatedByPropName) &&
                     entry.Property(lastUpdatedByPropName).CurrentValue == null)
                 {

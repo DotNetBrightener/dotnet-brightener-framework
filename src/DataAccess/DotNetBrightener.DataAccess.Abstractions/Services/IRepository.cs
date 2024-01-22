@@ -172,9 +172,17 @@ public interface IRepository : IDisposable
     /// <param name="entity">
     ///     The entity to update
     /// </param>
-    void Update<T>(T entity)
-        where T : class;
+    void Update<T>(T entity) where T : class;
 
+    /// <summary>
+    ///     Updates multiple records of type <typeparamref name="T"/>
+    /// </summary>
+    /// <typeparam name="T">
+    ///     Type of the entity
+    /// </typeparam>
+    /// <param name="entities">
+    ///     The entities to update
+    /// </param>
     void Update<T>(IEnumerable<T> entities) where T : class;
 
     /// <summary>
@@ -184,9 +192,11 @@ public interface IRepository : IDisposable
     ///     The entities' type of the query
     /// </typeparam>
     /// <param name="conditionExpression">
-    ///     The query to update the entities from, without retrieving them
+    ///     The query to filter which entities to be updated with <seealso cref="updateExpression"/>, without retrieving them
     /// </param>
-    /// <param name="updateExpression"></param>
+    /// <param name="updateExpression">
+    ///     The object contains the properties and their values to use to update the entities
+    /// </param>
     /// <param name="expectedAffectedRows">
     ///     Expecting number of entities affected. <br />
     ///     If the actual result is different than the provided parameter, an exception will be thrown
@@ -203,17 +213,25 @@ public interface IRepository : IDisposable
         where T : class;
 
     ///  <summary>
-    ///      Updates records of type <typeparamref name="T"/> from the query using an expression without retrieving entities
+    ///      Updates records of type <typeparamref name="T"/> from the query using an expression without retrieving records
     ///  </summary>
     ///  <typeparam name="T">The entities' type of the query</typeparam>
-    ///  <param name="conditionExpression">The query to update the entities from, without retrieving them</param>
-    ///  <param name="updateExpression"></param>
+    /// <param name="conditionExpression">
+    ///     The query to filter which entities to be updated with <seealso cref="updateExpression"/>, without retrieving them
+    /// </param>
+    /// <param name="updateExpression">
+    ///     The expression describes how to update the entities
+    /// </param>
     ///  <param name="expectedAffectedRows">
     ///      Expecting number of entities affected. <br />
-    ///      If the actual result is different than the provided parameter, an exception will be thrown
+    ///      If the actual result is different from the provided value, an exception will be thrown
     ///  </param>
-    ///  <exception cref="NotFoundException">Thrown if no entity found for updating.</exception>
-    ///  <exception cref="ExpectedAffectedRecordMismatch">Thrown if number of entities got updated differs from the provided expectation.</exception>
+    ///  <exception cref="NotFoundException">
+    ///     Thrown if no entity found for updating.
+    /// </exception>
+    ///  <exception cref="ExpectedAffectedRecordMismatch">
+    ///     Thrown if number of entities got updated differs from the provided expectation.
+    /// </exception>
     int Update<T>(Expression<Func<T, bool>> conditionExpression,
                   Expression<Func<T, T>>    updateExpression,
                   int?                      expectedAffectedRows = null)
@@ -221,13 +239,13 @@ public interface IRepository : IDisposable
 
 
     /// <summary>
-    ///     Deletes a record of type <typeparamref name="T"/> from the query, without retrieving the entity.
+    ///     Deletes a record of type <typeparamref name="T"/> from the query, without retrieving the record.
     /// </summary>
     /// <remarks>
     ///     If the <typeparamref name="T"/> can be soft-deleted, the entity may be marked as deleted
     /// </remarks>
     /// <param name="conditionExpression">
-    ///     The query to get the record to delete
+    ///     The expression of how to identify which record to delete
     /// </param>
     /// <param name="forceHardDelete">
     ///     Enforcing hard-deletion on the entity, default is <c>false</c> for soft-deletion
@@ -255,6 +273,41 @@ public interface IRepository : IDisposable
     /// </param>
     int DeleteMany<T>(Expression<Func<T, bool>> conditionExpression, bool forceHardDelete = false)
         where T : class;
+
+    /// <summary>
+    ///     Restores one record of type <typeparamref name="T"/>,
+    ///     specified by the given <see cref="conditionExpression"/>,
+    ///     without retrieving the entity.
+    /// </summary>
+    /// <remarks>
+    ///     Only if the <typeparamref name="T"/> can be soft-deleted, the entity will be marked as non-deleted
+    /// </remarks>
+    /// <param name="conditionExpression">
+    ///     The query to get the record to restore
+    /// </param>
+    /// <exception cref="NotFoundException">
+    ///     Thrown if no entity got restored.
+    /// </exception>
+    /// <exception cref="ExpectedAffectedRecordMismatch">
+    ///     Thrown if more than one entity is restored.
+    /// </exception>
+    void RestoreOne<T>(Expression<Func<T, bool>> conditionExpression) where T : class;
+
+    /// <summary>
+    ///     Restores multiple records of type <typeparamref name="T"/>,
+    ///     specified by the given <see cref="conditionExpression"/>,
+    ///     without retrieving the entities.
+    /// </summary>
+    /// <remarks>
+    ///     Only if the <typeparamref name="T"/> can be soft-deleted, the entity will be marked as non-deleted
+    /// </remarks>
+    /// <param name="conditionExpression">
+    ///     The query to get the records to restore
+    /// </param>
+    /// <returns>
+    ///     Number of records restored from deletion
+    /// </returns>
+    int RestoreMany<T>(Expression<Func<T, bool>> conditionExpression) where T : class;
 
     /// <summary>
     ///     Commits all changes into the database, if any

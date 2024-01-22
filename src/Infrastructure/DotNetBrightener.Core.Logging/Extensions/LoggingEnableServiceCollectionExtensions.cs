@@ -24,7 +24,8 @@ public static class LoggingEnableServiceCollectionExtensions
 
                         var loggingTarget = EventLoggingWatcher.Instance;
 
-                        var logSettings = context.Configuration.GetSection("Logging:LogLevel")
+                        var logSettings = context.Configuration
+                                                 .GetSection("Logging:LogLevel")
                                                  .Get<Dictionary<string, LogLevel>>();
 
                         LogLevel defaultLevel = null;
@@ -50,15 +51,19 @@ public static class LoggingEnableServiceCollectionExtensions
                             logConfig.AddRule(defaultLevel, LogLevel.Fatal, loggingTarget, "*", true);
                         }
 
+
                         var lokiEndpoint        = context.Configuration.GetValue<string>("LokiEndpoint");
                         var lokiApplicationName = context.Configuration.GetValue<string>("LokiApplicationName");
+                        var lokiUserName        = context.Configuration.GetValue<string>("LokiUserName");
+                        var lokiPassword        = context.Configuration.GetValue<string>("LokiPassword");
 
                         if (!string.IsNullOrEmpty(lokiEndpoint))
                         {
-                            loggingTarget.SetLokiTarget(lokiEndpoint, lokiApplicationName);
+                            loggingTarget.SetLokiTarget(lokiEndpoint, lokiApplicationName, lokiUserName, lokiPassword);
                         }
 
-                        NLogBuilder.ConfigureNLog(logConfig);
+                        LogManager.Setup().LoadConfiguration(logConfig) ;
+
                         LogManager.Configuration.Variables["configDir"] = context.HostingEnvironment.ContentRootPath;
                     })
                    .ConfigureServices((hostBuilderContext, serviceCollection) =>
@@ -119,10 +124,12 @@ public static class LoggingEnableServiceCollectionExtensions
 
                         var lokiEndpoint        = context.Configuration.GetValue<string>("LokiEndpoint");
                         var lokiApplicationName = context.Configuration.GetValue<string>("LokiApplicationName");
+                        var lokiUserName        = context.Configuration.GetValue<string>("LokiUserName");
+                        var lokiPassword        = context.Configuration.GetValue<string>("LokiPassword");
 
                         if (!string.IsNullOrEmpty(lokiEndpoint))
                         {
-                            loggingTarget.SetLokiTarget(lokiEndpoint, lokiApplicationName);
+                            loggingTarget.SetLokiTarget(lokiEndpoint, lokiApplicationName, lokiUserName, lokiPassword);
                         }
 
                         NLogBuilder.ConfigureNLog(logConfig);

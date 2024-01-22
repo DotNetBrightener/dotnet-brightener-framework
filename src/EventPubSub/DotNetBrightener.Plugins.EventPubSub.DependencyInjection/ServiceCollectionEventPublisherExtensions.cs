@@ -16,7 +16,7 @@ public static class ServiceCollectionEventPublisherExtensions
     public static IServiceCollection AddEventPubSubService(this IServiceCollection serviceCollection)
     {
         // Event Pub/Sub
-        serviceCollection.AddScoped<IEventPublisher, EventPublisher>();
+        serviceCollection.TryAddScoped<IEventPublisher, EventPublisher>();
 
         return serviceCollection;
     }

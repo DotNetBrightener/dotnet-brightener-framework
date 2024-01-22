@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using DotNetBrightener.Core.Logging.Loki.Model;
@@ -21,10 +22,12 @@ namespace DotNetBrightener.Core.Logging.Loki
         [RequiredParameter]
         public Layout Endpoint { get; set; }
 
+        public string UserName { get; set; }
+
+        public string Password { get; set; }
+
         [ArrayParameter(typeof(LokiTargetLabel), "label")]
         public IList<LokiTargetLabel> Labels { get; }
-
-        public static Func<Uri, ILokiHttpClient> LokiHttpClientFactory { get; set; } = GetLokiHttpClient;
 
         public LokiTarget()
         {
@@ -32,8 +35,8 @@ namespace DotNetBrightener.Core.Logging.Loki
 
             lazyLokiTransport =
                 new Lazy<ILokiTransport>(
-                    () => GetLokiTransport(Endpoint),
-                    LazyThreadSafetyMode.ExecutionAndPublication);
+                                         () => GetLokiTransport(Endpoint),
+                                         LazyThreadSafetyMode.ExecutionAndPublication);
         }
 
         protected override void Write(IList<AsyncLogEventInfo> logEvents)
@@ -46,7 +49,10 @@ namespace DotNetBrightener.Core.Logging.Loki
         {
             var @event = GetLokiEvent(logEvent);
 
-            return lazyLokiTransport.Value.WriteLogEventsAsync(new[] { @event });
+            return lazyLokiTransport.Value.WriteLogEventsAsync(new[]
+            {
+                @event
+            });
         }
 
         public Task WriteAsyncTask(IList<LogEventInfo> logEvents, CancellationToken cancellationToken)
@@ -65,8 +71,8 @@ namespace DotNetBrightener.Core.Logging.Loki
         {
             var labels =
                 new LokiLabels(
-                    Labels.Select(
-                        ltl => new LokiLabel(ltl.Name, ltl.Layout.Render(logEvent))));
+                               Labels.Select(
+                                             ltl => new LokiLabel(ltl.Name, ltl.Layout.Render(logEvent))));
 
             var line = RenderLogEvent(Layout, logEvent);
 
@@ -78,11 +84,13 @@ namespace DotNetBrightener.Core.Logging.Loki
         internal ILokiTransport GetLokiTransport(Layout endpoint)
         {
             var endpointUri = RenderLogEvent(endpoint, LogEventInfo.CreateNullEvent());
-            if(Uri.TryCreate(endpointUri, UriKind.Absolute, out var uri))
+
+            if (Uri.TryCreate(endpointUri, UriKind.Absolute, out var uri))
             {
-                if(uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps)
+                if (uri.Scheme == Uri.UriSchemeHttp ||
+                    uri.Scheme == Uri.UriSchemeHttps)
                 {
-                    var lokiHttpClient = LokiHttpClientFactory(uri);
+                    var lokiHttpClient    = GetLokiHttpClient(uri, UserName, Password);
                     var httpLokiTransport = new HttpLokiTransport(uri, lokiHttpClient);
 
                     return httpLokiTransport;
@@ -96,10 +104,22 @@ namespace DotNetBrightener.Core.Logging.Loki
             return nullLokiTransport;
         }
 
-        internal static ILokiHttpClient GetLokiHttpClient(Uri uri)
+        internal static ILokiHttpClient GetLokiHttpClient(Uri uri, string username, string password)
         {
-            var httpClient = new HttpClient { BaseAddress = uri };
+            var httpClient = new HttpClient
+            {
+                BaseAddress = uri
+            };
             var lokiHttpClient = new LokiHttpClient(httpClient);
+
+
+            if (!string.IsNullOrEmpty(username) &&
+                !string.IsNullOrEmpty(password))
+            {
+                var byteArray = Encoding.ASCII.GetBytes($"{username}:{password}");
+                httpClient.DefaultRequestHeaders.Authorization =
+                    new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
+            }
 
             return lokiHttpClient;
         }
