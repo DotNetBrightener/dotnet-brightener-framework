@@ -47,13 +47,43 @@ public static class EntityMetadataExtractor
         };
     }
 
-    internal static string[] GetDefaultColumns<TType>()
+    internal static string[] GetDefaultColumns(Type propertyType, string prefix = "", int level = 1)
     {
-        return typeof(TType).GetProperties()
-                            .Where(_ => !_.HasAttribute<JsonIgnoreAttribute>() &&
-                                        !_.HasAttribute<System.Text.Json.Serialization.JsonIgnoreAttribute>())
-                            .Select(_ => _.Name)
-                            .ToArray();
+        return propertyType.GetProperties()
+                           .SelectMany(property =>
+                            {
+                                string propertyName = $"{prefix}{property.Name}";
+                                Type   propertyType = property.PropertyType;
+
+                                if (propertyType.IsClass &&
+                                    propertyType != typeof(string) &&
+                                    level <= 2)
+                                {
+                                    // Recursive call for nested classes
+                                    return GetDefaultColumns(propertyType, propertyName + ".", level + 1);
+                                }
+
+                                if (property.HasAttribute<JsonIgnoreAttribute>() ||
+                                    property.HasAttribute<System.Text.Json.Serialization.JsonIgnoreAttribute>())
+                                    return Array.Empty<string>();
+
+                                return new[]
+                                {
+                                    propertyName
+                                };
+                            })
+                           .Concat(new[]
+                            {
+                                prefix.Trim('.')
+                            })
+                           .Where(_ => !string.IsNullOrEmpty(_))
+                           .Distinct()
+                           .ToArray();
+    }
+
+    internal static string[] GetDefaultColumns<TType>(string prefix = "")
+    {
+        return GetDefaultColumns(typeof(TType), prefix);
     }
 
     internal static int? GetMaxLength(this PropertyInfo property)

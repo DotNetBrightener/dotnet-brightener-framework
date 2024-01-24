@@ -41,7 +41,7 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
     ///     This list will be concat with the <seealso cref="AlwaysReturnColumns"/>.
     ///     If this list is not specified, all available properties of the entity will be returned
     /// </remarks>
-    protected virtual string[] DefaultColumnsToReturn { get; } =
+    protected virtual string[] DefaultColumnsToReturn => 
         EntityMetadataExtractor.GetDefaultColumns<TEntityType>();
 
     /// <summary>
@@ -334,15 +334,17 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
                                                                                     StringComparison
                                                                                        .OrdinalIgnoreCase)))
                         .ToArray();
-
-        var availableColumns = EntityMetadataExtractor.GetDefaultColumns<TIn>();
-
+        
         invalidColumns = queriedColumns
-                        .Where(requestingColumn => !availableColumns
+                        .Where(requestingColumn => !string.IsNullOrEmpty(requestingColumn) &&
+                                                   !DefaultColumnsToReturn
                                                       .Any(property =>
                                                                property.Equals(requestingColumn,
                                                                                StringComparison
-                                                                                  .OrdinalIgnoreCase)))
+                                                                                  .OrdinalIgnoreCase) ||
+                                                               requestingColumn.StartsWith(property,
+                                                                                           StringComparison
+                                                                                              .OrdinalIgnoreCase)))
                         .Concat(invalidColumns)
                         .Distinct()
                         .ToArray();
