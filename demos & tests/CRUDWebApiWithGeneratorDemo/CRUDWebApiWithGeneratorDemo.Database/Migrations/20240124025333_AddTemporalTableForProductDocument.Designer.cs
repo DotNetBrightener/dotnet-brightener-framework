@@ -4,6 +4,7 @@ using CRUDWebApiWithGeneratorDemo.Database.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CRUDWebApiWithGeneratorDemo.Database.Migrations
 {
     [DbContext(typeof(MainAppDbContext))]
-    partial class MainAppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240124025333_AddTemporalTableForProductDocument")]
+    partial class AddTemporalTableForProductDocument
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -57,7 +60,7 @@ namespace CRUDWebApiWithGeneratorDemo.Database.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Product");
+                    b.ToTable("Product", (string)null);
                 });
 
             modelBuilder.Entity("CRUDWebApiWithGeneratorDemo.Core.Entities.ProductCategory", b =>
@@ -91,7 +94,7 @@ namespace CRUDWebApiWithGeneratorDemo.Database.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ProductCategory");
+                    b.ToTable("ProductCategory", (string)null);
                 });
 
             modelBuilder.Entity("CRUDWebApiWithGeneratorDemo.Core.Entities.ProductDocument", b =>
@@ -155,7 +158,7 @@ namespace CRUDWebApiWithGeneratorDemo.Database.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ProductDocument");
+                    b.ToTable("ProductDocument", (string)null);
 
                     b.ToTable(tb => tb.IsTemporal(ttb =>
                             {

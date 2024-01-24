@@ -38,8 +38,8 @@ public class UnhandledExceptionResponseHandler : IExceptionFilter, IActionFilter
     {
         ContentResult defaultResult;
 
-        var           errorResult = _errorResultFactory.InstantiateErrorResult<DefaultErrorResult>();
-        
+        var errorResult = _errorResultFactory.InstantiateErrorResult<DefaultErrorResult>();
+
         if (!string.IsNullOrEmpty(context.Exception.Message))
         {
             errorResult.ErrorMessage = T[context.Exception.Message];
@@ -68,6 +68,10 @@ public class UnhandledExceptionResponseHandler : IExceptionFilter, IActionFilter
                 statusCode = (int)HttpStatusCode.Unauthorized;
 
                 break;
+            case NotSupportedException:
+                statusCode = (int)HttpStatusCode.BadRequest;
+
+                break;
             case BadHttpRequestException httpRequestException:
                 statusCode = httpRequestException.StatusCode;
 
@@ -90,7 +94,7 @@ public class UnhandledExceptionResponseHandler : IExceptionFilter, IActionFilter
             ErrorResult      = errorResult,
             ContextException = context.Exception,
             ProcessResult    = defaultResult,
-            StatusCode       = (HttpStatusCode) defaultResult.StatusCode
+            StatusCode       = (HttpStatusCode)defaultResult.StatusCode
         };
 
         if (_unhandledExceptionHandlers.Any())
@@ -104,7 +108,7 @@ public class UnhandledExceptionResponseHandler : IExceptionFilter, IActionFilter
             }
         }
 
-        _logger.LogError(context.Exception, 
+        _logger.LogError(context.Exception,
                          $"Unhandled Exception Occurred. Responded with HttpStatusCode {exceptionContext.StatusCode}");
 
         context.ExceptionHandled = true;

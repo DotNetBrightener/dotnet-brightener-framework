@@ -22,6 +22,15 @@ public abstract class BaseDataService<TEntity> : IBaseDataService<TEntity> where
         return Repository.Get(expression);
     }
 
+    public IQueryable<TEntity> FetchHistory(Expression<Func<TEntity, bool>> expression = null,
+                                            DateTimeOffset?                 from       = null,
+                                            DateTimeOffset?                 to         = null)
+    {
+        var query = Repository.FetchHistory(expression, from, to);
+
+        return query;
+    }
+
     public virtual IQueryable<TEntity> Fetch(Expression<Func<TEntity, bool>> expression = null)
     {
         return Repository.Fetch(expression);

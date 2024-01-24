@@ -1,3 +1,4 @@
+using DotNetBrightener.DataAccess.Attributes;
 using DotNetBrightener.DataAccess.EF.Events;
 using DotNetBrightener.DataAccess.EF.Extensions;
 using DotNetBrightener.DataAccess.Exceptions;
@@ -22,18 +23,15 @@ public class Repository : IRepository
     protected readonly DbContext                    DbContext;
     protected readonly ICurrentLoggedInUserResolver CurrentLoggedInUserResolver;
     protected readonly IEventPublisher              EventPublisher;
-    protected readonly IAuditingContainer           AuditingContainer;
     private const      string                       RecordCreatedEvent = "RECORD_CREATED_EVENT";
 
     public Repository(DbContext                    dbContext,
                       ICurrentLoggedInUserResolver currentLoggedInUserResolver,
-                      IEventPublisher              eventPublisher,
-                      IAuditingContainer           auditingContainer)
+                      IEventPublisher              eventPublisher)
     {
         DbContext                   = dbContext;
         CurrentLoggedInUserResolver = currentLoggedInUserResolver;
         EventPublisher              = eventPublisher;
-        AuditingContainer      = auditingContainer;
     }
 
     public virtual T Get<T>(Expression<Func<T, bool>> expression)
@@ -68,6 +66,37 @@ public class Repository : IRepository
             return DbContext.Set<T>().AsQueryable();
 
         return DbContext.Set<T>().Where(expression);
+    }
+
+    public virtual IQueryable<T> FetchHistory<T>(Expression<Func<T, bool>> expression,
+                                                 DateTimeOffset?           from,
+                                                 DateTimeOffset?           to)
+        where T : class, new()
+    {
+        if (!typeof(T).HasAttribute<HistoryEnabledAttribute>())
+        {
+            throw new VersioningNotSupportedException<T>();
+        }
+
+        var initialQuery = DbContext.Set<T>();
+
+        var temporalQuery = initialQuery.TemporalAll();
+
+        if (from is not null &&
+            to is not null)
+        {
+            temporalQuery = initialQuery.TemporalFromTo(from.Value.UtcDateTime, to.Value.UtcDateTime)
+                                        .OrderBy(entry =>
+                                                     Microsoft.EntityFrameworkCore.EF.Property<DateTime>(entry,
+                                                                                                         "PeriodStart"));
+        }
+
+        if (expression is not null)
+        {
+            temporalQuery = temporalQuery.Where(expression);
+        }
+
+        return temporalQuery;
     }
 
     public virtual IQueryable<TResult> Fetch<T, TResult>(Expression<Func<T, bool>>    expression,
@@ -412,7 +441,8 @@ public class Repository : IRepository
                           .Invoke(setPropBuilder,
                                   new object[]
                                   {
-                                      propertyInfo.Name, Expression.Lambda(binding.Expression, updateExpression.Parameters)
+                                      propertyInfo.Name,
+                                      Expression.Lambda(binding.Expression, updateExpression.Parameters)
                                   });
         }
 

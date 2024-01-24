@@ -9,7 +9,6 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using System.Linq.Expressions;
-using DotNetBrightener.DataAccess.Services;
 
 namespace DotNetBrightener.MultiTenancy.Services;
 
@@ -30,9 +29,8 @@ public class TenantSupportedRepository : Repository
                                      IEventPublisher                    eventPublisher,
                                      ITenantAccessor                    tenantAccessor,
                                      IServiceProvider                   backgroundServiceProvider,
-                                     IAuditingContainer                 auditingContainer,
                                      ILogger<TenantSupportedRepository> logger)
-        : base(dbContext, currentLoggedInUserResolver, eventPublisher, auditingContainer)
+        : base(dbContext, currentLoggedInUserResolver, eventPublisher)
     {
         _tenantAccessor = tenantAccessor;
         _logger         = logger;

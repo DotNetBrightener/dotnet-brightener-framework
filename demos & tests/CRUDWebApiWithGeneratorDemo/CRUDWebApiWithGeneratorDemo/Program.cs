@@ -25,14 +25,15 @@ var dbConfiguration = new DatabaseConfiguration
 {
     ConnectionString = builder.Configuration.GetConnectionString("DefaultConnection"),
     UseLazyLoading   = true,
-    DatabaseProvider = DatabaseProvider.MsSql
+    DatabaseProvider = DatabaseProvider.PostgreSql
 };
 
 Action<DbContextOptionsBuilder> configureDatabase = optionsBuilder =>
 {
-    optionsBuilder.UseSqlServer(dbConfiguration.ConnectionString);
+    optionsBuilder.UseNpgsql(dbConfiguration.ConnectionString);
 };
 
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 builder.Services
        .AddEntityFrameworkDataServices<MainAppDbContext>(dbConfiguration,
                                                          configureDatabase);

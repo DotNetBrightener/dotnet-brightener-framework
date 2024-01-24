@@ -16,6 +16,17 @@ public interface IBaseDataService<TEntity>: IDisposable
     TEntity Get(Expression<Func<TEntity, bool>> expression);
 
     /// <summary>
+    ///     Generates a fetch query to the given history table of the entity, optionally provides the condition for filtering
+    /// </summary>
+    /// <param name="expression">The condition for filtering records in the query</param>
+    /// <param name="from"></param>
+    /// <param name="to"></param>
+    /// <returns>An IQueryable of the history records of the requested entity</returns>
+    IQueryable<TEntity> FetchHistory(Expression<Func<TEntity, bool>> expression = null,
+                                     DateTimeOffset?                 from       = null,
+                                     DateTimeOffset?                 to         = null);
+
+    /// <summary>
     ///     Generates a fetch query to the given entity table, optionally provides the condition for filtering
     /// </summary>
     /// <param name="expression">The condition for filtering records in the query</param>

@@ -96,6 +96,29 @@ public interface IRepository : IDisposable
     IQueryable<T> Fetch<T>(Expression<Func<T, bool>> expression = null)
         where T : class;
 
+
+    /// <summary>
+    ///     Retrieves the history records for the given entity record,
+    ///     from the table associated with the entity type <typeparamref name="T"/>
+    /// </summary>
+    /// <typeparam name="T">
+    ///     The type of entity
+    /// </typeparam>
+    /// <param name="expression">The expression describes how to pick/filter the records</param>
+    /// <param name="from">
+    ///     Specifies the lower boundary of the date range of the history records
+    /// </param>
+    /// <param name="to">
+    ///     Specifies the upper boundary of the date range of the history records
+    /// </param>
+    /// <returns>
+    ///     A collection of the history records of specified <see cref="T"/> that satisfy the <paramref name="expression"/>
+    /// </returns>
+    IQueryable<T> FetchHistory<T>(Expression<Func<T, bool>> expression,
+                                  DateTimeOffset?           from,
+                                  DateTimeOffset?           to)
+        where T : class, new();
+
     /// <summary>
     ///     Retrieves the records from the table associated with the entity type <typeparamref name="T"/>
     /// </summary>

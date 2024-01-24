@@ -1,4 +1,5 @@
 ﻿using CRUDWebApiWithGeneratorDemo.Core.Entities;
+using DotNetBrightener.DataAccess.EF.Migrations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
@@ -8,7 +9,7 @@ public class DesignTimeAppDbContext : SqlServerDbContextDesignTimeFactory<MainAp
 {
 }
 
-public class MainAppDbContext : DbContext
+public class MainAppDbContext : SqlServerVersioningMigrationEnabledDbContext
 {
     public MainAppDbContext(DbContextOptions<MainAppDbContext> options)
         : base(options)
@@ -16,11 +17,11 @@ public class MainAppDbContext : DbContext
 
     }
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    protected override void ConfigureModelBuilder(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Product>();
-        modelBuilder.Entity<ProductCategory>();
-        var document = modelBuilder.Entity<ProductDocument>();
+        var productEntity         = modelBuilder.Entity<Product>();
+        var productCategoryEntity = modelBuilder.Entity<ProductCategory>();
+        var document              = modelBuilder.Entity<ProductDocument>();
 
         document.Property(_ => _.Price)
                 .HasColumnType("decimal");

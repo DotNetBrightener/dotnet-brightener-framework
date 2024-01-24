@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace DotNetBrightener.DataAccess.EF.Migrations;
 
 /// <summary>
-///     Represents the <see cref="DbContext"/> that can defines the entities and should have migrations applied
+///     Represents the <see cref="DbContext"/> that can define the entities and should have migrations applied
 /// </summary>
 public abstract class MigrationEnabledDbContext : DbContext
 {

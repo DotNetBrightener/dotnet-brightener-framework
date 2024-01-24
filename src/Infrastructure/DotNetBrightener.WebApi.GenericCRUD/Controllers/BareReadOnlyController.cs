@@ -13,6 +13,7 @@ using System.Linq.Expressions;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Filters;
+using DotNetBrightener.DataAccess.Attributes;
 
 namespace DotNetBrightener.WebApi.GenericCRUD.Controllers;
 
@@ -218,6 +219,45 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
     }
 
     /// <summary>
+    ///     Retrieves the history of <typeparamref name="TEntityType"></typeparamref> record with the given <paramref name="id"/>
+    /// </summary>
+    /// <param name="id">The identifier of the <typeparamref name="TEntityType"></typeparamref> record</param>
+    /// <returns></returns>
+    /// <exception cref="UnauthorizedAccessException"></exception>
+    [HttpGet("{id:long}/_history")]
+    public virtual async Task<IActionResult> GetItemHistory(long id)
+    {
+        if (!typeof(TEntityType).HasAttribute<HistoryEnabledAttribute>())
+        {
+            throw new NotSupportedException($"Entity type {typeof(TEntityType).Name} does not support versioning");
+        }
+
+        if (!await CanRetrieveItemHistory(id))
+            throw new UnauthorizedAccessException();
+
+        var currentRequestQueryStrings = BaseQueryModel.FromQuery(Request.Query);
+
+        if (!await VerifyPickColumns<TEntityType>(currentRequestQueryStrings.FilteredColumns, 
+                                                  out string[] invalidColumns))
+        {
+            return StatusCode((int)HttpStatusCode.Forbidden,
+                              new
+                              {
+                                  ErrorMessage =
+                                      $"Some of the requested columns are not valid. The invalid columns are: [{string.Join(", ", invalidColumns)}].",
+                                  Data = invalidColumns
+                              });
+        }
+
+        Expression<Func<TEntityType, bool>> expression =
+            ExpressionExtensions.BuildPredicate<TEntityType>(id, OperatorComparer.Equals, EntityIdColumnName);
+
+        var entityItemQuery = DataService.FetchHistory(expression);
+
+        return await GetListResult(entityItemQuery);
+    }
+
+    /// <summary>
     ///     Considers if the current user can perform the <see cref="GetMetadata"/> action
     /// </summary>
     /// <returns>
@@ -246,6 +286,17 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
     ///     <c>true</c> if user is authorized to perform the action; otherwise, <c>false</c>
     /// </returns>
     protected virtual async Task<bool> CanRetrieveItem(long id)
+    {
+        return true;
+    }
+
+    /// <summary>
+    ///     Considers if the current user can perform the <see cref="GetItemHistory"/> action
+    /// </summary>
+    /// <returns>
+    ///     <c>true</c> if user is authorized to perform the action; otherwise, <c>false</c>
+    /// </returns>
+    protected virtual async Task<bool> CanRetrieveItemHistory(long id)
     {
         return true;
     }

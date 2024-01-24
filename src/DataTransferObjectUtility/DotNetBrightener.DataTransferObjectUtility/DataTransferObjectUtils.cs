@@ -154,6 +154,9 @@ public static class DataTransferObjectUtils
 
             var oldValue = destinationProp.GetValue(entityObject);
 
+            if (oldValue?.Equals(value) == true)
+                continue;
+
             auditTrail.AuditProperties.Add(new AuditProperty
             {
                 PropertyName = propertyInfo.Name,

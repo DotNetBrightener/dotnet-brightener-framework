@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using DotNetBrightener.DataAccess.Attributes;
 using DotNetBrightener.DataAccess.Models;
 using Newtonsoft.Json;
 
@@ -7,6 +8,7 @@ namespace CRUDWebApiWithGeneratorDemo.Core.Entities;
 /// <summary>
 ///     Represents the document of a product
 /// </summary>
+[HistoryEnabled]
 public class ProductDocument : BaseEntityWithAuditInfo
 {
     /// <summary>
