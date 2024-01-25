@@ -30,14 +30,12 @@ public class UnhandledExceptionResponseHandler : IExceptionFilter, IActionFilter
     {
         _logger                     = logger;
         _errorResultFactory         = errorResultFactory;
-        T                           = localizer;
         _unhandledExceptionHandlers = unhandledExceptionHandlers;
+        T                           = localizer;
     }
 
     public void OnException(ExceptionContext context)
     {
-        ContentResult defaultResult;
-
         var errorResult = _errorResultFactory.InstantiateErrorResult<DefaultErrorResult>();
 
         if (!string.IsNullOrEmpty(context.Exception.Message))
@@ -82,7 +80,7 @@ public class UnhandledExceptionResponseHandler : IExceptionFilter, IActionFilter
                 break;
         }
 
-        defaultResult = new ContentResult
+        var defaultResult = new ContentResult
         {
             Content     = JsonConvert.SerializeObject(errorResult, DefaultJsonSerializer.DefaultJsonSerializerSettings),
             ContentType = ApplicationJsonType,
@@ -109,7 +107,8 @@ public class UnhandledExceptionResponseHandler : IExceptionFilter, IActionFilter
         }
 
         _logger.LogError(context.Exception,
-                         $"Unhandled Exception Occurred. Responded with HttpStatusCode {exceptionContext.StatusCode}");
+                         "Unhandled Exception Occurred. Responded with HttpStatusCode {statusCode}",
+                         exceptionContext.StatusCode);
 
         context.ExceptionHandled = true;
         context.Result           = exceptionContext.ProcessResult ?? defaultResult;

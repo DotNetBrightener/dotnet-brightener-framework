@@ -1,6 +1,8 @@
 ﻿// ReSharper disable CheckNamespace
 using DotNetBrightener.Core.StartupTask;
+using Microsoft.Extensions.Logging;
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -30,16 +32,90 @@ public static class ServiceCollectionExtensions
     /// <returns></returns>
     public static async Task ExecuteStartupTasks(this IServiceProvider serviceProvider)
     {
+        Type[]                startupTaskTypes;
+
         using (var serviceScope = serviceProvider.CreateScope())
         {
-            var startupTasks = serviceScope.ServiceProvider
+            startupTaskTypes = serviceScope.ServiceProvider
                                            .GetServices<IStartupTask>()
-                                           .OrderBy(_ => _.Order);
-
-            foreach (var startupTask in startupTasks)
-            {
-                await startupTask.Execute();
-            }
+                                           .OrderBy(_ => _.Order)
+                                           .Select(_ => _.GetType())
+                                           .ToArray();
         }
+
+        var logger = serviceProvider.GetService<ILogger<IStartupTask>>();
+
+        if (startupTaskTypes.Length == 0)
+        {
+            logger?.LogDebug("No start up tasks found.");
+
+            return;
+        }
+
+        logger?.LogInformation("Found {tasks} start up tasks: {tasksList}...",
+                               startupTaskTypes.Length,
+                               string.Join(", ", startupTaskTypes.Select(taskType => taskType.Name)));
+
+        var synchronousTasks = startupTaskTypes
+                              .Where(taskType => taskType.IsAssignableTo(typeof(ISynchronousStartupTask)))
+                              .ToArray();
+
+        var asynchronousTasks = startupTaskTypes.Except(synchronousTasks)
+                                                .ToArray();
+
+        Stopwatch sw = Stopwatch.StartNew();
+
+        foreach (var startupTaskType in synchronousTasks)
+        {
+            await ExecuteTask(serviceProvider, startupTaskType);
+        }
+
+
+        await Parallel.ForEachAsync(asynchronousTasks,
+                                    async (type, cancellationToken) =>
+                                    {
+                                        await ExecuteTask(serviceProvider, type);
+                                    });
+
+        sw.Stop();
+
+        logger?.LogInformation("Start up tasks execution finished after {Elapsed}. " +
+                               "Total {numberOfTasks} have executed.",
+                               sw.Elapsed,
+                               startupTaskTypes.Length);
+    }
+
+    private static async Task ExecuteTask(IServiceProvider serviceProvider,
+                                          Type             startupTaskType)
+    {
+        var       taskType            = startupTaskType.Name;
+        using var backgroundTaskScope = serviceProvider.CreateScope();
+
+        ILogger<IStartupTask> subLogger = backgroundTaskScope.ServiceProvider
+                                                             .GetService<ILogger<IStartupTask>>();
+
+        if (backgroundTaskScope.ServiceProvider
+                               .TryGet(startupTaskType) is not IStartupTask taskInstance)
+        {
+            subLogger.LogWarning("Cannot resolve task {taskType} from the service collection. Skipping...",
+                                 taskType);
+
+            return;
+        }
+
+
+        subLogger.LogInformation("Starting task {taskType} execution {syncState}...",
+                                 taskType,
+                                 taskInstance is ISynchronousStartupTask
+                                     ? "synchronously"
+                                     : "asynchronously");
+
+        Stopwatch sw = Stopwatch.StartNew();
+
+        await taskInstance.Execute();
+
+        sw.Stop();
+
+        subLogger.LogInformation("Finished task {taskType} execution after {Elapsed}.", taskType, sw.Elapsed);
     }
 }

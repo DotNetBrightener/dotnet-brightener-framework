@@ -18,6 +18,8 @@ namespace DotNetBrightener.Core.BackgroundTasks;
 /// </summary>
 public interface IBackgroundTaskScheduler
 {
+    void Activate();
+
     string EnqueueTask(MethodInfo methodAction, params object[] parameters);
 
     QueuedTaskResult GetTaskProcessResult(string taskIdentifier);
@@ -32,29 +34,41 @@ public class BackgroundTaskScheduler : IBackgroundTaskScheduler, IDisposable
     private readonly IServiceScopeFactory                               _serviceResolver;
     private readonly Timer                                              _timer;
     private readonly ILogger                                            _logger;
+    private          bool                                               _isActivated;
 
     public BackgroundTaskScheduler(ILogger<BackgroundTaskScheduler> logger,
-                                   IServiceScopeFactory backgroundServiceProvider)
+                                   IServiceScopeFactory             backgroundServiceProvider)
     {
-        _serviceResolver = backgroundServiceProvider;
-        _logger = logger;
-        _timer = new Timer();
-        _timer.Interval = TimeSpan.FromSeconds(3).TotalMilliseconds;
-        _timer.Elapsed += Elapsed;
-        _timer.Start();
+        _serviceResolver =  backgroundServiceProvider;
+        _logger          =  logger;
+        _timer           =  new Timer();
+        _timer.Interval  =  TimeSpan.FromSeconds(3).TotalMilliseconds;
+        _timer.Elapsed   += Elapsed;
     }
-    
+
+    public void Activate()
+    {
+        lock (_timer)
+        {
+            _logger.LogInformation("Activating background task scheduler...");
+            _timer.Start();
+            _isActivated = true;
+        }
+    }
+
     public string EnqueueTask(MethodInfo methodAction, params object[] parameters)
     {
         var queuedTask = new BackgroundQueuedTask
         {
-            Action = methodAction,
+            Action     = methodAction,
             Parameters = parameters
         };
 
+        _logger.LogInformation("Adding task {task} to queue...", queuedTask.TaskName);
+
         _tasks.Enqueue(queuedTask);
 
-        if (!_timer.Enabled)
+        if (!_timer.Enabled && _isActivated)
         {
             _timer.Start();
         }
@@ -77,8 +91,8 @@ public class BackgroundTaskScheduler : IBackgroundTaskScheduler, IDisposable
         return new QueuedTaskResult
         {
             TaskIdentifier = taskIdentifier,
-            Started = queuedTask.StartedOn,
-            TaskResult = queuedTask.TaskResult
+            Started        = queuedTask.StartedOn,
+            TaskResult     = queuedTask.TaskResult
         };
     }
 
@@ -95,7 +109,7 @@ public class BackgroundTaskScheduler : IBackgroundTaskScheduler, IDisposable
         // current implementation disallows re-entrancy
         if (!Monitor.TryEnter(_timer))
         {
-            _logger.LogInformation("Timer is being locked for another execution. Exiting...");
+            _logger.LogDebug("Timer is being locked for another execution. Exiting...");
 
             return;
         }
@@ -104,7 +118,7 @@ public class BackgroundTaskScheduler : IBackgroundTaskScheduler, IDisposable
 
         try
         {
-            _logger.LogInformation("Stop and lock timer for execution.");
+            _logger.LogDebug("Stop and lock timer for execution.");
             _timer.Stop();
             sw = Stopwatch.StartNew();
             DoWork();
@@ -117,19 +131,18 @@ public class BackgroundTaskScheduler : IBackgroundTaskScheduler, IDisposable
         {
             if (_tasks.Count > 0)
             {
-
                 _logger.LogInformation("Restarting timer for next execution.");
                 _timer.Start();
             }
             else
             {
-                _logger.LogInformation("No tasks to execute. Exiting...");
+                _logger.LogDebug("No tasks to execute. Exiting...");
             }
 
             Monitor.Exit(_timer);
 
             sw!.Stop();
-            _logger.LogInformation("Background task took {elapsed} to finish", sw.Elapsed);
+            _logger.LogInformation("Background task execution finished after {elapsed}.", sw.Elapsed);
         }
     }
 
@@ -138,6 +151,7 @@ public class BackgroundTaskScheduler : IBackgroundTaskScheduler, IDisposable
         if (_tasks.Count == 0)
         {
             _logger.LogInformation("No tasks to execute. Exiting...");
+
             return;
         }
 
@@ -164,77 +178,88 @@ public class BackgroundTaskScheduler : IBackgroundTaskScheduler, IDisposable
         taskToRun.StartedOn = DateTimeOffset.UtcNow;
         _runningTasks.TryAdd(taskToRun.TaskIdentifier, taskToRun);
 
-        using (var backgroundScope = _serviceResolver.CreateScope())
+        using var backgroundScope = _serviceResolver.CreateScope();
+
+        var backgroundServiceProvider = backgroundScope.ServiceProvider;
+
+        var declaringType = taskToRun.Action.DeclaringType;
+
+        if (declaringType == null)
+            return;
+
+        object invokingInstance = null;
+
+        try
         {
-            var backgroundServiceProvider = backgroundScope.ServiceProvider;
+            _logger.LogInformation("Trying to get instance of {declaringType}...", declaringType);
+            invokingInstance = backgroundServiceProvider.TryGet(declaringType);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error while resolving instance of {declaringType}", declaringType);
+        }
 
-            var declaringType = taskToRun.Action.DeclaringType;
+        if (invokingInstance is null)
+        {
+            _logger.LogError("Unable to execute background queued task. " +
+                             "Could not find the {declaringTypeFullName} instance that can invoke the scheduled method",
+                             declaringType.FullName);
 
-            if (declaringType == null)
-                return;
+            return;
+        }
 
-            _logger.LogInformation("Trying to get instance of {declaringType}", declaringType);
-            object invokingInstance = null;
+        var isAwaitable = taskToRun.Action.ReturnType.GetMethod(nameof(Task.GetAwaiter)) != null;
 
-            try
+        Task ExecuteMethod()
+        {
+            _logger.LogInformation("Executing task: {taskName} ({awaitable})",
+                                   taskToRun.TaskName,
+                                   isAwaitable ? "awaitable" : "non-awaitable");
+
+            if (isAwaitable)
             {
-                invokingInstance = backgroundServiceProvider.TryGet(declaringType);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error while resolving instance of {declaringType}", declaringType);
-            }
-
-            if (invokingInstance is null)
-            {
-                _logger.LogError("Unable to execute background queued task. Could not find the {declaringTypeFullName} instance that can invoke the scheduled method", declaringType.FullName);
-
-                return;
-            }
-
-            var isAwaitable = taskToRun.Action.ReturnType.GetMethod(nameof(Task.GetAwaiter)) != null;
-
-            Task ExecuteMethod()
-            {
-                _logger.LogInformation($"Executing task: {taskToRun.Action.DeclaringType?.FullName}.{taskToRun.Action.Name}() ({
-                    (isAwaitable ? "awaitable" : "non-awaitable")})");
-
-                if (isAwaitable)
+                var invokeResult = Task.Run(async () =>
                 {
-                    var invokeResult = Task.Run(async () =>
+                    try
                     {
-                        try
-                        {
-                            var result = await (dynamic)taskToRun.Action.Invoke(invokingInstance, taskToRun.Parameters);
+                        var result = await (dynamic)taskToRun.Action.Invoke(invokingInstance, taskToRun.Parameters);
 
-                            return result;
-                        }
-                        catch
-                        {
-                            return null;
-                        }
-                    });
+                        return result;
+                    }
+                    catch
+                    {
+                        return null;
+                    }
+                });
 
-                    taskToRun.TaskResult = invokeResult;
+                taskToRun.TaskResult = invokeResult;
 
-                    return taskToRun.TaskResult;
-                }
-
-                taskToRun.Action.Invoke(invokingInstance, taskToRun.Parameters);
-
-                return Task.CompletedTask;
+                return taskToRun.TaskResult;
             }
 
-            try
-            {
-                await ExecuteMethod();
+            taskToRun.Action.Invoke(invokingInstance, taskToRun.Parameters);
 
-                _logger.LogInformation($"Task executed: {taskToRun.Action.DeclaringType?.FullName}.{taskToRun.Action.Name}() ({(isAwaitable ? "awaitable" : "non-awaitable")})");
-            }
-            catch (Exception exception)
-            {
-                _logger.LogError(exception, $"Error occurred when executing background queued task {taskToRun.Action.DeclaringType?.FullName}.{taskToRun.Action.Name}().");
-            }
+            return Task.CompletedTask;
+        }
+
+        var sw = Stopwatch.StartNew();
+
+        try
+        {
+            await ExecuteMethod();
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(exception,
+                             "Error occurred when executing background queued task {taskName}",
+                             taskToRun.TaskName);
+        }
+        finally
+        {
+            sw.Stop();
+            _logger.LogInformation("Task {taskName} finished in {elapsed}",
+                                   taskToRun.TaskName,
+                                   sw.Elapsed);
         }
     }
 

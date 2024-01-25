@@ -22,10 +22,9 @@ public class ApiKeyAuthenticationHandler : AuthenticationHandler<ApiKeyAuthentic
     public ApiKeyAuthenticationHandler(IOptionsMonitor<ApiKeyAuthenticationOptions> options,
                                        ILoggerFactory                               logger,
                                        UrlEncoder                                   encoder,
-                                       ISystemClock                                 clock,
                                        IApiKeyStoreService                          apiKeyStoreService,
                                        IEventPublisher                              eventPublisher)
-        : base(options, logger, encoder, clock)
+        : base(options, logger, encoder)
     {
         _apiKeyStoreService = apiKeyStoreService;
         _eventPublisher     = eventPublisher;

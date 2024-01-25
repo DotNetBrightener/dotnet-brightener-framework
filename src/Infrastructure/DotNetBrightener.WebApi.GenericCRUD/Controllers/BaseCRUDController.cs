@@ -85,7 +85,7 @@ public abstract class BaseCRUDController<TEntityType> : BareReadOnlyController<T
         if (!canUpdate || entity is null)
             throw new UnauthorizedAccessException();
 
-        var entityToUpdate = RequestBodyReader.ObtainBodyAsJObject(HttpContextAccessor);
+        var entityToUpdate = HttpContextAccessor.ObtainRequestBodyAsJObject();
 
         var auditTrail = await UpdateEntity(entity, entityToUpdate);
 
@@ -241,7 +241,7 @@ public abstract class BaseCRUDController<TEntityType> : BareReadOnlyController<T
     {
         var ignoreProperties = typeof(TEntityType).GetPropertiesWithNoClientSideUpdate();
 
-        DataTransferObjectUtils.UpdateEntityFromDto(entityToPersist,
+        DataTransferObjectUtils.UpdateFromDto(entityToPersist,
                                                     dataToUpdate,
                                                     out var auditTrail,
                                                     ignoreProperties);

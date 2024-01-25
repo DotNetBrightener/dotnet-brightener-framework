@@ -19,9 +19,11 @@ internal class BackgroundQueuedTask
     /// </summary>
     public object[] Parameters { get; set; }
 
-    public string TaskIdentifier { get; set; } = Guid.NewGuid().ToString();
+    public string TaskIdentifier { get; init; } = Guid.NewGuid().ToString();
 
     public DateTimeOffset? StartedOn { get; set; }
 
     internal Task<dynamic> TaskResult { get; set; }
+
+    public string TaskName => $"{Action.DeclaringType?.FullName}.{Action.Name}()";
 }

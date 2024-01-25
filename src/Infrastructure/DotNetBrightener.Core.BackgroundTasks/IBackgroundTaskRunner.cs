@@ -15,17 +15,19 @@ public interface IBackgroundTaskRunner
 
 public class BackgroundTaskRunner : IBackgroundTaskRunner
 {
-    private readonly IEnumerable<IBackgroundTask> _tasks;
-    private readonly ILogger                      _logger;
-    private readonly IServiceScopeFactory         _serviceResolver;
+    private readonly Type[]               _tasks;
+    private readonly ILogger              _logger;
+    private readonly IServiceScopeFactory _serviceResolver;
 
     public BackgroundTaskRunner(IEnumerable<IBackgroundTask>  tasks,
                                 ILogger<BackgroundTaskRunner> logger,
                                 IServiceScopeFactory          serviceResolver)
     {
-        _tasks           = tasks;
         _logger          = logger;
         _serviceResolver = serviceResolver;
+
+        _tasks = tasks.Select(task => task.GetType())
+                      .ToArray();
     }
 
     public async Task DoWork()
@@ -35,49 +37,51 @@ public class BackgroundTaskRunner : IBackgroundTaskRunner
             return;
         }
 
-        _logger.LogInformation($"Background tasks start executing");
+        _logger.LogInformation("Background tasks start executing");
 
-        var tasksList = new List<Task>();
+        var stopWatch = Stopwatch.StartNew();
 
-        foreach (var backgroundTask in _tasks)
-        {
-            tasksList.Add(ExecuteTask(backgroundTask.GetType()));
-        }
+        await Parallel.ForEachAsync(_tasks,
+                                    async (type, ct) => await ExecuteTask(type));
 
-        await Task.WhenAll(tasksList);
+        stopWatch.Stop();
+        _logger.LogInformation("Finished executing {numberOfTasks} background tasks in {elapsed}.",
+                               _tasks.Length,
+                               stopWatch.Elapsed);
     }
 
     private async Task ExecuteTask(Type taskHandler)
     {
         using var scope = _serviceResolver.CreateScope();
 
-        _logger.LogInformation($"Resolving task instance of type {taskHandler.FullName}...");
-        var taskInstance = scope.ServiceProvider.GetService(taskHandler) as IBackgroundTask;
+        var taskName = taskHandler.FullName;
 
-        if (taskInstance == null)
+        _logger.LogInformation("Resolving task instance of type {taskName}...", taskName);
+
+        if (scope.ServiceProvider.GetService(taskHandler) is not IBackgroundTask taskInstance)
         {
-            _logger.LogWarning($"Cannot resolve task instance of type {taskHandler.FullName}. Exiting...");
+            _logger.LogWarning("Cannot resolve task instance of type {taskName}. Exiting...", taskName);
+
             return;
         }
 
-        var taskName  = taskHandler.FullName;
         var stopWatch = Stopwatch.StartNew();
 
         try
         {
-            _logger.LogInformation($"Executing task ${taskName}...");
+            _logger.LogInformation("Executing task {taskName}...", taskName);
             await taskInstance.Execute();
         }
         catch (Exception exception)
         {
-            _logger.LogError($"Error while running background task {taskName}", exception);
+            _logger.LogError(exception, "Error while running background task {taskName}", taskName);
 
             throw;
         }
         finally
         {
             stopWatch.Stop();
-            _logger.LogInformation($"Finished executing task ${taskName} in {stopWatch.Elapsed}");
+            _logger.LogInformation("Finished executing task {taskName} in {elapsed}", taskName, stopWatch.Elapsed);
         }
     }
 }

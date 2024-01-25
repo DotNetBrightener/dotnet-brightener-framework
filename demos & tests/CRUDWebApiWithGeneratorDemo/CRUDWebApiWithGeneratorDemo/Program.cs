@@ -30,10 +30,9 @@ var dbConfiguration = new DatabaseConfiguration
 
 Action<DbContextOptionsBuilder> configureDatabase = optionsBuilder =>
 {
-    optionsBuilder.UseNpgsql(dbConfiguration.ConnectionString);
+    optionsBuilder.UseSqlServer(dbConfiguration.ConnectionString);
 };
 
-AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 builder.Services
        .AddEntityFrameworkDataServices<MainAppDbContext>(dbConfiguration,
                                                          configureDatabase);

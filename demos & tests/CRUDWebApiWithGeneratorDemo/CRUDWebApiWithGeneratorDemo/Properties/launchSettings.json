@@ -27,8 +27,7 @@
       "applicationUrl": "https://localhost:7077;http://localhost:5250",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "__ConnectionStrings__DefaultConnection": "Server=192.168.20.163;Database=TestDB;User Id=sa;Password=sCpTXbW8jbSbbUpILfZVulTiwqcPyJWt;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;",
-        "ConnectionStrings__DefaultConnection": "Server=192.168.20.154;Port=5432;Database=test_crud;User Id=postgres;Password=Sup3r5tr0ngP@ssw0rd!!;"
+        "ConnectionStrings__DefaultConnection": "Server=192.168.20.163;Database=TestDB;User Id=sa;Password=sCpTXbW8jbSbbUpILfZVulTiwqcPyJWt;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;"
       }
     },
     "IIS Express": {

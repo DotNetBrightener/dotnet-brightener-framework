@@ -1,10 +1,10 @@
-﻿using System;
+﻿using DotNetBrightener.TemplateEngine.Data.Entity;
+using DotNetBrightener.TemplateEngine.Models;
+using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using DotNetBrightener.TemplateEngine.Data.Entity;
-using DotNetBrightener.TemplateEngine.Models;
-using Microsoft.Extensions.Logging;
 
 namespace DotNetBrightener.TemplateEngine.Data.Services;
 
@@ -42,20 +42,20 @@ public class TemplateRegistrationService : ITemplateRegistrationService, ITempla
         if (!CheckCanProcessTemplate())
             return;
 
+        // mark all templates from the assembly of the provider as deleted,
+        // as they'll be re-registered again
+        var allAssembliesNames = _providers
+                                .Select(templateProvider => templateProvider.GetType().Assembly.GetName().Name)
+                                .ToArray();
+
+        _repository.UpdateMany(record => allAssembliesNames.Contains(record.FromAssemblyName),
+                               model => new TemplateRecord
+                               {
+                                   IsDeleted = true
+                               });
+
         foreach (var templateProvider in _providers)
         {
-            var assemblyQualifiedName = templateProvider.GetType().Assembly.GetName().Name;
-
-            // mark all templates from the assembly of the provider as deleted,
-            // as they'll be re-registered again
-            _repository.UpdateMany(
-                                   model => model.FromAssemblyName == assemblyQualifiedName,
-                                   model => new TemplateRecord
-                                   {
-                                       IsDeleted = true
-                                   });
-
-
             await templateProvider.RegisterTemplates(this);
         }
     }
@@ -71,15 +71,21 @@ public class TemplateRegistrationService : ITemplateRegistrationService, ITempla
             if (exception.Message.Contains($"Cannot create a DbSet for '{nameof(TemplateRecord)}'"))
             {
                 _logger.LogInformation("No template record table available in database, ignoring registration.");
+
                 return false;
             }
 
             _logger.LogWarning(exception, "Error occurs while checking for template record table");
+
             throw;
         }
     }
 
-    async Task ITemplateStore.RegisterTemplate<TTemplate>()
+    async Task ITemplateStore.RegisterTemplate<TTemplate>() =>
+        await RegisterTemplate<TTemplate>(string.Empty, string.Empty);
+
+    public async Task RegisterTemplate<TTemplate>(string templateTitle, string templateContent)
+        where TTemplate : ITemplateModel
     {
         if (!CheckCanProcessTemplate())
             return;
@@ -91,57 +97,13 @@ public class TemplateRegistrationService : ITemplateRegistrationService, ITempla
         var templateFields = GetTemplateFields<TTemplate>();
         var assemblyName   = typeof(TTemplate).Assembly.GetName().Name;
 
-        _logger.LogInformation($"Registering template type {type}");
+        _logger.LogInformation("Registering template type {templateType}", type);
 
         var templatesToUpdate = _repository.Fetch(x => x.TemplateType == type);
 
         if (!templatesToUpdate.Any())
         {
-            _logger.LogInformation($"No template type {type} registered. Inserting new record...");
-            var templateRecord = new TemplateRecord
-            {
-                TemplateType     = type,
-                TemplateContent  = "",
-                TemplateTitle    = "",
-                CreatedDate      = DateTimeOffset.UtcNow,
-                ModifiedDate     = DateTimeOffset.UtcNow,
-                Fields           = templateFields,
-                FromAssemblyName = assemblyName
-            };
-
-            await _repository.InsertAsync(templateRecord);
-        }
-        else
-        {
-            _repository.UpdateMany(_ => _.TemplateType == type,
-                                   record => new TemplateRecord
-                                   {
-                                       IsDeleted        = false,
-                                       FieldsString     = string.Join(";", templateFields),
-                                       FromAssemblyName = assemblyName
-                                   });
-        }
-    }
-
-    public async Task RegisterTemplate<TTemplate>(string templateTitle, string templateContent) where TTemplate : ITemplateModel
-    {
-        if (!CheckCanProcessTemplate())
-            return;
-
-        _templateContainer.RegisterTemplate<TTemplate>();
-
-        var type = typeof(TTemplate).FullName;
-
-        var templateFields = GetTemplateFields<TTemplate>();
-        var assemblyName   = typeof(TTemplate).Assembly.GetName().Name;
-
-        _logger.LogInformation($"Registering template type {type}");
-
-        var templatesToUpdate = _repository.Fetch(x => x.TemplateType == type);
-
-        if (!templatesToUpdate.Any())
-        {
-            _logger.LogInformation($"No template type {type} registered. Inserting new record...");
+            _logger.LogInformation("No template type {templateType} registered. Inserting new record...", type);
             var templateRecord = new TemplateRecord
             {
                 TemplateType     = type,
@@ -165,17 +127,19 @@ public class TemplateRegistrationService : ITemplateRegistrationService, ITempla
                                        FromAssemblyName = assemblyName
                                    });
 
-            _repository.UpdateMany(_ => _.TemplateType == type && string.IsNullOrEmpty(_.TemplateContent),
-                                   record => new TemplateRecord
-                                   {
-                                       TemplateContent = templateContent
-                                   });
+            if (!string.IsNullOrEmpty(templateContent))
+                _repository.UpdateMany(_ => _.TemplateType == type && string.IsNullOrEmpty(_.TemplateContent),
+                                       record => new TemplateRecord
+                                       {
+                                           TemplateContent = templateContent
+                                       });
 
-            _repository.UpdateMany(_ => _.TemplateType == type && string.IsNullOrEmpty(_.TemplateTitle),
-                                   record => new TemplateRecord
-                                   {
-                                       TemplateTitle = templateTitle
-                                   });
+            if (!string.IsNullOrEmpty(templateTitle))
+                _repository.UpdateMany(_ => _.TemplateType == type && string.IsNullOrEmpty(_.TemplateTitle),
+                                       record => new TemplateRecord
+                                       {
+                                           TemplateTitle = templateTitle
+                                       });
         }
     }
 

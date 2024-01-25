@@ -19,6 +19,6 @@ public class EventLog : EventLogBaseModel
 
     public EventLog(EventLogModel model)
     {
-        DataTransferObjectUtils.UpdateEntityFromDto(this, model);
+        DataTransferObjectUtils.UpdateFromDto(this, model);
     }
 }

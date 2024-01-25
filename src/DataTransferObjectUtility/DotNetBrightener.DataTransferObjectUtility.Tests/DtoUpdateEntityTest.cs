@@ -29,7 +29,7 @@ public class DtoUpdateEntityTest
             Name = "originalName"
         };
 
-        DataTransferObjectUtils.UpdateEntityFromDto<User>(user, updateDto, out var auditTrail);
+        user.UpdateFromDto<User>(updateDto, out var auditTrail);
 
         Assert.That(2, Is.EqualTo(user.Age));
         Assert.That(1, Is.EqualTo(user.Id));
@@ -59,14 +59,13 @@ public class DtoUpdateEntityTest
             Name = "originalName"
         };
 
-        DataTransferObjectUtils.UpdateEntityFromDtoExpression<User>(user,
-                                                                    u => new
-                                                                    {
-                                                                        Age  = u.Age + 1,
-                                                                        Name = "Updated " + u.Name
-                                                                    },
-                                                                    out var auditTrail);
-            
+        user.UpdateFromExpression<User>(u => new
+                                        {
+                                            Age  = u.Age + 1,
+                                            Name = "Updated " + u.Name
+                                        },
+                                        out var auditTrail);
+
         Assert.That(2, Is.EqualTo(user.Age));
         Assert.That(1, Is.EqualTo(user.Id));
         Assert.That("Updated originalName", Is.EqualTo(user.Name));

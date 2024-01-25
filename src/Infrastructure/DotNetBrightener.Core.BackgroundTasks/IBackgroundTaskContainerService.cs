@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection.Metadata.Ecma335;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
@@ -22,16 +23,19 @@ public interface IBackgroundTaskContainerService
 
 public class BackgroundTaskContainerService : IBackgroundTaskContainerService, IDisposable
 {
-    private readonly IServiceScopeFactory _serviceResolver;
-    private readonly Timer                _timer;
-    private readonly ILogger              _logger;
+    private readonly IServiceScopeFactory     _serviceResolver;
+    private readonly IBackgroundTaskScheduler _backgroundTaskScheduler;
+    private readonly Timer                    _timer;
+    private readonly ILogger                  _logger;
 
-    public BackgroundTaskContainerService(ILogger<BackgroundTaskContainerService> logger,
-                                          IServiceScopeFactory                    serviceScopeFactory)
+    public BackgroundTaskContainerService(IServiceScopeFactory                    serviceScopeFactory,
+                                          IBackgroundTaskScheduler                backgroundTaskScheduler,
+                                          ILogger<BackgroundTaskContainerService> logger)
     {
-        _serviceResolver = serviceScopeFactory;
-        _logger          = logger;
-        _timer           = new Timer();
+        _serviceResolver         = serviceScopeFactory;
+        _backgroundTaskScheduler = backgroundTaskScheduler;
+        _logger                  = logger;
+        _timer                   = new Timer();
 
         Interval = TimeSpan.FromSeconds(30);
 
@@ -50,6 +54,8 @@ public class BackgroundTaskContainerService : IBackgroundTaskContainerService, I
         {
             _timer.Start();
         }
+
+        _backgroundTaskScheduler.Activate();
     }
 
     public void Terminate()
@@ -87,12 +93,12 @@ public class BackgroundTaskContainerService : IBackgroundTaskContainerService, I
 
     private Task DoWork()
     {
-        return Task.Run(async () =>
-        {
-            using var backgroundScope = _serviceResolver.CreateScope();
-            var       manager         = backgroundScope.ServiceProvider.GetRequiredService<IBackgroundTaskRunner>();
-            await manager.DoWork();
-        });
+        using var backgroundScope = _serviceResolver.CreateScope();
+
+        var       manager         = backgroundScope.ServiceProvider
+                                                   .GetRequiredService<IBackgroundTaskRunner>();
+
+        return manager.DoWork();
     }
 
     public void Dispose()

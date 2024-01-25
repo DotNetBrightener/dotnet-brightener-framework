@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -11,8 +12,33 @@ namespace DotNetBrightener.WebApi.GenericCRUD.Extensions;
 
 public static class EntityMetadataExtractor
 {
+    private static readonly ConcurrentDictionary<Type, string[]>       DefaultColumnsMappings = new();
+    private static readonly ConcurrentDictionary<Type, string[]>       IgnoreColumnsMappings  = new();
+    private static readonly ConcurrentDictionary<Type, EntityMetadata> EntityMetadataMappings = new();
+
+    public static string[] GetIgnoredProperties(this Type type)
+    {
+        if (IgnoreColumnsMappings.TryGetValue(type, out var mapping))
+            return mapping;
+
+        var mappings = type.GetProperties()
+                           .Where(prop => prop.HasAttribute<JsonIgnoreAttribute>() ||
+                                          prop.HasAttribute<
+                                              System.Text.Json.Serialization.JsonIgnoreAttribute>())
+                           .Select(prop => prop.Name)
+                           .ToArray();
+
+        IgnoreColumnsMappings.TryAdd(type, mappings);
+
+        return mappings;
+    }
+
     public static EntityMetadata<TType> ExtractMetadata<TType>()
     {
+        if (EntityMetadataMappings.TryGetValue(typeof(TType), out var metadata) && 
+            metadata is EntityMetadata<TType> metadataValue)
+            return metadataValue;
+
         var properties = typeof(TType).GetProperties();
 
         var columns = new List<EntityColumn>();
@@ -39,51 +65,57 @@ public static class EntityMetadataExtractor
             columns.Add(column);
         }
 
-        var exampleJson = Activator.CreateInstance<TType>();
-
-        return new EntityMetadata<TType>
+        metadataValue = new EntityMetadata<TType>
         {
             Columns = columns.ToArray()
         };
+
+        EntityMetadataMappings.TryAdd(typeof(TType), metadataValue);
+
+        return metadataValue;
     }
 
-    internal static string[] GetDefaultColumns(Type propertyType, string prefix = "", int level = 1)
+    internal static string[] GetDefaultColumns(this Type inputType, string prefix = "", int level = 1)
     {
-        return propertyType.GetProperties()
-                           .SelectMany(property =>
-                            {
-                                string propertyName = $"{prefix}{property.Name}";
-                                Type   propertyType = property.PropertyType;
+        if (DefaultColumnsMappings.TryGetValue(inputType, out var defaultColumns))
+            return defaultColumns;
 
-                                if (propertyType.IsClass &&
-                                    propertyType != typeof(string) &&
-                                    level <= 2)
-                                {
-                                    // Recursive call for nested classes
-                                    return GetDefaultColumns(propertyType, propertyName + ".", level + 1);
-                                }
+        defaultColumns = inputType.GetProperties()
+                                  .SelectMany(property =>
+                                   {
+                                       var propName      = prefix + property.Name;
+                                       var innerPropType = property.PropertyType;
 
-                                if (property.HasAttribute<JsonIgnoreAttribute>() ||
-                                    property.HasAttribute<System.Text.Json.Serialization.JsonIgnoreAttribute>())
-                                    return Array.Empty<string>();
+                                       if (innerPropType.IsClass &&
+                                           innerPropType != typeof(string) &&
+                                           level <= 2)
+                                       {
+                                           // Recursive call for nested classes
+                                           return GetDefaultColumns(innerPropType, propName + ".", level + 1);
+                                       }
 
-                                return new[]
-                                {
-                                    propertyName
-                                };
-                            })
-                           .Concat(new[]
-                            {
-                                prefix.Trim('.')
-                            })
-                           .Where(_ => !string.IsNullOrEmpty(_))
-                           .Distinct()
-                           .ToArray();
-    }
+                                       if (property.HasAttribute<JsonIgnoreAttribute>() ||
+                                           property.HasAttribute<System.Text.Json.Serialization.JsonIgnoreAttribute>())
+                                       {
+                                           return Array.Empty<string>();
+                                       }
 
-    internal static string[] GetDefaultColumns<TType>(string prefix = "")
-    {
-        return GetDefaultColumns(typeof(TType), prefix);
+                                       return new[]
+                                       {
+                                           propName
+                                       };
+                                   })
+                                  .Concat(new[]
+                                   {
+                                       prefix.Trim('.')
+                                   })
+                                  .Where(s => !string.IsNullOrEmpty(s))
+                                  .Distinct()
+                                  .ToArray();
+
+        DefaultColumnsMappings.TryAdd(inputType, defaultColumns);
+
+        return defaultColumns;
     }
 
     internal static int? GetMaxLength(this PropertyInfo property)
@@ -130,12 +162,16 @@ public static class EntityMetadataExtractor
     }
 }
 
-public class EntityMetadata<TType>
+public class EntityMetadata
 {
-    private static readonly JsonSerializerSettings _jsonSerializerSettings = new JsonSerializerSettings
+    protected static readonly JsonSerializerSettings JsonSerializerSettings = new JsonSerializerSettings
     {
         ContractResolver = new CamelCasePropertyNamesContractResolver()
     };
+}
+
+public class EntityMetadata<TType> : EntityMetadata
+{
 
     public EntityColumn[] Columns { get; set; }
 
@@ -150,7 +186,7 @@ public class EntityMetadata<TType>
             var exampleJson = Activator.CreateInstance<TType>();
 
             var serializeObject = JsonConvert.SerializeObject(exampleJson,
-                                                              _jsonSerializerSettings);
+                                                              JsonSerializerSettings);
 
             return JsonConvert.DeserializeObject<Dictionary<string, object>>(serializeObject);
         }

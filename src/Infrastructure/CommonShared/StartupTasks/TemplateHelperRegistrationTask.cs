@@ -10,8 +10,8 @@ public class TemplateHelperRegistrationTask : IStartupTask
     private readonly ITemplateHelperRegistration _templateHelperRegistration;
     private readonly ILogger                     _logger;
 
-    public TemplateHelperRegistrationTask(ITemplateHelperRegistration                templateHelperRegistration,
-                                          ILogger<TemplateAutomaticRegistrationTask> logger)
+    public TemplateHelperRegistrationTask(ITemplateHelperRegistration             templateHelperRegistration,
+                                          ILogger<TemplateHelperRegistrationTask> logger)
     {
         _templateHelperRegistration = templateHelperRegistration;
         _logger                     = logger;
@@ -22,6 +22,7 @@ public class TemplateHelperRegistrationTask : IStartupTask
     public async Task Execute()
     {
         _logger.LogInformation($"Registering template helpers...");
+
         _templateHelperRegistration.RegisterHelpers();
     }
 }

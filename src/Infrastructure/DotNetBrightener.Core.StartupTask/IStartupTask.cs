@@ -3,7 +3,7 @@
 namespace DotNetBrightener.Core.StartupTask;
 
 /// <summary>
-///     Represents a task that is executed at the application startup
+///     Represents a task that is executed at the application startup, can be asynchronous
 /// </summary>
 public interface IStartupTask
 {
@@ -18,3 +18,8 @@ public interface IStartupTask
     /// <returns></returns>
     Task Execute();
 }
+
+/// <summary>
+///    Represents a task that is executed at the application startup synchronously
+/// </summary>
+public interface ISynchronousStartupTask : IStartupTask { }

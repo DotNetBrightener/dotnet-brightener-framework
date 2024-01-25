@@ -50,10 +50,10 @@ public static class DataTransferObjectUtils
     /// <returns>
     ///     The <see cref="entityObject"/> itself
     /// </returns>
-    public static T UpdateEntityFromDtoExpression<T>(T               entityObject,
-                                                     Func<T, object> updateExpression,
-                                                     params string[] ignoreProperties) where T : class =>
-        UpdateEntityFromDtoExpression(entityObject, updateExpression, out _, ignoreProperties);
+    public static T UpdateFromExpression<T>(this T          entityObject,
+                                            Func<T, object> updateExpression,
+                                            params string[] ignoreProperties) where T : class =>
+        UpdateFromExpression(entityObject, updateExpression, out _, ignoreProperties);
 
     /// <summary>
     ///     Updates the given <see cref="entityObject"/> by the values provided in the <seealso cref="dataTransferObject"/>
@@ -73,10 +73,10 @@ public static class DataTransferObjectUtils
     /// <returns>
     ///     The <see cref="entityObject"/> itself
     /// </returns>
-    public static T UpdateEntityFromDtoExpression<T>(T                   entityObject,
-                                                     Func<T, object>     updateExpression,
-                                                     out    AuditTrail<T> auditTrail,
-                                                     params string[]     ignoreProperties) where T : class
+    public static T UpdateFromExpression<T>(this T               entityObject,
+                                            Func<T, object>      updateExpression,
+                                            out    AuditTrail<T> auditTrail,
+                                            params string[]      ignoreProperties) where T : class
     {
         auditTrail = new AuditTrail<T>();
 
@@ -127,10 +127,10 @@ public static class DataTransferObjectUtils
     /// <returns>
     ///     The <see cref="entityObject"/> itself
     /// </returns>
-    public static T UpdateEntityFromDto<T>(T               entityObject,
-                                           object          dataTransferObject,
-                                           out AuditTrail<T> auditTrail,
-                                           params string[] ignoreProperties) where T : class
+    public static T UpdateFromDto<T>(this T               entityObject,
+                                     object               dataTransferObject,
+                                     out    AuditTrail<T> auditTrail,
+                                     params string[]      ignoreProperties) where T : class
     {
         auditTrail = new AuditTrail<T>();
 
@@ -188,10 +188,10 @@ public static class DataTransferObjectUtils
     /// <returns>
     ///     The <see cref="entityObject"/> itself
     /// </returns>
-    public static T UpdateEntityFromDto<T>(T               entityObject,
-                                           object          dataTransferObject,
-                                           params string[] ignoreProperties) where T : class
-        => UpdateEntityFromDto(entityObject, dataTransferObject, out _, ignoreProperties);
+    public static T UpdateFromDto<T>(T               entityObject,
+                                     object          dataTransferObject,
+                                     params string[] ignoreProperties) where T : class
+        => UpdateFromDto(entityObject, dataTransferObject, out _, ignoreProperties);
 
     /// <summary>
     ///     Generates the member init expression for <typeparamref name="T"/> type from the given <seealso cref="dataTransferObject"/>
@@ -245,7 +245,8 @@ public static class DataTransferObjectUtils
     }
 
     /// <summary>
-    ///     Generates the expression to initialize data transfer object from the given properties of type <typeparamref name="T"/>
+    ///     Generates the expression to initialize data transfer object from
+    ///     the given properties of type <typeparamref name="T"/>
     /// </summary>
     /// <typeparam name="T">
     ///     The type of entity
@@ -256,8 +257,8 @@ public static class DataTransferObjectUtils
     /// <returns>
     ///     The expression to initialize a dynamic data transfer object from type <typeparamref name="T"/>
     /// </returns>
-    public static Expression<Func<T, object>> BuildDtoSelectorExpressionFromEntity<T>(
-        IEnumerable<string> propertiesList) where T : class
+    public static Expression<Func<T, object>> ToDtoSelectorExpression<T>(this IEnumerable<string> propertiesList)
+        where T : class
     {
         var properties = propertiesList != null
                              ? propertiesList as string[] ?? propertiesList.ToArray()

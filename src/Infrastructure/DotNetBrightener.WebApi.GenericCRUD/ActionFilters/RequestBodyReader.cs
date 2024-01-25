@@ -1,20 +1,20 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace DotNetBrightener.WebApi.GenericCRUD.ActionFilters;
 
 /// <summary>
 ///     The filter called before the action execution, to read the request body into a string.
-///     In the action, obtain the body by calling the <see cref="ObtainBody"/> method.
+///     In the action, obtain the body by calling the <see cref="IHttpContextAccessor.ObtainRequestBody"/> method.
 /// </summary>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 public class RequestBodyReader
@@ -32,12 +32,14 @@ public class RequestBodyReader
     public void OnAuthorization(AuthorizationFilterContext context)
     {
         // if not POST / PATCH request, ignore
-        if (!SupportedMethods.Any(_ => _.Equals(context?.HttpContext.Request.Method,
-                                                StringComparison.OrdinalIgnoreCase)))
+        if (!SupportedMethods.Any(method => method.Equals(context?.HttpContext.Request.Method,
+                                                          StringComparison.OrdinalIgnoreCase)))
             return;
 
+        var req = context.HttpContext.Request;
+
         // no point reading body if it's not available
-        if (context?.HttpContext.Request.Body is null)
+        if (req.Body is null)
             return;
 
         var syncIoFeature = context.HttpContext.Features.Get<IHttpBodyControlFeature>();
@@ -46,8 +48,6 @@ public class RequestBodyReader
             return;
 
         syncIoFeature.AllowSynchronousIO = true;
-
-        var req = context.HttpContext.Request;
 
         req.EnableBuffering();
 
@@ -74,12 +74,17 @@ public class RequestBodyReader
         req.Body.Seek(0, SeekOrigin.Begin);
     }
 
-    public static string ObtainBody(IHttpContextAccessor httpContextAccessor)
+    public Task OnAuthorizationAsync(AuthorizationFilterContext context)
+    {
+        return Task.Run(() => OnAuthorization(context));
+    }
+
+    internal static string ObtainBody(IHttpContextAccessor httpContextAccessor)
     {
         return httpContextAccessor.RetrieveValue<string>(RequestBodyKey);
     }
 
-    public static TModel ObtainBodyAs<TModel>(IHttpContextAccessor httpContextAccessor)
+    internal static TModel ObtainBodyAs<TModel>(IHttpContextAccessor httpContextAccessor)
     {
         var bodyObject = httpContextAccessor.RetrieveValue<TModel>();
 
@@ -95,15 +100,10 @@ public class RequestBodyReader
         return bodyObject;
     }
 
-    public static JObject ObtainBodyAsJObject(IHttpContextAccessor httpContextAccessor)
+    internal static JObject ObtainBodyAsJObject(IHttpContextAccessor httpContextAccessor)
     {
         var bodyString = httpContextAccessor.RetrieveValue<string>(RequestBodyKey);
 
         return JObject.Parse(bodyString);
-    }
-
-    public Task OnAuthorizationAsync(AuthorizationFilterContext context)
-    {
-        return Task.Run(() => OnAuthorization(context));
     }
 }

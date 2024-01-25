@@ -93,10 +93,16 @@ public class EventLoggingWatcher : TargetWithLayout, IEventLogWatcher
 
     public List<EventLogModel> GetQueuedEventLogRecords()
     {
-        List<EventLogModel> queuedEventLogRecords = new(_queue);
-        _queue.Clear();
+        lock (_queue)
+        {
+            if (_queue.Count == 0)
+                return new List<EventLogModel>();
 
-        return queuedEventLogRecords;
+            List<EventLogModel> queuedEventLogRecords = [.._queue];
+            _queue.Clear();
+
+            return queuedEventLogRecords;
+        }
     }
 
     protected override void Write(LogEventInfo logEvent)

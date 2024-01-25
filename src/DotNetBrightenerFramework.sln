@@ -156,7 +156,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Temporal_EF_Test", "Tempora
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Temporal_EF_Test", "..\demos & tests\Temporal_EF_Test\Temporal_EF_Test.csproj", "{8C0B7D4F-4C02-4BAE-957C-D944FD96AF92}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BackgroundScheduleTest", "..\demos & tests\BackgroundScheduleTest\BackgroundScheduleTest.csproj", "{816D1315-04CC-46AC-A16D-B87F70D16628}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BackgroundScheduleTest", "..\demos & tests\BackgroundScheduleTest\BackgroundScheduleTest.csproj", "{816D1315-04CC-46AC-A16D-B87F70D16628}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -634,6 +634,7 @@ Global
 		Shared\SharedExtensions.DateTime\DateTimeExtensions.projitems*{7103c447-db31-4128-9e7a-47872ce5df58}*SharedItemsImports = 5
 		Shared\SharedExtensions.XmlDocumentationHelper\SharedExtensions.XmlDocumentationHelper.projitems*{7103c447-db31-4128-9e7a-47872ce5df58}*SharedItemsImports = 5
 		Shared\SharedExtensions.XmlDocumentationHelper\SharedExtensions.XmlDocumentationHelper.projitems*{7d3709d1-1aa1-4f52-b6f1-0398f4977049}*SharedItemsImports = 5
+		Shared\SharedExtensions.ServiceCollection\SharedExtensions.ServiceCollectionExtensions.projitems*{7e618afd-cf2f-4a14-b949-fdd79aee1133}*SharedItemsImports = 5
 		Shared\SharedExtensions.DateTimeProvider\DateTimeExtensions.projitems*{8aa48c89-69ee-47db-8ce4-b7b40b36a210}*SharedItemsImports = 13
 		Shared\SharedExtensions.ServiceCollection\SharedExtensions.ServiceCollectionExtensions.projitems*{8cd77910-a209-4fff-a324-dfb73f91d4da}*SharedItemsImports = 13
 		Shared\SharedExtensions.XmlDocumentationHelper\SharedExtensions.XmlDocumentationHelper.projitems*{949e66b2-8674-450a-b45b-b5c0e6530e59}*SharedItemsImports = 13

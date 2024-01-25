@@ -16,7 +16,6 @@ public static class BackgroundServiceCollectionExtensions
     public static IServiceCollection EnableBackgroundTaskServices(this IServiceCollection services)
     {
         // Background tasks
-        services.AddSingleton<IBackgroundServiceProvider>(provider => new BackgroundServiceProvider(provider));
         services.AddSingleton<IBackgroundTaskContainerService, BackgroundTaskContainerService>();
         services.AddSingleton<IBackgroundTaskScheduler, BackgroundTaskScheduler>();
         services.AddScoped<IBackgroundTaskRunner, BackgroundTaskRunner>();

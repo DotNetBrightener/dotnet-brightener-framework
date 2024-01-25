@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Threading.Tasks;
 
 namespace DotNetBrightener.WebApi.GenericCRUD.Extensions;
 
@@ -19,24 +18,17 @@ public static partial class QueryableDeepFilterExtensions
     /// </returns>
     public static IQueryable<TIn> AddOrderingAndPaginationQuery<TIn>(this IQueryable<TIn>       entitiesQuery,
                                                                      Dictionary<string, string> filterDictionary,
-                                                                     string                     entityIdColumnName,
+                                                                     string                     defaultSortPropName,
                                                                      out int                    pageSize,
                                                                      out int                    pageIndex)
         where TIn : class
     {
         var paginationQuery = filterDictionary.ToQueryModel<BaseQueryModel>();
 
-        pageSize = paginationQuery.PageSize;
-
-        if (pageSize == 0)
-        {
-            pageSize = 20;
-        }
-
+        pageSize  = paginationQuery.PageSize;
         pageIndex = paginationQuery.PageIndex;
 
-        var orderedEntitiesQuery = entitiesQuery.OrderBy(ExpressionExtensions
-                                                            .BuildMemberAccessExpression<TIn>(entityIdColumnName));
+        var orderedEntitiesQuery = entitiesQuery.OrderBy(defaultSortPropName.ToMemberAccessExpression<TIn>());
 
         if (paginationQuery.OrderedColumns.Length > 0)
         {
@@ -44,22 +36,18 @@ public static partial class QueryableDeepFilterExtensions
 
             foreach (var orderByColumn in paginationQuery.OrderedColumns)
             {
-                var actualColumnName = orderByColumn;
+                var actualColumnName = orderByColumn.TrimStart('-');
+
+                var orderByColumnExpr = actualColumnName.ToMemberAccessExpression<TIn>();
 
                 if (orderByColumn.StartsWith("-"))
                 {
-                    actualColumnName = orderByColumn.Substring(1);
-                    var orderByColumnExpr =
-                        ExpressionExtensions.BuildMemberAccessExpression<TIn>(actualColumnName);
-
                     orderedEntitiesQuery = sortIndex == 0
                                                ? entitiesQuery.OrderByDescending(orderByColumnExpr)
                                                : orderedEntitiesQuery.ThenByDescending(orderByColumnExpr);
                 }
                 else
                 {
-                    var orderByColumnExpr =
-                        ExpressionExtensions.BuildMemberAccessExpression<TIn>(actualColumnName);
                     orderedEntitiesQuery = sortIndex == 0
                                                ? entitiesQuery.OrderBy(orderByColumnExpr)
                                                : orderedEntitiesQuery.ThenBy(orderByColumnExpr);
@@ -87,8 +75,8 @@ public static partial class QueryableDeepFilterExtensions
     /// <returns>
     ///     The new query with extra filters from <see cref="filterDictionary"/>
     /// </returns>
-    public static async Task<IQueryable<TIn>> ApplyDeepFilters<TIn>(this IQueryable<TIn>       entitiesQuery,
-                                                                    Dictionary<string, string> filterDictionary)
+    public static IQueryable<TIn> ApplyDeepFilters<TIn>(this IQueryable<TIn>       entitiesQuery,
+                                                        Dictionary<string, string> filterDictionary)
         where TIn : class
     {
         if (filterDictionary.Keys.Count == 0)

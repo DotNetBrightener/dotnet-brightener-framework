@@ -1,15 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DotNetBrightener.WebApi.GenericCRUD.Extensions;
+
 public static partial class QueryableDeepFilterExtensions
 {
-    private static Expression<Func<TIn, bool>> BuildDateTimePredicateQuery<TIn>(string[] filterValues,
-                                                                                Type propertyUnderlingType,
+    private static Expression<Func<TIn, bool>> BuildDateTimePredicateQuery<TIn>(string[]         filterValues,
+                                                                                Type             propertyUnderlingType,
                                                                                 PropertyPathInfo property)
         where TIn : class
     {
