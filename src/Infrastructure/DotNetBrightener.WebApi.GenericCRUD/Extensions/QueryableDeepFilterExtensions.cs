@@ -30,7 +30,7 @@ public static partial class QueryableDeepFilterExtensions
 
         var orderedEntitiesQuery = entitiesQuery.OrderBy(defaultSortPropName.ToMemberAccessExpression<TIn>());
 
-        if (paginationQuery.OrderedColumns.Length > 0)
+        if (paginationQuery.OrderedColumns.Count > 0)
         {
             var sortIndex = 0;
 

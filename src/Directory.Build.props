@@ -1,23 +1,9 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
-		<VersionPrefix>
-			2024.0.6
-		</VersionPrefix>
-		<VersionSuffix></VersionSuffix>
-		<BuildNumber></BuildNumber>
-		<VersionSuffix Condition="'$(VersionSuffix)' != '' AND '$(BuildNumber)' != ''">
-			$(VersionSuffix)-$(BuildNumber)
-		</VersionSuffix>
-		<Copyright>
-			© $([System.DateTime]::Now.ToString(yyyy)) DotNet Brightener
-		</Copyright>
-		<Authors>
-			DotNet Brightener &lt;admin@dotnetbrightener.com&gt;
-		</Authors>
-		<Company>
-			DotNet Brightener
-		</Company>
+		<Copyright>© $([System.DateTime]::Now.ToString(yyyy)) DotNet Brightener</Copyright>
+		<Authors>DotNet Brightener &lt;admin@dotnetbrightener.com&gt;</Authors>
+		<Company>DotNet Brightener</Company>
 
 		<LangVersion>latest</LangVersion>
 		<IncludeSymbols>true</IncludeSymbols>
@@ -26,9 +12,7 @@
 		<RepositoryUrl>https://github.com/dotnetbrightener/dotnet-brightener-framework</RepositoryUrl>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<PackageTags>
-			DotNetBrightener
-		</PackageTags>
+		<PackageTags>DotNetBrightener</PackageTags>
 
 		<NoWarn>$(NoWarn);0168;1701;1702;1591;1574;1723;1998;1573;RCS1194;CS8618;</NoWarn>
 		<PackageIcon>dotnet-brightener-logo.png</PackageIcon>
@@ -36,10 +20,27 @@
 		<PackageReadmeFile>readme.md</PackageReadmeFile>
 	</PropertyGroup>
 
+	<!-- Version settings -->
+	<PropertyGroup>
+		<FileVersionPotion>$([System.DateTime]::UtcNow.DayOfYear)$([System.DateTime]::Now.ToString(HH))</FileVersionPotion>
+		<BuildNumber>$([System.DateTime]::Now.ToString(yyMMddHH))</BuildNumber>
+
+		<VersionPrefix>2024.0.7</VersionPrefix>
+
+		<AssemblyVersion>$(VersionPrefix).$(FileVersionPotion)</AssemblyVersion>
+		<FileVersion>$(VersionPrefix).$(FileVersionPotion)</FileVersion>
+	</PropertyGroup>
+
+	<!-- Version settings for Debugging -->
+	<PropertyGroup Condition="'$(Configuration)' != 'Release'">
+		<VersionSuffix>alpha</VersionSuffix>
+
+		<VersionSuffix Condition="'$(VersionSuffix)' != '' AND '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
+	</PropertyGroup>
+
 	<PropertyGroup Condition="'$(Configuration)'=='Release'">
 		<DefineConstants>TRACE;RELEASE</DefineConstants>
 		<PackageOutputPath>$(SolutionDir)/nupkg_release</PackageOutputPath>
-		<VersionSuffix Condition="'$(VersionSuffix)' != '' AND '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
 	</PropertyGroup>
 
 	<ItemGroup>

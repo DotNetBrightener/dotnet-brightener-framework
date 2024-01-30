@@ -96,7 +96,6 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
     /// <summary>
     ///     Retrieves the collection of records of type <typeparamref name="TEntityType" />.
     /// </summary>
-    /// <typeparam name="TEntityType">The type of the entity associated with this controller</typeparam>
     /// <response code="200">
     ///     The collection of records of type <typeparamref name="TEntityType" />.
     /// </response>
@@ -119,7 +118,7 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
         var currentRequestQueryStrings = Request.Query.ToQueryModel<BaseQueryModel>();
 
         if (!await VerifyPickColumns<TEntityType>(currentRequestQueryStrings.FilteredColumns,
-                                                  out string[] invalidColumns))
+                                                  out var invalidColumns))
         {
             return StatusCode((int)HttpStatusCode.Forbidden,
                               new
@@ -167,7 +166,7 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
         var currentRequestQueryStrings = Request.Query.ToQueryModel<BaseQueryModel>();
 
         if (!await VerifyPickColumns<TEntityType>(currentRequestQueryStrings.FilteredColumns,
-                                                  out string[] invalidColumns))
+                                                  out var invalidColumns))
         {
             return StatusCode((int)HttpStatusCode.Forbidden,
                               new
@@ -231,7 +230,7 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
         var currentRequestQueryStrings = Request.Query.ToQueryModel<BaseQueryModel>();
 
         if (!await VerifyPickColumns<TEntityType>(currentRequestQueryStrings.FilteredColumns,
-                                                  out string[] invalidColumns))
+                                                  out var invalidColumns))
         {
             return StatusCode((int)HttpStatusCode.Forbidden,
                               new
@@ -323,7 +322,7 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
     /// <returns>
     ///     <c>true</c> if the requested columns are valid; otherwise, <c>false</c>
     /// </returns>
-    protected virtual Task<bool> VerifyPickColumns<TIn>(string[] queriedColumns, out string[] invalidColumns)
+    protected virtual Task<bool> VerifyPickColumns<TIn>(List<string> queriedColumns, out List<string> invalidColumns)
     {
         var alwaysIgnoreColumns = typeof(TIn).GetIgnoredProperties();
 
@@ -332,30 +331,47 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
                                                                 aic.Equals(c,
                                                                            StringComparison
                                                                               .OrdinalIgnoreCase)))
-                        .ToArray();
+                        .ToList();
 
         var availableColumns = typeof(TIn).GetDefaultColumns();
-        invalidColumns = queriedColumns
-                        .Where(requestingColumn => !string.IsNullOrEmpty(requestingColumn) &&
-                                                   !availableColumns
-                                                      .Any(property =>
-                                                               property.Equals(requestingColumn,
-                                                                               StringComparison
-                                                                                  .OrdinalIgnoreCase) ||
-                                                               requestingColumn.StartsWith(property,
-                                                                                           StringComparison
-                                                                                              .OrdinalIgnoreCase)))
-                        .Concat(invalidColumns)
-                        .Distinct()
-                        .ToArray();
+        var correctedColumns = new List<string>();
 
-        return Task.FromResult(invalidColumns.Length == 0);
+        foreach (var queriedColumn in queriedColumns)
+        {
+            if (string.IsNullOrEmpty(queriedColumn))
+            {
+                continue;
+            }
+
+            var columnAvailable = availableColumns.FirstOrDefault(property =>
+                                                                      property.Equals(queriedColumn,
+                                                                                      StringComparison
+                                                                                         .OrdinalIgnoreCase) ||
+                                                                      queriedColumn.StartsWith(property,
+                                                                                               StringComparison
+                                                                                                  .OrdinalIgnoreCase));
+
+            if (columnAvailable != null)
+            {
+                correctedColumns.Add(columnAvailable);
+            }
+            else
+            {
+                if (!invalidColumns.Contains(queriedColumn))
+                    invalidColumns.Add(queriedColumn);
+            }
+        }
+
+        queriedColumns.Clear();
+        queriedColumns.AddRange(correctedColumns);
+
+        return Task.FromResult(invalidColumns.Count == 0);
     }
-    
+
     protected virtual async Task<IActionResult> GetListResult<TIn>(IQueryable<TIn>            entitiesQuery,
                                                                    string                     defaultSortColumnName,
                                                                    Dictionary<string, string> filterDictionary,
-                                                                   string[]                   columnsToPick)
+                                                                   List<string>               columnsToPick)
         where TIn : class
         => await this.GeneratePagedListResult(entitiesQuery,
                                               defaultSortColumnName,

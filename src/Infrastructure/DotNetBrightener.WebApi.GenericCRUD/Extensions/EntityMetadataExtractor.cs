@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -6,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 
 namespace DotNetBrightener.WebApi.GenericCRUD.Extensions;
@@ -75,47 +77,90 @@ public static class EntityMetadataExtractor
         return metadataValue;
     }
 
-    internal static string[] GetDefaultColumns(this Type inputType, string prefix = "", int level = 1)
+    public static string[] GetDefaultColumns(this Type inputType,
+                                             string    prefix         = "",
+                                             int       level          = 1,
+                                             bool      hasIgnoredAttr = false)
     {
+        if (level >= 2)
+        {
+            var jsonString = JsonConvert.SerializeObject(Activator.CreateInstance(inputType));
+            var jobject    = JsonConvert.DeserializeObject<JObject>(jsonString);
+
+            var columns = new List<string>();
+
+            if (!hasIgnoredAttr)
+                columns.Add(prefix.Trim('.'));
+
+            columns.AddRange(jobject.Properties().Select(key => prefix + key.Name));
+
+            return columns.ToArray();
+        }
+
         if (DefaultColumnsMappings.TryGetValue(inputType, out var defaultColumns))
             return defaultColumns;
 
-        defaultColumns = inputType.GetProperties()
-                                  .SelectMany(property =>
-                                   {
-                                       var propName      = prefix + property.Name;
-                                       var innerPropType = property.PropertyType;
+        var defaultColumnsList = inputType.GetProperties()
+                                          .SelectMany(property => RetrieveColumns(prefix, level, property))
+                                          .Where(s => !string.IsNullOrEmpty(s) &&
+                                                      !s.EndsWith(".Capacity") &&
+                                                      !s.EndsWith(".Count") &&
+                                                      !s.EndsWith(".Item") &&
+                                                      !s.EndsWith(".IsReadOnly")
+                                                )
+                                          .Distinct()
+                                          .ToList();
 
-                                       if (innerPropType.IsClass &&
-                                           innerPropType != typeof(string) &&
-                                           level <= 2)
-                                       {
-                                           // Recursive call for nested classes
-                                           return GetDefaultColumns(innerPropType, propName + ".", level + 1);
-                                       }
+        defaultColumns = defaultColumnsList.ToArray();
 
-                                       if (property.HasAttribute<JsonIgnoreAttribute>() ||
-                                           property.HasAttribute<System.Text.Json.Serialization.JsonIgnoreAttribute>())
-                                       {
-                                           return Array.Empty<string>();
-                                       }
-
-                                       return new[]
-                                       {
-                                           propName
-                                       };
-                                   })
-                                  .Concat(new[]
-                                   {
-                                       prefix.Trim('.')
-                                   })
-                                  .Where(s => !string.IsNullOrEmpty(s))
-                                  .Distinct()
-                                  .ToArray();
-
-        DefaultColumnsMappings.TryAdd(inputType, defaultColumns);
+        if (level == 1)
+            DefaultColumnsMappings.TryAdd(inputType, defaultColumns);
 
         return defaultColumns;
+    }
+
+    private static IEnumerable<string> RetrieveColumns(string prefix, int level, PropertyInfo property)
+    {
+        var propName      = prefix + property.Name;
+        var innerPropType = property.PropertyType;
+        var hasIgnoredAttr = property.HasAttribute<JsonIgnoreAttribute>() ||
+                             property
+                                .HasAttribute<System.Text.Json.Serialization.
+                                     JsonIgnoreAttribute>();
+
+        if (innerPropType.IsClass &&
+            !typeof(IEnumerable).IsAssignableFrom(innerPropType) &&
+            innerPropType != typeof(string) &&
+            level <= 2)
+        {
+            // Recursive call for nested classes
+            return GetDefaultColumns(innerPropType, propName + ".", level + 1, hasIgnoredAttr);
+        }
+
+        if (typeof(IEnumerable).IsAssignableFrom(innerPropType) &&
+            innerPropType != typeof(string) &&
+            level <= 2)
+        {
+            var innerTypeArgument = property.PropertyType.GetGenericArguments()
+                                            .FirstOrDefault();
+
+            // Recursive call for nested classes
+            return GetDefaultColumns(innerTypeArgument,
+                                     propName + ".",
+                                     level + 1,
+                                     hasIgnoredAttr);
+        }
+
+        // ignore properties with JsonIgnoreAttribute
+        if (hasIgnoredAttr)
+        {
+            return Array.Empty<string>();
+        }
+
+        return new[]
+        {
+            propName.Replace(".Item.", ".")
+        };
     }
 
     internal static int? GetMaxLength(this PropertyInfo property)

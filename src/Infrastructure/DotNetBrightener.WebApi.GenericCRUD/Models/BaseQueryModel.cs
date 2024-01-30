@@ -1,10 +1,9 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNetCore.Http;
 
 namespace DotNetBrightener.WebApi.GenericCRUD.Models;
 
@@ -22,12 +21,13 @@ public class BaseQueryModel
         set
         {
             FilteredColumns = string.IsNullOrEmpty(value)
-                                  ? Array.Empty<string>()
+                                  ? new List<string>()
                                   : value.Split(new[]
                                                 {
                                                     ',', ';'
                                                 },
-                                                StringSplitOptions.RemoveEmptyEntries);
+                                                StringSplitOptions.RemoveEmptyEntries)
+                                         .ToList();
         }
     }
 
@@ -50,24 +50,25 @@ public class BaseQueryModel
         set
         {
             OrderedColumns = string.IsNullOrEmpty(value)
-                                 ? Array.Empty<string>()
+                                 ? new List<string>()
                                  : value.Split(new[]
                                                {
                                                    ',', ';'
                                                },
-                                               StringSplitOptions.RemoveEmptyEntries);
+                                               StringSplitOptions.RemoveEmptyEntries)
+                                        .ToList();
         }
     }
 
     /// <summary>
     ///     Retrieves the collection of columns (properties) of the entity to retrieve from the REST API request
     /// </summary>
-    public string[] FilteredColumns { get; private set; } = Array.Empty<string>();
+    public List<string> FilteredColumns { get; private set; } = new List<string>();
 
     /// <summary>
     ///     Retrieves the collection of columns (properties) of the entity to retrieve from the REST API request
     /// </summary>
-    public string[] OrderedColumns { get; private set; } = Array.Empty<string>();
+    public List<string> OrderedColumns { get; private set; } = new List<string>();
 
     public bool DeletedRecordsOnly { get; set; } = false;
 
@@ -103,7 +104,7 @@ public class BaseQueryModel
 
         return baseQueryModel;
     }
-    
+
     /// <summary>
     ///     Convert the dictionary of string: string to the query model of <typeparamref name="TQueryModel" />
     /// </summary>

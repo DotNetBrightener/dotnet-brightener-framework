@@ -19,18 +19,15 @@ public static partial class QueryableDeepFilterExtensions
     /// <param name="columnsToPick"></param>
     /// <returns>The new query with additional operation, if any</returns>
     public static IQueryable PerformColumnsSelectorQuery<TIn>(this IQueryable<TIn> entitiesQuery,
-                                                              string[] columnsToPick = null) where TIn : class
+                                                              List<string> columnsToPick = null) where TIn : class
     {
-        var alwaysIgnoreColumns = typeof(TIn).GetIgnoredProperties();
-
         if (columnsToPick is null ||
-            columnsToPick.Length == 0)
+            columnsToPick.Count == 0)
         {
-            var availableColumns = typeof(TIn).GetDefaultColumns();
-            columnsToPick = availableColumns.Except(alwaysIgnoreColumns)
-                                            .Distinct()
-                                            .ToArray();
+            return entitiesQuery;
         }
+
+        var alwaysIgnoreColumns = typeof(TIn).GetIgnoredProperties();
 
         var columnsToReturn = columnsToPick.Except(alwaysIgnoreColumns)
                                            .ToArray();
@@ -76,7 +73,7 @@ public static partial class QueryableDeepFilterExtensions
                                                                          IQueryable<TIn> entitiesQuery,
                                                                          string defaultSortColumnName,
                                                                          Dictionary<string, string> filterDictionary,
-                                                                         string[] columnsToPick)
+                                                                         List<string> columnsToPick)
         where TIn : class
     {
 
