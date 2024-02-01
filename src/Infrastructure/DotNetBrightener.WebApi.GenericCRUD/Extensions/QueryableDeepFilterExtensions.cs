@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using DotNetBrightener.Framework.Exceptions;
 
 namespace DotNetBrightener.WebApi.GenericCRUD.Extensions;
 
@@ -20,7 +21,9 @@ public static partial class QueryableDeepFilterExtensions
                                                                      Dictionary<string, string> filterDictionary,
                                                                      string                     defaultSortPropName,
                                                                      out int                    pageSize,
-                                                                     out int                    pageIndex)
+                                                                     out int                    pageIndex,
+                                                                     Func<IQueryable<TIn>, IEnumerable<TIn>>
+                                                                         postProcessing = null)
         where TIn : class
     {
         var paginationQuery = filterDictionary.ToQueryModel<BaseQueryModel>();
@@ -32,36 +35,51 @@ public static partial class QueryableDeepFilterExtensions
 
         if (paginationQuery.OrderedColumns.Count > 0)
         {
-            var sortIndex = 0;
+            var sortInitialized = false;
 
             foreach (var orderByColumn in paginationQuery.OrderedColumns)
             {
                 var actualColumnName = orderByColumn.TrimStart('-');
-
-                var orderByColumnExpr = actualColumnName.ToMemberAccessExpression<TIn>();
-
-                if (orderByColumn.StartsWith("-"))
+                try
                 {
-                    orderedEntitiesQuery = sortIndex == 0
-                                               ? entitiesQuery.OrderByDescending(orderByColumnExpr)
-                                               : orderedEntitiesQuery.ThenByDescending(orderByColumnExpr);
-                }
-                else
-                {
-                    orderedEntitiesQuery = sortIndex == 0
-                                               ? entitiesQuery.OrderBy(orderByColumnExpr)
-                                               : orderedEntitiesQuery.ThenBy(orderByColumnExpr);
-                }
 
-                sortIndex++;
+                    var orderByColumnExpr = actualColumnName.ToMemberAccessExpression<TIn>();
+
+                    if (orderByColumn.StartsWith("-"))
+                    {
+                        orderedEntitiesQuery = !sortInitialized 
+                                                   ? entitiesQuery.OrderByDescending(orderByColumnExpr)
+                                                   : orderedEntitiesQuery.ThenByDescending(orderByColumnExpr);
+                    }
+                    else
+                    {
+                        orderedEntitiesQuery = !sortInitialized 
+                                                   ? entitiesQuery.OrderBy(orderByColumnExpr)
+                                                   : orderedEntitiesQuery.ThenBy(orderByColumnExpr);
+                    }
+
+                    if (!sortInitialized)
+                        sortInitialized = true;
+                }
+                catch (UnknownPropertyException)
+                {
+                    continue;
+                }
             }
         }
 
         var itemsToSkip = pageIndex * pageSize;
         var itemsToTake = pageSize;
 
-        return orderedEntitiesQuery.Skip(itemsToSkip)
-                                   .Take(itemsToTake);
+        var finalDataSetQuery = orderedEntitiesQuery.Skip(itemsToSkip)
+                                                    .Take(itemsToTake);
+
+        if (postProcessing != null)
+        {
+            finalDataSetQuery = postProcessing(finalDataSetQuery).AsQueryable();
+        }
+
+        return finalDataSetQuery;
     }
 
     /// <summary>

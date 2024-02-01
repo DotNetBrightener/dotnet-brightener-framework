@@ -371,12 +371,15 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
     protected virtual async Task<IActionResult> GetListResult<TIn>(IQueryable<TIn>            entitiesQuery,
                                                                    string                     defaultSortColumnName,
                                                                    Dictionary<string, string> filterDictionary,
-                                                                   List<string>               columnsToPick)
+                                                                   List<string>               columnsToPick,
+                                                                   Func<IQueryable<TIn>, IEnumerable<TIn>>
+                                                                       postProcessing = null)
         where TIn : class
         => await this.GeneratePagedListResult(entitiesQuery,
                                               defaultSortColumnName,
                                               filterDictionary,
-                                              columnsToPick);
+                                              columnsToPick,
+                                              postProcessing);
 
     /// <summary>
     ///     Returns the property access name from the given selector

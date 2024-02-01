@@ -70,13 +70,35 @@ In `Startup.cs` or `Program.cs`, register your DataService interface and impleme
 builder.Services.AddScoped<IProductDocumentDataService, ProductDocumentDataService>();
 ```
 
+If you use CORS, you will need to add the following to the `ConfigureServices` method in `Startup.cs`:
+
+```csharp
+
+    services.AddCors(options =>
+    {
+        options.AddPolicy("CorsPolicy",
+                            builder =>
+                            {
+                                // other configurations for your CORS policy builder
+
+                                // builder.AllowAnyMethod()
+                                //        .AllowAnyHeader();
+
+                                  
+                                // This is required for the headers that returned from the paged list API to be exposed to the consumers
+                                builder.AddPagedDataSetExposedHeaders();
+                            });
+    });
+
+```
+
 Now your API is available. Check out the next section for the available APIs and what to expect.
  
 # Available CRUD APIs
 
 The following API for CRUD will be available when you implement the CRUD controllers.
  
-### `GET` /api/{entity}
+### `GET` /api/[entity]
 * Retrieve list of records of the `entity` type, and satisfies the filter, if provided
  
 This API accepts the following query string parameters:
@@ -124,7 +146,16 @@ The following operators are supported for `int`, `float`, `double`, `decimal`, `
 |Less Than<br />Before (for `datetime` types)|`<`|`id=<(10)`<br />`displayIndex=<(200)`<br />`invoiceDate=<(2023-12-01)`|-|
 |Less Than or Equals<br />Before or On (for `datetime` types)|`<=`|`id=<=(10)`<br />`displayIndex=<=(200)`<br />`invoiceDate=<=(2023-12-01)`|-|
  
-### `GET` /api/{entity}/{id}
+The response of the API also has the headers as followed that help you identify the total items available, the result count, requested page size and requested page index. See the below table for details.
+
+| Header | Description |
+| --- | --- |
+| `X-Total-Count`  | The total number of items available based on the filter defined in the request |
+| `X-Result-Count`  | The number of items returned in the current page |
+| `X-Page-Size` | The requested page size |
+| `X-Page-Index` | The requested page index |
+
+### `GET` /api/[entity]/[id]
 - Get the record of the `entity` type by `id`
  
 This API accepts the following query string parameters
@@ -133,16 +164,16 @@ This API accepts the following query string parameters
 | -- | -- | -- |
 | columns | string[], separate by commas | The columns / fields of the entity to retrieve |
  
-### `POST` /api/{entity}
+### `POST` /api/[entity]
 * Create a new record of the `entity` type
  
-### `PUT` /api/{entity}/{id}
+### `PUT` /api/[entity]/{id}
 * Update entity by `id`
  
 The body of the request can be part of the entity. Only the provided fields in the body will be updated to the entity specified by the `id`
  
-### `DELETE` /api/{entity}/{id}
+### `DELETE` /api/[entity]/{id}
 * Delete entity by `id`
  
-### `PUT` /api/{entity}/{id}/undelete
+### `PUT` /api/[entity]/{id}/undelete
 * Restore the **deleted** record of the `entity` by `id`
