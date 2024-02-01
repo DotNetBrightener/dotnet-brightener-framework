@@ -73,7 +73,9 @@ public static partial class QueryableDeepFilterExtensions
                                                                          IQueryable<TIn> entitiesQuery,
                                                                          string defaultSortColumnName,
                                                                          Dictionary<string, string> filterDictionary,
-                                                                         List<string> columnsToPick)
+                                                                         List<string> columnsToPick,
+                                                                         Func<IQueryable<TIn>, IEnumerable<TIn>>
+                                                                             postProcessing = null)
         where TIn : class
     {
 
@@ -84,7 +86,8 @@ public static partial class QueryableDeepFilterExtensions
         var orderedQuery = entitiesQuery.AddOrderingAndPaginationQuery(filterDictionary,
                                                                        defaultSortColumnName,
                                                                        out var pageSize,
-                                                                       out var pageIndex);
+                                                                       out var pageIndex,
+                                                                       postProcessing);
 
         var finalQuery = orderedQuery.PerformColumnsSelectorQuery(columnsToPick);
 
@@ -108,17 +111,12 @@ public static partial class QueryableDeepFilterExtensions
     {
         IHeaderDictionary responseHeaders = controller.Response.Headers;
 
-        responseHeaders.Append("Result-Totals", totalRecords.ToString());
-        responseHeaders.Append("Result-PageIndex", pageIndex.ToString());
-        responseHeaders.Append("Result-PageSize", pageSize.ToString());
+        responseHeaders.AppendTotalCount(totalRecords);
+        responseHeaders.AppendPageSize(pageSize);
+        responseHeaders.AppendPageIndex(pageIndex);
 
         var result = finalQuery.ToDynamicArray();
-        responseHeaders.Append("Result-Count", result.Length.ToString());
-
-        // add expose header to support CORS
-        responseHeaders.Append("Access-Control-Expose-Headers",
-                               "Result-Totals,Result-PageIndex,Result-PageSize,Result-Count," +
-                               "Result-Totals,Result-PageIndex,Result-PageSize,Result-Count".ToLower());
+        responseHeaders.AppendResultCount(result.Length);
 
         return controller.Ok(result);
     }
