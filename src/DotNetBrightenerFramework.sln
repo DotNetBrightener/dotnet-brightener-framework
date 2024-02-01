@@ -170,6 +170,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CRUD_With_gRPC.Core", "..\d
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CRUD_With_gRPC", "..\demos & tests\CRUD_With_gRPC_Demo\CRUD_With_gRPC\CRUD_With_gRPC.csproj", "{6559668F-2A19-4B9C-8441-AEF1A4BCE179}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.gRPC.Generator.Tests", "gRPC\DotNetBrightener.gRPC.Generator.Tests\DotNetBrightener.gRPC.Generator.Tests.csproj", "{781337C6-2034-49D5-ADC4-C5C3CC8A4C78}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "DotNetBrightener.gRPC.Shared", "gRPC\DotNetBrightener.gRPC.Shared\DotNetBrightener.gRPC.Shared.shproj", "{9AC2B5FF-1B4A-4AF5-B8DA-1C4928E9038D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -578,6 +582,14 @@ Global
 		{6559668F-2A19-4B9C-8441-AEF1A4BCE179}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6559668F-2A19-4B9C-8441-AEF1A4BCE179}.Release|ARM64.ActiveCfg = Release|Any CPU
 		{6559668F-2A19-4B9C-8441-AEF1A4BCE179}.Release|ARM64.Build.0 = Release|Any CPU
+		{781337C6-2034-49D5-ADC4-C5C3CC8A4C78}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{781337C6-2034-49D5-ADC4-C5C3CC8A4C78}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{781337C6-2034-49D5-ADC4-C5C3CC8A4C78}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{781337C6-2034-49D5-ADC4-C5C3CC8A4C78}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{781337C6-2034-49D5-ADC4-C5C3CC8A4C78}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{781337C6-2034-49D5-ADC4-C5C3CC8A4C78}.Release|Any CPU.Build.0 = Release|Any CPU
+		{781337C6-2034-49D5-ADC4-C5C3CC8A4C78}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{781337C6-2034-49D5-ADC4-C5C3CC8A4C78}.Release|ARM64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -649,6 +661,8 @@ Global
 		{4DB1BCB4-BFE1-49CD-B609-B483B3824E92} = {6E580008-435A-4396-A928-507321CEAE45}
 		{F6DBFD0C-2100-4E16-A1FA-B591C78756CD} = {4DB1BCB4-BFE1-49CD-B609-B483B3824E92}
 		{6559668F-2A19-4B9C-8441-AEF1A4BCE179} = {4DB1BCB4-BFE1-49CD-B609-B483B3824E92}
+		{781337C6-2034-49D5-ADC4-C5C3CC8A4C78} = {F63ECB58-428C-426E-8C5B-AEB2E4C37FAF}
+		{9AC2B5FF-1B4A-4AF5-B8DA-1C4928E9038D} = {F63ECB58-428C-426E-8C5B-AEB2E4C37FAF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CBA29A5C-A736-4EB9-8D61-8E76924706CD}
@@ -684,6 +698,7 @@ Global
 		Shared\SharedExtensions.XmlDocumentationHelper\SharedExtensions.XmlDocumentationHelper.projitems*{7103c447-db31-4128-9e7a-47872ce5df58}*SharedItemsImports = 5
 		Shared\SharedExtensions.XmlDocumentationHelper\SharedExtensions.XmlDocumentationHelper.projitems*{7d3709d1-1aa1-4f52-b6f1-0398f4977049}*SharedItemsImports = 5
 		Shared\SharedExtensions.ServiceCollection\SharedExtensions.ServiceCollectionExtensions.projitems*{7e618afd-cf2f-4a14-b949-fdd79aee1133}*SharedItemsImports = 5
+		gRPC\DotNetBrightener.gRPC.Shared\DotNetBrightener.gRPC.Shared.projitems*{8a97f683-f1f8-47a3-84c0-6d35f82e5016}*SharedItemsImports = 5
 		Shared\SharedExtensions.DateTimeProvider\DateTimeExtensions.projitems*{8aa48c89-69ee-47db-8ce4-b7b40b36a210}*SharedItemsImports = 13
 		Shared\SharedExtensions.ServiceCollection\SharedExtensions.ServiceCollectionExtensions.projitems*{8cd77910-a209-4fff-a324-dfb73f91d4da}*SharedItemsImports = 13
 		Shared\SharedExtensions.XmlDocumentationHelper\SharedExtensions.XmlDocumentationHelper.projitems*{949e66b2-8674-450a-b45b-b5c0e6530e59}*SharedItemsImports = 13
@@ -695,6 +710,7 @@ Global
 		Shared\SharedExtensions.String\StringExtensions.projitems*{955d542a-3924-4336-a903-c9d94c12b35a}*SharedItemsImports = 5
 		Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{9833380d-01cd-426d-9af7-6f11c8f13782}*SharedItemsImports = 5
 		Shared\SharedExtensions.String\StringExtensions.projitems*{9833380d-01cd-426d-9af7-6f11c8f13782}*SharedItemsImports = 5
+		gRPC\DotNetBrightener.gRPC.Shared\DotNetBrightener.gRPC.Shared.projitems*{9ac2b5ff-1b4a-4af5-b8da-1c4928e9038d}*SharedItemsImports = 13
 		Shared\SharedExtensions.ServiceCollection\SharedExtensions.ServiceCollectionExtensions.projitems*{b57f410a-9dc3-4b02-bd94-b7de5ce96a9f}*SharedItemsImports = 5
 		Shared\SharedExtensions.Exception\SharedExtensions.Exception.projitems*{b89d0a74-e80d-44df-8d47-72b16c47dac4}*SharedItemsImports = 5
 		Shared\SharedExtensions.HttpContext\SharedExtensions.HttpContext.projitems*{b89d0a74-e80d-44df-8d47-72b16c47dac4}*SharedItemsImports = 5
@@ -705,6 +721,7 @@ Global
 		Shared\SharedExtensions.String\StringExtensions.projitems*{c9b825db-113a-4706-aff0-b9a7c759a946}*SharedItemsImports = 5
 		Shared\SharedExtensions.ServiceCollection\SharedExtensions.ServiceCollectionExtensions.projitems*{e0d3e777-c608-432c-9aea-b549c41b07fa}*SharedItemsImports = 5
 		Shared\SharedExtensions.Dictionary\SharedExtensions.Dictionary.projitems*{e4358d5e-109b-4050-a5b9-d4ff094754a4}*SharedItemsImports = 13
+		gRPC\DotNetBrightener.gRPC.Shared\DotNetBrightener.gRPC.Shared.projitems*{e65f8d38-a3a6-4d92-b4cc-3321a1593cad}*SharedItemsImports = 5
 		Shared\SharedExtensions.Exception\SharedExtensions.Exception.projitems*{e7088f1b-434a-42f3-a025-5ee967a62214}*SharedItemsImports = 5
 		Shared\SharedExtensions.HttpContext\SharedExtensions.HttpContext.projitems*{e7088f1b-434a-42f3-a025-5ee967a62214}*SharedItemsImports = 5
 		Shared\SharedExtensions.HttpContext\SharedExtensions.HttpContext.projitems*{eb78590d-83be-404a-b554-1e436ecd64f7}*SharedItemsImports = 13

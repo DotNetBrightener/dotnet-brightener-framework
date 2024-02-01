@@ -1,5 +1,4 @@
 using CRUD_With_gRPC;
-using CRUD_With_gRPC.Core;
 using Grpc.Core;
 
 namespace CRUD_With_gRPC.Services;

@@ -1,17 +1,17 @@
-﻿using System;
+﻿using DotNetBrightener.gRPC.Generator.Templates;
+using DotNetBrightener.gRPC.Generator.Utils;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using DotNetBrightener.gRPC.Generator.Utils;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace DotNetBrightener.gRPC.Generator.SyntaxReceivers;
 
 public class AutoGenerateProtoFileReceiver : ISyntaxContextReceiver
 {
-    internal List<CodeGenerationInfo> Models = new();
+    internal CodeGenerationInfo Models;
 
     public AutoGenerateProtoFileReceiver()
     {
@@ -28,7 +28,7 @@ public class AutoGenerateProtoFileReceiver : ISyntaxContextReceiver
             return;
         }
 
-        if (classDec.Identifier.ToString() == "GRPCEntitiesProvider")
+        if (classDec.Identifier.ToString() == "GrpcServiceProvider")
         {
             var semanticModel = context.SemanticModel;
             var classSymbol   = semanticModel.GetDeclaredSymbol(classDec);
@@ -54,8 +54,7 @@ public class AutoGenerateProtoFileReceiver : ISyntaxContextReceiver
             // Get the assembly name of the generated code
             var generatedAssemblyName = compilation.AssemblyName;
 
-            var    members              = classDec.Members;
-            string dataServiceNamespace = "";
+            var members = classDec.Members;
 
             foreach (var memberDeclarationSyntax in members.Cast<FieldDeclarationSyntax>())
             {
@@ -65,17 +64,6 @@ public class AutoGenerateProtoFileReceiver : ISyntaxContextReceiver
                                                               .Variables
                                                               .First()
                                                               .Initializer!;
-
-                if (typeInfo.Type?.ToString() == "System.Type")
-                {
-                    var typeofSyntax  = valueInitializer.Value as TypeOfExpressionSyntax;
-                    var extractedType = semanticModel.GetTypeInfo(typeofSyntax.Type).Type;
-
-                    if (extractedType is ITypeSymbol typeS)
-                    {
-                        dataServiceNamespace = $"{typeS.ContainingAssembly.Name}.Data";
-                    }
-                }
 
                 if (typeInfo.Type?.ToString() == "System.Collections.Generic.List<System.Type>")
                 {
@@ -91,27 +79,14 @@ public class AutoGenerateProtoFileReceiver : ISyntaxContextReceiver
                             if (extractedType is ITypeSymbol typeS &&
                                 typeS.ContainingNamespace.ToDisplayString() != "<global namespace>")
                             {
-                                var attributes = typeS.GetAttributes();
+                                var protoFileDefinition = TryProcessGrpcServiceFromType(typeS, generatedAssemblyName);
 
-                                if (attributes.Any(attr => attr.AttributeClass?.Name == "GrpcServiceAttribute"))
-                                {
-                                    // Code to execute when the GrpcServiceAttribute is found
-                                    ProcessGrpcService(typeS);
-                                }
+                                if (protoFileDefinition is null)
+                                    continue;
 
+                                InitializeModelIfNeeded(assemblyDirectory);
 
-                                //Models.Add(new CodeGenerationInfo
-                                //{
-                                //    GrpcAssembly          = generatedAssemblyName,
-                                //    GrpcNamespace         = $"{generatedAssemblyName}",
-                                //    GrpcPackageName       = $"{typeS.Name}",
-                                //    ProtoFilePath         = $"{Path.Combine(assemblyDirectory, "Protos")}",
-                                //    ServiceFilePath       = $"{Path.Combine(assemblyDirectory, "Services")}",
-                                //    GrpcAssemblyPath      = $"{assemblyDirectory}",
-                                //    TargetEntity          = typeS.Name,
-                                //    TargetEntityNamespace = typeS.ContainingNamespace.ToDisplayString(),
-                                //    DataServiceNamespace  = dataServiceNamespace
-                                //});
+                                Models.ProtoFileDefinitions.Add(protoFileDefinition);
                             }
                         }
                     }
@@ -120,45 +95,258 @@ public class AutoGenerateProtoFileReceiver : ISyntaxContextReceiver
         }
     }
 
-    private void ProcessGrpcService(ITypeSymbol typeS)
+    private void InitializeModelIfNeeded(string assemblyDirectory)
     {
-        var methods = typeS.GetMembers().OfType<IMethodSymbol>();
+        Models ??= new CodeGenerationInfo
+        {
+            ProtoFilePath    = $"{Path.Combine(assemblyDirectory, "Protos")}",
+            ServiceFilePath  = $"{Path.Combine(assemblyDirectory, "Services")}",
+            GrpcAssemblyPath = $"{assemblyDirectory}",
+        };
+    }
 
-        var grpcMethods = new List<GrpcMethod>();
+    private static ProtoFileDefinition TryProcessGrpcServiceFromType(ITypeSymbol typeS, string generatedAssemblyName)
+    {
+        var attributes = typeS.GetAttributes();
+
+        var grpcServiceAttribute =
+            attributes.FirstOrDefault(attr => attr.AttributeClass?.Name == nameof(GrpcServiceAttribute));
+
+        if (grpcServiceAttribute is not null)
+        {
+            var serviceName = typeS.Name.TrimStart('I');
+
+            var nameArgument = grpcServiceAttribute.NamedArguments
+                                                   .FirstOrDefault(arg => arg.Key == nameof(GrpcServiceAttribute.Name));
+
+            if (nameArgument.Value.Value is string name)
+            {
+                serviceName = name;
+            }
+
+            var protoFileDefinition = ProcessGrpcService(typeS, serviceName);
+
+
+            protoFileDefinition.TargetAssemblyName    = generatedAssemblyName;
+            protoFileDefinition.ReferencedServiceName = typeS.Name;
+
+            return protoFileDefinition;
+        }
+
+        return null;
+    }
+
+    private static ProtoFileDefinition ProcessGrpcService(ITypeSymbol typeS, string serviceName)
+    {
+        var methods = typeS.GetMembers()
+                           .OfType<IMethodSymbol>();
+
+        var grpcMethods = new List<ProtoMethodDefinition>();
+
+        var protoFileDefinition = new ProtoFileDefinition
+        {
+            PackageName           = $"{serviceName}Package",
+            ServiceName           = serviceName,
+            ProtoServiceNamespace = typeS.ContainingNamespace.ToDisplayString(),
+            Methods               = grpcMethods,
+        };
 
         foreach (var method in methods)
         {
-            // Access method properties
             var methodName = method.Name;
-            var returnType = method.ReturnType;
+            var parameters = method.Parameters;
 
-            if (returnType is INamedTypeSymbol namedType && 
-                namedType.ConstructedFrom.ToString() == "System.Threading.Tasks.Task<TResult>")
+            if (parameters.Length > 1)
             {
-                var typeArgument = namedType.TypeArguments.FirstOrDefault();
-                if (typeArgument != null)
+                continue;
+            }
+
+            var grpcMethod = new ProtoMethodDefinition
+            {
+                Name = methodName,
+            };
+
+
+            // Check if the method has the GrpcToRestApiAttribute
+            var grpcToRestApiAttribute = method.GetAttributes()
+                                               .FirstOrDefault(attr => attr.AttributeClass?.Name == nameof(GrpcToRestApiAttribute));
+
+            if (grpcToRestApiAttribute != null)
+            {
+                // Read the method and RouteTemplate values from the attribute
+                var methodValue = grpcToRestApiAttribute.NamedArguments
+                                                        .FirstOrDefault(arg => arg.Key == nameof(GrpcToRestApiAttribute
+                                                                                                    .Method))
+                                                        .Value.Value as string ?? "GET";
+
+
+                var routeTemplateValue = grpcToRestApiAttribute.NamedArguments
+                                                               .FirstOrDefault(arg => arg.Key ==
+                                                                                      nameof(GrpcToRestApiAttribute
+                                                                                                .RouteTemplate))
+                                                               .Value.Value as string;
+
+
+                if (!string.IsNullOrEmpty(methodValue) &&
+                    !string.IsNullOrEmpty(routeTemplateValue))
                 {
-                    // Export the type argument
+                    grpcMethod.GenerateRestTranscoding = true;
+                    grpcMethod.RestMethod              = methodValue.ToLower();
+                    grpcMethod.RestRouteTemplate       = routeTemplateValue;
                 }
             }
 
-            var parameters = method.Parameters;
+            var returnType = method.ReturnType;
 
-            var grpcMethod = new GrpcMethod
+            ProtoMessageDefinition responseType = ProcessResponseType(returnType, protoFileDefinition, methodName);
+
+            ProtoMessageDefinition requestType = null;
+
+
+            // Generate request type from parameters
+            var requestTypeName = $"{methodName}Request";
+
+            var parameter  = parameters[0];
+            var methodParamType = parameter.Type;
+
+            if (methodParamType == null) continue;
+
+
+            if (methodParamType.IsReferenceType)
             {
-                MethodName = methodName,
-                ReturnType = returnType.ToString(),
-                Parameters = string.Join(", ", parameters.Select(p => $"{p.Type} {p.Name}"))
-            };
+                // methodParamType is a class
+                // Add your code here for handling class types
+            }
+            else
+            {
+                // methodParamType is not a class
+                var paramType = methodParamType.ToDisplayString();
+
+                requestType = new ProtoMessageDefinition
+                {
+                    Name = requestTypeName,
+                    Fields =
+                    [
+                        new ProtoMessageFieldDefinition
+                        {
+                            Name = parameter.Name,
+                            Type = paramType.ToProtobuf(),
+                        }
+                    ]
+                };
+            }
+
+            if (responseType != null)
+            {
+                grpcMethod.ResponseType = responseType;
+            }
+
+            if (requestType != null)
+            {
+                grpcMethod.RequestType = requestType;
+            }
 
             grpcMethods.Add(grpcMethod);
         }
-    }
-}
 
-public class GrpcMethod
-{
-    public string MethodName { get; set; }
-    public string ReturnType { get; set; }
-    public string Parameters { get; set; }
+        List<ProtoMessageDefinition> messages =
+        [
+            .. protoFileDefinition.Methods.Select(_ => _.RequestType),
+            .. protoFileDefinition.Methods.Select(_ => _.ResponseType)
+        ];
+
+        protoFileDefinition.Messages = messages.Where(messageDefinition => messageDefinition is not null)
+                                               .Distinct(new ProtoMessageComparer())
+                                               .ToList();
+
+        return protoFileDefinition;
+    }
+
+    private static ProtoMessageDefinition ProcessResponseType(ITypeSymbol            returnType,
+                                                              ProtoFileDefinition    protoFileDefinition,
+                                                              string                 methodName)
+    {
+        ProtoMessageDefinition responseType = null;
+
+        if (returnType is INamedTypeSymbol namedType &&
+            namedType.ConstructedFrom.ToString() == "System.Threading.Tasks.Task<TResult>")
+        {
+            var typeArgument = namedType.TypeArguments.FirstOrDefault();
+            var isRepeated   = false;
+
+            if (typeArgument != null)
+            {
+                // Check if typeArgument is List<> or IEnumerable<>
+                if (typeArgument is INamedTypeSymbol namedTypeSymbol && 
+                    namedTypeSymbol.IsGenericType)
+                {
+                    // Get the inner type of the collection
+                    var innerType = namedTypeSymbol.TypeArguments.FirstOrDefault();
+
+                    if (innerType != null)
+                    {
+                        typeArgument = innerType;
+                    }
+
+                    isRepeated = namedTypeSymbol.ConstructedFrom.ToString() == "System.Collections.Generic.List<T>" ||
+                                 namedTypeSymbol.ConstructedFrom.ToString() == "System.Collections.Generic.IEnumerable<T>";
+                }
+
+            }
+                
+
+            if (typeArgument != null)
+            {
+                // Export the type argument
+                var typeofType = typeArgument.GetType();
+
+                if (isRepeated)
+                {
+                    var repeatedType = new ProtoMessageDefinition
+                    {
+                        Name = $"{typeArgument.Name}Response",
+                        Fields = typeArgument.GetMembers()
+                                             .OfType<IPropertySymbol>()
+                                             .Select(f => new ProtoMessageFieldDefinition
+                                              {
+                                                  Name = f.Name,
+                                                  Type = f.Type.ToDisplayString().ToProtobuf()
+                                             })
+                                             .ToList()
+                    };
+                    protoFileDefinition.Messages.Add(repeatedType);
+
+                    responseType = new ProtoMessageDefinition
+                    {
+                        Name = $"{methodName}Response",
+                        Fields = [
+                            new ProtoMessageFieldDefinition
+                            {
+                                Name       = "items",
+                                Type       = repeatedType.Name,
+                                IsRepeated = true,
+                            }
+                        ]
+                    };
+                }
+                else
+                {
+                    responseType = new ProtoMessageDefinition
+                    {
+                        Name = $"{typeArgument.Name}Response",
+                        Fields = typeArgument.GetMembers()
+                                             .OfType<IPropertySymbol>()
+                                             .Select(f => new ProtoMessageFieldDefinition
+                                              {
+                                                  Name = f.Name,
+                                                  Type = f.Type.ToDisplayString().ToProtobuf()
+                                             })
+                                             .ToList()
+                    };
+                }
+            }
+        }
+
+        return responseType;
+    }
 }
