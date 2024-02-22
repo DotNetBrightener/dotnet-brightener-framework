@@ -81,8 +81,15 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddScoped<IUnhandledExceptionHandler, T>();
     }
 
+    public static void RegisterFilterProvider<T>(this IServiceCollection serviceCollection)
+        where T : class, IActionFilterProvider
+    {
+        serviceCollection.AddScoped<IActionFilterProvider, T>();
+    }
+
+
     public static void AutoRegisterDependencyServices(this IServiceCollection serviceCollection,
-                                                      Assembly[]              loadedAssemblies)
+                                                      Assembly[] loadedAssemblies)
     {
         var dependencyTypes = loadedAssemblies.GetDerivedTypes<IDependency>();
 
@@ -110,7 +117,7 @@ public static class ServiceCollectionExtensions
                 if (@interface.IsGenericType &&
                     dependencyType.IsGenericType)
                 {
-                    var interfaceGenericTypeDef  = @interface.GetGenericTypeDefinition();
+                    var interfaceGenericTypeDef = @interface.GetGenericTypeDefinition();
                     var dependencyGenericTypeDef = dependencyType.GetGenericTypeDefinition();
 
                     serviceCollection.Add(ServiceDescriptor.Describe(interfaceGenericTypeDef,
@@ -140,11 +147,5 @@ public static class ServiceCollectionExtensions
                 }
             }
         }
-    }
-
-    public static void RegisterFilterProvider<T>(this IServiceCollection serviceCollection)
-        where T : class, IActionFilterProvider
-    {
-        serviceCollection.AddScoped<IActionFilterProvider, T>();
     }
 }

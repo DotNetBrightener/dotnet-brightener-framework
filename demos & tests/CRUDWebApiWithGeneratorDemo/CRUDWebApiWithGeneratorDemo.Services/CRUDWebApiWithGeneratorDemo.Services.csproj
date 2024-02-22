@@ -14,7 +14,6 @@
 	<ItemGroup>
 		<ProjectReference Include="..\..\..\src\DataAccess\DotNetBrightener.DataAccess.Abstractions\DotNetBrightener.DataAccess.Abstractions.csproj" />
 		<ProjectReference Include="..\CRUDWebApiWithGeneratorDemo.Core\CRUDWebApiWithGeneratorDemo.Core.csproj" />
-		<ProjectReference Include="..\..\..\src\Infrastructure\DotNetBrightener.WebApi.GenericCRUD.Generator\DotNetBrightener.WebApi.GenericCRUD.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 	</ItemGroup>
 
 </Project>

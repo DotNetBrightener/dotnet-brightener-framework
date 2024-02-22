@@ -2,7 +2,7 @@
 
 namespace DotNetBrightener.gRPC;
 
-internal class ProtoFileDefinition
+public class ProtoFileDefinition
 {
     public string PackageName { get; set; }
 

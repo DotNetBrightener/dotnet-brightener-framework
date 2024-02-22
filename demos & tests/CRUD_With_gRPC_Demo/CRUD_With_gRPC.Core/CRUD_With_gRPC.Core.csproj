@@ -1,14 +1,23 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\src\gRPC\DotNetBrightener.gRPC\DotNetBrightener.gRPC.csproj" />
-    <ProjectReference Include="..\..\..\src\Infrastructure\DotNetBrightener.WebApi.GenericCRUD\DotNetBrightener.WebApi.GenericCRUD.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Bogus" Version="35.4.0" />
+	</ItemGroup>
+	
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\src\gRPC\DotNetBrightener.gRPC\DotNetBrightener.gRPC.csproj" />
+	</ItemGroup>
+	
+	<Import Project="..\..\..\src\Shared\SharedExtensions.Expression\SharedExtensions.Expression.projitems" Label="Shared" />
+	
+	<Import Project="..\..\..\src\Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems" Label="Shared" />
+	
+	<Import Project="..\..\..\src\Shared\SharedExtensions.String\StringExtensions.projitems" Label="Shared" />
 
 </Project>

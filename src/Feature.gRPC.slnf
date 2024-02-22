@@ -1,0 +1,25 @@
+{
+  "solution": {
+    "path": "DotNetBrightenerFramework.sln",
+    "projects": [
+      "..\\demos & tests\\CRUD_With_gRPC_Demo\\CRUD_With_gRPC.Core\\CRUD_With_gRPC.Core.csproj",
+      "..\\demos & tests\\CRUD_With_gRPC_Demo\\gRPCWebDemo\\gRPCWebDemo.csproj",
+      "Shared\\SharedExtensions.DateTimeProvider\\SharedExtensions.DateTimeProvider.shproj",
+      "Shared\\SharedExtensions.DateTime\\SharedExtensions.DateTime.shproj",
+      "Shared\\SharedExtensions.Dictionary\\SharedExtensions.Dictionary.shproj",
+      "Shared\\SharedExtensions.Exception\\SharedExtensions.Exception.shproj",
+      "Shared\\SharedExtensions.Expression\\SharedExtensions.Expression.shproj",
+      "Shared\\SharedExtensions.HttpContext\\SharedExtensions.HttpContext.shproj",
+      "Shared\\SharedExtensions.MvcBuilder\\SharedExtensions.MvcBuilder.shproj",
+      "Shared\\SharedExtensions.Object\\SharedExtensions.Object.shproj",
+      "Shared\\SharedExtensions.Reflection\\SharedExtensions.Reflection.shproj",
+      "Shared\\SharedExtensions.ServiceCollection\\SharedExtensions.ServiceCollection.shproj",
+      "Shared\\SharedExtensions.String\\SharedExtensions.String.shproj",
+      "Shared\\SharedExtensions.XmlDocumentationHelper\\SharedExtensions.XmlDocumentationHelper.shproj",
+      "gRPC\\DotNetBrightener.gRPC.Generator.Tests\\DotNetBrightener.gRPC.Generator.Tests.csproj",
+      "gRPC\\DotNetBrightener.gRPC.Generator\\DotNetBrightener.gRPC.Generator.csproj",
+      "gRPC\\DotNetBrightener.gRPC.Shared\\DotNetBrightener.gRPC.Shared.shproj",
+      "gRPC\\DotNetBrightener.gRPC\\DotNetBrightener.gRPC.csproj"
+    ]
+  }
+}

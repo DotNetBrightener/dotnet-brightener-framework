@@ -6,11 +6,11 @@ internal class ProtoMessageComparer : IEqualityComparer<ProtoMessageDefinition>
 {
     public bool Equals(ProtoMessageDefinition x, ProtoMessageDefinition y)
     {
-        return x.Name == y.Name;
+        return x.ProtobufType == y.ProtobufType;
     }
 
     public int GetHashCode(ProtoMessageDefinition obj)
     {
-        return obj.Name.GetHashCode();
+        return obj.ProtobufType.GetHashCode();
     }
 }

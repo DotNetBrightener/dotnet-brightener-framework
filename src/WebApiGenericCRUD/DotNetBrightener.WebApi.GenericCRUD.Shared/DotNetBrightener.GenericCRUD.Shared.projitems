@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>81e68dde-31cb-4cd8-9b5c-44658e3c69a1</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>DotNetBrightener.WebApi.GenericCRUD.Shared</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\DictionaryToQueryModelExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Exceptions\UnknownPropertyException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ExpressionExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\EntityMetadataExtractor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\QueryableDeepFilterExtensions.Boolean.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\QueryableDeepFilterExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\QueryableDeepFilterExtensions.DateTime.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\QueryableDeepFilterExtensions.DeepFilterApply.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\QueryableDeepFilterExtensions.Guid.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\QueryableDeepFilterExtensions.Numeric.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\QueryableDeepFilterExtensions.PickProperty.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\QueryableDeepFilterExtensions.String.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\BaseQueryModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\BaseQueryModelExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\PagedCollection.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)OperatorComparer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PredicateBuilder.cs" />
+  </ItemGroup>
+</Project>

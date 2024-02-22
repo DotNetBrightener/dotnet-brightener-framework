@@ -11,6 +11,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing.NUnit" Version="1.1.1" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
 		<PackageReference Include="NUnit" Version="4.0.1" />
@@ -26,14 +27,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\..\..\demos &amp; tests\CRUD_With_gRPC_Demo\CRUD_With_gRPC.Core\CRUD_With_gRPC.Core.csproj" />
 	  <ProjectReference Include="..\DotNetBrightener.gRPC.Generator\DotNetBrightener.gRPC.Generator.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <None Update="docs\readme.md">
-	    <PackagePath>\</PackagePath>
-	    <Pack>true</Pack>
-	  </None>
 	</ItemGroup>
 
 </Project>

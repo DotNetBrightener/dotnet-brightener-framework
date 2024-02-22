@@ -2,15 +2,29 @@
 using Microsoft.CodeAnalysis;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using DotNetBrightener.gRPC.Generator.Models;
 
 namespace DotNetBrightener.gRPC.Generator.Generators;
 
 [Generator]
 public partial class ProtoFileGenerator : ISourceGenerator
 {
-    public void Initialize(GeneratorInitializationContext context)
+    internal CodeGeneratorSchema CodeGeneratorInformation { get; private set; }
+
+    internal List<ProtoFileModel> ProtoFiles { get; } = new();
+
+    internal List<ServiceFileModel> ServiceFiles { get; } = new();
+
+    internal List<MessageFileModel> MessageFiles { get; } = new();
+
+    internal List<ServiceImplFileModel> ServiceImplFiles { get; } = new();
+
+    protected virtual bool ShouldWriteFile => true;
+
+    public virtual void Initialize(GeneratorInitializationContext context)
     {
         context.RegisterForSyntaxNotifications(() => new AutoGenerateProtoFileReceiver());
     }
@@ -20,68 +34,131 @@ public partial class ProtoFileGenerator : ISourceGenerator
     /// </summary>
     public void Execute(GeneratorExecutionContext context)
     {
-        var models = (context.SyntaxContextReceiver as AutoGenerateProtoFileReceiver).Models;
+        CodeGeneratorInformation = (context.SyntaxContextReceiver as AutoGenerateProtoFileReceiver)?.CodeGeneratorSchema;
 
-        if (models is null)
+        if (CodeGeneratorInformation is null ||
+            CodeGeneratorInformation.ProtoFileDefinitions.Count == 0)
             return;
 
-        var controllerAssemblyPath = models.GrpcAssemblyPath;
+        var grpcAssemblyPath = CodeGeneratorInformation.GrpcAssemblyPath;
 
-        var programCsFile = Path.Combine(controllerAssemblyPath, "Program.cs");
+        var programCsFile = Path.Combine(grpcAssemblyPath, "Program.cs");
 
         string startupCsFileContent = string.Empty;
 
         if (File.Exists(programCsFile))
         {
             startupCsFileContent = InjectProtobufConfigsIfNeeded(programCsFile);
+            AddAnnotationFilesIfNeeded(grpcAssemblyPath);
         }
 
-        AddAnnotationFilesIfNeeded(controllerAssemblyPath);
+        var neededUsings     = new List<string>();
 
-        var protoFilesList = new List<string>();
-
-        foreach (var modelClass in models.ProtoFileDefinitions)
+        foreach (var protoFile in CodeGeneratorInformation.ProtoFileDefinitions)
         {
-            var protoClassName = GenerateProtoFile(Path.Combine(controllerAssemblyPath, "Protos"), modelClass);
-            protoFilesList.Add(protoClassName);
-            var serviceImplClassName =
-                GenerateServiceFile(Path.Combine(controllerAssemblyPath, "Services"), modelClass);
+            var generatedProfoFile = GenerateProtoFile(Path.Combine(grpcAssemblyPath, "Protos"), protoFile);
 
-            if (serviceImplClassName is not null)
+            ProtoFiles.Add(generatedProfoFile);
+
+            ServiceFiles.Add(GenerateGServiceFile(Path.Combine(grpcAssemblyPath, "Services"), protoFile));
+            var serviceImplFile = GenerateServiceFile(Path.Combine(grpcAssemblyPath, "Services"), protoFile);
+
+            ServiceImplFiles.Add(serviceImplFile);
+
+            if (serviceImplFile is not null)
+            {
+                var protoServiceNamespace  = $"using {protoFile.ProtoServiceNamespace};";
+                var targetServiceNamespace = $"using {protoFile.TargetAssemblyName}.Services;";
+
+                if (!neededUsings.Contains(protoServiceNamespace))
+                {
+                    neededUsings.Add(protoServiceNamespace);
+                }
+
+                if (!neededUsings.Contains(targetServiceNamespace))
+                {
+                    neededUsings.Add(targetServiceNamespace);
+                }
+            }
+
+            foreach (var message in protoFile.Messages)
+            {
+                var msgFile = GenerateMessageConvertorFile(Path.Combine(grpcAssemblyPath, "Converters"), message);
+
+                if (msgFile is not null)
+                {
+                    MessageFiles.Add(msgFile);
+                }
+            }
+        }
+
+
+        foreach (var usingService in neededUsings.Distinct().OrderBy(self => self))
+        {
+            if (!startupCsFileContent.Contains(usingService))
+            {
+                startupCsFileContent = usingService + Environment.NewLine + startupCsFileContent;
+            }
+        }
+
+        if (ShouldWriteFile)
+        {
+            var filesToWrite = new List<FileContentModel>();
+
+            filesToWrite.AddRange(ProtoFiles);
+            filesToWrite.AddRange(MessageFiles);
+            filesToWrite.AddRange(ServiceFiles);
+            filesToWrite.AddRange(ServiceImplFiles);
+
+            foreach (var fileContentModel in filesToWrite)
+            {
+                var dirPath = Path.GetDirectoryName(fileContentModel.FilePath);
+
+                if (!Directory.Exists(dirPath))
+                {
+                    Directory.CreateDirectory(dirPath);
+                }
+
+                switch (fileContentModel)
+                {
+                    // don't overwrite the service file if it already exists
+                    case ServiceImplFileModel serviceFile when
+                        File.Exists(serviceFile.FilePath):
+                    case MessageFileModel messageFile when
+                        File.Exists(messageFile.FilePath):
+                        continue;
+                }
+
+                var fileContent = fileContentModel.FileContent;
+
+                if (fileContentModel is ProtoFileModel)
+                {
+                    fileContent = $@"
+// <auto-generated>
+//     Generated by the protocol buffer generator.  DO NOT EDIT!
+// </auto-generated>
+
+{fileContent}
+";
+                }
+
+                File.WriteAllText(fileContentModel.FilePath, fileContent);
+            }
+
+            var serviceFilesList = ServiceImplFiles.Select(x => x.ClassName)
+                                                   .ToList();
+
+            foreach (var serviceImplClassName in serviceFilesList.Distinct())
             {
                 startupCsFileContent = InjectGrpcService(startupCsFileContent, serviceImplClassName);
             }
+
+            File.WriteAllText(programCsFile, startupCsFileContent);
+
+            var protoFilesList = ProtoFiles.Select(x => x.ClassName)
+                                           .ToList();
+
+            UpdateCsprojFile(grpcAssemblyPath, protoFilesList);
         }
-        
-        File.WriteAllText(programCsFile, startupCsFileContent);
-
-        UpdateCsprojFile(controllerAssemblyPath, protoFilesList);
-    }
-
-    private void UpdateCsprojFile(string projectPath, List<string> protoFilesList)
-    {
-        var csprojFile = Directory.GetFiles(projectPath, "*.csproj").First();
-
-        var csprojFileContent = File.ReadAllText(csprojFile);
-
-        // look for the last GRPC service in the file
-        const string grpcServerKeyword = " GrpcServices=\"Server\" />";
-
-        foreach (var className in protoFilesList)
-        {
-            var lastGrpcPosition =
-                csprojFileContent.LastIndexOf(grpcServerKeyword, StringComparison.OrdinalIgnoreCase) +
-                grpcServerKeyword.Length;
-
-            if (!csprojFileContent
-                   .Contains($"<Protobuf Include=\"Protos\\{className}.proto\"{grpcServerKeyword}"))
-            {
-                var insertNewGrpcProto = $"{Environment.NewLine}" +
-                                         $"\t\t<Protobuf Include=\"Protos\\{className}.proto\"{grpcServerKeyword}";
-                csprojFileContent = csprojFileContent.Insert(lastGrpcPosition, insertNewGrpcProto);
-            }
-        }
-
-        File.WriteAllText(csprojFile, csprojFileContent);
     }
 }

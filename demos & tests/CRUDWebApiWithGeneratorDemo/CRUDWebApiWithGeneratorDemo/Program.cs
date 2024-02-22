@@ -1,5 +1,3 @@
-using System.Reflection;
-using DotNetBrightener.WebApi.GenericCRUD.Extensions;
 using Bogus;
 using CRUDWebApiWithGeneratorDemo.Core.Entities;
 using CRUDWebApiWithGeneratorDemo.Database.DbContexts;
@@ -7,6 +5,7 @@ using CRUDWebApiWithGeneratorDemo.Services.Data;
 using DotNetBrightener.DataAccess;
 using DotNetBrightener.DataAccess.EF.Extensions;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,15 +37,6 @@ builder.Services
                                                          configureDatabase);
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    SwaggerConfiguration.RegisterGenericCRUDDocumentation(c.IncludeXmlComments);
-
-    var filePath = Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml");
-    c.IncludeXmlComments(filePath, true);
-});
 
 var app = builder.Build();
 

@@ -1,9 +1,14 @@
-﻿namespace DotNetBrightener.gRPC;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
 
-internal class ProtoMethodDefinition
+namespace DotNetBrightener.gRPC;
+
+public class ProtoMethodDefinition
 {
     private string _restRouteTemplate;
-    public  string Name { get; set; }
+
+    public string Name { get; set; }
 
     public ProtoMessageDefinition RequestType { get; set; }
 
@@ -30,4 +35,50 @@ internal class ProtoMethodDefinition
     }
 
     public string RestBody { get; set; } = "*";
+
+    public string ToProtoDefinition()
+    {
+        var stringBuilder = new StringBuilder();
+
+        stringBuilder.AppendLine($"    rpc {Name} ({RequestType?.ProtobufType}) returns ({ResponseType?.ProtobufType}) {{");
+
+        if (GenerateRestTranscoding)
+        {
+            stringBuilder.AppendLine("        option (google.api.http) = {");
+            stringBuilder.AppendLine($"            {RestMethod}: \"{RestRouteTemplate}\"");
+
+            if (!RestMethod.Equals("GET", StringComparison.OrdinalIgnoreCase) &&
+                !RestMethod.Equals("DELETE", StringComparison.OrdinalIgnoreCase))
+            {
+                stringBuilder.AppendLine($"            body: \"{RestBody}\"");
+            }
+
+            stringBuilder.AppendLine("        };");
+        }
+
+        stringBuilder.AppendLine("    }");
+
+        return stringBuilder.ToString();
+    }
+
+    public string ToCsMethodCall()
+    {
+        var parametersList = new List<string>();
+
+        if (RequestType != null &&
+            RequestType.Fields.Count > 0)
+        {
+            parametersList.Add(RequestType.IsSingleType
+                                   ? $"request.{RequestType.Fields[0].Name.ToTitleCase()}"
+                                   : $"request.To{RequestType.CsType
+                                                             .Replace("<", "")
+                                                             .Replace(">", "")}()");
+        }
+
+        var param = string.Join(", ", parametersList);
+        var csCodeOutput =
+            $@"{ResponseType.CsType} result = await _{{referencedServiceName}}.{Name}({param});";
+
+        return csCodeOutput;
+    }
 }

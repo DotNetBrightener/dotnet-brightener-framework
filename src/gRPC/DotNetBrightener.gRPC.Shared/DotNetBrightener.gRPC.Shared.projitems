@@ -10,10 +10,16 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Attributes.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)interfaces\IGrpcServicesProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ProtoFileDefinition.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ProtoMessageComparer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ProtoMessageDefinition.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ProtoMessageFieldDefinition.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ProtoMethodDefinition.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)utils\FieldNameConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils\ScalarValueTypeConverter.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)Interfaces\" />
   </ItemGroup>
 </Project>
