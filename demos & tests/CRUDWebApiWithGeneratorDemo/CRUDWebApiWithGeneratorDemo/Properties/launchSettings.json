@@ -9,16 +9,6 @@
     }
   },
   "profiles": {
-    "http": {
-      "commandName": "Project",
-      "dotnetRunMessages": true,
-      "launchBrowser": true,
-      "launchUrl": "swagger",
-      "applicationUrl": "http://localhost:5250",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
-    },
     "https": {
       "commandName": "Project",
       "dotnetRunMessages": true,
@@ -27,15 +17,8 @@
       "applicationUrl": "https://localhost:7077;http://localhost:5250",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "ConnectionStrings__DefaultConnection": "Server=192.168.20.163;Database=TestDB;User Id=sa;Password=sCpTXbW8jbSbbUpILfZVulTiwqcPyJWt;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;"
-      }
-    },
-    "IIS Express": {
-      "commandName": "IISExpress",
-      "launchBrowser": true,
-      "launchUrl": "swagger",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ConnectionStrings__DefaultConnection": "Server=100.117.90.128;Database=TestDB;User Id=sa;Password=uZVEYUUQeL1ZGOJgMocARmdyOQwJ7dtM;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;",
+        "ConnectionStrings__DefaultConnection_local": "Server=192.168.20.163;Database=TestDB;User Id=sa;Password=sCpTXbW8jbSbbUpILfZVulTiwqcPyJWt;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;"
       }
     }
   }

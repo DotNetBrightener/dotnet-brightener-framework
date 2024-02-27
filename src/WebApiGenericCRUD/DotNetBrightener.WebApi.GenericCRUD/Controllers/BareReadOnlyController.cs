@@ -351,7 +351,10 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
                                                                               .OrdinalIgnoreCase)))
                         .ToList();
 
-        var availableColumns = typeof(TIn).GetDefaultColumns();
+        var availableColumns = typeof(TIn).GetDefaultColumns()
+                                          .OrderByDescending(_ => _.Length)
+                                          .ToList();
+
         var correctedColumns = new List<string>();
 
         foreach (var queriedColumn in queriedColumns)
@@ -361,13 +364,16 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
                 continue;
             }
 
-            Func<string, bool> predicate = property =>
+            Func<string, bool> equalPredicate = property =>
                 property.Equals(queriedColumn,
-                                StringComparison.OrdinalIgnoreCase) ||
+                                StringComparison.OrdinalIgnoreCase) ;
+
+            Func<string, bool> startsWithPredicate = property =>
                 queriedColumn.StartsWith(property,
                                          StringComparison.OrdinalIgnoreCase);
 
-            var columnAvailable = availableColumns.FirstOrDefault(predicate);
+            var columnAvailable = availableColumns.FirstOrDefault(equalPredicate) ??
+                                  availableColumns.FirstOrDefault(startsWithPredicate);
 
             if (columnAvailable != null)
             {

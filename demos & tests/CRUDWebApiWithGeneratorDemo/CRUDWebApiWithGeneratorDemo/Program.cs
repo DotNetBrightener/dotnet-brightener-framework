@@ -5,7 +5,8 @@ using CRUDWebApiWithGeneratorDemo.Services.Data;
 using DotNetBrightener.DataAccess;
 using DotNetBrightener.DataAccess.EF.Extensions;
 using Microsoft.EntityFrameworkCore;
-using System.Reflection;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,16 +37,22 @@ builder.Services
        .AddEntityFrameworkDataServices<MainAppDbContext>(dbConfiguration,
                                                          configureDatabase);
 
-builder.Services.AddControllers();
+builder.Services
+       .AddControllers()
+       .AddNewtonsoftJson(o =>
+        {
+            o.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+            o.SerializerSettings.ContractResolver      = new CamelCasePropertyNamesContractResolver();
+        });
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+//// Configure the HTTP request pipeline.
+//if (app.Environment.IsDevelopment())
+//{
+//    app.UseSwagger();
+//    app.UseSwaggerUI();
+//}
 
 app.UseHttpsRedirection();
 
@@ -69,11 +76,11 @@ using (var scope = app.Services.CreateScope())
     var productCategoryService = scope.ServiceProvider.GetRequiredService<IProductCategoryDataService>();
     var productDocumentDataService = scope.ServiceProvider.GetRequiredService<IProductDocumentDataService>();
 
+    var categoriesList = new List<ProductCategory>();
     if (!productCategoryService.Fetch().Any())
     {
         var faker = new Faker();
-
-        var categoriesList = new List<ProductCategory>();
+        categoriesList.Clear();
 
         var fakeCategories = faker.Commerce.Categories(30)
                                   .Distinct()
@@ -92,18 +99,24 @@ using (var scope = app.Services.CreateScope())
         productCategoryService.Insert(categoriesList);
     }
 
+
+    categoriesList = productCategoryService.Fetch().ToList();
     if (!productService.Fetch().Any())
     {
         var faker = new Faker();
 
         var productsList = new List<Product>();
+        var random       = new Random();
 
         for (var i = 0; i < 512; i++)
         {
+            var randomCategoryId = categoriesList.ElementAt(random.Next(1, categoriesList.Count)).Id;
+
             var product = new Product
             {
-                Name        = faker.Commerce.ProductName(),
-                Description = faker.Commerce.ProductDescription(),
+                Name              = faker.Commerce.ProductName(),
+                Description       = faker.Commerce.ProductDescription(),
+                ProductCategoryId = randomCategoryId
             };
 
             productsList.Add(product);
