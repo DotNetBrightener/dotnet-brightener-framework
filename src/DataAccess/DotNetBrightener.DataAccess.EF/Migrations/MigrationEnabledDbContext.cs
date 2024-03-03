@@ -24,6 +24,12 @@ public abstract class MigrationEnabledDbContext : DbContext
         OptionsBuilder?.Invoke(optionsBuilder);
     }
 
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        var derivedDbContextAssembly = GetType().Assembly;
+        modelBuilder.ApplyConfigurationsFromAssembly(derivedDbContextAssembly);
+    }
+
     protected override void ConfigureConventions(ModelConfigurationBuilder builder)
     {
         base.ConfigureConventions(builder);

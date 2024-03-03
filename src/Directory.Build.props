@@ -25,7 +25,7 @@
 		<FileVersionPotion>$([System.DateTime]::UtcNow.DayOfYear)$([System.DateTime]::Now.ToString(HH))</FileVersionPotion>
 		<BuildNumber>$([System.DateTime]::Now.ToString(yyMMddHH))</BuildNumber>
 
-		<VersionPrefix>2024.0.9</VersionPrefix>
+		<VersionPrefix>2024.0.10</VersionPrefix>
 
 		<AssemblyVersion>$(VersionPrefix).$(FileVersionPotion)</AssemblyVersion>
 		<FileVersion>$(VersionPrefix).$(FileVersionPotion)</FileVersion>
@@ -42,6 +42,10 @@
 		<DefineConstants>TRACE;RELEASE</DefineConstants>
 		<PackageOutputPath>$(SolutionDir)/nupkg_release</PackageOutputPath>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="$(AssemblyName).Tests" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<None Include="..\..\..\dotnet-brightener-logo.png">

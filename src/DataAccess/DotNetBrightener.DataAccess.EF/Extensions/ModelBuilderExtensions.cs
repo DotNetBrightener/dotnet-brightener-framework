@@ -35,9 +35,6 @@ public static class ModelBuilderExtensions
             tableName = typeof(T).Name;
         }
 
-
-        bool isHistoryEnabled = typeof(T).HasAttribute<HistoryEnabledAttribute>();
-
         if (typeof(T).HasAttribute<TableAttribute>(out var tableAttr))
         {
             tableName   = tableAttr.Name;
@@ -46,7 +43,7 @@ public static class ModelBuilderExtensions
 
         var entity = modelBuilder.Entity<T>();
 
-        if (!isHistoryEnabled)
+        if (!typeof(T).HasAttribute<HistoryEnabledAttribute>(out var historyEnabledAttribute))
         {
             return entity.ToTable(tableName, schema: tableSchema);
         }

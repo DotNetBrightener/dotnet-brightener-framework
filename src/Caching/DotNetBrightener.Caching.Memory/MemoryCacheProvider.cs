@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
 namespace DotNetBrightener.Caching.Memory;
@@ -26,14 +28,17 @@ public class MemoryCacheProvider : ICacheProvider
         new ConcurrentDictionary<string, CancellationTokenSource>();
 
     private static CancellationTokenSource _clearToken = new CancellationTokenSource();
+    private readonly ILogger _logger;
 
     #endregion
 
     #region Ctor
 
-    public MemoryCacheProvider(IMemoryCache memoryCache)
+    public MemoryCacheProvider(IMemoryCache                 memoryCache,
+                               ILogger<MemoryCacheProvider> logger)
     {
         _memoryCache = memoryCache;
+        _logger      = logger;
     }
 
     #endregion
@@ -55,6 +60,7 @@ public class MemoryCacheProvider : ICacheProvider
 
         //add tokens to clear cache entries
         options.AddExpirationToken(new CancellationChangeToken(_clearToken.Token));
+
         foreach (var keyPrefix in key.Prefixes.ToList())
         {
             var tokenSource = _prefixes.GetOrAdd(keyPrefix, new CancellationTokenSource());
@@ -82,6 +88,8 @@ public class MemoryCacheProvider : ICacheProvider
 
         var result = _memoryCache.GetOrCreate(key.Key, entry =>
         {
+            _logger.LogInformation("No result found in cache. Acquiring result...");
+
             entry.SetOptions(PrepareEntryOptions(key));
 
             return acquire();
@@ -117,6 +125,8 @@ public class MemoryCacheProvider : ICacheProvider
 
         var result = await _memoryCache.GetOrCreateAsync(key.Key, async entry =>
         {
+            _logger.LogInformation("No result found in cache. Acquiring result...");
+
             entry.SetOptions(PrepareEntryOptions(key));
 
             return await acquire();
@@ -151,15 +161,6 @@ public class MemoryCacheProvider : ICacheProvider
     {
         return _memoryCache.TryGetValue(key.Key, out _);
     }
-        
-    /// <summary>
-    /// Removes the value with the specified key from the cache
-    /// </summary>
-    /// <param name="key">Key of cached item</param>
-    public void Remove(string key)
-    {
-        _memoryCache.Remove(key);
-    }
 
     /// <summary>
     /// Removes items by key prefix
@@ -168,6 +169,7 @@ public class MemoryCacheProvider : ICacheProvider
     public void RemoveByPrefix(string prefix)
     {
         _prefixes.TryRemove(prefix, out var tokenSource);
+        _logger.LogInformation("Removing cached item by prefix {prefix}", prefix);
         tokenSource?.Cancel();
         tokenSource?.Dispose();
     }
@@ -213,4 +215,19 @@ public class MemoryCacheProvider : ICacheProvider
     }
 
     #endregion
+}
+
+internal static class CacheKeyExtensions
+{
+    public static string ToMemoryCacheKey(this CacheKey key)
+    {
+        var prefixes = new List<string>
+        {
+            key.Key
+        };
+        
+        prefixes.AddRange(key.Prefixes ?? []);
+
+        return string.Join("::", prefixes.ToArray());
+    }
 }

@@ -33,6 +33,7 @@ public static class ServiceCollectionExtensions
 
         serviceCollection.TryAddScoped<IEventPublisher, EventPublisher>();
 
+        serviceCollection.TryAddScoped<ITransactionWrapper, TransactionWrapper>();
         serviceCollection.TryAddScoped<ICurrentLoggedInUserResolver, DefaultCurrentUserResolver>();
 
         LinqToDBForEFTools.Initialize();

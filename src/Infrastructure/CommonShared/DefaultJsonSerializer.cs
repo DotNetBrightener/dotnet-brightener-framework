@@ -3,9 +3,9 @@ using Newtonsoft.Json.Serialization;
 
 namespace DotNetBrightener.WebApp.CommonShared;
 
-public class DefaultJsonSerializer
+public static class DefaultJsonSerializer
 {
-    public static readonly JsonSerializerSettings DefaultJsonSerializerSettings = new JsonSerializerSettings
+    public static readonly JsonSerializerSettings DefaultJsonSerializerSettings = new()
     {
         ContractResolver      = new CamelCasePropertyNamesContractResolver(),
         ReferenceLoopHandling = ReferenceLoopHandling.Ignore

@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using Microsoft.Extensions.Logging;
 
 namespace DotNetBrightener.DataAccess.EF.Repositories;
 
@@ -23,15 +24,19 @@ public class Repository : IRepository
     protected readonly DbContext                    DbContext;
     protected readonly ICurrentLoggedInUserResolver CurrentLoggedInUserResolver;
     protected readonly IEventPublisher              EventPublisher;
+    protected          ILogger                      Logger { get; init; }
+
     private const      string                       RecordCreatedEvent = "RECORD_CREATED_EVENT";
 
     public Repository(DbContext                    dbContext,
                       ICurrentLoggedInUserResolver currentLoggedInUserResolver,
-                      IEventPublisher              eventPublisher)
+                      IEventPublisher              eventPublisher,
+                      ILogger<Repository>          logger = null)
     {
         DbContext                   = dbContext;
         CurrentLoggedInUserResolver = currentLoggedInUserResolver;
         EventPublisher              = eventPublisher;
+        Logger                      = logger;
     }
 
     public virtual T Get<T>(Expression<Func<T, bool>> expression)
@@ -145,9 +150,10 @@ public class Repository : IRepository
     public virtual void Insert<T>(IEnumerable<T> entities)
         where T : class
     {
-        var entitiesToInserts = entities.Select(_ =>
+        Func<T, T> transformExpression = entity =>
         {
-            if (_ is not BaseEntityWithAuditInfo auditableEntity) return _;
+            if (entity is not BaseEntityWithAuditInfo auditableEntity) 
+                return entity;
 
             auditableEntity.CreatedDate =
                 auditableEntity.ModifiedDate = DateTimeOffset.UtcNow;
@@ -157,10 +163,25 @@ public class Repository : IRepository
 
             auditableEntity.ModifiedBy = RecordCreatedEvent;
 
-            return _;
-        });
+            return entity;
+        };
 
-        DbContext.BulkCopy(entitiesToInserts);
+        var entitiesToInserts = entities.Select(transformExpression)
+                                        .ToList();
+
+        try
+        {
+
+            DbContext.BulkCopy(entitiesToInserts);
+        }
+        catch (Exception e)
+        {
+            Logger.LogWarning(e, 
+                              "BulkInsert failed inserting entities of type {Type}. Retrying with slow insert...",
+                              typeof(T).Name);
+
+            DbContext.Set<T>().AddRange(entitiesToInserts);
+        }
     }
 
     public virtual int CopyRecords<TSource, TTarget>(Expression<Func<TSource, bool>>    conditionExpression,

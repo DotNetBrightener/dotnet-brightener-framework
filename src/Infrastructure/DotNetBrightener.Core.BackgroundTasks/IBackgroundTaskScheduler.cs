@@ -157,7 +157,7 @@ public class BackgroundTaskScheduler : IBackgroundTaskScheduler, IDisposable
 
         var tasksList = new List<Task>();
 
-        while (true)
+        while (_tasks.Any())
         {
             var taskToRun = _tasks.Dequeue();
 
@@ -165,9 +165,6 @@ public class BackgroundTaskScheduler : IBackgroundTaskScheduler, IDisposable
             {
                 tasksList.Add(RunTask(taskToRun));
             }
-
-            if (_tasks.Count == 0)
-                break;
         }
 
         Task.WaitAll(tasksList.ToArray());

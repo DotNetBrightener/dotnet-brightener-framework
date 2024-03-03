@@ -14,8 +14,7 @@ namespace DotNetBrightener.MultiTenancy.Services;
 
 public class TenantSupportedRepository : Repository
 {
-    private readonly ITenantAccessor                    _tenantAccessor;
-    private readonly ILogger<TenantSupportedRepository> _logger;
+    private readonly ITenantAccessor _tenantAccessor;
 
     /// <summary>
     ///     Identify if current module has tenant mapping table or not
@@ -33,7 +32,7 @@ public class TenantSupportedRepository : Repository
         : base(dbContext, currentLoggedInUserResolver, eventPublisher)
     {
         _tenantAccessor = tenantAccessor;
-        _logger         = logger;
+        Logger          = logger;
 
         if (HasTenantMapping is null)
         {
@@ -56,7 +55,7 @@ public class TenantSupportedRepository : Repository
             !currentTenantIds.HasValue
            )
         {
-            _logger.LogDebug($"No multi-tenant mapping support for entity of type {typeof(T).FullName}");
+            Logger.LogDebug($"No multi-tenant mapping support for entity of type {typeof(T).FullName}");
 
             return query;
         }

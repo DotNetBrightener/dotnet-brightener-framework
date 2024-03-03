@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using StackExchange.Redis;
@@ -29,6 +30,7 @@ public partial class RedisCacheProvider : ICacheProvider
     private readonly IRedisConnectionWrapper _connectionWrapper;
     private readonly PerRequestCache         _perRequestCache;
     private readonly RedisCacheConfiguration _redisCacheConfiguration;
+    private readonly ILogger                 _logger;
 
     #endregion
 
@@ -36,13 +38,15 @@ public partial class RedisCacheProvider : ICacheProvider
 
     public RedisCacheProvider(IHttpContextAccessor              httpContextAccessor,
                               IRedisConnectionWrapper           connectionWrapper,
-                              IOptions<RedisCacheConfiguration> redisCacheConfiguration)
+                              IOptions<RedisCacheConfiguration> redisCacheConfiguration,
+                              ILogger<RedisCacheProvider>       logger)
     {
         _connectionWrapper       = connectionWrapper;
+        _logger                  = logger;
         _redisCacheConfiguration = redisCacheConfiguration.Value;
 
         _db = _connectionWrapper.GetDatabase(_redisCacheConfiguration.DefaultDatabase ??
-                                             (int) RedisDatabaseNumber.Cache);
+                                             (int)RedisDatabaseNumber.Cache);
 
         _perRequestCache = new PerRequestCache(httpContextAccessor);
     }
@@ -241,6 +245,8 @@ public partial class RedisCacheProvider : ICacheProvider
             if (rez != null && !rez.Equals(default(T)))
                 return rez;
         }
+
+        _logger.LogInformation("No result found in cache. Acquiring result...");
 
         //or create it using passed function
         var result = acquire();
