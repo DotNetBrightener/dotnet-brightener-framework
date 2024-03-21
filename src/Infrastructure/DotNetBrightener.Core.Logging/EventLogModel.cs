@@ -26,13 +26,9 @@ public abstract class EventLogBaseModel
 
 public class EventLogModel : EventLogBaseModel
 {
-    public string FullMessage => Exception?.GetFullExceptionMessage();
+    public string FullMessage { get; set; }
 
-    public string StackTrace => Exception?.StackTrace;
+    public string StackTrace { get; set; }
 
-    [JsonIgnore]
-    public IDictionary<object, object> Properties { get; set; }
-
-    [JsonIgnore]
-    public Exception Exception { get; set; }
+    public string PropertiesDictionary { get; set; }
 }

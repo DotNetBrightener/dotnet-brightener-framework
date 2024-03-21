@@ -1,26 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Net.Quic;
-using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
-using DotNetBrightener.Caching;
-using DotNetBrightener.DataAccess.Services;
+﻿using DotNetBrightener.Caching;
 using DotNetBrightener.LocaleManagement.Data;
 using DotNetBrightener.LocaleManagement.Entities;
 using DotNetBrightener.LocaleManagement.ErrorMessages;
 using DotNetBrightener.LocaleManagement.Models;
 using DotNetBrightener.LocaleManagement.ResultType;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Threading.Tasks;
 
 namespace DotNetBrightener.LocaleManagement.Services;
 
 public class LocaleManagementService : ILocaleManagementService
 {
     private readonly ICacheManager                   _cacheManager;
-    private readonly ITransactionWrapper             _transactionWrapper;
     private readonly IAppLocaleDictionaryDataService _appLocaleDictionaryDataService;
     private readonly IDictionaryEntryDataService     _dictionaryEntryDataService;
     private readonly IServiceProvider                _serviceProvider;
@@ -30,14 +26,12 @@ public class LocaleManagementService : ILocaleManagementService
                                    IDictionaryEntryDataService      dictionaryEntryDataService,
                                    IServiceProvider                 serviceProvider,
                                    ILogger<LocaleManagementService> logger,
-                                   ICacheManager                    cacheManager,
-                                   ITransactionWrapper              transactionWrapper)
+                                   ICacheManager                    cacheManager)
     {
         _appLocaleDictionaryDataService = appLocaleDictionaryDataService;
         _dictionaryEntryDataService     = dictionaryEntryDataService;
         _serviceProvider                = serviceProvider;
         _cacheManager                   = cacheManager;
-        _transactionWrapper             = transactionWrapper;
         _logger                         = logger;
     }
 
@@ -99,12 +93,13 @@ public class LocaleManagementService : ILocaleManagementService
         return dictionary;
     }
 
-    public async Task<Result<LocaleInformation, LocaleManagementBaseErrorResult>>
-        CreateLocale(CreateLocaleRequest createRequest)
+    public async Task<Result<AppSupportedLocaleWithDictionary, LocaleManagementBaseErrorResult>> CreateLocale(
+        CreateLocaleRequest createRequest)
     {
         var (culture, regionInfo) = GetCultureAndRegion(createRequest.LanguageCode, createRequest.CountryCode);
 
-        if (culture is null || regionInfo is null)
+        if (culture is null ||
+            regionInfo is null)
         {
             return _serviceProvider.TryGet<LocaleNotSupportedError>();
         }
@@ -149,6 +144,33 @@ public class LocaleManagementService : ILocaleManagementService
                                                       forceHardDelete: true);
         }
 
+        var existingLocalizationsForApp = _appLocaleDictionaryDataService
+                                         .FetchActive(ad => ad.AppUniqueId == createRequest.AppId)
+                                         .ToList();
+
+        var isDefault =
+            !existingLocalizationsForApp.Any(); // no app dictionary created, the first one should be default
+
+        if (!isDefault &&
+            createRequest.IsDefault &&
+            createRequest.IsEnabled)
+        {
+            // already have locales, but this one is set to default
+            // check the existing for default and set it to false
+            _appLocaleDictionaryDataService.UpdateMany(ad => ad.AppUniqueId == createRequest.AppId &&
+                                                             ad.IsDefault,
+                                                       _ => new AppLocaleDictionary
+                                                       {
+                                                           IsDefault = false
+                                                       });
+
+            isDefault = true;
+        }
+
+        var isEnabled = createRequest.IsEnabled || isDefault;
+
+
+
         var appName = sourceLocale?.AppName ?? createRequest.AppName;
         existingLocale = new AppLocaleDictionary
         {
@@ -158,7 +180,9 @@ public class LocaleManagementService : ILocaleManagementService
             LanguageCode = culture.TwoLetterISOLanguageName,
             CountryCode  = regionInfo.TwoLetterISORegionName,
             LocaleCode   = culture.Name,
-            DisplayName  = culture.DisplayName
+            DisplayName  = culture.DisplayName,
+            IsActive     = isEnabled,
+            IsDefault    = isDefault
         };
 
         await _appLocaleDictionaryDataService.InsertAsync(existingLocale);
@@ -190,14 +214,22 @@ public class LocaleManagementService : ILocaleManagementService
             await _dictionaryEntryDataService.InsertAsync(newDictionaryEntries);
         }
 
-        return new LocaleInformation
+        var cacheKey = GetAppSupportedLocalesCacheKey(createRequest.AppId);
+        _cacheManager.Remove(cacheKey);
+
+        return new AppSupportedLocaleWithDictionary
         {
             Id                = existingLocale.Id,
-            AppId             = existingLocale.AppUniqueId,
             AppName           = existingLocale.AppName,
-            Description       = existingLocale.Description,
-            LocaleCode        = existingLocale.LocaleCode,
+            AppUniqueId       = existingLocale.AppUniqueId,
             CountryCode       = existingLocale.CountryCode,
+            DisplayName       = existingLocale.DisplayName,
+            Description       = existingLocale.Description,
+            IsDefault         = existingLocale.IsDefault,
+            LanguageCode      = existingLocale.LanguageCode,
+            LocaleCode        = existingLocale.LocaleCode,
+            LanguageName      = culture.EnglishName,
+            CountryName       = regionInfo.EnglishName,
             DictionaryEntries = dictionaryEntries
         };
     }
@@ -357,10 +389,10 @@ public class LocaleManagementService : ILocaleManagementService
     }
 
     private static CacheKey GetSystemSupportedLocalesCacheKey(string[] countryCodes) 
-        => new("SystemSupportedLocales", cacheTime: 120, countryCodes);
+        => new("SystemSupportedLocales", cacheTime: 2, countryCodes);
 
     private static CacheKey GetAppSupportedLocalesCacheKey(string appId) 
-        => new($"AppLocales_{appId}", cacheTime: 120);
+        => new($"AppLocales_{appId}", cacheTime: 2);
 
     private static CacheKey GetDictionaryEntriesCacheKey(string appId, string localeCode) 
         => new($"DictionaryEntries_{appId}_{localeCode}", cacheTime: 15);
@@ -392,7 +424,7 @@ public class LocaleManagementService : ILocaleManagementService
                     LanguageName = culture.EnglishName,
                     DisplayName  = culture.DisplayName,
                     CountryName  = region.DisplayName,
-                    LocaleName   = culture.Name
+                    LocaleCode   = culture.Name
                 });
             }
             catch (ArgumentException)
@@ -418,13 +450,15 @@ public class LocaleManagementService : ILocaleManagementService
         {
             var (culture, regionInfo) = GetCultureAndRegion(appLocaleDictionary.LocaleCode);
 
-            if (culture is null || regionInfo is null)
+            if (culture is null ||
+                regionInfo is null)
             {
                 // clean up the unsupported locales from database
                 _dictionaryEntryDataService.DeleteMany(_ => _.DictionaryId == appLocaleDictionary.Id,
                                                        forceHardDelete: true);
 
                 _appLocaleDictionaryDataService.DeleteOne(ad => ad.Id == appLocaleDictionary.Id, forceHardDelete: true);
+
                 continue;
             }
 
@@ -436,7 +470,8 @@ public class LocaleManagementService : ILocaleManagementService
                 LanguageName = culture.EnglishName,
                 DisplayName  = culture.DisplayName,
                 CountryName  = regionInfo.DisplayName,
-                LocaleName   = culture.Name
+                LocaleCode   = culture.Name,
+                IsDefault    = appLocaleDictionary.IsDefault
             });
         }
 

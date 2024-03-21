@@ -2,6 +2,8 @@ using DotNetBrightener.Plugins.EventPubSub;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 using NLog;
 using NLog.Common;
 using NLog.Layouts;
@@ -115,17 +117,26 @@ public class EventLoggingWatcher : TargetWithLayout, IEventLogWatcher
 
         var eventLogModel = new EventLogModel
         {
-            Exception        = logEvent.Exception,
             FormattedMessage = logEvent.FormattedMessage,
             Level            = logEvent.Level.ToString(),
             LoggerName       = logEvent.LoggerName,
-            Properties       = logEvent.Properties,
             Message          = logEvent.Message,
             TimeStamp        = logEvent.TimeStamp.ToUniversalTime(),
             RequestUrl       = RequestUrlLayoutRenderer.Render(logEvent),
             RemoteIpAddress  = RequestIpLayoutRenderer.Render(logEvent),
             UserAgent        = RequestUserAgentLayoutRenderer.Render(logEvent)
         };
+
+        if (logEvent.Properties != null)
+        {
+            eventLogModel.PropertiesDictionary = JsonConvert.SerializeObject(logEvent.Properties);
+        }
+
+        if (logEvent.Exception != null)
+        {
+            eventLogModel.FullMessage = logEvent.Exception.GetFullExceptionMessage();
+            eventLogModel.StackTrace  = logEvent.Exception.StackTrace;
+        }
 
         _queue.Enqueue(eventLogModel);
 
@@ -141,8 +152,7 @@ public class EventLoggingWatcher : TargetWithLayout, IEventLogWatcher
         {
             var httpContextAccessor = scope.ServiceProvider.GetService<IHttpContextAccessor>();
 
-            if (httpContextAccessor != null &&
-                httpContextAccessor.HttpContext != null)
+            if (httpContextAccessor is { HttpContext: not null })
             {
                 eventLogModel.RequestUrl      = httpContextAccessor.HttpContext.Request.GetRequestUrl();
                 eventLogModel.RemoteIpAddress = httpContextAccessor.HttpContext.GetClientIP();

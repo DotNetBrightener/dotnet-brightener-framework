@@ -4,18 +4,18 @@ using DotNetBrightener.DataAccess.EF.Extensions;
 using DotNetBrightener.DataAccess.Exceptions;
 using DotNetBrightener.DataAccess.Models;
 using DotNetBrightener.DataAccess.Services;
-using DotNetBrightener.DataTransferObjectUtility;
+using DotNetBrightener.DataAccess.Utils;
 using DotNetBrightener.Plugins.EventPubSub;
 using LinqToDB;
 using LinqToDB.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using Microsoft.Extensions.Logging;
 
 namespace DotNetBrightener.DataAccess.EF.Repositories;
 

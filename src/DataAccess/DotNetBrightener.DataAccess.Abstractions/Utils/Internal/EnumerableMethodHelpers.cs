@@ -4,7 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace DotNetBrightener.DataTransferObjectUtility.Internal;
+namespace DotNetBrightener.DataAccess.Utils.Internal;
 
 internal static class EnumerableMethodHelpers
 {

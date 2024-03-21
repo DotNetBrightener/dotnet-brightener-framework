@@ -25,7 +25,7 @@ var dbConfiguration = new DatabaseConfiguration
 {
     ConnectionString = builder.Configuration.GetConnectionString("DefaultConnection"),
     UseLazyLoading   = true,
-    DatabaseProvider = DatabaseProvider.PostgreSql
+    DatabaseProvider = DatabaseProvider.MsSql
 };
 
 Action<DbContextOptionsBuilder> configureDatabase = optionsBuilder =>

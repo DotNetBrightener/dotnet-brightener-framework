@@ -1,4 +1,4 @@
-﻿using DotNetBrightener.DataTransferObjectUtility.Internal;
+﻿using DotNetBrightener.DataAccess.Utils.Internal;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -9,26 +9,9 @@ using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using System.Reflection;
+using DotNetBrightener.DataAccess.Auditing;
 
-namespace DotNetBrightener.DataTransferObjectUtility;
-
-public class AuditProperty
-{
-    public string PropertyName { get; set; }
-
-    public object OldValue { get; set; }
-
-    public object NewValue { get; set; }
-}
-
-public class AuditTrail<T>
-{
-    public string Identifier { get; set; }
-
-    public string TypeName { get; set; } = typeof(T).FullName;
-
-    public List<AuditProperty> AuditProperties { get; set; } = new List<AuditProperty>();
-}
+namespace DotNetBrightener.DataAccess.Utils;
 
 public static class DataTransferObjectUtils
 {

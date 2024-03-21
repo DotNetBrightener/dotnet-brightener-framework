@@ -31,12 +31,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Plugins.Ev
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Plugins.EventPubSub", "EventPubSub\DotNetBrightener.Plugins.EventPubSub\DotNetBrightener.Plugins.EventPubSub.csproj", "{2D908DBB-82A9-4BB3-AA69-64575951FCD5}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DataTransferObjectUtility", "DataTransferObjectUtility", "{8F6CE9CF-9FBE-4685-9D21-BF687ED88E34}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.DataTransferObjectUtility.Tests", "DataTransferObjectUtility\DotNetBrightener.DataTransferObjectUtility.Tests\DotNetBrightener.DataTransferObjectUtility.Tests.csproj", "{40AB7A65-61F4-460B-A859-85CA27342BA7}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.DataTransferObjectUtility", "DataTransferObjectUtility\DotNetBrightener.DataTransferObjectUtility\DotNetBrightener.DataTransferObjectUtility.csproj", "{7D3709D1-1AA1-4F52-B6F1-0398F4977049}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DataAccess", "DataAccess", "{9F2E3D63-2AC9-4816-ADE5-7B255E17CC6E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.DataAccess.EF.PostgreSQL", "DataAccess\DotNetBrightener.DataAccess.EF.PostgreSQL\DotNetBrightener.DataAccess.EF.PostgreSQL.csproj", "{F5932DAA-7B08-46D4-BF7E-8F60AB8F3543}"
@@ -188,7 +182,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.LocaleMana
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LocaleManagementDemo", "LocaleManagementDemo", "{CBA13E58-DDB6-49B9-B95E-79E555C2AF53}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LocaleManagement.WebAPI", "..\demos & tests\LocaleManagementDemo\LocaleManagement.WebAPI\LocaleManagement.WebAPI.csproj", "{63E57B2A-52D4-4373-BDCE-0D6374DD9C71}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LocaleManagement.WebAPI", "..\demos & tests\LocaleManagementDemo\LocaleManagement.WebAPI\LocaleManagement.WebAPI.csproj", "{63E57B2A-52D4-4373-BDCE-0D6374DD9C71}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LocaleManagement.Database", "..\demos & tests\LocaleManagementDemo\LocaleManagement.Database\LocaleManagement.Database.csproj", "{D2507F74-3FA7-4FF9-90CF-788DE46D69E4}"
 EndProject
@@ -256,22 +250,6 @@ Global
 		{2D908DBB-82A9-4BB3-AA69-64575951FCD5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2D908DBB-82A9-4BB3-AA69-64575951FCD5}.Release|ARM64.ActiveCfg = Release|ARM64
 		{2D908DBB-82A9-4BB3-AA69-64575951FCD5}.Release|ARM64.Build.0 = Release|ARM64
-		{40AB7A65-61F4-460B-A859-85CA27342BA7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{40AB7A65-61F4-460B-A859-85CA27342BA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{40AB7A65-61F4-460B-A859-85CA27342BA7}.Debug|ARM64.ActiveCfg = Debug|ARM64
-		{40AB7A65-61F4-460B-A859-85CA27342BA7}.Debug|ARM64.Build.0 = Debug|ARM64
-		{40AB7A65-61F4-460B-A859-85CA27342BA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{40AB7A65-61F4-460B-A859-85CA27342BA7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{40AB7A65-61F4-460B-A859-85CA27342BA7}.Release|ARM64.ActiveCfg = Release|ARM64
-		{40AB7A65-61F4-460B-A859-85CA27342BA7}.Release|ARM64.Build.0 = Release|ARM64
-		{7D3709D1-1AA1-4F52-B6F1-0398F4977049}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7D3709D1-1AA1-4F52-B6F1-0398F4977049}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7D3709D1-1AA1-4F52-B6F1-0398F4977049}.Debug|ARM64.ActiveCfg = Debug|ARM64
-		{7D3709D1-1AA1-4F52-B6F1-0398F4977049}.Debug|ARM64.Build.0 = Debug|ARM64
-		{7D3709D1-1AA1-4F52-B6F1-0398F4977049}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7D3709D1-1AA1-4F52-B6F1-0398F4977049}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7D3709D1-1AA1-4F52-B6F1-0398F4977049}.Release|ARM64.ActiveCfg = Release|ARM64
-		{7D3709D1-1AA1-4F52-B6F1-0398F4977049}.Release|ARM64.Build.0 = Release|ARM64
 		{F5932DAA-7B08-46D4-BF7E-8F60AB8F3543}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F5932DAA-7B08-46D4-BF7E-8F60AB8F3543}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F5932DAA-7B08-46D4-BF7E-8F60AB8F3543}.Debug|ARM64.ActiveCfg = Debug|ARM64
@@ -668,8 +646,6 @@ Global
 		{720FA6C5-3ADD-4B7B-9FAF-8B775B667401} = {D1B2A191-6855-4006-9EE5-FFEC5DBA6DC1}
 		{E0D3E777-C608-432C-9AEA-B549C41B07FA} = {0BF749BF-71CF-4FA8-9589-D29F5A34EC18}
 		{2D908DBB-82A9-4BB3-AA69-64575951FCD5} = {0BF749BF-71CF-4FA8-9589-D29F5A34EC18}
-		{40AB7A65-61F4-460B-A859-85CA27342BA7} = {8F6CE9CF-9FBE-4685-9D21-BF687ED88E34}
-		{7D3709D1-1AA1-4F52-B6F1-0398F4977049} = {8F6CE9CF-9FBE-4685-9D21-BF687ED88E34}
 		{F5932DAA-7B08-46D4-BF7E-8F60AB8F3543} = {9F2E3D63-2AC9-4816-ADE5-7B255E17CC6E}
 		{11A36038-D86A-4DC9-B660-D881D242EE2F} = {9F2E3D63-2AC9-4816-ADE5-7B255E17CC6E}
 		{49A3DADA-E976-4DC6-BEC2-7A2B448E890A} = {9F2E3D63-2AC9-4816-ADE5-7B255E17CC6E}
@@ -760,6 +736,7 @@ Global
 		Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{6ee8521b-ca33-45a6-899d-bd48d8dccbac}*SharedItemsImports = 5
 		Shared\SharedExtensions.ServiceCollection\SharedExtensions.ServiceCollectionExtensions.projitems*{6ee8521b-ca33-45a6-899d-bd48d8dccbac}*SharedItemsImports = 5
 		Shared\SharedExtensions.String\StringExtensions.projitems*{6ee8521b-ca33-45a6-899d-bd48d8dccbac}*SharedItemsImports = 5
+		Shared\SharedExtensions.XmlDocumentationHelper\SharedExtensions.XmlDocumentationHelper.projitems*{6ee8521b-ca33-45a6-899d-bd48d8dccbac}*SharedItemsImports = 5
 		Shared\SharedExtensions.Expression\SharedExtensions.Expression.projitems*{6ffc158f-337d-4001-8261-f22c5a757b67}*SharedItemsImports = 5
 		Shared\SharedExtensions.HttpContext\SharedExtensions.HttpContext.projitems*{6ffc158f-337d-4001-8261-f22c5a757b67}*SharedItemsImports = 5
 		Shared\SharedExtensions.Object\SharedExtensions.ObjectExtensions.projitems*{6ffc158f-337d-4001-8261-f22c5a757b67}*SharedItemsImports = 5
@@ -768,7 +745,6 @@ Global
 		Shared\SharedExtensions.String\StringExtensions.projitems*{6ffc158f-337d-4001-8261-f22c5a757b67}*SharedItemsImports = 5
 		Shared\SharedExtensions.DateTime\DateTimeExtensions.projitems*{7103c447-db31-4128-9e7a-47872ce5df58}*SharedItemsImports = 5
 		Shared\SharedExtensions.XmlDocumentationHelper\SharedExtensions.XmlDocumentationHelper.projitems*{7103c447-db31-4128-9e7a-47872ce5df58}*SharedItemsImports = 5
-		Shared\SharedExtensions.XmlDocumentationHelper\SharedExtensions.XmlDocumentationHelper.projitems*{7d3709d1-1aa1-4f52-b6f1-0398f4977049}*SharedItemsImports = 5
 		Shared\SharedExtensions.ServiceCollection\SharedExtensions.ServiceCollectionExtensions.projitems*{7e618afd-cf2f-4a14-b949-fdd79aee1133}*SharedItemsImports = 5
 		WebApiGenericCRUD\DotNetBrightener.WebApi.GenericCRUD.Shared\DotNetBrightener.GenericCRUD.Shared.projitems*{81e68dde-31cb-4cd8-9b5c-44658e3c69a1}*SharedItemsImports = 13
 		gRPC\DotNetBrightener.gRPC.Shared\DotNetBrightener.gRPC.Shared.projitems*{8a97f683-f1f8-47a3-84c0-6d35f82e5016}*SharedItemsImports = 5

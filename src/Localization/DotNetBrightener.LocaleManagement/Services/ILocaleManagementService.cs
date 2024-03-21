@@ -30,7 +30,7 @@ public interface ILocaleManagementService
     /// <param name="appId">Unique id of the app</param>
     /// <param name="localeCode">The code of the locale to get the dictionary entries</param>
     /// <returns></returns>
-    Task<Result<Dictionary<string, string>, LocaleManagementBaseErrorResult>> 
+    Task<Result<Dictionary<string, string>, LocaleManagementBaseErrorResult>>
         GetDictionaryEntriesByLocale(string appId, string localeCode);
 
     /// <summary>
@@ -38,7 +38,7 @@ public interface ILocaleManagementService
     /// </summary>
     /// <param name="createRequest"></param>
     /// <returns></returns>
-    Task<Result<LocaleInformation, LocaleManagementBaseErrorResult>> 
+    Task<Result<AppSupportedLocaleWithDictionary, LocaleManagementBaseErrorResult>>
         CreateLocale(CreateLocaleRequest createRequest);
 
     /// <summary>

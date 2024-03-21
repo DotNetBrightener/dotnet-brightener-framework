@@ -25,10 +25,10 @@
 		<FileVersionPotion>$([System.DateTime]::UtcNow.DayOfYear)$([System.DateTime]::Now.ToString(HH))</FileVersionPotion>
 		<BuildNumber>$([System.DateTime]::Now.ToString(yyMMddHH))</BuildNumber>
 
-		<VersionPrefix>2024.0.10</VersionPrefix>
+		<VersionPrefix>2024.0.11.$(FileVersionPotion)</VersionPrefix>
 
-		<AssemblyVersion>$(VersionPrefix).$(FileVersionPotion)</AssemblyVersion>
-		<FileVersion>$(VersionPrefix).$(FileVersionPotion)</FileVersion>
+		<AssemblyVersion>$(VersionPrefix)</AssemblyVersion>
+		<FileVersion>$(VersionPrefix)</FileVersion>
 	</PropertyGroup>
 
 	<!-- Version settings for Debugging -->

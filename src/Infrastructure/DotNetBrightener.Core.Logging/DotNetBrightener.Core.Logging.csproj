@@ -10,7 +10,6 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\DataAccess\DotNetBrightener.DataAccess.Abstractions\DotNetBrightener.DataAccess.Abstractions.csproj" />
-		<ProjectReference Include="..\..\DataTransferObjectUtility\DotNetBrightener.DataTransferObjectUtility\DotNetBrightener.DataTransferObjectUtility.csproj" />
 		<ProjectReference Include="..\..\EventPubSub\DotNetBrightener.Plugins.EventPubSub\DotNetBrightener.Plugins.EventPubSub.csproj" />
 	</ItemGroup>
 

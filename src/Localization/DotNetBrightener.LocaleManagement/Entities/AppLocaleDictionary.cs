@@ -15,16 +15,28 @@ public class AppLocaleDictionary : BaseEntityWithAuditInfo
     public string AppUniqueId { get; set; }
 
     /// <summary>
+    ///     The locale (culture) code, usually is the language code and the country code, eg. en-US, es-US, vi-VN
+    /// </summary>
+    [MaxLength(16)]
+    public string LocaleCode { get; set; }
+
+    /// <summary>
     ///     Name of the associated app
     /// </summary>
     [MaxLength(255)]
     public string AppName { get; set; }
 
     /// <summary>
-    ///     The locale (culture) code, usually is the language code and the country code
+    ///     The language code
     /// </summary>
-    [MaxLength(16)]
-    public string LocaleCode { get; set; }
+    [MaxLength(5)]
+    public string LanguageCode { get; set; }
+
+    /// <summary>
+    ///     The country code
+    /// </summary>
+    [MaxLength(5)]
+    public string CountryCode { get; set; }
 
     /// <summary>
     ///     The display name of the language
@@ -39,14 +51,12 @@ public class AppLocaleDictionary : BaseEntityWithAuditInfo
     public string Description { get; set; }
 
     /// <summary>
-    ///     The language code
+    ///     Indicates that the locale is the default for the given app
     /// </summary>
-    [MaxLength(5)]
-    public string LanguageCode { get; set; }
+    public bool IsDefault { get; set; }
 
     /// <summary>
-    ///     The country code
+    ///     Indicates that the locale is active / enabled for selecting in the associated app
     /// </summary>
-    [MaxLength(5)]
-    public string CountryCode { get; set; }
+    public bool IsActive { get; set; }
 }

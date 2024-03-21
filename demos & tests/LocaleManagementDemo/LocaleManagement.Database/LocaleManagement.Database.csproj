@@ -1,8 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-	<ItemGroup>
-		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.3" />
-		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.2" />
-	</ItemGroup>
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.3">
@@ -16,14 +18,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\DotNetBrightener.DataAccess.Abstractions\DotNetBrightener.DataAccess.Abstractions.csproj" />
-	  <ProjectReference Include="..\DotNetBrightener.DataAccess.EF\DotNetBrightener.DataAccess.EF.csproj" />
+		<ProjectReference Include="..\..\..\src\DataAccess\DotNetBrightener.DataAccess.EF\DotNetBrightener.DataAccess.EF.csproj" />
+		<ProjectReference Include="..\..\..\src\Localization\DotNetBrightener.LocaleManagement\DotNetBrightener.LocaleManagement.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-		<None Update="docs\readme.md">
-			<PackagePath>\</PackagePath>
-			<Pack>true</Pack>
-		</None>
-	</ItemGroup>
 </Project>

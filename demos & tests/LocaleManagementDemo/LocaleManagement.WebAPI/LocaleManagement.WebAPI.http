@@ -1,0 +1,23 @@
+@LocaleManagement.WebAPI_HostAddress = http://localhost:5295
+@appId = com.homesphere.homecapture
+
+GET {{LocaleManagement.WebAPI_HostAddress}}/api/localeManagement/supportedLocales
+Accept: application/json
+
+###
+
+GET {{LocaleManagement.WebAPI_HostAddress}}/api/localeManagement/{{appId}}/supportedLocales
+Accept: application/json
+
+###
+
+POST {{LocaleManagement.WebAPI_HostAddress}}/api/localeManagement/appLocaleDictionary
+Content-Type: application/json
+Accept-Language: en-US
+
+{
+  "appId": "{{appId}}",
+  "appName": "HomeCapture",
+  "localeCode": "en",
+  "countryCode": "us"
+}

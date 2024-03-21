@@ -14,4 +14,6 @@ public class CreateLocaleRequest
     public string  LanguageCode { get; init; }
     public string  CountryCode  { get; init; }
     public string? SourceLocale { get; init; }
+    public bool    IsEnabled    { get; set; }
+    public bool    IsDefault    { get; set; }
 }

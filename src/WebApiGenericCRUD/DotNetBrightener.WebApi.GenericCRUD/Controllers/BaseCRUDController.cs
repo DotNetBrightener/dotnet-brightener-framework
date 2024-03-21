@@ -1,7 +1,8 @@
 ﻿using DotNetBrightener.DataAccess.Attributes;
+using DotNetBrightener.DataAccess.Auditing;
 using DotNetBrightener.DataAccess.Models;
 using DotNetBrightener.DataAccess.Services;
-using DotNetBrightener.DataTransferObjectUtility;
+using DotNetBrightener.DataAccess.Utils;
 using DotNetBrightener.GenericCRUD.Models;
 using DotNetBrightener.WebApi.GenericCRUD.ActionFilters;
 using Microsoft.AspNetCore.Http;

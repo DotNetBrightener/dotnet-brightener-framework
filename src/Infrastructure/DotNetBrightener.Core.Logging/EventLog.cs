@@ -1,16 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
-using DotNetBrightener.DataTransferObjectUtility;
+﻿using DotNetBrightener.DataAccess.Utils;
+using System.ComponentModel.DataAnnotations;
 
 namespace DotNetBrightener.Core.Logging;
 
-public class EventLog : EventLogBaseModel
+public class EventLog : EventLogModel
 {
     [Key]
     public long Id { get; set; }
-
-    public string FullMessage { get; set; }
-
-    public string StackTrace { get; set; }
 
     public EventLog()
     {
