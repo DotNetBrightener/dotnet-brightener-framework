@@ -269,12 +269,14 @@ public class Repository : IRepository
         return updatedRecords;
     }
 
-    public virtual void DeleteOne<T>(Expression<Func<T, bool>> conditionExpression, bool forceHardDelete = false)
+    public virtual void DeleteOne<T>(Expression<Func<T, bool>> conditionExpression,
+                                     string                    reason          = null,
+                                     bool                      forceHardDelete = false)
         where T : class
     {
         using var dbTransaction = DbContext.Database.BeginTransaction();
 
-        var affectedRecords = DeleteMany(conditionExpression, forceHardDelete);
+        var affectedRecords = DeleteMany(conditionExpression, reason, forceHardDelete);
 
         if (affectedRecords != 1)
         {
@@ -287,6 +289,7 @@ public class Repository : IRepository
     }
 
     public virtual int DeleteMany<T>(Expression<Func<T, bool>> conditionExpression,
+                                     string                    reason          = null,
                                      bool                      forceHardDelete = false)
         where T : class
     {
@@ -300,7 +303,10 @@ public class Repository : IRepository
                                  : Update(conditionExpression,
                                           new
                                           {
-                                              IsDeleted = true
+                                              IsDeleted      = true,
+                                              DeletedDate    = DateTimeOffset.UtcNow,
+                                              DeletedBy      = CurrentLoggedInUserResolver.CurrentUserName,
+                                              DeletionReason = reason
                                           });
 
         return updatedRecords;
@@ -340,7 +346,10 @@ public class Repository : IRepository
         var updatedRecords = Update(conditionExpression,
                                     new
                                     {
-                                        IsDeleted = false
+                                        IsDeleted      = false,
+                                        DeletedDate    = default(DateTimeOffset?),
+                                        DeletedBy      = default(string),
+                                        DeletionReason = default(string)
                                     });
 
         return updatedRecords;

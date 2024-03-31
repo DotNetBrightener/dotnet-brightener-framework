@@ -2,7 +2,7 @@
 using DotNetBrightener.Core.BackgroundTasks;
 using DotNetBrightener.Core.Logging;
 
-namespace DotNetBrightener.WebApp.CommonShared.BackgroundTasks;
+namespace WebApp.CommonShared.BackgroundTasks;
 
 public class QueueEventLogBackgroundTask: IBackgroundTask, IDependency
 {

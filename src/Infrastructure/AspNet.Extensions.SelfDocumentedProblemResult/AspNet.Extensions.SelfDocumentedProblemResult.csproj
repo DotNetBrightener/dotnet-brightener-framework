@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="$(AssemblyName).UI" />
+	</ItemGroup>
+
+
+	<Import Project="..\..\Shared\SharedExtensions.Exception\SharedExtensions.Exception.projitems" Label="Shared" />
+
+
+	<Import Project="..\..\Shared\SharedExtensions.HttpContext\SharedExtensions.HttpContext.projitems" Label="Shared" />
+
+
+	<Import Project="..\..\Shared\SharedExtensions.String\StringExtensions.projitems" Label="Shared" />
+
+
+	<Import Project="..\..\Shared\SharedExtensions.XmlDocumentationHelper\SharedExtensions.XmlDocumentationHelper.projitems" Label="Shared" />
+
+</Project>

@@ -1,7 +1,7 @@
-﻿using DotNetBrightener.DataAccess.Models;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using DotNetBrightener.DataAccess.Models;
 
-namespace DotNetBrightener.LocaleManagement.Entities;
+namespace LocaleManagement.Entities;
 
 /// <summary>
 ///     Represents the dictionary for a specific app and locale

@@ -1,8 +1,8 @@
 using DotNetBrightener.Caching.Memory;
 using DotNetBrightener.DataAccess;
 using DotNetBrightener.DataAccess.EF.Extensions;
-using DotNetBrightener.LocaleManagement.WebApi;
 using LocaleManagement.Database.DbContexts;
+using LocaleManagement.WebApi;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);

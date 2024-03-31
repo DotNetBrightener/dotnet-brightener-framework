@@ -5,7 +5,7 @@ using DotNetBrightener.DataAccess.EF.Migrations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace DotNetBrightener.WebApp.CommonShared.Data;
+namespace WebApp.CommonShared.Data;
 
 public class AutoMigrateDbStartupTask<TDbContext> : ISynchronousStartupTask
     where TDbContext : DbContext, IMigrationDefinitionDbContext

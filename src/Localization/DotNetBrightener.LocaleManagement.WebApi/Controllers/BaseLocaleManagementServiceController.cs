@@ -1,7 +1,7 @@
-﻿using DotNetBrightener.LocaleManagement.Data;
-using DotNetBrightener.LocaleManagement.Entities;
-using DotNetBrightener.LocaleManagement.Models;
-using DotNetBrightener.LocaleManagement.Services;
+﻿using LocaleManagement.Data;
+using LocaleManagement.Entities;
+using LocaleManagement.Models;
+using LocaleManagement.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -12,7 +12,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 
-namespace DotNetBrightener.LocaleManagement.WebApi.Controllers;
+namespace LocaleManagement.WebApi.Controllers;
 
 public abstract class BaseLocaleManagementServiceController : Controller
 {
@@ -162,8 +162,7 @@ public abstract class BaseLocaleManagementServiceController : Controller
             await LocaleManagementService.GetDictionaryEntriesByLocale(appId,
                                                                        $"{languageCode}_{countryCode}");
 
-        return dictionaryEntries.Match(Ok,
-                                       error => StatusCode(error.StatusCode, error));
+        return dictionaryEntries.ToActionResult();
     }
 
     [HttpPost("~/api/localeManagement/appLocaleDictionary")]
@@ -177,9 +176,8 @@ public abstract class BaseLocaleManagementServiceController : Controller
         }
 
         var localeData = await LocaleManagementService.CreateLocale(request);
-
-        return localeData.Match(Ok,
-                                error => StatusCode(error.StatusCode, error));
+        
+        return localeData.ToActionResult();
     }
 
     [HttpPost("~/api/localeManagement/appLocaleDictionary/{localizationId}/import")]
@@ -196,11 +194,8 @@ public abstract class BaseLocaleManagementServiceController : Controller
 
         if (Request.Form.Files.Count == 0)
         {
-            return StatusCode(403,
-                              new
-                              {
-                                  ErrorMessage = "No files were found for import."
-                              });
+            return new InvalidOperationException("No files were found for import.")
+               .ToProblemResult(HttpStatusCode.BadRequest);
         }
 
         var dictionaryEntries = new Dictionary<string, string>();
@@ -218,7 +213,7 @@ public abstract class BaseLocaleManagementServiceController : Controller
                 if (dictionaryEntries.Count > 0 &&
                     dictionaryEntries.Keys.Intersect(entriesInFile.Keys).Any())
                 {
-                    throw new Exception("The dictionary entry key is duplicated in the request data");
+                    throw new Exception("There are dictionary entry keys duplicated in the request data");
                 }
 
                 dictionaryEntries = dictionaryEntries.Concat(entriesInFile)
@@ -228,21 +223,13 @@ public abstract class BaseLocaleManagementServiceController : Controller
             {
                 Logger.LogWarning(ex, "Error while parsing dictionary file for importing");
 
-                return StatusCode(403,
-                                  new
-                                  {
-                                      ErrorMessage = "The file is not in JSON dictionary format."
-                                  });
+                return ex.ToProblemResult(HttpStatusCode.BadRequest);
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "Error while reading files for importing");
 
-                return StatusCode(403,
-                                  new
-                                  {
-                                      ErrorMessage = ex.GetFullExceptionMessage()
-                                  });
+                return ex.ToProblemResult(HttpStatusCode.BadRequest);
             }
         }
 
@@ -253,8 +240,7 @@ public abstract class BaseLocaleManagementServiceController : Controller
             OverrideExistingValuesInOtherDictionaries = request.OverrideExistingValuesInOtherDictionaries
         });
 
-        return localeData.Match(Ok,
-                                error => StatusCode(error.StatusCode, error));
+        return localeData.ToActionResult();
     }
 
     [HttpPost("~/api/localeManagement/appLocaleDictionary/{localizationId}/entries")]
@@ -270,15 +256,14 @@ public abstract class BaseLocaleManagementServiceController : Controller
             return StatusCode(403);
         }
 
-        var localeData = await LocaleManagementService.UpsertDictionaryEntries(new DictionaryEntriesImportRequest
+        var localeDataResult = await LocaleManagementService.UpsertDictionaryEntries(new DictionaryEntriesImportRequest
         {
             DictionaryId                              = localizationId,
             Entries                                   = request.Entries,
             OverrideExistingValuesInOtherDictionaries = request.OverrideExistingValuesInOtherDictionaries
         });
 
-        return localeData.Match(Ok,
-                                error => StatusCode(error.StatusCode, error));
+        return localeDataResult.ToActionResult();
     }
 
 
@@ -294,8 +279,7 @@ public abstract class BaseLocaleManagementServiceController : Controller
 
         var result = await LocaleManagementService.DeleteDictionaryEntry(entryId);
 
-        return result.Match<IActionResult>(_ => Ok(),
-                                           error => StatusCode(error.StatusCode, error));
+        return result.ToActionResult();
     }
 
     [NonAction]

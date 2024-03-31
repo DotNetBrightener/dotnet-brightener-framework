@@ -6,7 +6,7 @@ using DotNetBrightener.Core.StartupTask;
 using DotNetBrightener.TemplateEngine.Data.Services;
 using Microsoft.Extensions.Logging;
 
-namespace DotNetBrightener.WebApp.CommonShared.StartupTasks;
+namespace WebApp.CommonShared.StartupTasks;
 
 public class TemplateAutomaticRegistrationTask : IStartupTask
 {

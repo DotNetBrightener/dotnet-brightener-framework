@@ -1,15 +1,26 @@
-﻿using System.Net;
-using Microsoft.Extensions.Localization;
+﻿using AspNet.Extensions.SelfDocumentedProblemResult.Exceptions;
+using System.Net;
 
-namespace DotNetBrightener.LocaleManagement.ErrorMessages;
+namespace LocaleManagement.ErrorMessages;
 
-public class LocaleAlreadyExistsError : LocaleManagementBaseErrorResult
+/// <summary>
+///     The error thrown when the locale configuration already exists
+/// </summary>
+/// <remarks>
+///     If the locale configuration for an associated app already exists, it cannot be added again
+/// </remarks>
+public class LocaleAlreadyExistsError : BaseProblemDetailsError
 {
-    public override int StatusCode => (int)HttpStatusCode.BadRequest;
+    public override string DetailReason => "If the locale configuration for an associated app already exists, it cannot be added again";
 
-    public LocaleAlreadyExistsError(IStringLocalizer<LocaleAlreadyExistsError> localizer)
-        : base(localizer)
+    public override string ErrorCode => "LM-0004";
+
+    public override string Summary   => "The error thrown when the locale configuration already exists";
+
+    public static readonly LocaleAlreadyExistsError Instance = new();
+
+    public LocaleAlreadyExistsError()
+        : base("Locale already exists", HttpStatusCode.Conflict)
     {
-
     }
 }

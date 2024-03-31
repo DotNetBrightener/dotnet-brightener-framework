@@ -2,9 +2,9 @@
 using DotNetBrightener.DataAccess.Services;
 using Microsoft.Extensions.Logging;
 
-using DotNetBrightener.LocaleManagement.Entities;
+using LocaleManagement.Entities;
 
-namespace DotNetBrightener.LocaleManagement.Data;
+namespace LocaleManagement.Data;
 
 /// <summary>
 ///     Provides the data access methods for <see cref="AppLocaleDictionary" /> entity.

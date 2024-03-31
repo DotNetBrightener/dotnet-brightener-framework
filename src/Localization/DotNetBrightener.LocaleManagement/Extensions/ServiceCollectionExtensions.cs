@@ -1,8 +1,8 @@
-﻿using DotNetBrightener.LocaleManagement.Data;
-using DotNetBrightener.LocaleManagement.Services;
+﻿using LocaleManagement.Data;
+using LocaleManagement.Services;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace DotNetBrightener.LocaleManagement.Extensions;
+namespace LocaleManagement.Extensions;
 public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddLocaleManagementModule(this IServiceCollection services)

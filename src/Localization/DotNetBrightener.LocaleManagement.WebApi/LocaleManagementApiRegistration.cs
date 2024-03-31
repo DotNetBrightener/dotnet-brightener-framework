@@ -1,8 +1,8 @@
-﻿using DotNetBrightener.LocaleManagement.Extensions;
+﻿using LocaleManagement.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace DotNetBrightener.LocaleManagement.WebApi;
+namespace LocaleManagement.WebApi;
 
 public static class LocaleManagementApiRegistration
 {

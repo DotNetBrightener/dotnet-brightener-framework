@@ -1,26 +1,27 @@
-﻿using System.Net;
-using Microsoft.Extensions.Localization;
+﻿using AspNet.Extensions.SelfDocumentedProblemResult.Exceptions;
+using System.Net;
 
-namespace DotNetBrightener.LocaleManagement.ErrorMessages;
+namespace LocaleManagement.ErrorMessages;
 
-public class DictionaryMustBeSpecifiedError : LocaleManagementBaseErrorResult
+/// <summary>
+///     The error thrown  when no dictionary is specified
+/// </summary>
+/// <remarks>
+///     To perform the operation, the identifier of the dictionary must be specified
+/// </remarks>
+public class DictionaryMustBeSpecifiedError : BaseProblemDetailsError
 {
-    public override int StatusCode => (int)HttpStatusCode.BadRequest;
+    public override string DetailReason => "To perform the operation, the identifier of the dictionary must be specified";
 
-    public DictionaryMustBeSpecifiedError(IStringLocalizer<DictionaryMustBeSpecifiedError> localizer)
-        : base(localizer)
+    public override string ErrorCode => "LM-0003";
+
+    public override string Summary =>
+        "The error thrown when no dictionary is specified";
+
+    public static readonly DictionaryMustBeSpecifiedError Instance = new();
+
+    public DictionaryMustBeSpecifiedError()
+        : base("Dictionary must be specified", HttpStatusCode.BadRequest)
     {
-
-    }
-}
-
-public class DictionaryEntryAlreadyExistsError : LocaleManagementBaseErrorResult
-{
-    public override int StatusCode => (int)HttpStatusCode.BadRequest;
-
-    public DictionaryEntryAlreadyExistsError(IStringLocalizer<DictionaryEntryAlreadyExistsError> localizer)
-        : base(localizer)
-    {
-
     }
 }

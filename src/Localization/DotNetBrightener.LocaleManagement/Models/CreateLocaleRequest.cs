@@ -1,4 +1,4 @@
-﻿namespace DotNetBrightener.LocaleManagement.Models;
+﻿namespace LocaleManagement.Models;
 
 /// <summary>
 ///     Represents the request model for creating a new locale

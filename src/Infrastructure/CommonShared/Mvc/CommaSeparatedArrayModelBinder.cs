@@ -5,7 +5,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace DotNetBrightener.WebApp.CommonShared.Mvc;
+namespace WebApp.CommonShared.Mvc;
 
 public class CommaSeparatedArrayModelBinderProvider : IModelBinderProvider
 {

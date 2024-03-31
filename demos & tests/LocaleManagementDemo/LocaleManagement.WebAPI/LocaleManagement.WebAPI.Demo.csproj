@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Caching\DotNetBrightener.Caching.Memory\DotNetBrightener.Caching.Memory.csproj" />
+    <ProjectReference Include="..\..\..\src\Localization\DotNetBrightener.LocaleManagement.WebApi\LocaleManagement.WebApi.csproj" />
+    <ProjectReference Include="..\LocaleManagement.Database\LocaleManagement.Database.csproj" />
+  </ItemGroup>
+
+</Project>

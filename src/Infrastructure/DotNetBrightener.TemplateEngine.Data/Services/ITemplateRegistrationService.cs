@@ -51,7 +51,9 @@ public class TemplateRegistrationService : ITemplateRegistrationService, ITempla
         _repository.UpdateMany(record => allAssembliesNames.Contains(record.FromAssemblyName),
                                model => new TemplateRecord
                                {
-                                   IsDeleted = true
+                                   IsDeleted     = true,
+                                   DeletedDate   = DateTimeOffset.UtcNow,
+                                   DeletionReason = "Removed during registration"
                                });
 
         foreach (var templateProvider in _providers)
@@ -124,7 +126,9 @@ public class TemplateRegistrationService : ITemplateRegistrationService, ITempla
                                    {
                                        IsDeleted        = false,
                                        FieldsString     = string.Join(";", templateFields),
-                                       FromAssemblyName = assemblyName
+                                       FromAssemblyName = assemblyName,
+                                       DeletedDate      = null,
+                                       DeletionReason    = null
                                    });
 
             if (!string.IsNullOrEmpty(templateContent))

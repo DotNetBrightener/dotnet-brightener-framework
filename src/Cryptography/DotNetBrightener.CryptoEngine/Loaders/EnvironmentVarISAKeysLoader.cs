@@ -30,7 +30,8 @@ public class EnvironmentVarISAKeysLoader : IRSAKeysLoader
             var keyPair = RsaCryptoEngine.GenerateKeyPair();
 
             throw new
-                CryptographicException($"Private Key for RSA Crypto Engine is not configured. Please add private key value below to Environment Variable with name '${_cryptoConfig.RsaEnvironmentVariableName}': {keyPair.Item2}");
+                CryptographicException($"Private Key for RSA Crypto Engine is not configured. " +
+                                       $"Please add private key value below to Environment Variable with name '${_cryptoConfig.RsaEnvironmentVariableName}': {keyPair.Item2}");
         }
 
         var isXmlFormat = privateKeyValueFromEnvVar.Contains("<?xml ");

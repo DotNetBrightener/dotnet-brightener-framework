@@ -270,6 +270,7 @@ public interface IRepository : IDisposable
     /// <param name="conditionExpression">
     ///     The expression of how to identify which record to delete
     /// </param>
+    /// <param name="reason"></param>
     /// <param name="forceHardDelete">
     ///     Enforcing hard-deletion on the entity, default is <c>false</c> for soft-deletion
     /// </param>
@@ -279,7 +280,7 @@ public interface IRepository : IDisposable
     /// <exception cref="ExpectedAffectedRecordMismatch">
     ///     Thrown if number of entities got deleted differs from the provided expectation.
     /// </exception>
-    void DeleteOne<T>(Expression<Func<T, bool>> conditionExpression, bool forceHardDelete = false)
+    void DeleteOne<T>(Expression<Func<T, bool>> conditionExpression, string reason = null, bool forceHardDelete = false)
         where T : class;
 
     /// <summary>
@@ -291,10 +292,11 @@ public interface IRepository : IDisposable
     /// <param name="conditionExpression">
     ///     The query to get the records to delete
     /// </param>
+    /// <param name="reason"></param>
     /// <param name="forceHardDelete">
     ///     Enforcing hard-deletion on the records, default is <c>false</c> for soft-deletion
     /// </param>
-    int DeleteMany<T>(Expression<Func<T, bool>> conditionExpression, bool forceHardDelete = false)
+    int DeleteMany<T>(Expression<Func<T, bool>> conditionExpression, string reason = null, bool forceHardDelete = false)
         where T : class;
 
     /// <summary>

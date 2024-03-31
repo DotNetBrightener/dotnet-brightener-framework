@@ -1,15 +1,20 @@
 ﻿using System.Net;
-using Microsoft.Extensions.Localization;
+using AspNet.Extensions.SelfDocumentedProblemResult.Exceptions;
 
-namespace DotNetBrightener.LocaleManagement.ErrorMessages;
+namespace LocaleManagement.ErrorMessages;
 
-public class LocaleNotSupportedError : LocaleManagementBaseErrorResult
+/// <summary>
+///     The error thrown when the locale is not supported
+/// </summary>
+public class LocaleNotSupportedError : BaseProblemDetailsError
 {
-    public override int StatusCode => (int)HttpStatusCode.BadRequest;
+    public override string DetailReason => "If the locale is not supported, it cannot be used";
 
-    public LocaleNotSupportedError(IStringLocalizer<LocaleNotSupportedError> localizer)
-        : base(localizer)
+    public override string ErrorCode => "LM-0006";
+    public override string Summary   => "The error thrown when the locale is not supported";
+
+    public LocaleNotSupportedError()
+        : base("Locale not supported", HttpStatusCode.BadRequest)
     {
-
     }
 }

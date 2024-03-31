@@ -1,9 +1,9 @@
 ﻿using DotNetBrightener.Caching;
-using DotNetBrightener.LocaleManagement.Data;
-using DotNetBrightener.LocaleManagement.Entities;
-using DotNetBrightener.LocaleManagement.ErrorMessages;
-using DotNetBrightener.LocaleManagement.Models;
-using DotNetBrightener.LocaleManagement.ResultType;
+using LanguageExts.Results;
+using LocaleManagement.Data;
+using LocaleManagement.Entities;
+using LocaleManagement.ErrorMessages;
+using LocaleManagement.Models;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -12,25 +12,22 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
-namespace DotNetBrightener.LocaleManagement.Services;
+namespace LocaleManagement.Services;
 
 public class LocaleManagementService : ILocaleManagementService
 {
     private readonly ICacheManager                   _cacheManager;
     private readonly IAppLocaleDictionaryDataService _appLocaleDictionaryDataService;
     private readonly IDictionaryEntryDataService     _dictionaryEntryDataService;
-    private readonly IServiceProvider                _serviceProvider;
     private readonly ILogger                         _logger;
 
     public LocaleManagementService(IAppLocaleDictionaryDataService  appLocaleDictionaryDataService,
                                    IDictionaryEntryDataService      dictionaryEntryDataService,
-                                   IServiceProvider                 serviceProvider,
                                    ILogger<LocaleManagementService> logger,
                                    ICacheManager                    cacheManager)
     {
         _appLocaleDictionaryDataService = appLocaleDictionaryDataService;
         _dictionaryEntryDataService     = dictionaryEntryDataService;
-        _serviceProvider                = serviceProvider;
         _cacheManager                   = cacheManager;
         _logger                         = logger;
     }
@@ -53,14 +50,14 @@ public class LocaleManagementService : ILocaleManagementService
         return result;
     }
 
-    public async Task<Result<Dictionary<string, string>, LocaleManagementBaseErrorResult>> 
+    public async Task<Result<Dictionary<string, string>>>
         GetDictionaryEntriesByLocale(string appId, string localeCode)
     {
         var (culture, _) = GetCultureAndRegion(localeCode);
 
         if (culture is null)
         {
-            return _serviceProvider.TryGet<LocaleNotSupportedError>();
+            return new LocaleNotSupportedError();
         }
 
 
@@ -77,7 +74,7 @@ public class LocaleManagementService : ILocaleManagementService
         return result;
     }
 
-    private Result<Dictionary<string, string>, LocaleManagementBaseErrorResult>
+    private Result<Dictionary<string, string>>
         InternalFetchDictionaryByAppIdAndLocaleId(string appId, CultureInfo culture)
     {
         var query = _dictionaryEntryDataService.FetchActive(_ => _.AppLocaleDictionary.AppUniqueId == appId &&
@@ -85,7 +82,7 @@ public class LocaleManagementService : ILocaleManagementService
 
         if (!query.Any())
         {
-            return _serviceProvider.TryGet<LocaleNotExistError>();
+            return LocaleNotExistError.Instance;
         }
 
         var dictionary = query.ToDictionary(de => de.Key, de => de.Value);
@@ -93,15 +90,14 @@ public class LocaleManagementService : ILocaleManagementService
         return dictionary;
     }
 
-    public async Task<Result<AppSupportedLocaleWithDictionary, LocaleManagementBaseErrorResult>> CreateLocale(
-        CreateLocaleRequest createRequest)
+    public async Task<Result<AppSupportedLocaleWithDictionary>> CreateLocale(CreateLocaleRequest createRequest)
     {
         var (culture, regionInfo) = GetCultureAndRegion(createRequest.LanguageCode, createRequest.CountryCode);
 
         if (culture is null ||
             regionInfo is null)
         {
-            return _serviceProvider.TryGet<LocaleNotSupportedError>();
+            return new LocaleNotSupportedError();
         }
 
         AppLocaleDictionary sourceLocale = null;
@@ -114,7 +110,7 @@ public class LocaleManagementService : ILocaleManagementService
 
             if (sourceLocale is null)
             {
-                return _serviceProvider.TryGet<SourceLocaleNotExistError>();
+                return SourceLocaleNotExistError.Instance;
             }
         }
 
@@ -136,7 +132,7 @@ public class LocaleManagementService : ILocaleManagementService
             // don't allow override if the locale is still active
             if (!existingLocale.IsDeleted)
             {
-                return _serviceProvider.TryGet<LocaleAlreadyExistsError>();
+                return LocaleAlreadyExistsError.Instance;
             }
 
             // otherwise hard delete the existing locale to regenerate new one
@@ -234,14 +230,13 @@ public class LocaleManagementService : ILocaleManagementService
         };
     }
 
-    public async Task<Result<bool, LocaleManagementBaseErrorResult>>
-        DeleteDictionaryEntry(long entryId,
-                              bool alsoDeleteFromOtherDictionaries = true)
+    public async Task<Result<bool>> DeleteDictionaryEntry(long entryId,
+                                                          bool alsoDeleteFromOtherDictionaries = true)
     {
         var entry = _dictionaryEntryDataService.Get(de => de.Id == entryId);
 
         if (entry is null)
-            return _serviceProvider.TryGet<DictionaryEntryNotSupportedError>();
+            return DictionaryEntryNotFoundError.Instance;
 
         if (alsoDeleteFromOtherDictionaries)
         {
@@ -264,18 +259,18 @@ public class LocaleManagementService : ILocaleManagementService
         return true;
     }
 
-    public async Task<Result<Dictionary<string, string>, LocaleManagementBaseErrorResult>>
-        UpsertDictionaryEntries(DictionaryEntriesImportRequest importRequest)
+    public async Task<Result<Dictionary<string, string>>> UpsertDictionaryEntries(
+        DictionaryEntriesImportRequest importRequest)
     {
         if (importRequest.DictionaryId == 0)
         {
-            return _serviceProvider.TryGet<DictionaryMustBeSpecifiedError>();
+            return DictionaryMustBeSpecifiedError.Instance;
         }
 
         var importingDicEntryQuery = _appLocaleDictionaryDataService.Get(de => de.Id == importRequest.DictionaryId);
 
         if (importingDicEntryQuery is null)
-            return _serviceProvider.TryGet<DictionaryEntryNotSupportedError>();
+            return DictionaryEntryNotFoundError.Instance;
 
         var dictionariesToCreateEntriesIn = new List<long>
         {
@@ -388,13 +383,13 @@ public class LocaleManagementService : ILocaleManagementService
         }
     }
 
-    private static CacheKey GetSystemSupportedLocalesCacheKey(string[] countryCodes) 
+    private static CacheKey GetSystemSupportedLocalesCacheKey(string[] countryCodes)
         => new("SystemSupportedLocales", cacheTime: 2, countryCodes);
 
-    private static CacheKey GetAppSupportedLocalesCacheKey(string appId) 
+    private static CacheKey GetAppSupportedLocalesCacheKey(string appId)
         => new($"AppLocales_{appId}", cacheTime: 2);
 
-    private static CacheKey GetDictionaryEntriesCacheKey(string appId, string localeCode) 
+    private static CacheKey GetDictionaryEntriesCacheKey(string appId, string localeCode)
         => new($"DictionaryEntries_{appId}_{localeCode}", cacheTime: 15);
 
     // Mark as internal for testing purposes

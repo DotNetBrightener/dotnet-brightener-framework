@@ -16,11 +16,6 @@ public abstract class BaseEntity
 public abstract class BaseEntityWithAuditInfo : BaseEntity
 {
     /// <summary>
-    ///     Indicates the entity record is marked as deleted
-    /// </summary>
-    public bool IsDeleted { get; set; }
-
-    /// <summary>
     ///     The date and time of record creation
     /// </summary>
     [NoClientSideUpdate]
@@ -45,4 +40,29 @@ public abstract class BaseEntityWithAuditInfo : BaseEntity
     [NoClientSideUpdate]
     [MaxLength(255)]
     public string ModifiedBy { get; set; }
+
+    /// <summary>
+    ///     Indicates the entity record is marked as deleted
+    /// </summary>
+    public bool IsDeleted { get; set; }
+
+    /// <summary>
+    ///     The date and time of record deletion
+    /// </summary>
+    [NoClientSideUpdate]
+    public DateTimeOffset? DeletedDate { get; set; }
+
+    /// <summary>
+    ///     The name or identifier of the user who deleted the record
+    /// </summary>
+    [NoClientSideUpdate]
+    [MaxLength(255)]
+    public string DeletedBy { get; set; }
+
+    /// <summary>
+    ///     The reason of why the record is deleted
+    /// </summary>
+    [NoClientSideUpdate]
+    [MaxLength(512)]
+    public string DeletionReason { get; set; }
 }

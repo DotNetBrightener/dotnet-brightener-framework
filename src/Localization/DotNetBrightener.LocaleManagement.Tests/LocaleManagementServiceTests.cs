@@ -1,14 +1,8 @@
-﻿using DotNetBrightener.Caching;
-using DotNetBrightener.DataAccess.Services;
-using DotNetBrightener.LocaleManagement.Data;
-using DotNetBrightener.LocaleManagement.Models;
-using DotNetBrightener.LocaleManagement.Services;
-using Microsoft.Extensions.Logging;
-using Moq;
+﻿using LocaleManagement.Services;
 using Newtonsoft.Json;
 using NUnit.Framework;
 
-namespace DotNetBrightener.LocaleManagement.Tests;
+namespace LocaleManagement.Tests;
 
 public class LocaleManagementServiceTests
 {

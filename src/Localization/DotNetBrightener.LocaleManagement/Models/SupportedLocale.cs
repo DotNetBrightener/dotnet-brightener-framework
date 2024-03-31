@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using DotNetBrightener.LocaleManagement.Entities;
+using LocaleManagement.Entities;
 
-namespace DotNetBrightener.LocaleManagement.Models;
+namespace LocaleManagement.Models;
 
 public class SupportedLocale
 {

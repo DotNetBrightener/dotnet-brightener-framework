@@ -1,24 +1,35 @@
-﻿using System.Linq;
-using System.Net;
-using System.Reflection;
+﻿using AspNet.Extensions.SelfDocumentedProblemResult.ExceptionHandlers;
 using DotNetBrightener.Caching.Memory;
 using DotNetBrightener.CryptoEngine.DependencyInjection;
-using DotNetBrightener.WebApp.CommonShared.Mvc;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Newtonsoft.Json;
+using System;
+using System.Linq;
+using System.Net;
+using System.Reflection;
+using WebApp.CommonShared;
+using WebApp.CommonShared.Mvc;
 
-namespace DotNetBrightener.WebApp.CommonShared.Extensions;
+// ReSharper disable once CheckNamespace
+namespace Microsoft.Extensions.DependencyInjection;
 
 public static class ServiceCollectionExtensions
 {
-    public static void AddCommonServices(this IServiceCollection serviceCollection,
-                                         IConfiguration          configuration)
+    /// <summary>
+    ///     Adds the required services for the web application to the specified <see cref="IServiceCollection"/>
+    /// </summary>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/></param>
+    /// <param name="configuration">The <see cref="IConfiguration"/></param>
+    /// <returns>
+    ///     The same instance of this <see cref="IServiceCollection"/> for chaining operations
+    /// </returns>
+    public static IServiceCollection AddCommonWebAppServices(this IServiceCollection serviceCollection,
+                                                             IConfiguration          configuration)
     {
         System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
         ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
@@ -34,7 +45,7 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddOptions();
         serviceCollection.AddLocalization();
         serviceCollection.AddCryptoEngine(configuration);
-        
+
         serviceCollection.EnableCachingService();
         serviceCollection.EnableMemoryCacheService();
 
@@ -42,9 +53,41 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddEventPubSubService();
 
         serviceCollection.EnableBackgroundTaskServices();
-        
-        serviceCollection.RegisterExceptionHandler<DefaultUnhandledExceptionHandler>();
-        serviceCollection.RegisterFilterProvider<UnhandledExceptionResponseHandler>();
+
+        serviceCollection.AddExceptionHandler<UnhandledExceptionResponseHandler>();
+
+        serviceCollection.AddProblemDetails();
+
+        return serviceCollection;
+    }
+
+    /// <summary>
+    ///     Adds the required middlewares for the web application to the specified <see cref="IApplicationBuilder"/>
+    /// </summary>
+    /// <remarks>
+    ///     The pre-configured middlewares are<br />
+    ///     - ForwardedHeaders<br />
+    ///     - HttpsRedirection<br />
+    ///     - ExceptionHandler<br />
+    ///
+    ///     This method should be called before all other middlewares in the pipeline
+    /// </remarks>
+    /// <param name="app">The <see cref="IApplicationBuilder"/></param>
+    /// <returns>
+    ///     The same instance of this <see cref="IApplicationBuilder"/> for chaining operations
+    /// </returns>
+    public static IApplicationBuilder UseCommonWebAppServices(this IApplicationBuilder app)
+    {
+        app.UseForwardedHeaders();
+
+        if (Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") != "true")
+        {
+            app.UseHttpsRedirection();
+        }
+
+        app.UseExceptionHandler();
+
+        return app;
     }
 
     public static IMvcBuilder AddCommonMvcApp(this IServiceCollection serviceCollection,
@@ -68,17 +111,10 @@ public static class ServiceCollectionExtensions
                                                config.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
                                            });
 
-
         mvcBuilder.AddViewLocalization();
         mvcBuilder.AddDataAnnotationsLocalization();
 
         return mvcBuilder;
-    }
-
-    public static void RegisterExceptionHandler<T>(this IServiceCollection serviceCollection)
-        where T : class, IUnhandledExceptionHandler
-    {
-        serviceCollection.AddScoped<IUnhandledExceptionHandler, T>();
     }
 
     public static void RegisterFilterProvider<T>(this IServiceCollection serviceCollection)

@@ -1,5 +1,5 @@
 ﻿using DotNetBrightener.DataAccess.EF.Migrations;
-using DotNetBrightener.LocaleManagement.Entities;
+using LocaleManagement.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;

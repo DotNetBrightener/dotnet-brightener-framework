@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Newtonsoft.Json;
 
-namespace DotNetBrightener.WebApp.CommonShared.Mvc;
+namespace WebApp.CommonShared.Mvc;
 
 public class ETagFilterAttribute : Attribute, IActionFilter
 {

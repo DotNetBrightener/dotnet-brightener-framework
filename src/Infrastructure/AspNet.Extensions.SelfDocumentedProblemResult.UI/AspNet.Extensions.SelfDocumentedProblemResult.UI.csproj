@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TypeScriptCompileBlocked>True</TypeScriptCompileBlocked>
+	</PropertyGroup>
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Include="assets\index.html" />
+		<EmbeddedResource Include="assets\readme.md" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+		<ProjectReference Include="..\AspNet.Extensions.SelfDocumentedProblemResult\AspNet.Extensions.SelfDocumentedProblemResult.csproj" />
+	</ItemGroup>
+
+	<Import Project="..\..\Shared\SharedExtensions.UI.Core\SharedExtensions.UI.Core.projitems" Label="Shared" />
+</Project>

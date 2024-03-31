@@ -1,7 +1,7 @@
 ﻿using System;
 using TimeZoneConverter;
 
-namespace DotNetBrightener.WebApp.CommonShared.Services;
+namespace WebApp.CommonShared.Services;
 
 public interface ITimezoneHandler : IDependency
 {

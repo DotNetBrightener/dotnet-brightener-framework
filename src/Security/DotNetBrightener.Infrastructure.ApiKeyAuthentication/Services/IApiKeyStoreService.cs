@@ -43,7 +43,7 @@ public abstract class BaseApiKeyStoreService : IApiKeyStoreService
     public Task<ApiKey> AuthorizeKey(string apiToken)
     {
         var apiKey = _cacheManager.GetAsync<ApiKey>(new CacheKey($"api:token:{apiToken}", cacheTime: 10),
-                                               () => InternalAuthorizeKey(apiToken));
+                                                    () => InternalAuthorizeKey(apiToken));
 
         return apiKey;
     }

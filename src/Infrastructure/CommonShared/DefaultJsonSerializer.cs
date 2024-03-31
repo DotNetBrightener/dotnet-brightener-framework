@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace DotNetBrightener.WebApp.CommonShared;
+namespace WebApp.CommonShared;
 
 public static class DefaultJsonSerializer
 {

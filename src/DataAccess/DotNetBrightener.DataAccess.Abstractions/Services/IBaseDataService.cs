@@ -107,10 +107,11 @@ public interface IBaseDataService<TEntity>: IDisposable
     /// <param name="filterExpression">
     ///     The expression describes how to get the record to delete
     /// </param>
+    /// <param name="reason"></param>
     /// <param name="forceHardDelete">
     ///     Indicates whether the deletion is permanent. Default is <c>False</c> which marks the record as deleted
     /// </param>
-    void DeleteOne(Expression<Func<TEntity, bool>> filterExpression, bool forceHardDelete = false);
+    void DeleteOne(Expression<Func<TEntity, bool>> filterExpression, string reason = null, bool forceHardDelete = false);
 
     /// <summary>
     ///     Restore the matched deleted record with the given filter expression, expected only one record affected
@@ -127,10 +128,11 @@ public interface IBaseDataService<TEntity>: IDisposable
     /// <param name="filterExpression">
     ///     The expression describes how to get the records to delete
     /// </param>
+    /// <param name="reason"></param>
     /// <param name="forceHardDelete">
     ///     Indicates whether the deletion is permanent. Default is <c>False</c> which marks the records as deleted
     /// </param>
-    int DeleteMany(Expression<Func<TEntity, bool>> filterExpression, bool forceHardDelete = false);
+    int DeleteMany(Expression<Func<TEntity, bool>> filterExpression, string reason = null, bool forceHardDelete = false);
 
     /// <summary>
     ///     Restore the matched deleted records with the given filter expression

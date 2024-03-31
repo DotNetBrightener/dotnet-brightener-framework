@@ -19,7 +19,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\..\src\DataAccess\DotNetBrightener.DataAccess.EF\DotNetBrightener.DataAccess.EF.csproj" />
-		<ProjectReference Include="..\..\..\src\Localization\DotNetBrightener.LocaleManagement\DotNetBrightener.LocaleManagement.csproj" />
+		<ProjectReference Include="..\..\..\src\Localization\DotNetBrightener.LocaleManagement\LocaleManagement.csproj" />
 	</ItemGroup>
 
 </Project>

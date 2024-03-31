@@ -26,7 +26,7 @@ public abstract class ClientTelemetryBaseController : Controller
             FormattedMessage = message.FormattedMessage,
             Message          = message.Message,
             StackTrace       = message.StackTrace,
-            TimeStamp        = DateTime.UtcNow,
+            TimeStamp        = message.TimeStamp ?? DateTime.UtcNow,
             RequestUrl       = HttpContext.Request.GetRequestUrl(),
             RemoteIpAddress  = HttpContext.GetClientIP(),
             UserAgent        = HttpContext.Request.Headers.UserAgent
@@ -48,4 +48,6 @@ public class ClientTelemetryModel
     public string StackTrace { get; set; }
 
     public string FormattedMessage { get; set; }
+
+    public DateTime? TimeStamp { get; set; }
 }

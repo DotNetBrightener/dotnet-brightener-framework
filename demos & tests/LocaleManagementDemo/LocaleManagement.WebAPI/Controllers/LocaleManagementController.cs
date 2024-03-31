@@ -1,6 +1,6 @@
-﻿using DotNetBrightener.LocaleManagement.Data;
-using DotNetBrightener.LocaleManagement.Services;
-using DotNetBrightener.LocaleManagement.WebApi.Controllers;
+﻿using LocaleManagement.Data;
+using LocaleManagement.Services;
+using LocaleManagement.WebApi.Controllers;
 
 namespace LocaleManagement.WebAPI.Controllers;
 

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using DotNetBrightener.LocaleManagement.Entities;
+using LocaleManagement.Entities;
 
-namespace DotNetBrightener.LocaleManagement;
+namespace LocaleManagement;
 
 internal class CRUDDataServiceGeneratorRegistration
 {

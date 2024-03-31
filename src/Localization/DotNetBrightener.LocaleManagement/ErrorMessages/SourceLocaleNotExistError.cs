@@ -1,15 +1,20 @@
-﻿using System.Net;
-using Microsoft.Extensions.Localization;
+﻿using AspNet.Extensions.SelfDocumentedProblemResult.Exceptions;
+using System.Net;
 
-namespace DotNetBrightener.LocaleManagement.ErrorMessages;
+namespace LocaleManagement.ErrorMessages;
 
-public class SourceLocaleNotExistError : LocaleManagementBaseErrorResult
+public class SourceLocaleNotExistError : BaseProblemDetailsError
 {
-    public override int StatusCode => (int)HttpStatusCode.BadRequest;
+    public override string DetailReason => "The error thrown when the source locale does not exist";
 
-    public SourceLocaleNotExistError(IStringLocalizer<SourceLocaleNotExistError> localizer)
-        : base(localizer)
+    public override string ErrorCode => "LM-0007";
+    public override string Summary   => "If the source locale does not exist, it cannot be used to create a new locale";
+
+
+    public static readonly SourceLocaleNotExistError Instance = new();
+
+    public SourceLocaleNotExistError()
+        : base("Source locale does not exist", HttpStatusCode.NotFound)
     {
-
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace DotNetBrightener.LocaleManagement.Models;
+namespace LocaleManagement.Models;
 
 public class DictionaryEntriesImportRequest
 {

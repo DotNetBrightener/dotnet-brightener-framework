@@ -3,7 +3,7 @@ using DotNetBrightener.Core.BackgroundTasks;
 using DotNetBrightener.Core.StartupTask;
 using Microsoft.Extensions.Logging;
 
-namespace DotNetBrightener.WebApp.CommonShared.StartupTasks;
+namespace WebApp.CommonShared.StartupTasks;
 
 public class BackgroundTaskEnableStartupTask : IStartupTask, IDependency
 {

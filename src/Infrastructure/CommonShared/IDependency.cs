@@ -1,5 +1,4 @@
-﻿// ReSharper disable once CheckNamespace
-namespace DotNetBrightener;
+﻿namespace WebApp.CommonShared;
 
 public interface IDependency
 {

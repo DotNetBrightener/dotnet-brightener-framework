@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using DotNetBrightener.DataAccess.Attributes;
 using DotNetBrightener.DataAccess.Models;
 
-namespace DotNetBrightener.LocaleManagement.Entities;
+namespace LocaleManagement.Entities;
 
 /// <summary>
 ///     Represents the dictionary entry for a specific locale

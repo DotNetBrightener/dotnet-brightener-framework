@@ -110,9 +110,9 @@ public abstract class BaseDataService<TEntity> : IBaseDataService<TEntity> where
         return affectedRecords;
     }
 
-    public virtual void DeleteOne(Expression<Func<TEntity, bool>> filterExpression, bool forceHardDelete = false)
+    public virtual void DeleteOne(Expression<Func<TEntity, bool>> filterExpression, string reason = null, bool forceHardDelete = false)
     {
-        Repository.DeleteOne(filterExpression, forceHardDelete);
+        Repository.DeleteOne(filterExpression, reason, forceHardDelete);
         Repository.CommitChanges();
     }
 
@@ -122,9 +122,9 @@ public abstract class BaseDataService<TEntity> : IBaseDataService<TEntity> where
         Repository.CommitChanges();
     }
 
-    public virtual int DeleteMany(Expression<Func<TEntity, bool>> filterExpression, bool forceHardDelete = false)
+    public virtual int DeleteMany(Expression<Func<TEntity, bool>> filterExpression, string reason = null, bool forceHardDelete = false)
     {
-        int updatedRecords = Repository.DeleteMany(filterExpression, forceHardDelete);
+        int updatedRecords = Repository.DeleteMany(filterExpression, reason, forceHardDelete);
         Repository.CommitChanges();
 
         return updatedRecords;

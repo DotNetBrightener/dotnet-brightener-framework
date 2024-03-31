@@ -22,9 +22,9 @@ using System.ComponentModel.DataAnnotations;
 
 using DotNetBrightener;
 using DotNetBrightener.DataAccess.Services;
-using DotNetBrightener.LocaleManagement.Entities;
+using LocaleManagement.Entities;
 
-namespace DotNetBrightener.LocaleManagement.Data;
+namespace LocaleManagement.Data;
 
 public partial interface IDictionaryEntryDataService : IBaseDataService<DictionaryEntry> { }
 
