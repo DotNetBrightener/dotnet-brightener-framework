@@ -1,6 +1,7 @@
 ﻿using AspNet.Extensions.SelfDocumentedProblemResult;
 using Microsoft.AspNetCore.Http;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Net;
 
@@ -66,8 +67,15 @@ public static class ProblemResultExtensions
         }
 
         if (problemResult.Data.Count > 0)
-            extensionDictionary.TryAdd("data", problemResult.Data);
-        
+        {
+            foreach (DictionaryEntry dictionaryEntry in problemResult.Data)
+            {
+                var key = dictionaryEntry.Key.ToString();
+                if (!string.IsNullOrEmpty(key))
+                    extensionDictionary.TryAdd(key, dictionaryEntry.Value);
+            }
+        }
+
         if (!string.IsNullOrEmpty(problemResult.ErrorCode))
             extensionDictionary.TryAdd("errorCode", problemResult.ErrorCode);
 
@@ -120,7 +128,12 @@ public static class ProblemResultExtensions
 
         if (exception.Data.Count > 0)
         {
-            problemDetails.Extensions.Add("data", exception.Data);
+            foreach (DictionaryEntry dictionaryEntry in exception.Data)
+            {
+                var key = dictionaryEntry.Key.ToString();
+                if (!string.IsNullOrEmpty(key))
+                    problemDetails.Extensions.TryAdd(key, dictionaryEntry.Value);
+            }
         }
 
         return problemDetails;
