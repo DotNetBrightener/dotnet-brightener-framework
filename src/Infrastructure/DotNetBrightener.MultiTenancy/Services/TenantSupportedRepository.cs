@@ -6,8 +6,6 @@ using DotNetBrightener.Plugins.EventPubSub;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Linq;
 using System.Linq.Expressions;
 
 namespace DotNetBrightener.MultiTenancy.Services;

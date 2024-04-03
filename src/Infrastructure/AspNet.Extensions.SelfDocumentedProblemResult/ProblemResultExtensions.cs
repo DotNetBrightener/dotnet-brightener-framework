@@ -1,8 +1,6 @@
 ﻿using AspNet.Extensions.SelfDocumentedProblemResult;
 using Microsoft.AspNetCore.Http;
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Net;
 
 // ReSharper disable once CheckNamespace

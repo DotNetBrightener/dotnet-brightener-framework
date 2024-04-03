@@ -1,6 +1,4 @@
-﻿using System.IO;
-
-namespace DotNetBrightener.TemplateEngine.Services;
+﻿namespace DotNetBrightener.TemplateEngine.Services;
 
 public interface ITemplateHelperProvider 
 {

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace DotNetBrightener.DataAccess.Exceptions;
+﻿namespace DotNetBrightener.DataAccess.Exceptions;
 
 /// <summary>
 ///     Describes the exception that will be thrown when performing an non query operation, 

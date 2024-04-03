@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading;
-
-namespace DotNetBrightener.Caching.Redis;
+﻿namespace DotNetBrightener.Caching.Redis;
 
 /// <summary>
 /// Provides a convenience methodology for implementing locked access to resources. 

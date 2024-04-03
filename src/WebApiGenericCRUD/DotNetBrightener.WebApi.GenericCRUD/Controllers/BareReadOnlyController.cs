@@ -6,13 +6,9 @@ using DotNetBrightener.GenericCRUD.Extensions;
 using DotNetBrightener.GenericCRUD.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using System.Net;
-using System.Threading.Tasks;
 
 namespace DotNetBrightener.WebApi.GenericCRUD.Controllers;
 

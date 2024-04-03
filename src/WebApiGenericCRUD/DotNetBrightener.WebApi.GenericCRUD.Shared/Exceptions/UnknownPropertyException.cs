@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace DotNetBrightener.Framework.Exceptions;
+﻿namespace DotNetBrightener.Framework.Exceptions;
 
 public class UnknownPropertyException : InvalidOperationException
 {

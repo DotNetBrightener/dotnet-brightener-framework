@@ -1,5 +1,4 @@
-﻿using System;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using DotNetBrightener.CryptoEngine.Options;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;

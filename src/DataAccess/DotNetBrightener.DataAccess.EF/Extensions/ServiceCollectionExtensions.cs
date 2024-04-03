@@ -1,13 +1,13 @@
-﻿using DotNetBrightener.DataAccess.EF.Repositories;
+﻿using DotNetBrightener.DataAccess;
+using DotNetBrightener.DataAccess.EF.Repositories;
 using DotNetBrightener.DataAccess.Services;
+using DotNetBrightener.Plugins.EventPubSub;
 using LinqToDB.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using System;
-using DotNetBrightener.Plugins.EventPubSub;
 
-namespace DotNetBrightener.DataAccess.EF.Extensions;
+// ReSharper disable once CheckNamespace
+namespace Microsoft.Extensions.DependencyInjection;
 
 public static class ServiceCollectionExtensions
 {

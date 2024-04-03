@@ -1,5 +1,4 @@
-﻿using System;
-using System.Globalization;
+﻿using System.Globalization;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.AspNetCore.Http;

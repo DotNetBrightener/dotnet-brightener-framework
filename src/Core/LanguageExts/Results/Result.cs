@@ -52,9 +52,6 @@ public class Result<TValue, TError>
 
     public static implicit operator Result<TValue, TError>(TError error) => new(error);
 
-    public static implicit operator TValue(Result<TValue, TError> result) =>
-        result.IsSuccess ? result.Value! : default;
-
     public TValue IfFail(TValue defaultValue) => !IsSuccess ? defaultValue : _value!;
 
     public TValue IfSuccess(Action<TValue> action)

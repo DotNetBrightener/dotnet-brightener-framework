@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-
-namespace DotNetBrightener.Core.BackgroundTasks;
+﻿namespace DotNetBrightener.Core.BackgroundTasks;
 
 public class QueuedTaskResult
 {

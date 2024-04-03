@@ -1,6 +1,4 @@
-﻿using System.IO;
-
-namespace DotNetBrightener.SimpleUploadService.Models;
+﻿namespace DotNetBrightener.SimpleUploadService.Models;
 
 public class ThumbnailGenerateRequestModel
 {

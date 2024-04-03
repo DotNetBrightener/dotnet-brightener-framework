@@ -1,12 +1,8 @@
-﻿using DotNetBrightener.WebApi.GenericCRUD.Generator.Utils;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
+using WebApi.GenericCRUD.Generator.Utils;
 
-namespace DotNetBrightener.WebApi.GenericCRUD.Generator.SyntaxReceivers;
+namespace WebApi.GenericCRUD.Generator.SyntaxReceivers;
 
 public class AutoGenerateApiControllerSyntaxReceiver : ISyntaxContextReceiver
 {

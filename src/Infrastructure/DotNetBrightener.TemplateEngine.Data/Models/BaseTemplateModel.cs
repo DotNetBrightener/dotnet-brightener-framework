@@ -1,5 +1,4 @@
-﻿using System;
-using DotNetBrightener.TemplateEngine.Models;
+﻿using DotNetBrightener.TemplateEngine.Models;
 
 namespace DotNetBrightener.TemplateEngine.Data.Models;
 

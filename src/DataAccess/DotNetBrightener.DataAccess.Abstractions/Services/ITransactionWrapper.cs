@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-
-namespace DotNetBrightener.DataAccess.Services;
+﻿namespace DotNetBrightener.DataAccess.Services;
 
 public interface ITransactionWrapper
 {

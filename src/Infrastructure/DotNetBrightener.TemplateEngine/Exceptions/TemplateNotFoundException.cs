@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace DotNetBrightener.TemplateEngine.Exceptions;
+﻿namespace DotNetBrightener.TemplateEngine.Exceptions;
 
 public class TemplateNotFoundException: Exception
 {

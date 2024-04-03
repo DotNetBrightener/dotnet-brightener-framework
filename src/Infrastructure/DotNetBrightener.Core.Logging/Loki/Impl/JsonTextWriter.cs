@@ -1,7 +1,4 @@
-using System;
 using System.Globalization;
-using System.IO;
-using System.Threading.Tasks;
 
 namespace DotNetBrightener.Core.Logging.Loki.Impl
 {

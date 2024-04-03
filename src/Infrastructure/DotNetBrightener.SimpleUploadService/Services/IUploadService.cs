@@ -1,8 +1,4 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using DotNetBrightener.Plugins.EventPubSub;
+﻿using DotNetBrightener.Plugins.EventPubSub;
 using DotNetBrightener.SimpleUploadService.Events;
 using DotNetBrightener.SimpleUploadService.Models;
 

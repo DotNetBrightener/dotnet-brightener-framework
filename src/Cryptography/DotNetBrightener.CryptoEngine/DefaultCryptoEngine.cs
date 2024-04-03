@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using DotNetBrightener.CryptoEngine.Loaders;
+﻿using DotNetBrightener.CryptoEngine.Loaders;
 using DotNetBrightener.CryptoEngine.Options;
 using Microsoft.Extensions.Options;
 

@@ -24,7 +24,6 @@ public partial class ProductDocumentController
         : this(dataService, httpContextAccessor)
     {
         _logger = logger;
-        _logger.LogInformation("{Controller} created", this.GetType().Name);
     }
 
 

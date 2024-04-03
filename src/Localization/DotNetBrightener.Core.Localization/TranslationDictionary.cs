@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-
-namespace DotNetBrightener.Core.Localization;
+﻿namespace DotNetBrightener.Core.Localization;
 
 /// <summary>
 ///     Represents a modular collection of <see cref="TranslationEntry"/>

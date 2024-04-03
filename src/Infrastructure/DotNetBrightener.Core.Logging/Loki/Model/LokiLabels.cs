@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
 namespace DotNetBrightener.Core.Logging.Loki.Model
 {
     public class LokiLabels : IEquatable<LokiLabels>

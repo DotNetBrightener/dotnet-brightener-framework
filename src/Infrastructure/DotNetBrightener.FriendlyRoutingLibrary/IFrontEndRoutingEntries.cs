@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace DotNetBrightener.FriendlyRoutingLibrary;
+﻿namespace DotNetBrightener.FriendlyRoutingLibrary;
 
 /// <summary>
 ///     The container of all routing entries for the friendly routing, provides the functionalities for interacting with the routing entries

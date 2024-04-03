@@ -1,5 +1,4 @@
-﻿using System;
-using System.Transactions;
+﻿using System.Transactions;
 using Microsoft.Extensions.Logging;
 
 namespace DotNetBrightener.DataAccess.Services;

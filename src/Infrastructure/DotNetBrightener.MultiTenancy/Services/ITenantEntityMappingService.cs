@@ -1,7 +1,5 @@
 ﻿using DotNetBrightener.DataAccess.Services;
 using DotNetBrightener.MultiTenancy.Entities;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace DotNetBrightener.MultiTenancy.Services;
 

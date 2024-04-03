@@ -1,16 +1,14 @@
-using DotNetBrightener.Plugins.EventPubSub;
+using Microsoft.ApplicationInsights.NLogTarget;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using NLog;
 using NLog.Common;
+using NLog.Config;
 using NLog.Layouts;
 using NLog.Targets;
-using System;
-using System.Collections.Generic;
-using System.Threading;
 using LokiTarget = DotNetBrightener.Core.Logging.Loki.LokiTarget;
 using LokiTargetLabel = DotNetBrightener.Core.Logging.Loki.LokiTargetLabel;
 
@@ -19,42 +17,46 @@ namespace DotNetBrightener.Core.Logging;
 [Target("EventLoggingWatcher")]
 public class EventLoggingWatcher : TargetWithLayout, IEventLogWatcher
 {
-    private readonly        IHostEnvironment _webHostEnvironment;
+    private readonly IHostEnvironment _webHostEnvironment;
+    private readonly IConfiguration _configuration;
+    private readonly string _appInsightsInstrumentationKey;
     public static           EventLoggingWatcher Instance { get; private set; }
-    private static readonly Layout RequestUrlLayoutRenderer = Layout.FromString("${aspnet-request-url}");
-    private static readonly Layout RequestIpLayoutRenderer = Layout.FromString("${aspnet-request-ip}");
-    private static readonly Layout RequestUserAgentLayoutRenderer = Layout.FromString("${aspnet-request-useragent}");
+    private static readonly Layout              RequestUrlLayoutRenderer       = Layout.FromString("${aspnet-request-url}");
+    private static readonly Layout              RequestIpLayoutRenderer        = Layout.FromString("${aspnet-request-ip}");
+    private static readonly Layout              RequestUserAgentLayoutRenderer = Layout.FromString("${aspnet-request-useragent}");
+
+    private static readonly Layout TraceIdentifierLayoutRenderer =
+        Layout.FromString("${aspnet-TraceIdentifier:ignoreActivityId=boolean}");
 
     private const string DefaultLogLayout =
         "[${longdate}] | ${aspnet-traceidentifier} | ${event-properties:item=EventId.Id} | [${logger}] | ${uppercase:${level}} | ${message} ${exception:format=ToString,StackTrace} | requesturl=${aspnet-request-url} | requestip=${aspnet-request-ip:CheckForwardedForHeader=true} | useragent=${aspnet-request-useragent}";
 
-    private readonly FileTarget           _fileTarget;
-    private readonly ConsoleTarget        _consoleTarget;
-    private          LokiTarget           _lokiTarget;
-    private readonly Queue<EventLogModel> _queue = new();
-    private          IServiceScopeFactory _serviceScopeFactory;
-    private          bool                 _serviceProviderSet;
+    private          LokiTarget                _lokiTarget;
+    private readonly Queue<EventLogBaseModel>  _queue = new();
+    private          IServiceScopeFactory      _serviceScopeFactory;
+    private          bool                      _serviceProviderSet;
+    private readonly ApplicationInsightsTarget _appInsightsTarget;
 
-    public static void Initialize(IHostEnvironment environment)
+    public static void Initialize(IHostEnvironment environment, IConfiguration configuration)
     {
-        Instance = new EventLoggingWatcher(environment);
+        Instance = new EventLoggingWatcher(environment, configuration);
     }
 
-    public EventLoggingWatcher(IHostEnvironment webHostEnvironment)
+    private EventLoggingWatcher(IHostEnvironment webHostEnvironment, IConfiguration configuration)
     {
         _webHostEnvironment = webHostEnvironment;
-        _fileTarget = new("fileTarget")
-        {
-            ArchiveFileName   = Layout.FromString("${var:configDir}/logs/Archive/{#}/log-${level}.log"),
-            FileName          = Layout.FromString("${var:configDir}/logs/${shortdate}/log-${level}.log"),
-            ArchiveDateFormat = "yyyy-MM-dd",
-            ArchiveEvery      = FileArchivePeriod.Day,
-            ArchiveNumbering  = ArchiveNumberingMode.Date,
-            MaxArchiveFiles   = 30,
-            Layout            = Layout.FromString(DefaultLogLayout)
-        };
+        _configuration = configuration;
 
-        _consoleTarget = new ConsoleTarget();
+        _appInsightsInstrumentationKey = configuration.GetValue<string>("ApplicationInsightsInstrumentationKey");
+
+        if (!string.IsNullOrEmpty(_appInsightsInstrumentationKey))
+        {
+            _appInsightsTarget = new ApplicationInsightsTarget
+            {
+                InstrumentationKey = _appInsightsInstrumentationKey,
+                Layout            = Layout.FromString(DefaultLogLayout)
+            };
+        }
     }
 
     internal void SetServiceScopeFactory(IServiceScopeFactory serviceScopeFactory)
@@ -93,14 +95,14 @@ public class EventLoggingWatcher : TargetWithLayout, IEventLogWatcher
         };
     }
 
-    public List<EventLogModel> GetQueuedEventLogRecords()
+    public List<EventLogBaseModel> GetQueuedEventLogRecords()
     {
         lock (_queue)
         {
             if (_queue.Count == 0)
-                return new List<EventLogModel>();
+                return new List<EventLogBaseModel>();
 
-            List<EventLogModel> queuedEventLogRecords = [.._queue];
+            List<EventLogBaseModel> queuedEventLogRecords = [.._queue];
             _queue.Clear();
 
             return queuedEventLogRecords;
@@ -109,30 +111,51 @@ public class EventLoggingWatcher : TargetWithLayout, IEventLogWatcher
 
     protected override void Write(LogEventInfo logEvent)
     {
-        var asyncLogEventInfo = new AsyncLogEventInfo(logEvent, Continuation);
+        // check if log level is enabled before writing
+        if (!ShouldWrite(logEvent, LoggingConfiguration))
+            return;
 
-        _fileTarget.WriteAsyncLogEvent(asyncLogEventInfo);
-        _consoleTarget.WriteAsyncLogEvent(asyncLogEventInfo);
         _lokiTarget?.WriteAsyncTask(logEvent, CancellationToken.None);
+        _appInsightsTarget.WriteAsyncLogEvent(new AsyncLogEventInfo(logEvent, Continuation));
 
-        var eventLogModel = new EventLogModel
-        {
-            FormattedMessage = logEvent.FormattedMessage,
-            Level            = logEvent.Level.ToString(),
-            LoggerName       = logEvent.LoggerName,
-            Message          = logEvent.Message,
-            TimeStamp        = logEvent.TimeStamp.ToUniversalTime(),
-            RequestUrl       = RequestUrlLayoutRenderer.Render(logEvent),
-            RemoteIpAddress  = RequestIpLayoutRenderer.Render(logEvent),
-            UserAgent        = RequestUserAgentLayoutRenderer.Render(logEvent)
-        };
+        EventLogBaseModel eventLogModel =
+            logEvent.Exception is StackTraceOnlyException stackTraceOnlyException
+                ? new ClientTelemetryLogModel()
+                {
+                    StackTrace = stackTraceOnlyException.Message
+                }
+                : new EventLogModel();
+
+
+        eventLogModel.FormattedMessage = logEvent.FormattedMessage;
+        eventLogModel.Level            = logEvent.Level.ToString();
+        eventLogModel.LoggerName       = logEvent.LoggerName;
+        eventLogModel.Message          = logEvent.Message;
+        eventLogModel.TimeStamp        = logEvent.TimeStamp.ToUniversalTime();
+        eventLogModel.RequestUrl       = RequestUrlLayoutRenderer.Render(logEvent);
+        eventLogModel.RemoteIpAddress  = RequestIpLayoutRenderer.Render(logEvent);
+        eventLogModel.UserAgent        = RequestUserAgentLayoutRenderer.Render(logEvent);
+        eventLogModel.RequestId        = TraceIdentifierLayoutRenderer.Render(logEvent);
 
         if (logEvent.Properties != null)
         {
-            eventLogModel.PropertiesDictionary = JsonConvert.SerializeObject(logEvent.Properties);
+            try
+            {
+                eventLogModel.PropertiesDictionary = JsonConvert.SerializeObject(logEvent.Properties,
+                                                                                 settings: new JsonSerializerSettings
+                                                                                 {
+                                                                                     ReferenceLoopHandling =
+                                                                                         ReferenceLoopHandling.Ignore
+                                                                                 });
+            }
+            catch (Exception ex)
+            {
+                InternalLogger.Error(ex, "Error serializing properties");
+            }
         }
 
-        if (logEvent.Exception != null)
+        if (logEvent.Exception != null &&
+            logEvent.Exception is not StackTraceOnlyException)
         {
             eventLogModel.FullMessage = logEvent.Exception.GetFullExceptionMessage();
             eventLogModel.StackTrace  = logEvent.Exception.StackTrace;
@@ -143,35 +166,46 @@ public class EventLoggingWatcher : TargetWithLayout, IEventLogWatcher
         if (_serviceScopeFactory == null) // when app not fully initialized, don't put logs to queue
             return;
 
-        using var scope = _serviceScopeFactory.CreateScope();
-
-        var eventPublisher = scope.ServiceProvider
-                                  .GetService<IEventPublisher>();
-
         if (string.IsNullOrEmpty(eventLogModel.RequestUrl))
         {
-            var httpContextAccessor = scope.ServiceProvider.GetService<IHttpContextAccessor>();
+            using var scope               = _serviceScopeFactory.CreateScope();
+            var       httpContextAccessor = scope.ServiceProvider.GetService<IHttpContextAccessor>();
 
             if (httpContextAccessor is { HttpContext: not null })
             {
                 eventLogModel.RequestUrl      = httpContextAccessor.HttpContext.Request.GetRequestUrl();
                 eventLogModel.RemoteIpAddress = httpContextAccessor.HttpContext.GetClientIP();
                 eventLogModel.UserAgent       = httpContextAccessor.HttpContext.Request.Headers.UserAgent;
+                eventLogModel.RequestId       = httpContextAccessor.HttpContext.TraceIdentifier;
             }
         }
-
-        eventPublisher?.Publish(new EventLogEnqueueingEvent
-                        {
-                            EventLogRecord = eventLogModel
-                        })
-                       .Wait();
     }
 
-    private void Continuation(Exception exception)
+    private static bool ShouldWrite(LogEventInfo logEvent, LoggingConfiguration loggingConfiguration)
     {
-        if (exception != null)
+        var matchingRule = loggingConfiguration.LoggingRules.FirstOrDefault(r => r.NameMatches(logEvent.LoggerName));
+
+        if (matchingRule is { Final: true })
         {
-            Console.WriteLine(exception.ToString());
+            var shouldWrite = matchingRule.Levels.Count == 0 || matchingRule.Levels.Contains(logEvent.Level);
+
+            return shouldWrite;
         }
+
+        var defaultRule = loggingConfiguration.LoggingRules.FirstOrDefault(r => r.LoggerNamePattern == "*");
+
+        if (defaultRule != null)
+        {
+            var shouldWrite = defaultRule.Levels.Count == 0 || defaultRule.Levels.Contains(logEvent.Level);
+
+            return shouldWrite;
+        }
+
+        return false;
+    }
+
+    private static void Continuation(Exception exception)
+    {
+
     }
 }

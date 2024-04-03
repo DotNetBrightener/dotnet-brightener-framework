@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace DotNetBrightener.Core.BackgroundTasks;
+﻿namespace DotNetBrightener.Core.BackgroundTasks;
 
 /// <summary>
 ///     Represents a task that should be executed in background

@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace DotNetBrightener.GenericCRUD.Models;
+﻿namespace DotNetBrightener.GenericCRUD.Models;
 
 public class PagedCollection<T>
 {

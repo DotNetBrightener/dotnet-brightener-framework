@@ -1,7 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace DotNetBrightener.DataAccess.Auditing.Interceptors;
 

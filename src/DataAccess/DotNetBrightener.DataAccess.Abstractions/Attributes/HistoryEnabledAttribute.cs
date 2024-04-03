@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace DotNetBrightener.DataAccess.Attributes;
+﻿namespace DotNetBrightener.DataAccess.Attributes;
 
 /// <summary>
 ///     Marks the associated entity to be a history enabled entity.

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-
-namespace DotNetBrightener.DataAccess.Attributes;
+﻿namespace DotNetBrightener.DataAccess.Attributes;
 
 /// <summary>
 ///     Marks the associated property to not be updated by the Data transfer object.

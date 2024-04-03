@@ -7,7 +7,6 @@
  ***/
 
 using System.Collections.Concurrent;
-using System.Linq;
 using System.Reflection;
 
 // ReSharper disable once CheckNamespace

@@ -8,7 +8,7 @@
 
 Event message is a message that would be emitted by the `IEventPublisher`. The `IEventHandler` for the message will be proceeded sequentially, and will be stopped if the higher-prioritized handler tells the next one to stop by returning `false` in its `HandleEvent` method.
 
-``` cs
+```csharp
 public class YourEventMessage: IEventMessage 
 {
 	// your model goes here
@@ -19,7 +19,7 @@ public class YourEventMessage: IEventMessage
 
 Non-stopped event message is the type of `IEventMessage` that will be handled by all the handlers regardless the result from the process of each handler.
 
-``` cs
+```csharp
 public class YourEventMessage: INonStoppedEventMessage 
 {
 	// your model goes here
@@ -30,7 +30,7 @@ public class YourEventMessage: INonStoppedEventMessage
 
 Define an event handler to process the event emitted by the `IEventPublisher` service as follow:
 
-``` cs 
+```csharp 
 public class YourEventModelEventHandler: IEventHandler<YourEventMessage>
 {
 	// the higher number will tell the publisher to execute before the others
@@ -57,7 +57,7 @@ public class YourEventModelEventHandler: IEventHandler<YourEventMessage>
 
 Inject `IEventPublisher` to your controller / service class and use it as follow:
 
-``` cs 
+```csharp 
 
 public class SomeService 
 {

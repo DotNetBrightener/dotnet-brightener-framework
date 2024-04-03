@@ -11,9 +11,6 @@ using LinqToDB.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -180,7 +177,10 @@ public class Repository : IRepository
                               "BulkInsert failed inserting entities of type {Type}. Retrying with slow insert...",
                               typeof(T).Name);
 
-            DbContext.Set<T>().AddRange(entitiesToInserts);
+            foreach (var entity in entitiesToInserts)
+            {
+                Insert(entity);
+            }
         }
     }
 

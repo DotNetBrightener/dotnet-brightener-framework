@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace DotNetBrightener.TemplateEngine.Data.Services;
+﻿namespace DotNetBrightener.TemplateEngine.Data.Services;
 
 /// <summary>
 ///     Represents service that registers the templates to <see cref="ITemplateStore" />

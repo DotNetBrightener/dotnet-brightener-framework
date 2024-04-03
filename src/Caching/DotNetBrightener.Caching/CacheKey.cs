@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace DotNetBrightener.Caching;
+﻿namespace DotNetBrightener.Caching;
 
 public class CacheKey
 {

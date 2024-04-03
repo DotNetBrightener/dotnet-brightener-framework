@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace DotNetBrightener.Caching;
+﻿namespace DotNetBrightener.Caching;
 
 public static class CacheEntityExtensions
 {

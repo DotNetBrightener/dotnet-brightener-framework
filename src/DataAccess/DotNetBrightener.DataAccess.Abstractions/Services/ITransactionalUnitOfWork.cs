@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace DotNetBrightener.DataAccess.Services;
+﻿namespace DotNetBrightener.DataAccess.Services;
 
 /// <summary>
 ///     Represents a transactional unit-of-work, to support database rolling back

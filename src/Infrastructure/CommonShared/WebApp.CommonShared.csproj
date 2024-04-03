@@ -29,7 +29,6 @@
 		<ProjectReference Include="..\..\Security\DotNetBrightener.Infrastructure.Security\DotNetBrightener.Infrastructure.Security.csproj" />
 		<ProjectReference Include="..\AspNet.Extensions.SelfDocumentedProblemResult\AspNet.Extensions.SelfDocumentedProblemResult.csproj" />
 		<ProjectReference Include="..\DotNetBrightener.Core.BackgroundTasks\DotNetBrightener.Core.BackgroundTasks.csproj" />
-		<ProjectReference Include="..\DotNetBrightener.Core.Logging\DotNetBrightener.Core.Logging.csproj" />
 		<ProjectReference Include="..\DotNetBrightener.Core.StartupTask\DotNetBrightener.Core.StartupTask.csproj" />
 		<ProjectReference Include="..\DotNetBrightener.TemplateEngine.Data\DotNetBrightener.TemplateEngine.Data.csproj" />
 		<ProjectReference Include="..\DotNetBrightener.TemplateEngine\DotNetBrightener.TemplateEngine.csproj" />

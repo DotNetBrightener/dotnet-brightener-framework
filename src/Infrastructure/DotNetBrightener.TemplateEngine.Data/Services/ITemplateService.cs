@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
+﻿using System.Net;
 using DotNetBrightener.TemplateEngine.Data.Entity;
 using DotNetBrightener.TemplateEngine.Data.Models;
 using DotNetBrightener.TemplateEngine.Exceptions;

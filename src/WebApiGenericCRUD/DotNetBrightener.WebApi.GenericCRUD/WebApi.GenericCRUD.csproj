@@ -1,4 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		
+	</PropertyGroup>
 	<ItemGroup>
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
 	</ItemGroup>
@@ -10,12 +13,6 @@
 	<ItemGroup>
 	  <ProjectReference Include="..\..\DataAccess\DotNetBrightener.DataAccess.Abstractions\DotNetBrightener.DataAccess.Abstractions.csproj" />
 	</ItemGroup>
-	<ItemGroup>
-	  <None Update="docs\readme.md">
-	    <PackagePath>\</PackagePath>
-	    <Pack>true</Pack>
-	  </None>
-	</ItemGroup>
 
 	<Import Project="..\..\Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems" Label="Shared" />
 
@@ -25,6 +22,6 @@
 
 	<Import Project="..\..\Shared\SharedExtensions.XmlDocumentationHelper\SharedExtensions.XmlDocumentationHelper.projitems" Label="Shared" />
 
-	<Import Project="..\DotNetBrightener.WebApi.GenericCRUD.Shared\DotNetBrightener.GenericCRUD.Shared.projitems" Label="Shared" />
+	<Import Project="..\DotNetBrightener.WebApi.GenericCRUD.Shared\GenericCRUD.Shared.projitems" Label="Shared" />
 
 </Project>

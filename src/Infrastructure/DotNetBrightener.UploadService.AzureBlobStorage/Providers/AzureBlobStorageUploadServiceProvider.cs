@@ -1,7 +1,4 @@
-﻿using System.IO;
-using System.Threading.Tasks;
-using Azure.Storage.Blobs;
-using Azure.Storage.Sas;
+﻿using Azure.Storage.Blobs;
 using DotNetBrightener.SimpleUploadService;
 using DotNetBrightener.SimpleUploadService.IO;
 using DotNetBrightener.SimpleUploadService.Models;

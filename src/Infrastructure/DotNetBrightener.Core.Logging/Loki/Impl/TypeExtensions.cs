@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace DotNetBrightener.Core.Logging.Loki.Impl
+﻿namespace DotNetBrightener.Core.Logging.Loki.Impl
 {
     internal static class TypeExtensions
     {

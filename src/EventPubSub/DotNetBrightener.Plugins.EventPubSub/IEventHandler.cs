@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace DotNetBrightener.Plugins.EventPubSub;
+﻿namespace DotNetBrightener.Plugins.EventPubSub;
 
 public interface IEventHandler { }
 

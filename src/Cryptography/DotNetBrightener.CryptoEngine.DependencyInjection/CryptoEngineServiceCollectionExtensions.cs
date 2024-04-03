@@ -1,5 +1,4 @@
-﻿using System.IO;
-using DotNetBrightener.CryptoEngine.Loaders;
+﻿using DotNetBrightener.CryptoEngine.Loaders;
 using DotNetBrightener.CryptoEngine.Options;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;

@@ -4,7 +4,6 @@
 
 using System.Collections.Concurrent;
 using System.Globalization;
-using System.IO;
 using DotNetBrightener.TemplateEngine.Services;
 
 namespace DotNetBrightener.TemplateEngine.Helpers;

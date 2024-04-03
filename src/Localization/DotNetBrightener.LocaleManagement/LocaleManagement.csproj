@@ -15,7 +15,7 @@
 		<ProjectReference Include="..\..\Core\LanguageExts\LanguageExts.csproj" />
 		<ProjectReference Include="..\..\DataAccess\DotNetBrightener.DataAccess.Abstractions\DotNetBrightener.DataAccess.Abstractions.csproj" />
 		<ProjectReference Include="..\..\Infrastructure\AspNet.Extensions.SelfDocumentedProblemResult\AspNet.Extensions.SelfDocumentedProblemResult.csproj" />
-		<ProjectReference Include="..\..\WebApiGenericCRUD\DotNetBrightener.WebApi.GenericCRUD.Generator\DotNetBrightener.WebApi.GenericCRUD.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+		<ProjectReference Include="..\..\WebApiGenericCRUD\DotNetBrightener.WebApi.GenericCRUD.Generator\WebApi.GenericCRUD.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 	</ItemGroup>
 
 	<Import Project="..\..\Shared\SharedExtensions.String\StringExtensions.projitems" Label="Shared" />

@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using DotNetBrightener.TemplateEngine.Models;
+﻿using DotNetBrightener.TemplateEngine.Models;
 
 namespace DotNetBrightener.TemplateEngine.Data.Services;
 

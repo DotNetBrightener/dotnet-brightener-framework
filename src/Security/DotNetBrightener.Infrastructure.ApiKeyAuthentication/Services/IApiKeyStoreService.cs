@@ -1,10 +1,6 @@
 ﻿using DotNetBrightener.Caching;
 using DotNetBrightener.CryptoEngine;
 using DotNetBrightener.Infrastructure.ApiKeyAuthentication.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using DotNetBrightener.Infrastructure.ApiKeyAuthentication.Permissions;
 
 namespace DotNetBrightener.Infrastructure.ApiKeyAuthentication.Services;

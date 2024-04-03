@@ -1,5 +1,4 @@
 ﻿using DotNetBrightener.DataAccess.Attributes;
-using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace DotNetBrightener.DataAccess.Models;

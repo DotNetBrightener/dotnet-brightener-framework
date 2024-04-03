@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-
-namespace DotNetBrightener.Core.Logging.Loki.Impl
+﻿namespace DotNetBrightener.Core.Logging.Loki.Impl
 {
     internal static class JsonTextWriterExtensions
     {

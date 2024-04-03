@@ -1,6 +1,4 @@
 ﻿using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
 using Dapper;
 using DotNetBrightener.DataAccess.Dapper.Abstractions;
 using Microsoft.Data.SqlClient;

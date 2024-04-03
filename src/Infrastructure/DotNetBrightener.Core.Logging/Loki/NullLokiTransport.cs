@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using DotNetBrightener.Core.Logging.Loki.Model;
 
 namespace DotNetBrightener.Core.Logging.Loki

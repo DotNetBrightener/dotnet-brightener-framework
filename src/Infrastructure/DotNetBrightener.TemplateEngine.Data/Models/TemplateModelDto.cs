@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace DotNetBrightener.TemplateEngine.Data.Models;
+﻿namespace DotNetBrightener.TemplateEngine.Data.Models;
 
 public class TemplateModelDto
 {

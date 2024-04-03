@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using DotNetBrightener.SiteSettings.Abstractions;
+﻿using DotNetBrightener.SiteSettings.Abstractions;
 using DotNetBrightener.SiteSettings.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

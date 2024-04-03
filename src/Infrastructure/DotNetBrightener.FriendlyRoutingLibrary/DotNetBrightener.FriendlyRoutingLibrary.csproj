@@ -16,17 +16,6 @@
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <None Include="..\..\..\dotnet-brightener-logo.png">
-	    <Pack>True</Pack>
-	    <PackagePath></PackagePath>
-	  </None>
-	  <None Include="..\..\..\LICENSE">
-	    <Pack>True</Pack>
-	    <PackagePath></PackagePath>
-	  </None>
-	</ItemGroup>
-
 	<PropertyGroup>
 		<PackageTags>asp net core friendly url slug</PackageTags>
 		<Description>A library that adds friendly routing to ASP.Net Core Application</Description>

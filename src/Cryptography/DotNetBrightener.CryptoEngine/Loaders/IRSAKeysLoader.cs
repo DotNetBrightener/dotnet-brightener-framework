@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace DotNetBrightener.CryptoEngine.Loaders;
+﻿namespace DotNetBrightener.CryptoEngine.Loaders;
 
 public interface IRSAKeysLoader
 {

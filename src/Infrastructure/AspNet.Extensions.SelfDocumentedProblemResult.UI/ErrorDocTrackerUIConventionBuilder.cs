@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using DotNetBrightener.Extensions.ProblemsResult.UI;
+﻿using DotNetBrightener.Extensions.ProblemsResult.UI;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.AspNetCore.Builder;

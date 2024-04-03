@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using DotNetBrightener.MultiTenancy.Services;
+﻿using DotNetBrightener.MultiTenancy.Services;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;

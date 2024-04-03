@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace DotNetBrightener.Core.Logging;
 
 /// <summary>
@@ -13,5 +11,5 @@ public interface IEventLogWatcher
     /// <returns>
     ///     List of event log records that got queued up as of the time of calling the method
     /// </returns>
-    List<EventLogModel> GetQueuedEventLogRecords();
+    List<EventLogBaseModel> GetQueuedEventLogRecords();
 }

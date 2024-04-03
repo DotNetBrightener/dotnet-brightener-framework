@@ -1,7 +1,5 @@
 ﻿using DotNetBrightener.MultiTenancy.Entities;
 using Microsoft.AspNetCore.Http;
-using System;
-using System.Threading.Tasks;
 
 namespace DotNetBrightener.MultiTenancy.Services;
 

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace DotNetBrightener.TemplateEngine.Attributes;
+﻿namespace DotNetBrightener.TemplateEngine.Attributes;
 
 public class TemplateDescriptionAttribute: Attribute
 {

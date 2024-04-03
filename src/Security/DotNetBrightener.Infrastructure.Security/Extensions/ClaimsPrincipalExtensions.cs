@@ -1,5 +1,4 @@
 ﻿using DotNetBrightener.Infrastructure.Security;
-using System.Linq;
 
 // ReSharper disable once CheckNamespace
 namespace System.Security.Claims;

@@ -13,7 +13,7 @@ public class EventLog : EventLogModel
 
     }
 
-    public EventLog(EventLogModel model)
+    public EventLog(EventLogBaseModel model)
     {
         DataTransferObjectUtils.UpdateFromDto(this, model);
     }

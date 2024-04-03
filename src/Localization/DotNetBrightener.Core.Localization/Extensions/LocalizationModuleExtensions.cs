@@ -5,7 +5,6 @@ using DotNetBrightener.Core.Localization.Middlewares;
 using DotNetBrightener.Core.Localization.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Localization;
-using System;
 
 namespace Microsoft.Extensions.DependencyInjection;
 

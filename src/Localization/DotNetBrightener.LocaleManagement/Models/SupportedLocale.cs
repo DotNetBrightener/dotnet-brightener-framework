@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using LocaleManagement.Entities;
+﻿using LocaleManagement.Entities;
 
 namespace LocaleManagement.Models;
 

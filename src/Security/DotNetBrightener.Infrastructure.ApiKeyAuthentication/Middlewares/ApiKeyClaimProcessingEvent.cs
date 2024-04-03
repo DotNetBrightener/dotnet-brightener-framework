@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using DotNetBrightener.Infrastructure.ApiKeyAuthentication.Models;
 using DotNetBrightener.Plugins.EventPubSub;
 

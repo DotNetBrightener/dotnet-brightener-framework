@@ -3,7 +3,6 @@ using DotNetBrightener.Infrastructure.Security.Providers;
 using DotNetBrightener.Infrastructure.Security.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
-using System.Linq;
 
 // ReSharper disable CheckNamespace
 namespace Microsoft.Extensions.DependencyInjection;

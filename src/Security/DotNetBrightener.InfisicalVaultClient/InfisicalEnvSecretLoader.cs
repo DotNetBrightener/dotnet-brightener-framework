@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace DotNetBrightener.InfisicalVaultClient;
+﻿namespace DotNetBrightener.InfisicalVaultClient;
 
 public static class InfisicalEnvSecretLoader
 {

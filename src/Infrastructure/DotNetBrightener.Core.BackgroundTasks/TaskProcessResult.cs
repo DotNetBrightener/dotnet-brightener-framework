@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace DotNetBrightener.Core.BackgroundTasks;
+﻿namespace DotNetBrightener.Core.BackgroundTasks;
 
 public class TaskProcessResult
 {

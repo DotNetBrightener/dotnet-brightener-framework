@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using DotNetBrightener.DataAccess.Attributes;
+﻿using DotNetBrightener.DataAccess.Attributes;
 using DotNetBrightener.DataAccess.EF.Migrations;
 using Microsoft.EntityFrameworkCore;
 

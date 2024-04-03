@@ -1,5 +1,4 @@
-﻿using System;
-using DotNetBrightener.DataAccess.EF.Converters;
+﻿using DotNetBrightener.DataAccess.EF.Converters;
 using Microsoft.EntityFrameworkCore;
 
 namespace DotNetBrightener.DataAccess.EF.Migrations;

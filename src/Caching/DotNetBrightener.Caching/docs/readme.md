@@ -4,7 +4,7 @@
 
 ## Usage
 
-``` cs
+```csharp
 // in your ConfigureService() Startup.cs
 
 services.EnableCachingService();

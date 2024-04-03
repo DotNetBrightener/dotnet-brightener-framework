@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using DotNetBrightener.Infrastructure.ApiKeyAuthentication.Constants;
 using DotNetBrightener.Infrastructure.ApiKeyAuthentication.Services;
 using DotNetBrightener.Infrastructure.Security;
@@ -35,7 +32,7 @@ public class ApiKeyAuthenticationHandler : AuthenticationHandler<ApiKeyAuthentic
         if (!Request.Headers.TryGetValue(ApiKeyAuthenticationOptions.HeaderName, out var apiKeyValue) ||
             apiKeyValue.Count != 1)
         {
-            Logger.LogWarning("An API request was received without the x-api-key header");
+            Logger.LogInformation("An API request was received without the x-api-key header");
 
             return AuthenticateResult.Fail("No API Key Provided");
         }
@@ -44,7 +41,7 @@ public class ApiKeyAuthenticationHandler : AuthenticationHandler<ApiKeyAuthentic
 
         if (apiKey == null)
         {
-            Logger.LogWarning("An API request was received with an invalid x-api-key header");
+            Logger.LogInformation("An API request was received with an invalid x-api-key header");
 
             return AuthenticateResult.Fail($"Invalid API Key Provided");
         }

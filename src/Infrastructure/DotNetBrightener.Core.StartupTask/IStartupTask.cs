@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace DotNetBrightener.Core.StartupTask;
+﻿namespace DotNetBrightener.Core.StartupTask;
 
 /// <summary>
 ///     Represents a task that is executed at the application startup, can be asynchronous

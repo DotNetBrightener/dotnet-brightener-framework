@@ -1,8 +1,5 @@
 ﻿using Microsoft.Extensions.FileProviders.Physical;
 using Newtonsoft.Json;
-using System;
-using System.IO;
-using System.Linq;
 
 namespace DotNetBrightener.Core.Localization;
 

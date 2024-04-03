@@ -1,9 +1,5 @@
-﻿using System;
-using System.Globalization;
-using System.Linq;
+﻿using System.Globalization;
 using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
 using DotNetBrightener.Core.Localization.Services;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;

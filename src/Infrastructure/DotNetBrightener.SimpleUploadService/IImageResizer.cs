@@ -1,6 +1,4 @@
-﻿using System.IO;
-
-namespace DotNetBrightener.SimpleUploadService;
+﻿namespace DotNetBrightener.SimpleUploadService;
 
 /// <summary>
 ///     Provides the API for resizing image when uploading

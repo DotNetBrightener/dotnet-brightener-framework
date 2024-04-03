@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace LocaleManagement.Models;
+﻿namespace LocaleManagement.Models;
 
 public class DictionaryEntriesImportRequest
 {

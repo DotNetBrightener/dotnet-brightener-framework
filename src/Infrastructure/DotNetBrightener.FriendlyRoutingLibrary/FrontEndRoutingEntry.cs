@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace DotNetBrightener.FriendlyRoutingLibrary;
+﻿namespace DotNetBrightener.FriendlyRoutingLibrary;
 
 public struct FrontEndRoutingEntry
 {

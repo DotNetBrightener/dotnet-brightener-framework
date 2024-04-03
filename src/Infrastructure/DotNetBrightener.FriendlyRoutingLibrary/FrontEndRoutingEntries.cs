@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace DotNetBrightener.FriendlyRoutingLibrary;
+﻿namespace DotNetBrightener.FriendlyRoutingLibrary;
 
 public class FrontEndRoutingEntries : IFrontEndRoutingEntries
 {

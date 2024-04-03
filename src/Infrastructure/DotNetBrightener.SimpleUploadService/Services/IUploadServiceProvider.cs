@@ -1,8 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using DotNetBrightener.SimpleUploadService.IO;
+﻿using DotNetBrightener.SimpleUploadService.IO;
 using DotNetBrightener.SimpleUploadService.Models;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.FileProviders;

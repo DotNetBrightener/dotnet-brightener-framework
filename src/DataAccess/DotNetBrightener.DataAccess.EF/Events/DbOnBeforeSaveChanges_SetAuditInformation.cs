@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using DotNetBrightener.DataAccess.Models;
+﻿using DotNetBrightener.DataAccess.Models;
 using DotNetBrightener.Plugins.EventPubSub;
 using Microsoft.Extensions.Logging;
 

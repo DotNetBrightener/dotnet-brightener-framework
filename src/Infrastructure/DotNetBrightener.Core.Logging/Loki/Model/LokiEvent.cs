@@ -1,5 +1,3 @@
-using System;
-
 namespace DotNetBrightener.Core.Logging.Loki.Model
 {
     public class LokiEvent

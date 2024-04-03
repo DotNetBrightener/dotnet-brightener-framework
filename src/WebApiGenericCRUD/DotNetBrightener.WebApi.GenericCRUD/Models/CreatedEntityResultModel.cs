@@ -1,5 +1,4 @@
-﻿using System;
-using DotNetBrightener.DataAccess.Models;
+﻿using DotNetBrightener.DataAccess.Models;
 using Newtonsoft.Json;
 
 namespace DotNetBrightener.GenericCRUD.Models;

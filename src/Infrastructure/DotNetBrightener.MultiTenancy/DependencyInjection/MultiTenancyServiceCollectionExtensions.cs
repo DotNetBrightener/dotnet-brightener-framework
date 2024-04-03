@@ -7,7 +7,6 @@ using DotNetBrightener.MultiTenancy.Services;
 using DotNetBrightener.Plugins.EventPubSub;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using System;
 
 // ReSharper disable CheckNamespace
 

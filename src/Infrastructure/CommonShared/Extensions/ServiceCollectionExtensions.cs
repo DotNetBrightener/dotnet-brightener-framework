@@ -8,8 +8,6 @@ using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Newtonsoft.Json;
-using System;
-using System.Linq;
 using System.Net;
 using System.Reflection;
 using WebApp.CommonShared;

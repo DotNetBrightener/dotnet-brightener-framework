@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace DotNetBrightener.SimpleUploadService.IO;
+﻿namespace DotNetBrightener.SimpleUploadService.IO;
 
 public class FileStoreException : InvalidOperationException
 {

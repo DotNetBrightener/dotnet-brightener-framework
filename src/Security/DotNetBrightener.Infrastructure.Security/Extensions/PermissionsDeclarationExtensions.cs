@@ -1,7 +1,5 @@
 ﻿using DotNetBrightener.Infrastructure.Security.Permissions;
 using DotNetBrightener.Infrastructure.Security.Services;
-using System;
-using System.Linq;
 using System.Reflection;
 
 namespace DotNetBrightener.Infrastructure.Security.Extensions;

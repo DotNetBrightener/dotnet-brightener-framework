@@ -1,7 +1,4 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-
-namespace DotNetBrightener.DataAccess.Dapper.Abstractions;
+﻿namespace DotNetBrightener.DataAccess.Dapper.Abstractions;
 
 public interface IDapperRepository
 {

@@ -1,7 +1,5 @@
 ﻿using LanguageExts.Results;
 using LocaleManagement.Models;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 // ReSharper disable JoinDeclarationAndInitializer
 

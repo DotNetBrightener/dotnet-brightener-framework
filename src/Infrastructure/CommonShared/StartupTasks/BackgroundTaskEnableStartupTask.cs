@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using DotNetBrightener.Core.BackgroundTasks;
+﻿using DotNetBrightener.Core.BackgroundTasks;
 using DotNetBrightener.Core.StartupTask;
 using Microsoft.Extensions.Logging;
 

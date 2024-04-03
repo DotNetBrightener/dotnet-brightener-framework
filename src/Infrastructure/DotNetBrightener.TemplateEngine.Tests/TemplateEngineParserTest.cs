@@ -2,8 +2,6 @@ using DotNetBrightener.TemplateEngine.Helpers;
 using DotNetBrightener.TemplateEngine.Services;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
-using System;
-using System.Collections.Generic;
 
 namespace DotNetBrightener.TemplateEngine.Tests;
 

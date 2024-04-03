@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-
-namespace DotNetBrightener.Caching;
+﻿namespace DotNetBrightener.Caching;
 
 /// <summary>
 ///     Represents a manager for caching between HTTP requests (long term caching)

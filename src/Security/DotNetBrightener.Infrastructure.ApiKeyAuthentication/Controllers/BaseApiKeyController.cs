@@ -3,7 +3,6 @@ using DotNetBrightener.Infrastructure.ApiKeyAuthentication.Permissions;
 using DotNetBrightener.Infrastructure.ApiKeyAuthentication.Services;
 using DotNetBrightener.Infrastructure.Security.ActionFilters;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
 
 namespace DotNetBrightener.Infrastructure.ApiKeyAuthentication.Controllers;
 

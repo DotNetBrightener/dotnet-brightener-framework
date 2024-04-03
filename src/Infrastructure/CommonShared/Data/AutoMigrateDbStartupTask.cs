@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using DotNetBrightener.Core.StartupTask;
+﻿using DotNetBrightener.Core.StartupTask;
 using DotNetBrightener.DataAccess.EF.Extensions;
 using DotNetBrightener.DataAccess.EF.Migrations;
 using Microsoft.EntityFrameworkCore;

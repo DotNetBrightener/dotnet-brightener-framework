@@ -1,85 +1,58 @@
 // ReSharper disable CheckNamespace
 
 using DotNetBrightener.Core.Logging;
+using DotNetBrightener.Core.Logging.Options;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using NLog;
 using NLog.Config;
 using NLog.Web;
-using System.Collections.Generic;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
 public static class LoggingEnableServiceCollectionExtensions
 {
+    /// <summary>
+    ///     Configure logging services to the service collection
+    /// </summary>
+    /// <param name="serviceCollection"></param>
+    /// <param name="configuration"></param>
+    /// <returns></returns>
+    public static IServiceCollection ConfigureLogging(this IServiceCollection serviceCollection,
+                                                      IConfiguration          configuration)
+    {
+        serviceCollection.AddLogging();
+
+        serviceCollection.AddScoped<IEventLogDataService, EventLogDataService>();
+
+        serviceCollection.AddScoped<IQueueEventLogBackgroundProcessing, QueueEventLogBackgroundProcessing>();
+
+        serviceCollection.AddHostedService<EventLogQueueBackgroundProcessService>();
+
+        serviceCollection.Configure<LoggingRetentions>(configuration.GetSection(nameof(LoggingRetentions)));
+
+        serviceCollection.AddSingleton<IEventLogWatcher>((provider) =>
+        {
+            var eventLogWatcher = EventLoggingWatcher.Instance;
+            eventLogWatcher.SetServiceScopeFactory(provider.GetService<IServiceScopeFactory>()!);
+
+            return eventLogWatcher;
+        });
+
+        return serviceCollection;
+    }
+
     public static IHostBuilder UseNLogLogging(this IHostBuilder hostBuilder)
     {
         hostBuilder.UseNLog()
                    .ConfigureLogging((context, builder) =>
                     {
-                        EventLoggingWatcher.Initialize(context.HostingEnvironment);
+                        var hostEnvironment = context.HostingEnvironment;
 
-                        var logConfig = new LoggingConfiguration();
+                        var configuration = context.Configuration;
 
-                        var loggingTarget = EventLoggingWatcher.Instance;
-
-                        var logSettings = context.Configuration
-                                                 .GetSection("Logging:LogLevel")
-                                                 .Get<Dictionary<string, LogLevel>>();
-
-                        LogLevel defaultLevel = null;
-
-                        foreach (var setting in logSettings)
-                        {
-                            if (setting.Key == "Default")
-                            {
-                                defaultLevel = setting.Value;
-
-                                continue;
-                            }
-
-                            logConfig.AddRule(setting.Value,
-                                              LogLevel.Fatal,
-                                              loggingTarget,
-                                              setting.Key.Trim('.') + ".*",
-                                              true);
-                        }
-
-                        if (defaultLevel != null)
-                        {
-                            logConfig.AddRule(defaultLevel, LogLevel.Fatal, loggingTarget, "*", true);
-                        }
-
-
-                        var lokiEndpoint        = context.Configuration.GetValue<string>("LokiEndpoint");
-                        var lokiApplicationName = context.Configuration.GetValue<string>("LokiApplicationName");
-                        var lokiUserName        = context.Configuration.GetValue<string>("LokiUserName");
-                        var lokiPassword        = context.Configuration.GetValue<string>("LokiPassword");
-
-                        if (!string.IsNullOrEmpty(lokiEndpoint))
-                        {
-                            loggingTarget.SetLokiTarget(lokiEndpoint, lokiApplicationName, lokiUserName, lokiPassword);
-                        }
-
-                        LogManager.Setup().LoadConfiguration(logConfig) ;
-
-                        LogManager.Configuration.Variables["configDir"] = context.HostingEnvironment.ContentRootPath;
-                    })
-                   .ConfigureServices((hostBuilderContext, serviceCollection) =>
-                   {
-                       serviceCollection.AddLogging();
-                       serviceCollection.AddScoped<IEventLogDataService, EventLogDataService>();
-                        serviceCollection
-                           .AddScoped<IQueueEventLogBackgroundProcessing, QueueEventLogBackgroundProcessing>();
-
-                        serviceCollection.AddSingleton<IEventLogWatcher>((provider) =>
-                        {
-                            var eventLogWatcher = EventLoggingWatcher.Instance;
-                            eventLogWatcher.SetServiceScopeFactory(provider.GetService<IServiceScopeFactory>()!);
-
-                            return eventLogWatcher;
-                        });
+                        ConfigureNLog(hostEnvironment, configuration);
                     });
 
         return hostBuilder;
@@ -90,67 +63,63 @@ public static class LoggingEnableServiceCollectionExtensions
         hostBuilder.UseNLog()
                    .ConfigureLogging((context, builder) =>
                     {
-                        EventLoggingWatcher.Initialize(context.HostingEnvironment);
+                        var hostEnvironment = context.HostingEnvironment;
 
-                        var logConfig = new LoggingConfiguration();
+                        var configuration = context.Configuration;
 
-                        var loggingTarget = EventLoggingWatcher.Instance;
-
-                        var logSettings = context.Configuration.GetSection("Logging:LogLevel")
-                                                 .Get<Dictionary<string, LogLevel>>();
-
-                        LogLevel defaultLevel = null;
-
-                        foreach (var setting in logSettings)
-                        {
-                            if (setting.Key == "Default")
-                            {
-                                defaultLevel = setting.Value;
-
-                                continue;
-                            }
-
-                            logConfig.AddRule(setting.Value,
-                                              LogLevel.Fatal,
-                                              loggingTarget,
-                                              setting.Key.Trim('.') + ".*",
-                                              true);
-                        }
-
-                        if (defaultLevel != null)
-                        {
-                            logConfig.AddRule(defaultLevel, LogLevel.Fatal, loggingTarget, "*", true);
-                        }
-
-                        var lokiEndpoint        = context.Configuration.GetValue<string>("LokiEndpoint");
-                        var lokiApplicationName = context.Configuration.GetValue<string>("LokiApplicationName");
-                        var lokiUserName        = context.Configuration.GetValue<string>("LokiUserName");
-                        var lokiPassword        = context.Configuration.GetValue<string>("LokiPassword");
-
-                        if (!string.IsNullOrEmpty(lokiEndpoint))
-                        {
-                            loggingTarget.SetLokiTarget(lokiEndpoint, lokiApplicationName, lokiUserName, lokiPassword);
-                        }
-
-                        NLogBuilder.ConfigureNLog(logConfig);
-                        LogManager.Configuration.Variables["configDir"] = context.HostingEnvironment.ContentRootPath;
-                    })
-                   .ConfigureServices((hostBuilderContext, serviceCollection) =>
-                    {
-                        serviceCollection.AddLogging();
-                        serviceCollection.AddScoped<IEventLogDataService, EventLogDataService>();
-                        serviceCollection
-                           .AddScoped<IQueueEventLogBackgroundProcessing, QueueEventLogBackgroundProcessing>();
-
-                        serviceCollection.AddSingleton<IEventLogWatcher>((provider) =>
-                        {
-                            var eventLogWatcher = EventLoggingWatcher.Instance;
-                            eventLogWatcher.SetServiceScopeFactory(provider.GetService<IServiceScopeFactory>()!);
-
-                            return eventLogWatcher;
-                        });
+                        ConfigureNLog(hostEnvironment, configuration);
                     });
 
         return hostBuilder;
+    }
+
+    private static void ConfigureNLog(IHostEnvironment hostEnvironment, IConfiguration configuration)
+    {
+        EventLoggingWatcher.Initialize(hostEnvironment, configuration);
+
+        var logConfig = new LoggingConfiguration();
+
+        var loggingTarget = EventLoggingWatcher.Instance;
+        var logSettings = configuration
+                         .GetSection("Logging:LogLevel")
+                         .Get<Dictionary<string, Microsoft.Extensions.Logging.LogLevel>>();
+        
+        LogLevel defaultLevel = null;
+        
+        foreach (var setting in logSettings)
+        {
+            if (setting.Key == "Default")
+            {
+                defaultLevel = setting.Value.ToNLogLevel();
+                continue;
+            }
+
+            logConfig.AddRule(setting.Value.ToNLogLevel(),
+                              LogLevel.Fatal,
+                              loggingTarget,
+                              setting.Key.Trim('.') + ".*",
+                              true);
+        }
+
+        if (defaultLevel != null)
+        {
+            logConfig.AddRule(defaultLevel, LogLevel.Fatal, loggingTarget);
+        }
+
+
+        var lokiEndpoint        = configuration.GetValue<string>("LokiEndpoint");
+        var lokiApplicationName = configuration.GetValue<string>("LokiApplicationName");
+        var lokiUserName        = configuration.GetValue<string>("LokiUserName");
+        var lokiPassword        = configuration.GetValue<string>("LokiPassword");
+
+        if (!string.IsNullOrEmpty(lokiEndpoint))
+        {
+            loggingTarget.SetLokiTarget(lokiEndpoint, lokiApplicationName, lokiUserName, lokiPassword);
+        }
+
+        LogManager.Setup()
+                  .LoadConfiguration(logConfig);
+
+        LogManager.Configuration.Variables["configDir"] = hostEnvironment.ContentRootPath;
     }
 }

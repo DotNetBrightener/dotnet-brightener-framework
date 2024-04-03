@@ -1,11 +1,9 @@
 ﻿using Newtonsoft.Json.Linq;
 using System.Collections;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq.Dynamic.Core;
 using System.Reflection;
 using DotNetBrightener.Framework.Exceptions;
-using DotNetBrightener.WebApi.GenericCRUD;
 
 namespace System.Linq.Expressions;
 

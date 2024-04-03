@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.Threading.Tasks;
-using DotNetBrightener.SimpleUploadService.Models;
+﻿using DotNetBrightener.SimpleUploadService.Models;
 
 namespace DotNetBrightener.SimpleUploadService.Services;
 

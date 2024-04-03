@@ -1,5 +1,3 @@
-using System.Threading.Tasks;
-
 namespace DotNetBrightener.Core.Logging.Loki.Impl
 {
     internal interface IJsonSerializer

@@ -1,5 +1,4 @@
 ﻿using AspNet.Extensions.SelfDocumentedProblemResult;
-using System;
 using System.Net;
 
 // ReSharper disable once CheckNamespace

@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace DotNetBrightener.SimpleUploadService.Models;
+﻿namespace DotNetBrightener.SimpleUploadService.Models;
 
 public class UploadRequestModel
 {

@@ -1,6 +1,4 @@
 ﻿using Microsoft.Extensions.FileProviders;
-using System;
-using System.IO;
 using System.Security.Cryptography;
 
 namespace DotNetBrightener.CryptoEngine.Loaders;

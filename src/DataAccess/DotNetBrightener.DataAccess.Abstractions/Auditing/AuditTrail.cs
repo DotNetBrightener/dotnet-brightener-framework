@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace DotNetBrightener.DataAccess.Auditing;
+﻿namespace DotNetBrightener.DataAccess.Auditing;
 
 public class AuditProperty
 {

@@ -1,4 +1,4 @@
-﻿namespace DotNetBrightener.WebApi.GenericCRUD.Generator.SyntaxReceivers;
+﻿namespace WebApi.GenericCRUD.Generator.SyntaxReceivers;
 
 internal class CodeGenerationInfo
 {

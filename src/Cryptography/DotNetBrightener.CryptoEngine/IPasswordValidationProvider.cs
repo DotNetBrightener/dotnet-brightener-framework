@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace DotNetBrightener.CryptoEngine;
+﻿namespace DotNetBrightener.CryptoEngine;
 
 /// <summary>
 ///     Represents the service for generating and validating password

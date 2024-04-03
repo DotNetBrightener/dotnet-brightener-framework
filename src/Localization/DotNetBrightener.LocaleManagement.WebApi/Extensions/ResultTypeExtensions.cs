@@ -1,4 +1,3 @@
-using System;
 using AspNet.Extensions.SelfDocumentedProblemResult;
 using LanguageExts.Results;
 

@@ -1,9 +1,8 @@
-﻿using System.IO;
-using DotNetBrightener.WebApi.GenericCRUD.Generator.SyntaxReceivers;
-using DotNetBrightener.WebApi.GenericCRUD.Generator.Utils;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
+using WebApi.GenericCRUD.Generator.SyntaxReceivers;
+using WebApi.GenericCRUD.Generator.Utils;
 
-namespace DotNetBrightener.WebApi.GenericCRUD.Generator.Generators;
+namespace WebApi.GenericCRUD.Generator.Generators;
 
 [Generator]
 public class DataServiceClassGenerator : ISourceGenerator

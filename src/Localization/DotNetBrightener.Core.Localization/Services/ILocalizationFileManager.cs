@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-
-namespace DotNetBrightener.Core.Localization.Services;
+﻿namespace DotNetBrightener.Core.Localization.Services;
 
 /// <summary>
 ///     The service provides functions for managing localization files

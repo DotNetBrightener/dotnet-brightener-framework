@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace DotNetBrightener.Core.Localization;
+﻿namespace DotNetBrightener.Core.Localization;
 
 public class CultureDictionaryRecord
 {

@@ -22,13 +22,13 @@ You should check the latest version from [Nuget Site](https://www.nuget.org)
 
 ### Register service
 
-``` cs
+```csharp
 serviceCollection.AddOtpProvider();
 ```
 
 ### In your service / controller:
 
-``` cs 
+```csharp 
 // inject the service
 IOTPProvider otpProvider; 
 

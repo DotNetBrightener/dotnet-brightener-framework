@@ -1,13 +1,13 @@
 ﻿# Extensions for ASP.NET Core of Event Publish/Subscribe Library
 
-&copy; DotNet Brightener
+&copy; 2024 DotNet Brightener
 
 ### Usage
 
 
 #### Register at startup
 
-``` cs
+```csharp
 // register the core Event Pub/Sub service
 services.AddEventPubSubService();
 
@@ -17,14 +17,14 @@ services.AddEventPubSubService();
 
 Then register the implementation of `IEventHandler` by calling
 
-``` cs
+```csharp
 services.AddEventHandler<YourEventModelEventHandler>();
 ```
 
-If you want to automatically let the application detect and register all the implementations of `IEventHandler`, put the following at the end of your `ConfigureServices` method in Startup.cs if you use `Startup.cs` file, or before the application run if you use minimal API.
+If you want to automatically let the application detect and register all the implementations of `IEventHandler`, put the following at the end of your `ConfigureServices` method in Startup.cs if you use `Startup.cs` file, or before the application run if you use `Program.cs` file.
 
 
-``` cs 
+```csharp
 
 // before starting the applications
 
