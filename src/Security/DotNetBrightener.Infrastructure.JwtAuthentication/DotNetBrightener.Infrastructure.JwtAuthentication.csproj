@@ -9,10 +9,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Folder Include="Internal\" />
-	</ItemGroup>
-
-	<ItemGroup>
 	  <ProjectReference Include="..\..\Cryptography\DotNetBrightener.CryptoEngine\DotNetBrightener.CryptoEngine.csproj" />
 	  <ProjectReference Include="..\DotNetBrightener.Infrastructure.Security\DotNetBrightener.Infrastructure.Security.csproj" />
 	</ItemGroup>

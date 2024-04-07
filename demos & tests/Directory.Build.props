@@ -1,0 +1,20 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Authors>DotNet Brightener &lt;admin@dotnetbrightener.com&gt;</Authors>
+		<Company>DotNet Brightener</Company>
+
+		<Copyright>© 2017 - $([System.DateTime]::Now.ToString(yyyy)) $(Company)</Copyright>
+
+		<LangVersion>latest</LangVersion>
+		<IncludeSymbols>true</IncludeSymbols>
+		<ImplicitUsings>enable</ImplicitUsings>
+
+		<NoWarn>$(NoWarn);0168;1701;1702;1591;1574;1723;1998;1573;RCS1194;CS8618;</NoWarn>
+	</PropertyGroup>
+
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="$(AssemblyName).Tests" />
+	</ItemGroup>
+</Project>

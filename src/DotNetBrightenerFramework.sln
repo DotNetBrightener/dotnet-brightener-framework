@@ -89,8 +89,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.FriendlyRo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Core.StartupTask", "Infrastructure\DotNetBrightener.Core.StartupTask\DotNetBrightener.Core.StartupTask.csproj", "{7E618AFD-CF2F-4A14-B949-FDD79AEE1133}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Core.Logging", "Infrastructure\DotNetBrightener.Core.Logging\DotNetBrightener.Core.Logging.csproj", "{B89D0A74-E80D-44DF-8D47-72B16C47DAC4}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Core.BackgroundTasks", "Infrastructure\DotNetBrightener.Core.BackgroundTasks\DotNetBrightener.Core.BackgroundTasks.csproj", "{B57F410A-9DC3-4B02-BD94-B7DE5CE96A9F}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SharedExtensions.DateTimeProvider", "Shared\SharedExtensions.DateTimeProvider\SharedExtensions.DateTimeProvider.shproj", "{8AA48C89-69EE-47DB-8CE4-B7B40B36A210}"
@@ -179,6 +177,12 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspNet.Extensions.SelfDocumentedProblemResult.UI", "Infrastructure\AspNet.Extensions.SelfDocumentedProblemResult.UI\AspNet.Extensions.SelfDocumentedProblemResult.UI.csproj", "{FEE73EA3-4C91-4CEB-8236-DBF2391C4FA1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LanguageExts", "Core\LanguageExts\LanguageExts.csproj", "{E89A8A78-1E61-4CA5-BCA1-78BA9C274802}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Logging", "Logging", "{0CAF89D9-E9F1-40C4-9CA3-018BB8455767}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Core.Logging", "Logging\DotNetBrightener.Core.Logging\DotNetBrightener.Core.Logging.csproj", "{C6063C87-994A-4FB4-86B1-847F0C6BF07A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Core.Logging.DbStorage", "Logging\DotNetBrightener.Core.Logging.DbStorage\DotNetBrightener.Core.Logging.DbStorage.csproj", "{B105C5A6-97ED-470A-AF1A-E1CB783EE3C5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -364,14 +368,6 @@ Global
 		{7E618AFD-CF2F-4A14-B949-FDD79AEE1133}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7E618AFD-CF2F-4A14-B949-FDD79AEE1133}.Release|ARM64.ActiveCfg = Release|ARM64
 		{7E618AFD-CF2F-4A14-B949-FDD79AEE1133}.Release|ARM64.Build.0 = Release|ARM64
-		{B89D0A74-E80D-44DF-8D47-72B16C47DAC4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B89D0A74-E80D-44DF-8D47-72B16C47DAC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B89D0A74-E80D-44DF-8D47-72B16C47DAC4}.Debug|ARM64.ActiveCfg = Debug|ARM64
-		{B89D0A74-E80D-44DF-8D47-72B16C47DAC4}.Debug|ARM64.Build.0 = Debug|ARM64
-		{B89D0A74-E80D-44DF-8D47-72B16C47DAC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B89D0A74-E80D-44DF-8D47-72B16C47DAC4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B89D0A74-E80D-44DF-8D47-72B16C47DAC4}.Release|ARM64.ActiveCfg = Release|ARM64
-		{B89D0A74-E80D-44DF-8D47-72B16C47DAC4}.Release|ARM64.Build.0 = Release|ARM64
 		{B57F410A-9DC3-4B02-BD94-B7DE5CE96A9F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B57F410A-9DC3-4B02-BD94-B7DE5CE96A9F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B57F410A-9DC3-4B02-BD94-B7DE5CE96A9F}.Debug|ARM64.ActiveCfg = Debug|ARM64
@@ -612,6 +608,22 @@ Global
 		{E89A8A78-1E61-4CA5-BCA1-78BA9C274802}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E89A8A78-1E61-4CA5-BCA1-78BA9C274802}.Release|ARM64.ActiveCfg = Release|Any CPU
 		{E89A8A78-1E61-4CA5-BCA1-78BA9C274802}.Release|ARM64.Build.0 = Release|Any CPU
+		{C6063C87-994A-4FB4-86B1-847F0C6BF07A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C6063C87-994A-4FB4-86B1-847F0C6BF07A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C6063C87-994A-4FB4-86B1-847F0C6BF07A}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{C6063C87-994A-4FB4-86B1-847F0C6BF07A}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{C6063C87-994A-4FB4-86B1-847F0C6BF07A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C6063C87-994A-4FB4-86B1-847F0C6BF07A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C6063C87-994A-4FB4-86B1-847F0C6BF07A}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{C6063C87-994A-4FB4-86B1-847F0C6BF07A}.Release|ARM64.Build.0 = Release|Any CPU
+		{B105C5A6-97ED-470A-AF1A-E1CB783EE3C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B105C5A6-97ED-470A-AF1A-E1CB783EE3C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B105C5A6-97ED-470A-AF1A-E1CB783EE3C5}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{B105C5A6-97ED-470A-AF1A-E1CB783EE3C5}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{B105C5A6-97ED-470A-AF1A-E1CB783EE3C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B105C5A6-97ED-470A-AF1A-E1CB783EE3C5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B105C5A6-97ED-470A-AF1A-E1CB783EE3C5}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{B105C5A6-97ED-470A-AF1A-E1CB783EE3C5}.Release|ARM64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -648,7 +660,6 @@ Global
 		{6FFC158F-337D-4001-8261-F22C5A757B67} = {8BCFD1A4-6EB1-422B-8A50-E3CB83C8F600}
 		{D9CF02F1-495C-4011-A83E-59FE3876259C} = {8BCFD1A4-6EB1-422B-8A50-E3CB83C8F600}
 		{7E618AFD-CF2F-4A14-B949-FDD79AEE1133} = {8BCFD1A4-6EB1-422B-8A50-E3CB83C8F600}
-		{B89D0A74-E80D-44DF-8D47-72B16C47DAC4} = {8BCFD1A4-6EB1-422B-8A50-E3CB83C8F600}
 		{B57F410A-9DC3-4B02-BD94-B7DE5CE96A9F} = {8BCFD1A4-6EB1-422B-8A50-E3CB83C8F600}
 		{8AA48C89-69EE-47DB-8CE4-B7B40B36A210} = {7205287C-4CD6-4E4D-830D-46F0BBEBB605}
 		{EB78590D-83BE-404A-B554-1E436ECD64F7} = {7205287C-4CD6-4E4D-830D-46F0BBEBB605}
@@ -689,6 +700,8 @@ Global
 		{EF16F907-7DA4-4816-B0E3-F3097A46D66B} = {8BCFD1A4-6EB1-422B-8A50-E3CB83C8F600}
 		{FEE73EA3-4C91-4CEB-8236-DBF2391C4FA1} = {8BCFD1A4-6EB1-422B-8A50-E3CB83C8F600}
 		{E89A8A78-1E61-4CA5-BCA1-78BA9C274802} = {8BCFD1A4-6EB1-422B-8A50-E3CB83C8F600}
+		{C6063C87-994A-4FB4-86B1-847F0C6BF07A} = {0CAF89D9-E9F1-40C4-9CA3-018BB8455767}
+		{B105C5A6-97ED-470A-AF1A-E1CB783EE3C5} = {0CAF89D9-E9F1-40C4-9CA3-018BB8455767}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CBA29A5C-A736-4EB9-8D61-8E76924706CD}
@@ -734,10 +747,10 @@ Global
 		Shared\SharedExtensions.String\StringExtensions.projitems*{955d542a-3924-4336-a903-c9d94c12b35a}*SharedItemsImports = 5
 		Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{9833380d-01cd-426d-9af7-6f11c8f13782}*SharedItemsImports = 5
 		Shared\SharedExtensions.String\StringExtensions.projitems*{9833380d-01cd-426d-9af7-6f11c8f13782}*SharedItemsImports = 5
+		Shared\SharedExtensions.Exception\SharedExtensions.Exception.projitems*{b105c5a6-97ed-470a-af1a-e1cb783ee3c5}*SharedItemsImports = 5
+		Shared\SharedExtensions.HttpContext\SharedExtensions.HttpContext.projitems*{b105c5a6-97ed-470a-af1a-e1cb783ee3c5}*SharedItemsImports = 5
+		Shared\SharedExtensions.ServiceCollection\SharedExtensions.ServiceCollectionExtensions.projitems*{b105c5a6-97ed-470a-af1a-e1cb783ee3c5}*SharedItemsImports = 5
 		Shared\SharedExtensions.ServiceCollection\SharedExtensions.ServiceCollectionExtensions.projitems*{b57f410a-9dc3-4b02-bd94-b7de5ce96a9f}*SharedItemsImports = 5
-		Shared\SharedExtensions.Exception\SharedExtensions.Exception.projitems*{b89d0a74-e80d-44df-8d47-72b16c47dac4}*SharedItemsImports = 5
-		Shared\SharedExtensions.HttpContext\SharedExtensions.HttpContext.projitems*{b89d0a74-e80d-44df-8d47-72b16c47dac4}*SharedItemsImports = 5
-		Shared\SharedExtensions.ServiceCollection\SharedExtensions.ServiceCollectionExtensions.projitems*{b89d0a74-e80d-44df-8d47-72b16c47dac4}*SharedItemsImports = 5
 		Shared\SharedExtensions.HttpContext\SharedExtensions.HttpContext.projitems*{ba30f962-4294-41ab-a6da-8cca94371abb}*SharedItemsImports = 5
 		Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{ba30f962-4294-41ab-a6da-8cca94371abb}*SharedItemsImports = 5
 		Shared\SharedExtensions.String\StringExtensions.projitems*{ba30f962-4294-41ab-a6da-8cca94371abb}*SharedItemsImports = 5
@@ -747,6 +760,9 @@ Global
 		Shared\SharedExtensions.UI.Core\SharedExtensions.UI.Core.projitems*{c06bc166-cb76-4c92-a20f-e2963693b405}*SharedItemsImports = 13
 		Shared\SharedExtensions.DateTimeProvider\DateTimeExtensions.projitems*{c489afdb-e2f3-45a7-8ab4-5990d092db8e}*SharedItemsImports = 5
 		Shared\SharedExtensions.DateTime\DateTimeExtensions.projitems*{c489afdb-e2f3-45a7-8ab4-5990d092db8e}*SharedItemsImports = 5
+		Shared\SharedExtensions.Exception\SharedExtensions.Exception.projitems*{c6063c87-994a-4fb4-86b1-847f0c6bf07a}*SharedItemsImports = 5
+		Shared\SharedExtensions.HttpContext\SharedExtensions.HttpContext.projitems*{c6063c87-994a-4fb4-86b1-847f0c6bf07a}*SharedItemsImports = 5
+		Shared\SharedExtensions.ServiceCollection\SharedExtensions.ServiceCollectionExtensions.projitems*{c6063c87-994a-4fb4-86b1-847f0c6bf07a}*SharedItemsImports = 5
 		Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{c9b825db-113a-4706-aff0-b9a7c759a946}*SharedItemsImports = 5
 		Shared\SharedExtensions.String\StringExtensions.projitems*{c9b825db-113a-4706-aff0-b9a7c759a946}*SharedItemsImports = 5
 		Shared\SharedExtensions.ServiceCollection\SharedExtensions.ServiceCollectionExtensions.projitems*{e0d3e777-c608-432c-9aea-b549c41b07fa}*SharedItemsImports = 5
@@ -768,6 +784,7 @@ Global
 		Shared\SharedExtensions.HttpContext\SharedExtensions.HttpContext.projitems*{f57e424a-9d77-4321-b557-377c63832857}*SharedItemsImports = 5
 		Shared\SharedExtensions.XmlDocumentationHelper\SharedExtensions.XmlDocumentationHelper.projitems*{f57e424a-9d77-4321-b557-377c63832857}*SharedItemsImports = 5
 		Shared\SharedExtensions.Exception\SharedExtensions.Exception.projitems*{fe4e97e2-286f-47ee-a7a9-aca29fd3e217}*SharedItemsImports = 13
+		Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{fee73ea3-4c91-4ceb-8236-dbf2391c4fa1}*SharedItemsImports = 5
 		Shared\SharedExtensions.UI.Core\SharedExtensions.UI.Core.projitems*{fee73ea3-4c91-4ceb-8236-dbf2391c4fa1}*SharedItemsImports = 5
 		Shared\SharedExtensions.MvcBuilder\SharedExtensions.MvcBuilder.projitems*{ff19be9f-9e7f-4b69-ac0c-f80ee2218228}*SharedItemsImports = 13
 	EndGlobalSection

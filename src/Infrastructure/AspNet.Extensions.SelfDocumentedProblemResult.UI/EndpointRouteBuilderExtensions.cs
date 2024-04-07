@@ -31,6 +31,7 @@ public static class EndpointRouteBuilderExtensions
 
         var problemTypes = AppDomain.CurrentDomain
                                     .GetAssemblies()
+                                    .FilterSkippedAssemblies()
                                     .SelectMany(a => a.GetTypes())
                                     .Where(t => !t.IsInterface && !t.IsAbstract && !t.IsGenericType
                                              && typeof(IProblemResult).IsAssignableFrom(t))

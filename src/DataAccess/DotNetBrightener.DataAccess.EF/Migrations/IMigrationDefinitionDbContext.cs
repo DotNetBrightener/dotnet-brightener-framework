@@ -11,4 +11,7 @@ public interface IMigrationDefinitionDbContext {}
 /// <typeparam name="TBaseDbContext">
 ///     The DbContext that defines all the models and entities
 /// </typeparam>
-public interface IMigrationDefinitionDbContext<TBaseDbContext> : IMigrationDefinitionDbContext where TBaseDbContext : DbContext { }
+public interface IMigrationDefinitionDbContext<TBaseDbContext> : IMigrationDefinitionDbContext
+    where TBaseDbContext : DbContext
+{
+}

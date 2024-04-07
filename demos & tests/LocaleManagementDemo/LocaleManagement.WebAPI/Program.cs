@@ -24,6 +24,7 @@ Action<DbContextOptionsBuilder> configureDatabase = optionsBuilder =>
 
 builder.Services
        .AddEntityFrameworkDataServices<MainAppDbContext>(dbConfiguration,
+                                                         builder.Configuration,
                                                          configureDatabase);
 
 builder.Services

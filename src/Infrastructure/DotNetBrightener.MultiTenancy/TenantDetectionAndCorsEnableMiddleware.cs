@@ -53,25 +53,22 @@ public class TenantDetectionAndCorsEnableMiddleware
 
         var corsPolicy = policyBuilder.Build();
 
-        if (corsPolicy != null)
+        var corsResult = _corsService.EvaluatePolicy(context, corsPolicy);
+        _corsService.ApplyResult(corsResult, context.Response);
+
+        var accessControlRequestMethod =
+            context.Request.Headers[CorsConstants.AccessControlRequestMethod];
+
+        if (string.Equals(context.Request.Method,
+                          CorsConstants.PreflightHttpMethod,
+                          StringComparison.Ordinal) &&
+            !StringValues.IsNullOrEmpty(accessControlRequestMethod))
         {
-            var corsResult = _corsService.EvaluatePolicy(context, corsPolicy);
-            _corsService.ApplyResult(corsResult, context.Response);
+            // Since there is a policy which was identified,
+            // always respond to preflight requests.
+            context.Response.StatusCode = StatusCodes.Status200OK;
 
-            var accessControlRequestMethod =
-                context.Request.Headers[CorsConstants.AccessControlRequestMethod];
-
-            if (string.Equals(context.Request.Method,
-                              CorsConstants.PreflightHttpMethod,
-                              StringComparison.Ordinal) &&
-                !StringValues.IsNullOrEmpty(accessControlRequestMethod))
-            {
-                // Since there is a policy which was identified,
-                // always respond to preflight requests.
-                context.Response.StatusCode = StatusCodes.Status200OK;
-
-                return;
-            }
+            return;
         }
 
         await _next.Invoke(context);

@@ -18,8 +18,6 @@ public abstract class MigrationEnabledDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        base.OnConfiguring(optionsBuilder);
-
         OptionsBuilder?.Invoke(optionsBuilder);
     }
 
@@ -32,6 +30,7 @@ public abstract class MigrationEnabledDbContext : DbContext
     protected override void ConfigureConventions(ModelConfigurationBuilder builder)
     {
         base.ConfigureConventions(builder);
+
         builder.Properties<DateOnly>()
                .HaveConversion<DateOnlyConverter>();
                 

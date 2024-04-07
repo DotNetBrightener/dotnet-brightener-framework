@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<ItemGroup>
+		<PackageReference Include="linq2db.EntityFrameworkCore" Version="8.1.0" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.3" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="8.0.3" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.3" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\DotNetBrightener.Core.Logging\DotNetBrightener.Core.Logging.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.3">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.3">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+
+	<Import Project="..\..\Shared\SharedExtensions.Exception\SharedExtensions.Exception.projitems" Label="Shared" />
+
+	<Import Project="..\..\Shared\SharedExtensions.HttpContext\SharedExtensions.HttpContext.projitems" Label="Shared" />
+
+	<Import Project="..\..\Shared\SharedExtensions.ServiceCollection\SharedExtensions.ServiceCollectionExtensions.projitems" Label="Shared" />
+
+</Project>

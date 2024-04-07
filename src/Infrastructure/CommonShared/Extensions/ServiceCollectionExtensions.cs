@@ -50,7 +50,7 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddPermissionAuthorization();
         serviceCollection.AddEventPubSubService();
 
-        serviceCollection.EnableBackgroundTaskServices();
+        serviceCollection.EnableBackgroundTaskServices(configuration);
 
         serviceCollection.AddExceptionHandler<UnhandledExceptionResponseHandler>();
 

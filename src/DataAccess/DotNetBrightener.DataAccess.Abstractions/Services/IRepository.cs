@@ -152,15 +152,21 @@ public interface IRepository : IDisposable
     /// </summary>
     /// <typeparam name="T">The type of the record</typeparam>
     /// <param name="entity">The record to insert into the database</param>
-    void Insert<T>(T entity)
+    Task Insert<T>(T entity)
         where T : class;
 
     /// <summary>
     ///     Insert multiple records of type <typeparamref name="T"/> into the database
     /// </summary>
+    /// <remarks>
+    ///     This method is not working in multi-tenant environment.
+    ///     If you need to perform insert multiple records in multi-tenant environment,
+    ///     consider looping through the records.
+    ///     That will be slower in performance, but will guarantee the tenant for the records are captured properly.
+    /// </remarks>
     /// <typeparam name="T">The type of the records</typeparam>
     /// <param name="entities">The records to insert into the database</param>
-    void Insert<T>(IEnumerable<T> entities)
+    Task InsertMany<T>(IEnumerable<T> entities)
         where T : class;
 
     /// <summary>
@@ -203,7 +209,7 @@ public interface IRepository : IDisposable
     /// <param name="entities">
     ///     The entities to update
     /// </param>
-    void Update<T>(IEnumerable<T> entities) where T : class;
+    void UpdateMany<T>(IEnumerable<T> entities) where T : class;
 
     /// <summary>
     ///     Updates records of type <typeparamref name="T"/> from the query using an object that describes the changes without retrieving entities
@@ -227,21 +233,21 @@ public interface IRepository : IDisposable
     ///  <exception cref="ExpectedAffectedRecordMismatch">
     ///     Thrown if number of entities got updated differs from the provided expectation.
     /// </exception>
-    int Update<T>(Expression<Func<T, bool>> conditionExpression,
-                  object                    updateExpression,
-                  int?                      expectedAffectedRows = null)
+    Task<int> Update<T>(Expression<Func<T, bool>> conditionExpression,
+                        object                    updateExpression,
+                        int?                      expectedAffectedRows = null)
         where T : class;
 
     ///  <summary>
     ///      Updates records of type <typeparamref name="T"/> from the query using an expression without retrieving records
     ///  </summary>
     ///  <typeparam name="T">The entities' type of the query</typeparam>
-    /// <param name="conditionExpression">
-    ///     The query to filter which entities to be updated with <seealso cref="updateExpression"/>, without retrieving them
-    /// </param>
-    /// <param name="updateExpression">
-    ///     The expression describes how to update the entities
-    /// </param>
+    ///  <param name="conditionExpression">
+    ///      The query to filter which entities to be updated with <seealso cref="updateExpression"/>, without retrieving them
+    ///  </param>
+    ///  <param name="updateExpression">
+    ///      The expression describes how to update the entities
+    ///  </param>
     ///  <param name="expectedAffectedRows">
     ///      Expecting number of entities affected. <br />
     ///      If the actual result is different from the provided value, an exception will be thrown
@@ -252,9 +258,9 @@ public interface IRepository : IDisposable
     ///  <exception cref="ExpectedAffectedRecordMismatch">
     ///     Thrown if number of entities got updated differs from the provided expectation.
     /// </exception>
-    int Update<T>(Expression<Func<T, bool>> conditionExpression,
-                  Expression<Func<T, T>>    updateExpression,
-                  int?                      expectedAffectedRows = null)
+    Task<int> Update<T>(Expression<Func<T, bool>> conditionExpression,
+                        Expression<Func<T, T>>    updateExpression,
+                        int?                      expectedAffectedRows = null)
         where T : class;
 
 
@@ -277,7 +283,7 @@ public interface IRepository : IDisposable
     /// <exception cref="ExpectedAffectedRecordMismatch">
     ///     Thrown if number of entities got deleted differs from the provided expectation.
     /// </exception>
-    void DeleteOne<T>(Expression<Func<T, bool>> conditionExpression, string reason = null, bool forceHardDelete = false)
+    Task DeleteOne<T>(Expression<Func<T, bool>> conditionExpression, string reason = null, bool forceHardDelete = false)
         where T : class;
 
     /// <summary>
@@ -293,7 +299,9 @@ public interface IRepository : IDisposable
     /// <param name="forceHardDelete">
     ///     Enforcing hard-deletion on the records, default is <c>false</c> for soft-deletion
     /// </param>
-    int DeleteMany<T>(Expression<Func<T, bool>> conditionExpression, string reason = null, bool forceHardDelete = false)
+    Task<int> DeleteMany<T>(Expression<Func<T, bool>> conditionExpression,
+                            string                    reason          = null,
+                            bool                      forceHardDelete = false)
         where T : class;
 
     /// <summary>
@@ -313,7 +321,7 @@ public interface IRepository : IDisposable
     /// <exception cref="ExpectedAffectedRecordMismatch">
     ///     Thrown if more than one entity is restored.
     /// </exception>
-    void RestoreOne<T>(Expression<Func<T, bool>> conditionExpression) where T : class;
+    Task RestoreOne<T>(Expression<Func<T, bool>> conditionExpression) where T : class;
 
     /// <summary>
     ///     Restores multiple records of type <typeparamref name="T"/>,
@@ -329,7 +337,7 @@ public interface IRepository : IDisposable
     /// <returns>
     ///     Number of records restored from deletion
     /// </returns>
-    int RestoreMany<T>(Expression<Func<T, bool>> conditionExpression) where T : class;
+    Task<int> RestoreMany<T>(Expression<Func<T, bool>> conditionExpression) where T : class;
 
     /// <summary>
     ///     Commits all changes into the database, if any

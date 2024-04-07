@@ -10,18 +10,80 @@ public static class ResultTypeEndpointExtensions
 {
 
     /// <summary>
-    ///     Converts a <see cref="Result{TValue, TError}" /> to an <see cref="IResult" />,
-    ///     optionally convert the data before returning
+    ///     Converts a <see cref="Result{TValue, TError}" /> to an <see cref="IResult" />
+    ///     with status code <c>200 (OK)</c>.<br /> 
+    ///     Depends on the state of the result, it can be a success result, or an error result
     /// </summary>
-    /// <param name="result">The <see cref="Result{TValue, TError}" /> object</param>
+    /// <param name="result">
+    ///     The <see cref="Result{TValue, TError}" /> object
+    /// </param>
+    /// <returns>
+    ///     The <see cref="IResult" /> object
+    /// </returns>
+    public static IResult ToResult<TValue, TError>(this Result<TValue, TError> result)
+        => ToResult(result, null, HttpStatusCode.OK);
+
+    /// <summary>
+    ///     Converts a <see cref="Result{TValue, TError}" /> to an <see cref="IResult" />
+    ///     with specified <param name="successStatusCode" />.<br /> 
+    ///     Depends on the state of the result, it can be a success result, or an error result
+    /// </summary>
+    /// <param name="result">
+    ///     The <see cref="Result{TValue, TError}" /> object
+    /// </param>
+    /// <param name="successStatusCode">
+    ///     The <see cref="HttpStatusCode"/> value if the <param name="result" /> returns success value
+    /// </param>
     /// <returns>
     ///     The <see cref="IResult" /> object
     /// </returns>
     public static IResult ToResult<TValue, TError>(this Result<TValue, TError> result,
-                                                   Func<TValue, object>        converter = null,
-                                                   HttpStatusCode              statusCode = HttpStatusCode.OK)
+                                                   HttpStatusCode              successStatusCode)
+        => ToResult(result, null, successStatusCode);
+
+    /// <summary>
+    ///     Converts a <see cref="Result{TValue, TError}" /> to an <see cref="IResult" />,
+    ///     using the specified <param name="converter" />  to convert the data before responding
+    ///     with status code <c>200 (OK)</c> . <br />
+    /// 
+    ///     Depends on the state of the result, it can be a success result, or an error result
+    /// </summary>
+    /// <param name="result">
+    ///     The <see cref="Result{TValue, TError}" /> object
+    /// </param>
+    /// <param name="converter">
+    ///     The function to convert map or format the success value to a different object
+    /// </param>
+    /// <returns>
+    ///     The <see cref="IResult" /> object
+    /// </returns>
+    public static IResult ToResult<TValue, TError>(this Result<TValue, TError> result,
+                                                   Func<TValue, object>        converter) =>
+        ToResult(result, converter, HttpStatusCode.OK);
+
+    /// <summary>
+    ///     Converts a <see cref="Result{TValue, TError}" /> to an <see cref="IResult" />,
+    ///     using the specified <param name="converter" />  to convert the data before responding
+    ///     with specified <param name="successStatusCode" />.<br /> 
+    ///     Depends on the state of the result, it can be a success result, or an error result
+    /// </summary>
+    /// <param name="result">
+    ///     The <see cref="Result{TValue, TError}" /> object
+    /// </param>
+    /// <param name="converter">
+    ///     The function to convert map or format the success value to a different object
+    /// </param>
+    /// <param name="successStatusCode">
+    ///     The <see cref="HttpStatusCode"/> value if the <param name="result" /> returns success value
+    /// </param>
+    /// <returns>
+    ///     The <see cref="IResult" /> object
+    /// </returns>
+    public static IResult ToResult<TValue, TError>(this Result<TValue, TError> result,
+                                                   Func<TValue, object>        converter,
+                                                   HttpStatusCode              successStatusCode)
     {
-        return result.Match(success => MatchSuccess(success, statusCode, converter),
+        return result.Match(success => MatchSuccess(success, successStatusCode, converter),
                             MatchErrorToResult);
     }
 

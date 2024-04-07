@@ -1,4 +1,5 @@
 ﻿using DotNetBrightener.TemplateEngine.Data.Services;
+using DotNetBrightener.TemplateEngine.Data.StartupTasks;
 // ReSharper disable CheckNamespace
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -18,6 +19,7 @@ public static class TemplateEngineServiceCollectionExtensions
         serviceCollection.AddScoped<ITemplateRecordDataService, TemplateRecordDataService>();
         serviceCollection.AddScoped<ITemplateService, TemplateService>();
 
+        serviceCollection.RegisterStartupTask<TemplateRegistrationStartupTask>();
     }
 
     /// <summary>

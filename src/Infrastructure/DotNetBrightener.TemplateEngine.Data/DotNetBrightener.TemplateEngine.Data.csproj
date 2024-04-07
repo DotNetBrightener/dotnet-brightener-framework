@@ -8,13 +8,8 @@
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\..\DataAccess\DotNetBrightener.DataAccess.Abstractions\DotNetBrightener.DataAccess.Abstractions.csproj" />
+		<ProjectReference Include="..\DotNetBrightener.Core.StartupTask\DotNetBrightener.Core.StartupTask.csproj" />
 		<ProjectReference Include="..\DotNetBrightener.TemplateEngine\DotNetBrightener.TemplateEngine.csproj" />
-	</ItemGroup>
-	<ItemGroup>
-		<None Update="docs\readme.md">
-			<PackagePath>\</PackagePath>
-			<Pack>true</Pack>
-		</None>
 	</ItemGroup>
 
 	<Import Project="..\..\Shared\SharedExtensions.String\StringExtensions.projitems" Label="Shared" />

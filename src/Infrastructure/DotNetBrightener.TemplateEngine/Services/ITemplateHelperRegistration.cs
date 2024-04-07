@@ -1,4 +1,5 @@
 ﻿using HandlebarsDotNet;
+using Microsoft.Extensions.Logging;
 
 namespace DotNetBrightener.TemplateEngine.Services;
 
@@ -7,19 +8,16 @@ public interface ITemplateHelperRegistration
     void RegisterHelpers();
 }
 
-public class TemplateHelperRegistration : ITemplateHelperRegistration
+public class TemplateHelperRegistration(IEnumerable<ITemplateHelperProvider> templateHelperProviders,
+                                        ILogger<TemplateHelperRegistration> logger)
+    : ITemplateHelperRegistration
 {
-    private readonly IEnumerable<ITemplateHelperProvider> _templateHelperProviders;
-
-    public TemplateHelperRegistration(IEnumerable<ITemplateHelperProvider> templateHelperProviders)
-    {
-        _templateHelperProviders = templateHelperProviders;
-    }
-
     public void RegisterHelpers()
     {
-        foreach (var templateHelperProvider in _templateHelperProviders)
+        foreach (var templateHelperProvider in templateHelperProviders)
         {
+            logger.LogInformation("Registering template helper {templateHelperName}", templateHelperProvider.HelperName);
+
             RegisterHelper(templateHelperProvider.HelperName,
                            (writer, context, arg3) =>
                            {

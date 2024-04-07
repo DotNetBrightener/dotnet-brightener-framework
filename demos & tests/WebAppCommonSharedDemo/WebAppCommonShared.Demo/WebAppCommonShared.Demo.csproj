@@ -32,11 +32,8 @@
 		<ProjectReference Include="..\..\..\src\Infrastructure\AspNet.Extensions.SelfDocumentedProblemResult.UI\AspNet.Extensions.SelfDocumentedProblemResult.UI.csproj" />
 		<ProjectReference Include="..\..\..\src\Infrastructure\AspNet.Extensions.SelfDocumentedProblemResult\AspNet.Extensions.SelfDocumentedProblemResult.csproj" />
 		<ProjectReference Include="..\..\..\src\Infrastructure\DotNetBrightener.Core.BackgroundTasks\DotNetBrightener.Core.BackgroundTasks.csproj" />
-		<ProjectReference Include="..\..\..\src\Infrastructure\DotNetBrightener.Core.Logging\DotNetBrightener.Core.Logging.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Migrations\" />
+		<ProjectReference Include="..\..\..\src\Logging\DotNetBrightener.Core.Logging.DbStorage\DotNetBrightener.Core.Logging.DbStorage.csproj" />
+		<ProjectReference Include="..\..\..\src\Security\DotNetBrightener.InfisicalVaultClient\DotNetBrightener.InfisicalVaultClient.csproj" />
 	</ItemGroup>
 
 </Project>

@@ -67,7 +67,7 @@ public interface IBaseDataService<TEntity>: IDisposable
     ///     Inserts multiple records of the entity to the database
     /// </summary>
     /// <param name="entities">The records to insert</param>
-    Task InsertAsync(IEnumerable<TEntity> entities);
+    Task InsertManyAsync(IEnumerable<TEntity> entities);
 
     /// <summary>
     ///     Updates a record of the entity to the database
@@ -79,14 +79,14 @@ public interface IBaseDataService<TEntity>: IDisposable
     ///     Updates multiple records of the entity to the database
     /// </summary>
     /// <param name="entities">The records to update</param>
-    void Update(IEnumerable<TEntity> entities);
+    void UpdateMany(IEnumerable<TEntity> entities);
 
     /// <summary>
     ///     Update the matched record with the given filter expression, expected only one record affected
     /// </summary>
     /// <param name="filterExpression">The expression for selecting the record to update</param>
     /// <param name="updateExpression">The expression that describes the update instruction</param>
-    void UpdateOne(Expression<Func<TEntity, bool>>    filterExpression,
+    Task UpdateOne(Expression<Func<TEntity, bool>>    filterExpression,
                    Expression<Func<TEntity, TEntity>> updateExpression);
 
     /// <summary>
@@ -94,8 +94,8 @@ public interface IBaseDataService<TEntity>: IDisposable
     /// </summary>
     /// <param name="filterExpression">The expression for selecting the records to update</param>
     /// <param name="updateExpression">The expression that describes the update instruction</param>
-    int UpdateMany(Expression<Func<TEntity, bool>>    filterExpression,
-                   Expression<Func<TEntity, TEntity>> updateExpression);
+    Task<int> UpdateMany(Expression<Func<TEntity, bool>>    filterExpression,
+                         Expression<Func<TEntity, TEntity>> updateExpression);
 
     /// <summary>
     ///     Delete the matched record with the given filter expression, expected only one record affected
@@ -107,7 +107,7 @@ public interface IBaseDataService<TEntity>: IDisposable
     /// <param name="forceHardDelete">
     ///     Indicates whether the deletion is permanent. Default is <c>False</c> which marks the record as deleted
     /// </param>
-    void DeleteOne(Expression<Func<TEntity, bool>> filterExpression, string reason = null, bool forceHardDelete = false);
+    Task DeleteOne(Expression<Func<TEntity, bool>> filterExpression, string reason = null, bool forceHardDelete = false);
 
     /// <summary>
     ///     Restore the matched deleted record with the given filter expression, expected only one record affected
@@ -115,7 +115,7 @@ public interface IBaseDataService<TEntity>: IDisposable
     /// <param name="filterExpression">
     ///     The expression for selecting the record to restore
     /// </param>
-    void RestoreOne(Expression<Func<TEntity, bool>> filterExpression);
+    Task RestoreOne(Expression<Func<TEntity, bool>> filterExpression);
 
 
     /// <summary>
@@ -128,7 +128,9 @@ public interface IBaseDataService<TEntity>: IDisposable
     /// <param name="forceHardDelete">
     ///     Indicates whether the deletion is permanent. Default is <c>False</c> which marks the records as deleted
     /// </param>
-    int DeleteMany(Expression<Func<TEntity, bool>> filterExpression, string reason = null, bool forceHardDelete = false);
+    Task<int> DeleteMany(Expression<Func<TEntity, bool>> filterExpression,
+                         string                          reason          = null,
+                         bool                            forceHardDelete = false);
 
     /// <summary>
     ///     Restore the matched deleted records with the given filter expression
@@ -136,5 +138,5 @@ public interface IBaseDataService<TEntity>: IDisposable
     /// <param name="filterExpression">
     ///     The expression describes how to get the records to restore
     /// </param>
-    int RestoreMany(Expression<Func<TEntity, bool>> filterExpression);
+    Task<int> RestoreMany(Expression<Func<TEntity, bool>> filterExpression);
 }

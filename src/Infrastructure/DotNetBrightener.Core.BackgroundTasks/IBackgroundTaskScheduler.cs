@@ -9,7 +9,7 @@ using Timer = System.Timers.Timer;
 namespace DotNetBrightener.Core.BackgroundTasks;
 
 /// <summary>
-///     Represents the service that hosts all background tasks available in system.
+///     Represents a scheduler to run background tasks
 /// </summary>
 public interface IBackgroundTaskScheduler
 {

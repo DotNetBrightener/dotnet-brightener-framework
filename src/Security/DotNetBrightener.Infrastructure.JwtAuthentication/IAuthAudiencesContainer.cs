@@ -1,14 +1,22 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
 namespace DotNetBrightener.Infrastructure.JwtAuthentication;
 
 public interface IAuthAudiencesContainer
 {
+    /// <summary>
+    ///     The list of valid audiences to check against when JWT validation is performed
+    /// </summary>
     IEnumerable<string> ValidAudiences
     {
         get;
     }
 
+    /// <summary>
+    ///     Registers the valid audiences to the container
+    /// </summary>
+    /// <param name="validAudiences"></param>
     void RegisterValidAudience(params string [ ] validAudiences);
 
     void EnsureInitialized();
@@ -23,12 +31,15 @@ public class DefaultAuthAudiencesContainer : IAuthAudiencesContainer
     private readonly        IEnumerable<IAuthAudienceValidator> _audienceValidators;
     private                 bool                                _initialized = false;
     private static readonly object                              _lockObject  = new object();
+    private readonly        ILogger                             _logger;
 
-    public DefaultAuthAudiencesContainer(IHttpContextAccessor                httpContextAccessor,
-                                         IEnumerable<IAuthAudienceValidator> audienceValidators)
+    public DefaultAuthAudiencesContainer(IHttpContextAccessor                   httpContextAccessor,
+                                         IEnumerable<IAuthAudienceValidator>    audienceValidators,
+                                         ILogger<DefaultAuthAudiencesContainer> logger)
     {
         _httpContextAccessor = httpContextAccessor;
         _audienceValidators  = audienceValidators;
+        _logger         = logger;
     }
 
     public IEnumerable<string> ValidAudiences
@@ -49,7 +60,7 @@ public class DefaultAuthAudiencesContainer : IAuthAudiencesContainer
         }
     }
 
-    public void RegisterValidAudience(params string [ ] validAudiences)
+    public void RegisterValidAudience(params string[] validAudiences)
     {
         foreach (string validAudience in validAudiences)
         {
@@ -74,7 +85,7 @@ public class DefaultAuthAudiencesContainer : IAuthAudiencesContainer
         }
     }
 
-    public Task<bool> IsValidAudience(string audienceString)
+    public async Task<bool> IsValidAudience(string audienceString)
     {
         var audiences = audienceString.Split(new[]
                                              {
@@ -82,6 +93,12 @@ public class DefaultAuthAudiencesContainer : IAuthAudiencesContainer
                                              },
                                              StringSplitOptions.RemoveEmptyEntries);
 
-        return Task.FromResult(_validAudiences.Any(_ => audiences.Contains(_)));
+
+        var isValidAudience = _validAudiences.Any(validAudience => audiences.Contains(validAudience));
+
+        _logger.LogInformation("Provided audience is {audienceValidity}.",
+                               isValidAudience ? "valid" : "not valid");
+
+        return isValidAudience;
     }
 }

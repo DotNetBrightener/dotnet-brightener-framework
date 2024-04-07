@@ -1,10 +1,12 @@
 ﻿using System.Data;
 using System.Text;
 using DotNetBrightener.CryptoEngine;
+using DotNetBrightener.Infrastructure.JwtAuthentication.Middlewares;
 using DotNetBrightener.Infrastructure.Security;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,6 +16,16 @@ namespace DotNetBrightener.Infrastructure.JwtAuthentication;
 
 public static class ServiceCollectionExtensions
 {
+    /// <summary>
+    ///     Enables all the authentication handlers to handle the authentication of the request
+    /// </summary>
+    /// <param name="app"></param>
+    /// <returns></returns>
+    public static IApplicationBuilder UseAllAuthenticators(this IApplicationBuilder app)
+    {
+        return app.UseMiddleware<AllSchemesAuthenticationMiddleware>();
+    }
+
     /// <summary>
     ///     Registers JWT Authentication to the service collection
     /// </summary>
@@ -59,9 +71,9 @@ public static class ServiceCollectionExtensions
             Console.WriteLine($"JWT Private Signing Key = {signingKeyPairs.Item2}");
 
             throw new
-                DataException($"No JWT Signing Key is configured. " +
-                              $"Please check Admin Console to obtain the generated JWT Private Signing Key " +
-                              $"and configure it in appsettings.json or Environment Variable named 'JwtTokenPrivateKey'");
+                DataException("No JWT Signing Key is configured. " +
+                              "Please check Admin Console to obtain the generated JWT Private Signing Key " +
+                              "and configure it in appsettings.json or Environment Variable named 'JwtTokenPrivateKey'");
         }
 
         serviceCollection.AddSingleton(tokenConfiguration);

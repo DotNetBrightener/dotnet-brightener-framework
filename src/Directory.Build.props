@@ -1,9 +1,10 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
-		<Copyright>© $([System.DateTime]::Now.ToString(yyyy)) DotNet Brightener</Copyright>
 		<Authors>DotNet Brightener &lt;admin@dotnetbrightener.com&gt;</Authors>
 		<Company>DotNet Brightener</Company>
+
+		<Copyright>© 2017 - $([System.DateTime]::Now.ToString(yyyy)) $(Company)</Copyright>
 
 		<LangVersion>latest</LangVersion>
 		<IncludeSymbols>true</IncludeSymbols>

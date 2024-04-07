@@ -1,24 +1,25 @@
 ﻿using DotNetBrightener.DataAccess;
-using DotNetBrightener.DataAccess.EF.Extensions;
 using DotNetBrightener.DataAccess.EF.Migrations;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace WebApp.CommonShared.Data;
 
 public static class ServiceCollectionExtensions
 {
-    public static void AddCentralizedDatabaseModule<TMainDbContext, TDbContext>(
-        this IServiceCollection serviceCollection,
-        DatabaseConfiguration   dbConfiguration,
+    public static void AddCentralizedDatabaseModule<TMainDbContext, TMigrationDefinitionDbContext>(
+        this IServiceCollection         serviceCollection,
+        DatabaseConfiguration           dbConfiguration,
+        IConfiguration                  configuration,
         Action<DbContextOptionsBuilder> configureAction = null)
-        where TDbContext : TMainDbContext, IMigrationDefinitionDbContext<TMainDbContext>
+        where TMigrationDefinitionDbContext : TMainDbContext, IMigrationDefinitionDbContext<TMainDbContext>
         where TMainDbContext : DbContext
     {
-        serviceCollection.AddEntityFrameworkDataServices<TMainDbContext>(dbConfiguration, configureAction);
+        serviceCollection.AddEntityFrameworkDataServices<TMainDbContext>(dbConfiguration,
+                                                                         configuration,
+                                                                         configureAction);
 
-        serviceCollection.AddDbContext<TDbContext>();
-
-        serviceCollection.RegisterStartupTask<AutoMigrateDbStartupTask<TDbContext>>();
+        serviceCollection.UseMigrationDbContext<TMigrationDefinitionDbContext, TMainDbContext>();
     }
 }

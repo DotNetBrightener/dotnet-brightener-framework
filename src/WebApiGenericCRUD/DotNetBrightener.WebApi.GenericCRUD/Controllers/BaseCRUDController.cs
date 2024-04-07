@@ -136,7 +136,7 @@ public abstract class BaseCRUDController<TEntityType> : BareReadOnlyController<T
         var expression =
             ExpressionExtensions.BuildPredicate<TEntityType>(id, OperatorComparer.Equals, EntityIdColumnName);
 
-        DataService.DeleteOne(expression);
+        await DataService.DeleteOne(expression);
 
         return StatusCode((int)HttpStatusCode.OK);
     }
@@ -160,7 +160,7 @@ public abstract class BaseCRUDController<TEntityType> : BareReadOnlyController<T
         var expression =
             ExpressionExtensions.BuildPredicate<TEntityType>(id, OperatorComparer.Equals, EntityIdColumnName);
 
-        DataService.RestoreOne(expression);
+        await DataService.RestoreOne(expression);
 
         return StatusCode((int)HttpStatusCode.OK);
     }
@@ -243,10 +243,9 @@ public abstract class BaseCRUDController<TEntityType> : BareReadOnlyController<T
     {
         var ignoreProperties = typeof(TEntityType).GetPropertiesWithNoClientSideUpdate();
 
-        DataTransferObjectUtils.UpdateFromDto(entityToPersist,
-                                              dataToUpdate,
-                                              out var auditTrail,
-                                              ignoreProperties);
+        entityToPersist.UpdateFromDto(dataToUpdate,
+                                      out var auditTrail,
+                                      ignoreProperties);
 
         return Task.FromResult(auditTrail);
     }

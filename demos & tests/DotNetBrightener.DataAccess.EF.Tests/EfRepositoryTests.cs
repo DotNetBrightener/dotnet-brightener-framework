@@ -3,6 +3,7 @@ using DotNetBrightener.DataAccess.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.Extensions.Configuration;
 
 namespace DotNetBrightener.DataAccess.EF.Tests;
 
@@ -44,12 +45,14 @@ public class EfRepositoryTests
     public void Setup()
     {
         var serviceCollection = new ServiceCollection();
+        var configuration = new ConfigurationBuilder().Build();
 
         serviceCollection.AddEntityFrameworkDataServices<TestDbContext>(new DatabaseConfiguration
                                                                         {
                                                                             ConnectionString = ConnectionString,
                                                                             DatabaseProvider = DatabaseProvider.Sqlite
                                                                         },
+                                                                        configuration,
                                                                         optionBuilder =>
                                                                         {
                                                                             optionBuilder.UseSqlite(ConnectionString);

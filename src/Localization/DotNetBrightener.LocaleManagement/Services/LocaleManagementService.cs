@@ -132,8 +132,8 @@ public class LocaleManagementService : ILocaleManagementService
             }
 
             // otherwise hard delete the existing locale to regenerate new one
-            _appLocaleDictionaryDataService.DeleteOne(ad => ad.Id == existingLocale.Id,
-                                                      forceHardDelete: true);
+            await _appLocaleDictionaryDataService.DeleteOne(ad => ad.Id == existingLocale.Id,
+                                                            forceHardDelete: true);
         }
 
         var existingLocalizationsForApp = _appLocaleDictionaryDataService
@@ -149,12 +149,12 @@ public class LocaleManagementService : ILocaleManagementService
         {
             // already have locales, but this one is set to default
             // check the existing for default and set it to false
-            _appLocaleDictionaryDataService.UpdateMany(ad => ad.AppUniqueId == createRequest.AppId &&
-                                                             ad.IsDefault,
-                                                       _ => new AppLocaleDictionary
-                                                       {
-                                                           IsDefault = false
-                                                       });
+            await _appLocaleDictionaryDataService.UpdateMany(ad => ad.AppUniqueId == createRequest.AppId &&
+                                                                   ad.IsDefault,
+                                                             _ => new AppLocaleDictionary
+                                                             {
+                                                                 IsDefault = false
+                                                             });
 
             isDefault = true;
         }
@@ -203,7 +203,7 @@ public class LocaleManagementService : ILocaleManagementService
 
         if (newDictionaryEntries.Any())
         {
-            await _dictionaryEntryDataService.InsertAsync(newDictionaryEntries);
+            await _dictionaryEntryDataService.InsertManyAsync(newDictionaryEntries);
         }
 
         var cacheKey = GetAppSupportedLocalesCacheKey(createRequest.AppId);
@@ -243,13 +243,13 @@ public class LocaleManagementService : ILocaleManagementService
                                             .Select(e => e.DictionaryId)
                                             .ToList();
 
-            _dictionaryEntryDataService.DeleteMany(de => de.Key == entry.Key && (de.Id == entryId ||
-                                                                                 otherDictionariesOfSameApp
-                                                                                    .Contains(de.DictionaryId)));
+            await _dictionaryEntryDataService.DeleteMany(de => de.Key == entry.Key && (de.Id == entryId ||
+                                                                                       otherDictionariesOfSameApp
+                                                                                          .Contains(de.DictionaryId)));
         }
         else
         {
-            _dictionaryEntryDataService.DeleteOne(de => de.Id == entryId);
+            await _dictionaryEntryDataService.DeleteOne(de => de.Id == entryId);
         }
 
         return true;
@@ -319,7 +319,7 @@ public class LocaleManagementService : ILocaleManagementService
         {
             _logger.LogInformation("Creating {numbersOfEntries} dictionary entries", entriesToCreate.Count);
 
-            await _dictionaryEntryDataService.InsertAsync(entriesToCreate);
+            await _dictionaryEntryDataService.InsertManyAsync(entriesToCreate);
 
             _logger.LogInformation("Created {numbersOfEntries} dictionary entries", entriesToCreate.Count);
         });
@@ -335,12 +335,12 @@ public class LocaleManagementService : ILocaleManagementService
 
             tasksToExecutes.Enqueue(async () =>
             {
-                _dictionaryEntryDataService.UpdateOne(de => de.DictionaryId == dictionaryId &&
-                                                            de.Key == entryKey,
-                                                      _ => new DictionaryEntry
-                                                      {
-                                                          Value = updatedValue
-                                                      });
+                await _dictionaryEntryDataService.UpdateOne(de => de.DictionaryId == dictionaryId &&
+                                                                  de.Key == entryKey,
+                                                            _ => new DictionaryEntry
+                                                            {
+                                                                Value = updatedValue
+                                                            });
             });
         }
 

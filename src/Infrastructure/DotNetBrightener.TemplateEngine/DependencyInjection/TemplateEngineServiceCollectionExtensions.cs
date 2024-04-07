@@ -14,6 +14,8 @@ public static class TemplateEngineServiceCollectionExtensions
         serviceCollection.AddTemplateHelperProvider<DateTimeTemplateHelper>();
         serviceCollection.AddTemplateHelperProvider<FormatCurrencyTemplateHelper>();
         serviceCollection.AddTemplateHelperProvider<SumTemplateHelper>();
+
+        serviceCollection.AddHostedService<TemplateHelperRegistrationStartupService>();
     }
 
     public static IServiceCollection

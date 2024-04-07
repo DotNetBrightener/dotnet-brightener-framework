@@ -1,12 +1,14 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 using DotNetBrightener.Core.BackgroundTasks;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 IServiceCollection serviceCollection = new ServiceCollection();
+IConfiguration configuration = new ConfigurationBuilder().Build();
 
-serviceCollection.EnableBackgroundTaskServices();
+serviceCollection.EnableBackgroundTaskServices(configuration);
 
 var methodInfo = typeof(BackgroundTask).GetMethod(nameof(BackgroundTask.Run));
 

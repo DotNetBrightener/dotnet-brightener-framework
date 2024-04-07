@@ -18,7 +18,7 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "ConnectionStrings__DefaultConnection": "Server=100.117.90.128;Database=TestDB;User Id=sa;Password=uZVEYUUQeL1ZGOJgMocARmdyOQwJ7dtM;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;",
-        "ConnectionStrings__DefaultConnection_local": "Server=192.168.20.163;Database=TestDB;User Id=sa;Password=sCpTXbW8jbSbbUpILfZVulTiwqcPyJWt;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;"
+        "ConnectionStrings__DefaultConnection_local": "Server=100.121.179.124;Database=TestDB;User Id=sa;Password=sCpTXbW8jbSbbUpILfZVulTiwqcPyJWt;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;"
       }
     }
   }

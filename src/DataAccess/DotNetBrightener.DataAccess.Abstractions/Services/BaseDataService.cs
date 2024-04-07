@@ -63,18 +63,18 @@ public abstract class BaseDataService<TEntity> : IBaseDataService<TEntity> where
 
     public virtual void Insert(IEnumerable<TEntity> entities)
     {
-        InsertAsync(entities).Wait();
+        InsertManyAsync(entities).Wait();
     }
 
     public virtual async Task InsertAsync(TEntity entity)
     {
-        Repository.Insert(entity);
+        await Repository.Insert(entity);
         Repository.CommitChanges();
     }
 
-    public virtual async Task InsertAsync(IEnumerable<TEntity> entities)
+    public virtual async Task InsertManyAsync(IEnumerable<TEntity> entities)
     {
-        Repository.Insert<TEntity>(entities);
+        await Repository.InsertMany(entities);
         Repository.CommitChanges();
     }
 
@@ -84,51 +84,55 @@ public abstract class BaseDataService<TEntity> : IBaseDataService<TEntity> where
         Repository.CommitChanges();
     }
 
-    public virtual void Update(IEnumerable<TEntity> entities)
+    public virtual void UpdateMany(IEnumerable<TEntity> entities)
     {
-        Repository.Update(entities);
+        Repository.UpdateMany(entities);
         Repository.CommitChanges();
     }
 
-    public virtual void UpdateOne(Expression<Func<TEntity, bool>>    filterExpression,
-                                  Expression<Func<TEntity, TEntity>> updateExpression)
+    public virtual async Task UpdateOne(Expression<Func<TEntity, bool>>    filterExpression,
+                                        Expression<Func<TEntity, TEntity>> updateExpression)
     {
-        Repository.Update(filterExpression, updateExpression, 1);
+        await Repository.Update(filterExpression, updateExpression, 1);
         Repository.CommitChanges();
     }
 
-    public virtual int UpdateMany(Expression<Func<TEntity, bool>>    filterExpression,
-                                  Expression<Func<TEntity, TEntity>> updateExpression)
+    public virtual async Task<int> UpdateMany(Expression<Func<TEntity, bool>>    filterExpression,
+                                              Expression<Func<TEntity, TEntity>> updateExpression)
     {
-        var affectedRecords = Repository.Update(filterExpression, updateExpression);
+        var affectedRecords = await Repository.Update(filterExpression, updateExpression);
         Repository.CommitChanges();
 
         return affectedRecords;
     }
 
-    public virtual void DeleteOne(Expression<Func<TEntity, bool>> filterExpression, string reason = null, bool forceHardDelete = false)
+    public virtual async Task DeleteOne(Expression<Func<TEntity, bool>> filterExpression,
+                                        string                          reason          = null,
+                                        bool                            forceHardDelete = false)
     {
-        Repository.DeleteOne(filterExpression, reason, forceHardDelete);
+        await Repository.DeleteOne(filterExpression, reason, forceHardDelete);
         Repository.CommitChanges();
     }
 
-    public virtual void RestoreOne(Expression<Func<TEntity, bool>> filterExpression)
+    public virtual async Task RestoreOne(Expression<Func<TEntity, bool>> filterExpression)
     {
-        Repository.RestoreOne(filterExpression);
+        await Repository.RestoreOne(filterExpression);
         Repository.CommitChanges();
     }
 
-    public virtual int DeleteMany(Expression<Func<TEntity, bool>> filterExpression, string reason = null, bool forceHardDelete = false)
+    public virtual async Task<int> DeleteMany(Expression<Func<TEntity, bool>> filterExpression,
+                                              string                          reason          = null,
+                                              bool                            forceHardDelete = false)
     {
-        int updatedRecords = Repository.DeleteMany(filterExpression, reason, forceHardDelete);
+        int updatedRecords = await Repository.DeleteMany(filterExpression, reason, forceHardDelete);
         Repository.CommitChanges();
 
         return updatedRecords;
     }
 
-    public virtual int RestoreMany(Expression<Func<TEntity, bool>> filterExpression)
+    public virtual async Task<int> RestoreMany(Expression<Func<TEntity, bool>> filterExpression)
     {
-        var affectedRecords = Repository.RestoreMany(filterExpression);
+        var affectedRecords = await Repository.RestoreMany(filterExpression);
         Repository.CommitChanges();
 
         return affectedRecords;

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace DotNetBrightener.Infrastructure.JwtAuthentication.Middlewares;
 
@@ -25,7 +26,8 @@ public class AllSchemesAuthenticationMiddleware
     ///     Invokes the middleware performing authentication.
     /// </summary>
     /// <param name="context">The <see cref="HttpContext"/>.</param>
-    public async Task Invoke(HttpContext context)
+    public async Task Invoke(HttpContext                                 context,
+                             ILogger<AllSchemesAuthenticationMiddleware> logger)
     {
         context.Features.Set<IAuthenticationFeature>(new AuthenticationFeature
         {
@@ -41,6 +43,8 @@ public class AllSchemesAuthenticationMiddleware
             if (await handlers.GetHandlerAsync(context, scheme.Name) is IAuthenticationRequestHandler handler &&
                 await handler.HandleRequestAsync())
             {
+                logger.LogDebug("Request handled by {Scheme} handler.", scheme.Name);
+
                 return;
             }
         }
@@ -49,17 +53,19 @@ public class AllSchemesAuthenticationMiddleware
 
         foreach (var scheme in authenticationSchemes)
         {
+            logger.LogInformation("Processing authentication with {Scheme}", scheme.Name);
             var authenticateResult = await context.AuthenticateAsync(scheme.Name);
-            if (authenticateResult?.Principal != null)
+
+            if (authenticateResult.Principal != null)
             {
                 context.User = authenticateResult.Principal;
-            }
+                logger.LogInformation("AuthScheme {Scheme} successfully authenticated user", scheme.Name);
 
-            if (authenticateResult?.Succeeded == true)
-            {
                 var authFeatures = new AuthenticationFeatures(authenticateResult);
+
                 context.Features.Set<IHttpAuthenticationFeature>(authFeatures);
                 context.Features.Set<IAuthenticateResultFeature>(authFeatures);
+
                 break;
             }
         }

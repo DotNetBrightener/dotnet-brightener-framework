@@ -18,4 +18,6 @@
 	</ItemGroup>
 
 	<Import Project="..\..\Shared\SharedExtensions.UI.Core\SharedExtensions.UI.Core.projitems" Label="Shared" />
+
+	<Import Project="..\..\Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems" Label="Shared" />
 </Project>

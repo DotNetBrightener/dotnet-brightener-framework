@@ -26,7 +26,7 @@ public class EnvironmentVarISAKeysLoader : IRSAKeysLoader
 
         if (string.IsNullOrEmpty(privateKeyValueFromEnvVar))
         {
-            var keyPair = RsaCryptoEngine.GenerateKeyPair();
+            var keyPair = RsaCryptoEngine.GenerateKeyPair(true);
 
             throw new
                 CryptographicException($"Private Key for RSA Crypto Engine is not configured. " +

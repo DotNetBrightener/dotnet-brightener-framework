@@ -44,13 +44,13 @@ public class TemplateRegistrationService : ITemplateRegistrationService, ITempla
                                 .Select(templateProvider => templateProvider.GetType().Assembly.GetName().Name)
                                 .ToArray();
 
-        _repository.UpdateMany(record => allAssembliesNames.Contains(record.FromAssemblyName),
-                               model => new TemplateRecord
-                               {
-                                   IsDeleted     = true,
-                                   DeletedDate   = DateTimeOffset.UtcNow,
-                                   DeletionReason = "Removed during registration"
-                               });
+        await _repository.UpdateMany(record => allAssembliesNames.Contains(record.FromAssemblyName),
+                                     model => new TemplateRecord
+                                     {
+                                         IsDeleted      = true,
+                                         DeletedDate    = DateTimeOffset.UtcNow,
+                                         DeletionReason = "Removed during registration"
+                                     });
 
         foreach (var templateProvider in _providers)
         {
@@ -117,29 +117,29 @@ public class TemplateRegistrationService : ITemplateRegistrationService, ITempla
         }
         else
         {
-            _repository.UpdateMany(_ => _.TemplateType == type,
-                                   record => new TemplateRecord
-                                   {
-                                       IsDeleted        = false,
-                                       FieldsString     = string.Join(";", templateFields),
-                                       FromAssemblyName = assemblyName,
-                                       DeletedDate      = null,
-                                       DeletionReason    = null
-                                   });
+            await _repository.UpdateMany(_ => _.TemplateType == type,
+                                         record => new TemplateRecord
+                                         {
+                                             IsDeleted        = false,
+                                             FieldsString     = string.Join(";", templateFields),
+                                             FromAssemblyName = assemblyName,
+                                             DeletedDate      = null,
+                                             DeletionReason   = null
+                                         });
 
             if (!string.IsNullOrEmpty(templateContent))
-                _repository.UpdateMany(_ => _.TemplateType == type && string.IsNullOrEmpty(_.TemplateContent),
-                                       record => new TemplateRecord
-                                       {
-                                           TemplateContent = templateContent
-                                       });
+                await _repository.UpdateMany(_ => _.TemplateType == type && string.IsNullOrEmpty(_.TemplateContent),
+                                             record => new TemplateRecord
+                                             {
+                                                 TemplateContent = templateContent
+                                             });
 
             if (!string.IsNullOrEmpty(templateTitle))
-                _repository.UpdateMany(_ => _.TemplateType == type && string.IsNullOrEmpty(_.TemplateTitle),
-                                       record => new TemplateRecord
-                                       {
-                                           TemplateTitle = templateTitle
-                                       });
+                await _repository.UpdateMany(_ => _.TemplateType == type && string.IsNullOrEmpty(_.TemplateTitle),
+                                             record => new TemplateRecord
+                                             {
+                                                 TemplateTitle = templateTitle
+                                             });
         }
     }
 
