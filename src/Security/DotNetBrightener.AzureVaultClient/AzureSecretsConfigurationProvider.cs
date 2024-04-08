@@ -1,4 +1,5 @@
-﻿using Azure.Identity;
+﻿using System.Collections.Concurrent;
+using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
 using Microsoft.Extensions.Configuration;
 
@@ -38,14 +39,22 @@ internal class AzureSecretsConfigurationProvider : ConfigurationProvider
                                                   .Where(_ => _.Value?.StartsWith(_vaultSecretKeyIdentifierPrefix) ==
                                                               true)
                                                   .ToArray();
+        var concurrentData = new ConcurrentDictionary<string, string>();
+        Parallel.ForEachAsync(configuration,
+                              async (keyPair, obj) =>
+                              {
+                                  var secretValue =
+                                      await _secretClient
+                                         .GetSecretValueIfNeeded(_vaultSecretKeyIdentifierPrefix,
+                                                                 keyPair.Value);
 
-        Parallel.ForEach(configuration,
-                         (keyPair, obj) =>
-                         {
-                             var secretValue =
-                                 _secretClient.GetSecretValueIfNeeded(_vaultSecretKeyIdentifierPrefix, keyPair.Value);
+                                  concurrentData.TryAdd(keyPair.Key, secretValue);
+                              })
+                .Wait();
 
-                             Data[keyPair.Key] = secretValue;
-                         });
+        foreach (var (key, value) in concurrentData)
+        {
+            Data[key] = value;
+        }
     }
 }

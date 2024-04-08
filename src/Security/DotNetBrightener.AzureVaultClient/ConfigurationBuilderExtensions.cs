@@ -7,20 +7,24 @@ namespace Microsoft.Extensions.Configuration;
 public static class ConfigurationBuilderExtensions
 {
     public static IConfigurationBuilder AddAzureSecretsConfiguration(this IConfigurationBuilder configurationBuilder,
-                                                                     string azureKeyVaultUrlConfigName = "AzureVaultUrl",
-                                                                     string vaultSecretKeyIdentifierPrefix = "Secret:") =>
+                                                                     string azureKeyVaultUrlConfigName =
+                                                                         "AzureVaultUrl",
+                                                                     string vaultSecretKeyIdentifierPrefix =
+                                                                         "Secret:") =>
         configurationBuilder.Add(new AzureSecretsConfigurationSource(configurationBuilder.Build(),
                                                                      azureKeyVaultUrlConfigName,
                                                                      vaultSecretKeyIdentifierPrefix));
 
 
-    internal static string? GetSecretValueIfNeeded(this SecretClient secretClient,
-                                                   string            secretIdentifierPrefix,
-                                                   string?           originalValue)
+    internal static async Task<string> GetSecretValueIfNeeded(this SecretClient secretClient,
+                                                              string            secretIdentifierPrefix,
+                                                              string            originalValue)
     {
         if (originalValue?.StartsWith(secretIdentifierPrefix, StringComparison.OrdinalIgnoreCase) == true)
         {
-            return secretClient.GetSecret(originalValue.Substring(secretIdentifierPrefix.Length)).Value.Value;
+            var secretAsync = await secretClient.GetSecretAsync(originalValue.Substring(secretIdentifierPrefix.Length));
+
+            return secretAsync.Value.Value;
         }
 
         return originalValue;
