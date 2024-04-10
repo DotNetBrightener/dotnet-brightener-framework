@@ -9,7 +9,7 @@
       "applicationUrl": "https://localhost:7290;http://localhost:5030",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "ConnectionStrings:DefaultConnection": "Server=100.121.179.124;Database=LoggingDbTest;User Id=sa;Password=sCpTXbW8jbSbbUpILfZVulTiwqcPyJWt;MultipleActiveResultSets=True;Encrypt=True;TrustServerCertificate=True;",
+        "ConnectionStrings:DefaultConnection": "Server=100.121.179.124;Database=TestEnumDb;User Id=sa;Password=sCpTXbW8jbSbbUpILfZVulTiwqcPyJWt;MultipleActiveResultSets=True;Encrypt=True;TrustServerCertificate=True;",
         "-ConnectionStrings:DefaultConnection": "Server=dev-ep-db1.database.windows.net;Database=JUSTIN_EXPERIMENT;User Id=sqladmin;Password=Br0keBackMountain;MultipleActiveResultSets=True;Encrypt=True;TrustServerCertificate=True;"
       }
     }

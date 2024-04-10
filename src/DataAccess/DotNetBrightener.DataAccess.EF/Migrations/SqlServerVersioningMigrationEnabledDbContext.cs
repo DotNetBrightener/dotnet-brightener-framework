@@ -1,4 +1,7 @@
 ﻿using DotNetBrightener.DataAccess.Attributes;
+using DotNetBrightener.DataAccess.EF.Converters;
+using DotNetBrightener.DataAccess.EF.Entities;
+using DotNetBrightener.DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace DotNetBrightener.DataAccess.EF.Migrations;
@@ -21,6 +24,14 @@ public abstract class SqlServerVersioningMigrationEnabledDbContext : MigrationEn
         ConfigureModelBuilder(modelBuilder);
 
         ConfigureHistoryTables(modelBuilder);
+    }
+
+    protected override void ConfigureConventions(ModelConfigurationBuilder builder)
+    {
+        base.ConfigureConventions(builder);
+
+        if (ConfigureConverter.Any())
+            ConfigureConverter.ForEach(action => action(builder));
     }
 
     /// <summary>
