@@ -1,7 +1,7 @@
-﻿using System.Reflection;
-using DotNetBrightener.SiteSettings.Models;
+﻿using DotNetBrightener.SiteSettings.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
+using System.Reflection;
 
 namespace DotNetBrightener.SiteSettings.Extensions;
 
@@ -18,7 +18,7 @@ public static class SiteSettingModuleEnableServiceCollectionExtensions
 
             var localizer = localizerFactory.Create(typeof(TSettingType));
 
-            var settingInstance = provider.TryGetService<TSettingType>();
+            var settingInstance = provider.TryGet<TSettingType>();
 
             var localizerMember =
                 typeof(SiteSettingBase).GetProperty("T",
@@ -33,10 +33,7 @@ public static class SiteSettingModuleEnableServiceCollectionExtensions
                 localizerMember.SetValue(settingInstance, localizer);
             }
 
-            if (settingDefaultValue != null)
-            {
-                settingDefaultValue.Invoke(settingInstance as TSettingType);
-            }
+            settingDefaultValue?.Invoke(settingInstance);
 
             return settingInstance;
         }

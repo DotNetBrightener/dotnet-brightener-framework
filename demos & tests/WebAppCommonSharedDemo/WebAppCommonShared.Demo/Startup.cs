@@ -15,7 +15,7 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
-        var connectionString        = _configuration.GetConnectionString("DefaultConnection");
+        var connectionString = _configuration.GetConnectionString("DefaultConnection");
 
         services
            .ConfigureLogging(_configuration)
@@ -23,7 +23,7 @@ public class Startup
             {
                 optionsBuilder.UseSqlServer(connectionString);
             });
-        
+
         services.AddControllers();
 
         services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();

@@ -1,9 +1,8 @@
-﻿using DotNetBrightener.DataAccess.Models;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
 namespace DotNetBrightener.SiteSettings.Models;
 
-public abstract class SettingDescriptor: BaseEntity
+public abstract class SettingDescriptor
 {
     public abstract string SettingName { get; }
 

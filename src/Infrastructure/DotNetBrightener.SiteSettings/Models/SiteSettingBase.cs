@@ -1,6 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.Extensions.Localization;
+﻿using Microsoft.Extensions.Localization;
 using Newtonsoft.Json;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DotNetBrightener.SiteSettings.Models;
 
@@ -41,7 +41,10 @@ public abstract class SiteSettingBase : SettingDescriptor
         }
     }
 
-    public sealed override string SettingNameLocalizationKey => this.GetType().FullName + ".SettingName";
+    public sealed override string SettingNameLocalizationKey => this.GetType().FullName + "-SettingName";
+
+    [NotMapped]
+    public override string DescriptionLocalizationKey => this.GetType().FullName + "-Description";
 
     [JsonIgnore]
     [NotMapped]
@@ -52,14 +55,6 @@ public abstract class SiteSettingBase : SettingDescriptor
 
     [JsonIgnore]
     public string SettingContent { get; set; }
-        
-    public DateTimeOffset? CreatedDate { get; set; }
-        
-    public string CreatedBy { get; set; }
-        
-    public DateTimeOffset? ModifiedDate { get; set; }
-
-    public string          ModifiedBy   { get; set; }
 
     public T RetrieveSettings<T>()
     {
@@ -74,33 +69,6 @@ public abstract class SiteSettingBase : SettingDescriptor
     public object RetrieveSettingsAsType(Type type)
     {
         return JsonConvert.DeserializeObject(SettingContent, type);
-    }
-
-    public object RetrieveSettingsWithDefaultMerge(Type type, object defaultValue)
-    {
-        var savedValue = JsonConvert.DeserializeObject<IDictionary<string, object>>(SettingContent);
-
-        var serializedDefaultValue = JsonConvert.SerializeObject(defaultValue);
-
-        var defaultValueDictionary =
-            JsonConvert.DeserializeObject<IDictionary<string, object>>(serializedDefaultValue);
-
-        foreach (var key in defaultValueDictionary.Keys)
-        {
-            if (!savedValue.ContainsKey(key))
-            {
-                savedValue.Add(key, defaultValueDictionary[key]);
-            }
-        }
-
-        var serializedSavedValue = JsonConvert.SerializeObject(savedValue);
-
-        return JsonConvert.DeserializeObject(serializedSavedValue, type);
-    }
-
-    public void UpdateSetting<T>(T settingValue)
-    {
-        SettingContent = JsonConvert.SerializeObject(settingValue);
     }
 
     public SettingDescriptorModel ToDescriptorModel()

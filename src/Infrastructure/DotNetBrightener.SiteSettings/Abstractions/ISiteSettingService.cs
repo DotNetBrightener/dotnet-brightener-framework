@@ -14,7 +14,7 @@ public interface ISiteSettingService
 
     void SaveSetting<T>(T value) where T: SiteSettingBase;
 
-    void SaveSetting<T>(T value, Type settingType) where T: SiteSettingBase;
+    void SaveSetting(SiteSettingBase value, Type settingType);
 
     void SaveSetting(Type settingType, IDictionary<string, object> value);
 }

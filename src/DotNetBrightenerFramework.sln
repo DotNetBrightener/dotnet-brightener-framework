@@ -114,6 +114,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.InfisicalVaultClient.Tests", "Security\DotNetBrightener.InfisicalVaultClient.Tests\DotNetBrightener.InfisicalVaultClient.Tests.csproj", "{CA2AE0BA-1296-4B33-9108-17B87CF40706}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_Demos & Tests", "_Demos & Tests", "{6E580008-435A-4396-A928-507321CEAE45}"
+	ProjectSection(SolutionItems) = preProject
+		..\demos & tests\Directory.Build.props = ..\demos & tests\Directory.Build.props
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.DataAccess.EF.Tests", "..\demos & tests\DotNetBrightener.DataAccess.EF.Tests\DotNetBrightener.DataAccess.EF.Tests.csproj", "{39CD575A-DD3D-42D1-B644-52DA127FBAA0}"
 EndProject
@@ -185,6 +188,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Core.Logging.DbStorage", "Logging\DotNetBrightener.Core.Logging.DbStorage\DotNetBrightener.Core.Logging.DbStorage.csproj", "{B105C5A6-97ED-470A-AF1A-E1CB783EE3C5}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.AzureVaultClient", "Security\DotNetBrightener.AzureVaultClient\DotNetBrightener.AzureVaultClient.csproj", "{A5152E1C-04C6-44D5-A39A-9BF465A77086}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SiteSettingTests", "..\demos & tests\SiteSettingTests\SiteSettingTests.csproj", "{553C366C-E160-4C78-B7A1-4E083F1A4A1B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -634,6 +639,14 @@ Global
 		{A5152E1C-04C6-44D5-A39A-9BF465A77086}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A5152E1C-04C6-44D5-A39A-9BF465A77086}.Release|ARM64.ActiveCfg = Release|Any CPU
 		{A5152E1C-04C6-44D5-A39A-9BF465A77086}.Release|ARM64.Build.0 = Release|Any CPU
+		{553C366C-E160-4C78-B7A1-4E083F1A4A1B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{553C366C-E160-4C78-B7A1-4E083F1A4A1B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{553C366C-E160-4C78-B7A1-4E083F1A4A1B}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{553C366C-E160-4C78-B7A1-4E083F1A4A1B}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{553C366C-E160-4C78-B7A1-4E083F1A4A1B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{553C366C-E160-4C78-B7A1-4E083F1A4A1B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{553C366C-E160-4C78-B7A1-4E083F1A4A1B}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{553C366C-E160-4C78-B7A1-4E083F1A4A1B}.Release|ARM64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -713,6 +726,7 @@ Global
 		{C6063C87-994A-4FB4-86B1-847F0C6BF07A} = {0CAF89D9-E9F1-40C4-9CA3-018BB8455767}
 		{B105C5A6-97ED-470A-AF1A-E1CB783EE3C5} = {0CAF89D9-E9F1-40C4-9CA3-018BB8455767}
 		{A5152E1C-04C6-44D5-A39A-9BF465A77086} = {A8260E20-A153-47F4-AD48-3C711C1C1796}
+		{553C366C-E160-4C78-B7A1-4E083F1A4A1B} = {6E580008-435A-4396-A928-507321CEAE45}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CBA29A5C-A736-4EB9-8D61-8E76924706CD}
