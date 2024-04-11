@@ -12,8 +12,8 @@ using WebAppCommonShared.Demo.DbContexts;
 namespace WebAppCommonShared.Demo.Migrations
 {
     [DbContext(typeof(MainDbContext))]
-    [Migration("20240410121132_InitDb")]
-    partial class InitDb
+    [Migration("20240410122857_InitDb3")]
+    partial class InitDb3
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -32,7 +32,8 @@ namespace WebAppCommonShared.Demo.Migrations
 
                     b.Property<string>("Value")
                         .HasMaxLength(1024)
-                        .HasColumnType("nvarchar(1024)");
+                        .HasColumnType("nvarchar(1024)")
+                        .HasColumnName("SubscriptionStatusValue");
 
                     b.HasKey("Id");
 

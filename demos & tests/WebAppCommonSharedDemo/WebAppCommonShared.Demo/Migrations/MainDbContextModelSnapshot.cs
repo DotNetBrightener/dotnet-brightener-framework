@@ -29,7 +29,8 @@ namespace WebAppCommonShared.Demo.Migrations
 
                     b.Property<string>("Value")
                         .HasMaxLength(1024)
-                        .HasColumnType("nvarchar(1024)");
+                        .HasColumnType("nvarchar(1024)")
+                        .HasColumnName("SubscriptionStatusValue");
 
                     b.HasKey("Id");
 

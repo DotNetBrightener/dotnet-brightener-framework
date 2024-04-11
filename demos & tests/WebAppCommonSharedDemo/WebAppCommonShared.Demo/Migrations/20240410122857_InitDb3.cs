@@ -7,7 +7,7 @@
 namespace WebAppCommonShared.Demo.Migrations
 {
     /// <inheritdoc />
-    public partial class InitDb : Migration
+    public partial class InitDb3 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -32,7 +32,7 @@ namespace WebAppCommonShared.Demo.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false),
-                    Value = table.Column<string>(type: "nvarchar(1024)", maxLength: 1024, nullable: true)
+                    SubscriptionStatusValue = table.Column<string>(type: "nvarchar(1024)", maxLength: 1024, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -41,7 +41,7 @@ namespace WebAppCommonShared.Demo.Migrations
 
             migrationBuilder.InsertData(
                 table: "SubscriptionStatusLookup",
-                columns: new[] { "Id", "Value" },
+                columns: new[] { "Id", "SubscriptionStatusValue" },
                 values: new object[,]
                 {
                     { 1, "Activated" },

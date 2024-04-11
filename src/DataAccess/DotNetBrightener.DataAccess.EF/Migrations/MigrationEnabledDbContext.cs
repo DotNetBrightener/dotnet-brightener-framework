@@ -54,8 +54,17 @@ public abstract class MigrationEnabledDbContext : DbContext
     {
         var enumLookupTableName = typeof(TEnum).Name + "Lookup";
 
-        modelBuilder.Entity<EnumLookupEntity<TEnum>>()
-                    .ToTable(enumLookupTableName)
+        var lookupEntity = modelBuilder.Entity<EnumLookupEntity<TEnum>>();
+
+        lookupEntity.HasKey(x => x.Id);
+
+        lookupEntity.Property(x => x.Value)
+                    .HasMaxLength(1024);
+
+        lookupEntity.Property(x => x.Value).HasColumnName(typeof(TEnum).Name + "Value");
+
+
+        lookupEntity.ToTable(enumLookupTableName)
                     .HasData(Enum.GetValues<TEnum>()
                                  .Select(x => new EnumLookupEntity<TEnum>
                                   {
