@@ -13,8 +13,6 @@ namespace DotNetBrightener.Core.BackgroundTasks;
 /// </summary>
 public interface IBackgroundTaskScheduler
 {
-    void Activate();
-
     string EnqueueTask(MethodInfo methodAction, params object[] parameters);
 
     QueuedTaskResult GetTaskProcessResult(string taskIdentifier);
@@ -63,9 +61,9 @@ public class BackgroundTaskScheduler : IBackgroundTaskScheduler, IDisposable
 
         _tasks.Enqueue(queuedTask);
 
-        if (!_timer.Enabled && _isActivated)
+        if (!_timer.Enabled ||  !_isActivated)
         {
-            _timer.Start();
+            Activate();
         }
 
         return queuedTask.TaskIdentifier;

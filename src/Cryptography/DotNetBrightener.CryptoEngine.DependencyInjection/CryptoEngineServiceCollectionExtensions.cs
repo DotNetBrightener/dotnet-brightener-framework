@@ -1,4 +1,5 @@
-﻿using DotNetBrightener.CryptoEngine.Loaders;
+﻿using DotNetBrightener.CryptoEngine.DependencyInjection.StartupTasks;
+using DotNetBrightener.CryptoEngine.Loaders;
 using DotNetBrightener.CryptoEngine.Options;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -33,5 +34,7 @@ public static class CryptoEngineServiceCollectionExtensions
         serviceCollection.AddScoped<IRSAKeysLoader, EnvironmentVarISAKeysLoader>();
         serviceCollection.AddScoped<ICryptoEngine, DefaultCryptoEngine>();
         serviceCollection.AddScoped<IPasswordValidationProvider, DefaultPasswordValidationProvider>();
+
+        serviceCollection.AddHostedService<InitializeCryptoEngineStartupTask>();
     }
 }

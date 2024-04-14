@@ -40,11 +40,17 @@ public abstract class MigrationEnabledDbContext : DbContext
 
         builder.Properties<TimeOnly>()
                .HaveConversion<TimeOnlyConverter>();
+
+        if (ConfigureConverter.Any())
+            ConfigureConverter.ForEach(action => action(builder));
     }
 
     /// <summary>
-    ///     Registers to the <see cref="ModelBuilder"/> the lookup table for the specified <typeparamref name="TEnum"/>
+    ///     Registers to the <see cref="ModelBuilder"/> the lookup table for <typeparamref name="TEnum"/> enum.
     /// </summary>
+    /// <remarks>
+    ///     If the application uses EF Migrations, the lookup table will be created and seeded with the values of the enum.
+    /// </remarks>
     /// <typeparam name="TEnum">The type of the enum to generate the lookup table</typeparam>
     /// <param name="modelBuilder">
     ///     The <see cref="ModelBuilder"/>
