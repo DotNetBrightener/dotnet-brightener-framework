@@ -1,11 +1,11 @@
-﻿using DotNetBrightener.DataAccess.EF.Events;
+﻿using DotNetBrightener.Core.BackgroundTasks;
+using DotNetBrightener.DataAccess.EF.Events;
 using DotNetBrightener.DataAccess.Models;
 using DotNetBrightener.MultiTenancy.Entities;
 using DotNetBrightener.MultiTenancy.Services;
 using DotNetBrightener.Plugins.EventPubSub;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
-using DotNetBrightener.Core.BackgroundTasks;
 
 // ReSharper disable InconsistentNaming
 namespace DotNetBrightener.MultiTenancy.Events;
@@ -13,17 +13,17 @@ namespace DotNetBrightener.MultiTenancy.Events;
 internal class DbContextAfterSaveChanges_StoreTenantMapping
     : IEventHandler<DbContextAfterSaveChanges>
 {
-    private readonly IBackgroundTaskScheduler _taskScheduler;
+    private readonly IScheduler               _scheduler;
     private readonly ITenantAccessor          _tenantAccessor;
     private readonly Lazy<DbContext>          _dbContext;
 
-    public DbContextAfterSaveChanges_StoreTenantMapping(IBackgroundTaskScheduler taskScheduler,
-                                                        ITenantAccessor          tenantAccessor,
-                                                        Lazy<DbContext>          dbContext)
+    public DbContextAfterSaveChanges_StoreTenantMapping(ITenantAccessor          tenantAccessor,
+                                                        Lazy<DbContext>          dbContext,
+                                                        IScheduler               scheduler)
     {
-        _taskScheduler  = taskScheduler;
         _tenantAccessor = tenantAccessor;
         _dbContext      = dbContext;
+        _scheduler = scheduler;
     }
 
     public int Priority => 0;
@@ -74,8 +74,7 @@ internal class DbContextAfterSaveChanges_StoreTenantMapping
         // enqueue in a separate task to not block the current thread
         var methodInfo = this.GetMethodWithName(nameof(AssignTenantMapping));
 
-        _taskScheduler.EnqueueTask(methodInfo,
-                                   tenantEntityMappings);
+        _scheduler.ScheduleTask(methodInfo, tenantEntityMappings);
 
         return Task.FromResult(true);
     }

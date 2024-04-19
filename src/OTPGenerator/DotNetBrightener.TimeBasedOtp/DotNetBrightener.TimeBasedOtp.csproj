@@ -16,6 +16,4 @@
 	</ItemGroup>
 
 	<Import Project="..\..\Shared\SharedExtensions.DateTime\DateTimeExtensions.projitems" Label="Shared" />
-
-	<Import Project="..\..\Shared\SharedExtensions.DateTimeProvider\DateTimeExtensions.projitems" Label="Shared" />
 </Project>

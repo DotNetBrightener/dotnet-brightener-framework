@@ -10,7 +10,9 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Newtonsoft.Json;
 using System.Net;
 using System.Reflection;
+using Microsoft.AspNetCore.Routing;
 using WebApp.CommonShared;
+using WebApp.CommonShared.Endpoints;
 using WebApp.CommonShared.Mvc;
 
 // ReSharper disable once CheckNamespace
@@ -19,7 +21,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 public static class ServiceCollectionExtensions
 {
     /// <summary>
-    ///     Adds the required services for the web application to the specified <see cref="IServiceCollection"/>
+    ///     Adds the commonly-used required services for the web application to the specified <see cref="IServiceCollection"/>
     /// </summary>
     /// <param name="serviceCollection">The <see cref="IServiceCollection"/></param>
     /// <param name="configuration">The <see cref="IConfiguration"/></param>
@@ -88,6 +90,12 @@ public static class ServiceCollectionExtensions
         return app;
     }
 
+    /// <summary>
+    ///     Register old-fashioned MVC services to the specified <see cref="IServiceCollection"/>
+    /// </summary>
+    /// <param name="serviceCollection"></param>
+    /// <param name="configuration"></param>
+    /// <returns></returns>
     public static IMvcBuilder AddCommonMvcApp(this IServiceCollection serviceCollection,
                                               IConfiguration          configuration = null)
     {
@@ -121,7 +129,53 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddScoped<IActionFilterProvider, T>();
     }
 
+    /// <summary>
+    ///     Registers all the endpoint registrars found in the <see cref="loadedAssemblies"/>
+    ///     to the given <see cref="IServiceCollection"/>
+    /// </summary>
+    /// <param name="serviceCollection">
+    ///     The <see cref="IServiceCollection"/>
+    /// </param>
+    /// <param name="loadedAssemblies">
+    ///     The loaded assemblies
+    /// </param>
+    public static void AddEndpointRegistrars(this IServiceCollection serviceCollection,
+                                             Assembly[]              loadedAssemblies)
+    {
+        var endpointRegistrarTypes = loadedAssemblies.GetDerivedTypes<IEndpointRegistrar>();
 
+        foreach (var endpointRegistrarType in endpointRegistrarTypes)
+        {
+            serviceCollection.AddTransient(typeof(IEndpointRegistrar), endpointRegistrarType);
+        }
+    }
+
+    /// <summary>
+    ///     Maps the endpoints from the registered <see cref="IEndpointRegistrar"/> instances to the specified <see cref="IEndpointRouteBuilder"/>
+    /// </summary>
+    /// <param name="endpoints">
+    ///     The <see cref="IEndpointRouteBuilder"/>
+    /// </param>
+    public static void MapEndpointsFromRegistrars(this IEndpointRouteBuilder endpoints,
+                                                  RouteGroupBuilder          groupBuilder = null)
+    {
+        endpoints.ServiceProvider
+                 .GetServices<IEndpointRegistrar>()
+                 .ToList()
+                 .ForEach(registrar =>
+                  {
+                      registrar.Map(groupBuilder ?? endpoints);
+                  });
+    }
+
+    /// <summary>
+    ///     Detects and registers all the dependency services,
+    ///     that are marked by inheriting from <see cref="IDependency"/> interface,
+    ///     found in the <see cref="loadedAssemblies"/>
+    ///     to the given <see cref="IServiceCollection"/>
+    /// </summary>
+    /// <param name="serviceCollection"></param>
+    /// <param name="loadedAssemblies"></param>
     public static void AutoRegisterDependencyServices(this IServiceCollection serviceCollection,
                                                       Assembly[] loadedAssemblies)
     {
@@ -164,9 +218,11 @@ public static class ServiceCollectionExtensions
                 }
                 else
                 {
-                    var existingRegistration = serviceCollection.FirstOrDefault(_ => _.ServiceType == @interface &&
-                                                                                     _.ImplementationType ==
-                                                                                     dependencyType);
+                    var existingRegistration = serviceCollection.FirstOrDefault(descriptor =>
+                                                                                    descriptor.ServiceType ==
+                                                                                    @interface &&
+                                                                                    descriptor.ImplementationType ==
+                                                                                    dependencyType);
 
                     if (existingRegistration != null)
                         continue;

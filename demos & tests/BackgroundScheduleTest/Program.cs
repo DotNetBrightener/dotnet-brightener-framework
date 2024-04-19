@@ -1,41 +1,83 @@
-﻿// See https://aka.ms/new-console-template for more information
+﻿using DotNetBrightener.Core.BackgroundTasks;
 
-using DotNetBrightener.Core.BackgroundTasks;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+var builder = WebApplication.CreateBuilder(args);
 
-IServiceCollection serviceCollection = new ServiceCollection();
-IConfiguration configuration = new ConfigurationBuilder().Build();
 
-serviceCollection.EnableBackgroundTaskServices(configuration);
+builder.Services
+       .EnableBackgroundTaskServices(builder.Configuration);
 
-var methodInfo = typeof(BackgroundTask).GetMethod(nameof(BackgroundTask.Run));
+builder.Services.AddBackgroundTask<TestBackgroundTask>();
+builder.Services.AddBackgroundTask<Test2BackgroundTask>();
 
-serviceCollection.AddLogging((logging) =>
+
+var methodInfo = typeof(Test3BackgroundTask).GetMethod(nameof(Test3BackgroundTask.Run));
+
+builder.Services.AddLogging((logging) =>
 {
     logging.SetMinimumLevel(LogLevel.Trace);
     logging.AddConsole();
 });
-var serviceProvider = serviceCollection.BuildServiceProvider();
 
-var backgroundScheduler = serviceProvider.GetRequiredService<IBackgroundTaskScheduler>();
+var app = builder.Build();
 
-while (true)
+var scheduler = app.Services.GetService<IScheduler>();
+
+scheduler.ScheduleTask<TestBackgroundTask>()
+         .EveryMinute(); 
+
+app.Run();
+
+public class Test3BackgroundTask
 {
-    Console.WriteLine("Press enter to add task, or Ctrl + C to exit");
-    Console.ReadLine();
+    private readonly ILogger _logger;
 
-    backgroundScheduler.EnqueueTask(methodInfo);
-    Console.WriteLine("Task scheduled");
-    Thread.Sleep(TimeSpan.FromSeconds(2));
-}
+    public Test3BackgroundTask(ILogger<Test3BackgroundTask> logger)
+    {
+        _logger = logger;
+    }
 
-
-public class BackgroundTask
-{
     public void Run()
     {
-        Console.WriteLine("BackgroundTask.Run()");
+        _logger.LogInformation("BackgroundTask3.Run(). This should be executed with no dependencies registered");
+    }
+}
+
+public class TestBackgroundTask : IBackgroundTask
+{
+    private readonly ILogger _logger;
+
+    public TestBackgroundTask(ILogger<TestBackgroundTask> logger)
+    {
+        _logger = logger;
+    }
+
+    public async Task Execute()
+    {
+        _logger.LogInformation("BackgroundTask.Run(), should run once, when scheduled by test2, and daily");
+
+    }
+}
+
+public class Test2BackgroundTask : IBackgroundTask
+{
+    private readonly IScheduler _scheduler;
+    private readonly ILogger    _logger;
+
+    public Test2BackgroundTask(IScheduler scheduler, ILogger<Test2BackgroundTask> logger)
+    {
+        _scheduler = scheduler;
+        _logger         = logger;
+    }
+
+    public async Task Execute()
+    {
+        _logger.LogInformation("This should delay 2s");
+
+        await Task.Delay(TimeSpan.FromSeconds(2));
+
+        _logger.LogInformation("BackgroundTask.Run() with {string}, {string2}", "hello world", 2);
+
+        _scheduler.ScheduleTask<TestBackgroundTask>()
+                  .Once();
     }
 }

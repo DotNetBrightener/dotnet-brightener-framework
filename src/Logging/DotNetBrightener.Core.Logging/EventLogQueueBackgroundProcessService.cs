@@ -7,11 +7,10 @@ namespace DotNetBrightener.Core.Logging;
 
 public class EventLogQueueBackgroundProcessService : IHostedService, IDisposable
 {
-    private readonly        ILogger<EventLogQueueBackgroundProcessService> _logger;
-    private readonly        IServiceScopeFactory                           _serviceScopeFactory;
-    private                 Timer                                          _timer        = null;
-    private static readonly object                                         _lock         = new();
-    private                 bool                                           _isProcessing = false;
+    private readonly ILogger<EventLogQueueBackgroundProcessService> _logger;
+    private readonly IServiceScopeFactory                           _serviceScopeFactory;
+    private          Timer?                                         _timer        = null;
+    private          bool                                           _isProcessing = false;
 
     public EventLogQueueBackgroundProcessService(ILogger<EventLogQueueBackgroundProcessService> logger,
                                                  IServiceScopeFactory                           serviceScopeFactory)
@@ -55,6 +54,10 @@ public class EventLogQueueBackgroundProcessService : IHostedService, IDisposable
         catch (NotImplementedException ex)
         {
         }
+        catch (Exception ex)
+        {
+            // unable to process logs, just ignore
+        }
         finally
         {
             _logger.LogDebug("Resetting timer to processing logs after 10 seconds");
@@ -67,7 +70,7 @@ public class EventLogQueueBackgroundProcessService : IHostedService, IDisposable
     {
         _logger.LogDebug("Event Log Queue Collector Service Stopping...");
 
-        _timer!.Change(Timeout.Infinite, Timeout.Infinite);
+        _timer?.Change(Timeout.Infinite, Timeout.Infinite);
 
         return Task.CompletedTask;
     }

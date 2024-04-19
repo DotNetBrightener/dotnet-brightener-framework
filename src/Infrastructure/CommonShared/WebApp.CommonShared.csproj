@@ -18,6 +18,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\..\BackgroundTasks\DotNetBrightener.Core.BackgroundTasks.DependencyInjection\DotNetBrightener.Core.BackgroundTasks.DependencyInjection.csproj" />
+		<ProjectReference Include="..\..\BackgroundTasks\DotNetBrightener.Core.BackgroundTasks\DotNetBrightener.Core.BackgroundTasks.csproj" />
 		<ProjectReference Include="..\..\Caching\DotNetBrightener.Caching.Memory\DotNetBrightener.Caching.Memory.csproj" />
 		<ProjectReference Include="..\..\Caching\DotNetBrightener.Caching\DotNetBrightener.Caching.Abstractions.csproj" />
 		<ProjectReference Include="..\..\Core\LanguageExts\LanguageExts.csproj" />
@@ -28,7 +30,6 @@
 		<ProjectReference Include="..\..\EventPubSub\DotNetBrightener.Plugins.EventPubSub\DotNetBrightener.Plugins.EventPubSub.csproj" />
 		<ProjectReference Include="..\..\Security\DotNetBrightener.Infrastructure.Security\DotNetBrightener.Infrastructure.Security.csproj" />
 		<ProjectReference Include="..\AspNet.Extensions.SelfDocumentedProblemResult\AspNet.Extensions.SelfDocumentedProblemResult.csproj" />
-		<ProjectReference Include="..\DotNetBrightener.Core.BackgroundTasks\DotNetBrightener.Core.BackgroundTasks.csproj" />
 		<ProjectReference Include="..\DotNetBrightener.TemplateEngine.Data\DotNetBrightener.TemplateEngine.Data.csproj" />
 		<ProjectReference Include="..\DotNetBrightener.TemplateEngine\DotNetBrightener.TemplateEngine.csproj" />
 	</ItemGroup>

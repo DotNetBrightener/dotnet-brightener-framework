@@ -68,13 +68,13 @@ public abstract class BaseDataService<TEntity> : IBaseDataService<TEntity> where
 
     public virtual async Task InsertAsync(TEntity entity)
     {
-        await Repository.Insert(entity);
+        Repository.Insert(entity);
         Repository.CommitChanges();
     }
 
     public virtual async Task InsertManyAsync(IEnumerable<TEntity> entities)
     {
-        await Repository.InsertMany(entities);
+        Repository.InsertMany(entities);
         Repository.CommitChanges();
     }
 
@@ -93,14 +93,14 @@ public abstract class BaseDataService<TEntity> : IBaseDataService<TEntity> where
     public virtual async Task UpdateOne(Expression<Func<TEntity, bool>>    filterExpression,
                                         Expression<Func<TEntity, TEntity>> updateExpression)
     {
-        await Repository.Update(filterExpression, updateExpression, 1);
+        Repository.Update(filterExpression, updateExpression, 1);
         Repository.CommitChanges();
     }
 
     public virtual async Task<int> UpdateMany(Expression<Func<TEntity, bool>>    filterExpression,
                                               Expression<Func<TEntity, TEntity>> updateExpression)
     {
-        var affectedRecords = await Repository.Update(filterExpression, updateExpression);
+        var affectedRecords = Repository.Update(filterExpression, updateExpression);
         Repository.CommitChanges();
 
         return affectedRecords;
@@ -110,13 +110,13 @@ public abstract class BaseDataService<TEntity> : IBaseDataService<TEntity> where
                                         string                          reason          = null,
                                         bool                            forceHardDelete = false)
     {
-        await Repository.DeleteOne(filterExpression, reason, forceHardDelete);
+        Repository.DeleteOne(filterExpression, reason, forceHardDelete);
         Repository.CommitChanges();
     }
 
     public virtual async Task RestoreOne(Expression<Func<TEntity, bool>> filterExpression)
     {
-        await Repository.RestoreOne(filterExpression);
+        Repository.RestoreOne(filterExpression);
         Repository.CommitChanges();
     }
 
@@ -124,7 +124,7 @@ public abstract class BaseDataService<TEntity> : IBaseDataService<TEntity> where
                                               string                          reason          = null,
                                               bool                            forceHardDelete = false)
     {
-        int updatedRecords = await Repository.DeleteMany(filterExpression, reason, forceHardDelete);
+        int updatedRecords = Repository.DeleteMany(filterExpression, reason, forceHardDelete);
         Repository.CommitChanges();
 
         return updatedRecords;
@@ -132,7 +132,7 @@ public abstract class BaseDataService<TEntity> : IBaseDataService<TEntity> where
 
     public virtual async Task<int> RestoreMany(Expression<Func<TEntity, bool>> filterExpression)
     {
-        var affectedRecords = await Repository.RestoreMany(filterExpression);
+        var affectedRecords = Repository.RestoreMany(filterExpression);
         Repository.CommitChanges();
 
         return affectedRecords;

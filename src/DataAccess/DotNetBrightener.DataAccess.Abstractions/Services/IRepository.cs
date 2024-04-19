@@ -152,7 +152,7 @@ public interface IRepository : IDisposable
     /// </summary>
     /// <typeparam name="T">The type of the record</typeparam>
     /// <param name="entity">The record to insert into the database</param>
-    Task Insert<T>(T entity)
+    void Insert<T>(T entity)
         where T : class;
 
     /// <summary>
@@ -166,7 +166,7 @@ public interface IRepository : IDisposable
     /// </remarks>
     /// <typeparam name="T">The type of the records</typeparam>
     /// <param name="entities">The records to insert into the database</param>
-    Task InsertMany<T>(IEnumerable<T> entities)
+    void InsertMany<T>(IEnumerable<T> entities)
         where T : class;
 
     /// <summary>
@@ -233,7 +233,7 @@ public interface IRepository : IDisposable
     ///  <exception cref="ExpectedAffectedRecordMismatch">
     ///     Thrown if number of entities got updated differs from the provided expectation.
     /// </exception>
-    Task<int> Update<T>(Expression<Func<T, bool>> conditionExpression,
+    int Update<T>(Expression<Func<T, bool>> conditionExpression,
                         object                    updateExpression,
                         int?                      expectedAffectedRows = null)
         where T : class;
@@ -258,7 +258,7 @@ public interface IRepository : IDisposable
     ///  <exception cref="ExpectedAffectedRecordMismatch">
     ///     Thrown if number of entities got updated differs from the provided expectation.
     /// </exception>
-    Task<int> Update<T>(Expression<Func<T, bool>> conditionExpression,
+    int Update<T>(Expression<Func<T, bool>> conditionExpression,
                         Expression<Func<T, T>>    updateExpression,
                         int?                      expectedAffectedRows = null)
         where T : class;
@@ -283,7 +283,7 @@ public interface IRepository : IDisposable
     /// <exception cref="ExpectedAffectedRecordMismatch">
     ///     Thrown if number of entities got deleted differs from the provided expectation.
     /// </exception>
-    Task DeleteOne<T>(Expression<Func<T, bool>> conditionExpression, string reason = null, bool forceHardDelete = false)
+    void DeleteOne<T>(Expression<Func<T, bool>> conditionExpression, string reason = null, bool forceHardDelete = false)
         where T : class;
 
     /// <summary>
@@ -299,7 +299,7 @@ public interface IRepository : IDisposable
     /// <param name="forceHardDelete">
     ///     Enforcing hard-deletion on the records, default is <c>false</c> for soft-deletion
     /// </param>
-    Task<int> DeleteMany<T>(Expression<Func<T, bool>> conditionExpression,
+    int DeleteMany<T>(Expression<Func<T, bool>> conditionExpression,
                             string                    reason          = null,
                             bool                      forceHardDelete = false)
         where T : class;
@@ -321,7 +321,7 @@ public interface IRepository : IDisposable
     /// <exception cref="ExpectedAffectedRecordMismatch">
     ///     Thrown if more than one entity is restored.
     /// </exception>
-    Task RestoreOne<T>(Expression<Func<T, bool>> conditionExpression) where T : class;
+    void RestoreOne<T>(Expression<Func<T, bool>> conditionExpression) where T : class;
 
     /// <summary>
     ///     Restores multiple records of type <typeparamref name="T"/>,
@@ -337,7 +337,7 @@ public interface IRepository : IDisposable
     /// <returns>
     ///     Number of records restored from deletion
     /// </returns>
-    Task<int> RestoreMany<T>(Expression<Func<T, bool>> conditionExpression) where T : class;
+    int RestoreMany<T>(Expression<Func<T, bool>> conditionExpression) where T : class;
 
     /// <summary>
     ///     Commits all changes into the database, if any

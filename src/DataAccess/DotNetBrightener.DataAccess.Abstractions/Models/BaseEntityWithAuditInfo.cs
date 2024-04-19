@@ -3,7 +3,7 @@ using DotNetBrightener.DataAccess.Attributes;
 
 namespace DotNetBrightener.DataAccess.Models;
 
-public abstract class BaseEntityWithAuditInfo<TKeyType> : BaseEntity<TKeyType> where TKeyType : struct
+public abstract class BaseEntityWithAuditInfo : BaseEntity
 {
     /// <summary>
     ///     The date and time of record creation
@@ -55,8 +55,4 @@ public abstract class BaseEntityWithAuditInfo<TKeyType> : BaseEntity<TKeyType> w
     [NoClientSideUpdate]
     [MaxLength(512)]
     public string DeletionReason { get; set; }
-}
-
-public abstract class BaseEntityWithAuditInfo : BaseEntityWithAuditInfo<long>
-{
 }

@@ -26,15 +26,18 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\..\..\src\Core\DotNetBrightener.WebSocketExt\DotNetBrightener.WebSocketExt.csproj" />
 		<ProjectReference Include="..\..\..\src\Core\LanguageExts\LanguageExts.csproj" />
 		<ProjectReference Include="..\..\..\src\DataAccess\DotNetBrightener.DataAccess.Abstractions\DotNetBrightener.DataAccess.Abstractions.csproj" />
 		<ProjectReference Include="..\..\..\src\DataAccess\DotNetBrightener.DataAccess.EF\DotNetBrightener.DataAccess.EF.csproj" />
 		<ProjectReference Include="..\..\..\src\Infrastructure\AspNet.Extensions.SelfDocumentedProblemResult.UI\AspNet.Extensions.SelfDocumentedProblemResult.UI.csproj" />
 		<ProjectReference Include="..\..\..\src\Infrastructure\AspNet.Extensions.SelfDocumentedProblemResult\AspNet.Extensions.SelfDocumentedProblemResult.csproj" />
-		<ProjectReference Include="..\..\..\src\Infrastructure\DotNetBrightener.Core.BackgroundTasks\DotNetBrightener.Core.BackgroundTasks.csproj" />
 		<ProjectReference Include="..\..\..\src\Infrastructure\DotNetBrightener.Core.StartupTask\DotNetBrightener.Core.StartupTask.csproj" />
 		<ProjectReference Include="..\..\..\src\Logging\DotNetBrightener.Core.Logging.DbStorage\DotNetBrightener.Core.Logging.DbStorage.csproj" />
 		<ProjectReference Include="..\..\..\src\Security\DotNetBrightener.InfisicalVaultClient\DotNetBrightener.InfisicalVaultClient.csproj" />
+		<ProjectReference Include="..\..\..\src\Security\DotNetBrightener.Infrastructure.JwtAuthentication\DotNetBrightener.Infrastructure.JwtAuthentication.csproj" />
 	</ItemGroup>
+
+	<Import Project="..\..\..\src\Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems" Label="Shared" />
 
 </Project>

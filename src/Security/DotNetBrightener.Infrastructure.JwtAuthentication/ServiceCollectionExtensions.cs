@@ -23,6 +23,8 @@ public static class ServiceCollectionExtensions
     /// <returns></returns>
     public static IApplicationBuilder UseAllAuthenticators(this IApplicationBuilder app)
     {
+        app.UseCookiePolicy();
+
         return app.UseMiddleware<AllSchemesAuthenticationMiddleware>();
     }
 
@@ -77,6 +79,7 @@ public static class ServiceCollectionExtensions
         }
 
         serviceCollection.AddSingleton(tokenConfiguration);
+        serviceCollection.AddSingleton<IJwtMessageHandler, NullJwtMessageHandler>();
 
         var serviceProvider = serviceCollection.BuildServiceProvider();
         var contextAccessor = serviceProvider.GetService<IHttpContextAccessor>();
@@ -107,6 +110,15 @@ public static class ServiceCollectionExtensions
         return serviceCollection;
     }
 
+    public static IServiceCollection RegisterJwtMessageEventHandler<TValidator>(
+        this IServiceCollection serviceCollection)
+        where TValidator : class, IJwtMessageHandler
+    {
+        serviceCollection.AddSingleton<IJwtMessageHandler, TValidator>();
+
+        return serviceCollection;
+    }
+
     private static void ConfigureJwtOptions(JwtBearerOptions     cfg,
                                             IHttpContextAccessor httpContextAccessor)
     {
@@ -123,6 +135,9 @@ public static class ServiceCollectionExtensions
         var audienceValidator = httpContextAccessor.HttpContext
                                                    .RequestServices
                                                    .GetService<IAuthAudiencesContainer>();
+        var jwtEventHandlers = httpContextAccessor.HttpContext
+                                                  .RequestServices
+                                                  .GetServices<IJwtMessageHandler>();
 
         // retrieve the key for verifying the token signature.
         // Although we use private key for signing, we only need public key to verify
@@ -141,6 +156,22 @@ public static class ServiceCollectionExtensions
         var validAlgorithms = tokenConfiguration.UseRSASigningVerification
                                   ? SecurityAlgorithms.RsaSha256
                                   : SecurityAlgorithms.HmacSha256;
+
+        if (cfg.Events == null)
+            cfg.Events = new JwtBearerEvents();
+
+        cfg.Events.OnMessageReceived = context =>
+        {
+            foreach (var jwtEventHandler in jwtEventHandlers)
+            {
+                jwtEventHandler.OnMessageReceived(context);
+
+                if (!string.IsNullOrEmpty(context.Token))
+                    break;
+            }
+
+            return Task.CompletedTask;
+        };
 
         cfg.TokenValidationParameters = new TokenValidationParameters
         {

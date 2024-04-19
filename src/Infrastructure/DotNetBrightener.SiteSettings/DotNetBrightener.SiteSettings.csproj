@@ -14,5 +14,6 @@
 
 	<Import Project="..\..\Shared\SharedExtensions.String\StringExtensions.projitems" Label="Shared" />
 	<Import Project="..\..\Shared\SharedExtensions.ServiceCollection\SharedExtensions.ServiceCollectionExtensions.projitems" Label="Shared" />
+	<Import Project="..\..\Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems" Label="Shared" />
 
 </Project>

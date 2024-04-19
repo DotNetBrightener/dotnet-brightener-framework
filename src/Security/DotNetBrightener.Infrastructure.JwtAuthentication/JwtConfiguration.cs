@@ -42,7 +42,7 @@ public class JwtConfiguration
     /// <summary>
     ///     Indicates the expiration in minutes of the token
     /// </summary>
-    public int ExpireAfterMinutes { get; set; }
+    public double ExpireAfterMinutes { get; set; }
 
     [JsonIgnore]
     public string KID { get; set; } = DefaultJwtKId;

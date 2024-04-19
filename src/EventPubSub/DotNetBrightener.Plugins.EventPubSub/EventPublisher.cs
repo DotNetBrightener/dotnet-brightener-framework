@@ -6,7 +6,7 @@ namespace DotNetBrightener.Plugins.EventPubSub;
 
 public class EventPublisher : IEventPublisher
 {
-    private readonly ConcurrentDictionary<object, Timer> _queue = new ConcurrentDictionary<object, Timer>();
+    private readonly ConcurrentDictionary<object, Timer> _queue = new();
     private readonly ILogger                             _logger;
     private readonly IServiceScopeFactory                _serviceResolver;
 
@@ -34,36 +34,49 @@ public class EventPublisher : IEventPublisher
         if (!runInBackground)
             return PublishEvent(eventMessage);
 
-        return Task.Run(async () => await PublishEvent(eventMessage, true));
+        return Task.Run(async () => await PublishEvent(eventMessage));
     }
 
-    private async Task PublishEvent<T>(T eventMessage, bool runInBackground = false) where T : class, IEventMessage
+    private async Task PublishEvent<T>(T eventMessage) where T : class, IEventMessage
     {
-        var serviceProviderToUse = _serviceResolver.CreateScope();
+        Type[] eventHandlersTypes = Array.Empty<Type>();
 
-        using var serviceScope = serviceProviderToUse;
-
-        var eventHandlers = serviceScope.ServiceProvider
-                                        .GetServices<IEventHandler<T>>()
-                                        .OrderByDescending(_ => _.Priority)
-                                        .ToArray();
-
-        if (!eventHandlers.Any())
-            return;
-
-        if (eventMessage is INonStoppedEventMessage)
+        await using (var serviceScope = _serviceResolver.CreateAsyncScope())
         {
-            await Task.WhenAll(eventHandlers.Select(_ => PublishEvent(_, eventMessage)));
-
-            return;
+            eventHandlersTypes = serviceScope.ServiceProvider
+                                             .GetServices<IEventHandler<T>>()
+                                             .OrderByDescending(_ => _.Priority)
+                                             .Select(_ => _.GetType())
+                                             .ToArray();
         }
 
-        foreach (var eventHandler in eventHandlers)
-        {
-            var shouldContinue = await PublishEvent(eventHandler, eventMessage);
+        if (!eventHandlersTypes.Any())
+            return;
 
-            if (!shouldContinue)
-                break;
+        await using (var serviceScope = _serviceResolver.CreateAsyncScope())
+        {
+            if (eventMessage is INonStoppedEventMessage)
+            {
+                var eventHandlers = serviceScope.ServiceProvider
+                                                .GetServices<IEventHandler<T>>()
+                                                .OrderByDescending(_ => _.Priority)
+                                                .ToArray();
+
+                await Task.WhenAll(eventHandlers.Select(eventHandler => PublishEvent(eventHandler, eventMessage)));
+
+                return;
+            }
+
+            foreach (var eventHandlerType in eventHandlersTypes)
+            {
+                if (serviceScope.ServiceProvider.GetService(eventHandlerType) is not IEventHandler<T> eventHandler)
+                    continue;
+
+                var shouldContinue = await PublishEvent(eventHandler, eventMessage);
+
+                if (!shouldContinue)
+                    break;
+            }
         }
     }
 
@@ -75,13 +88,13 @@ public class EventPublisher : IEventPublisher
         }
         catch (NotImplementedException exception)
         {
-            _logger.LogWarning("Event handler not implemented.", exception);
+            _logger.LogWarning(exception, "Event handler not implemented for {eventMessageType}", typeof(T).Name);
 
             return true;
         }
         catch (Exception exception)
         {
-            _logger.LogError($"Error while executing event {typeof(T)}", exception);
+            _logger.LogError(exception, "Error while executing event handler for {eventMessageType}", typeof(T).Name);
 
             return false;
         }

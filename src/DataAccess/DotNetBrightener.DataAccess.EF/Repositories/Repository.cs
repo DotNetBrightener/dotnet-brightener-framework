@@ -117,7 +117,7 @@ public class Repository : IRepository
         return Fetch(expression).Count();
     }
 
-    public virtual async Task Insert<T>(T entity)
+    public virtual void Insert<T>(T entity)
         where T : class
     {
         if (entity is BaseEntityWithAuditInfo auditableEntity)
@@ -136,11 +136,11 @@ public class Repository : IRepository
         }
         else
         {
-            await DbContext.Set<T>().AddAsync(entity);
+            DbContext.Set<T>().Add(entity);
         }
     }
 
-    public virtual async Task InsertMany<T>(IEnumerable<T> entities)
+    public virtual void InsertMany<T>(IEnumerable<T> entities)
         where T : class
     {
         Func<T, T> transformExpression = entity =>
@@ -165,7 +165,7 @@ public class Repository : IRepository
                                   entitiesToInserts.Count,
                                   typeof(T).Name);
 
-            await DbContext.BulkCopyAsync(entitiesToInserts);
+            DbContext.BulkCopy(entitiesToInserts);
         }
         catch (Exception e)
         {
@@ -174,7 +174,7 @@ public class Repository : IRepository
                               entitiesToInserts.Count,
                               typeof(T).Name);
 
-            await DbContext.Set<T>().AddRangeAsync(entitiesToInserts);
+            DbContext.Set<T>().AddRange(entitiesToInserts);
         }
     }
 
@@ -214,9 +214,9 @@ public class Repository : IRepository
         }
     }
 
-    public virtual Task<int> Update<T>(Expression<Func<T, bool>> conditionExpression,
-                                       object                    updateExpression,
-                                       int?                      expectedAffectedRows = null)
+    public virtual int Update<T>(Expression<Func<T, bool>> conditionExpression,
+                                 object                    updateExpression,
+                                 int?                      expectedAffectedRows = null)
         where T : class
     {
         var finalUpdateExpression = DataTransferObjectUtils.BuildMemberInitExpressionFromDto<T>(updateExpression);
@@ -224,67 +224,67 @@ public class Repository : IRepository
         return Update(conditionExpression, finalUpdateExpression, expectedAffectedRows);
     }
 
-    public virtual async Task<int> Update<T>(Expression<Func<T, bool>> conditionExpression,
-                                             Expression<Func<T, T>>    updateExpression,
-                                             int?                      expectedAffectedRows = null)
+    public virtual int Update<T>(Expression<Func<T, bool>> conditionExpression,
+                                       Expression<Func<T, T>>    updateExpression,
+                                       int?                      expectedAffectedRows = null)
         where T : class
     {
         var query = DbContext.Set<T>().Where(conditionExpression);
 
         int updatedRecords;
 
-        async Task<int> PerformUpdate()
+        int PerformUpdate()
         {
             var updateQueryBuilder = PrepareUpdatePropertiesBuilder(updateExpression);
 
-            return await query.ExecutePatchUpdateAsync(updateQueryBuilder);
+            return query.ExecutePatchUpdate(updateQueryBuilder);
         }
 
         if (expectedAffectedRows.HasValue)
         {
-            await using var dbTransaction = await DbContext.Database.BeginTransactionAsync();
+            using var dbTransaction = DbContext.Database.BeginTransaction();
 
-            updatedRecords = await PerformUpdate();
+            updatedRecords = PerformUpdate();
 
             if (updatedRecords != expectedAffectedRows.Value)
             {
-                await dbTransaction.RollbackAsync();
+                dbTransaction.Rollback();
 
                 throw new ExpectedAffectedRecordMismatchException(expectedAffectedRows.Value, updatedRecords);
             }
 
-            await dbTransaction.CommitAsync();
+            dbTransaction.Commit();
         }
         else
         {
-            updatedRecords = await PerformUpdate();
+            updatedRecords = PerformUpdate();
         }
 
         return updatedRecords;
     }
 
-    public virtual async Task DeleteOne<T>(Expression<Func<T, bool>> conditionExpression,
+    public virtual void DeleteOne<T>(Expression<Func<T, bool>> conditionExpression,
                                            string                    reason          = null,
                                            bool                      forceHardDelete = false)
         where T : class
     {
-        await using var dbTransaction = await DbContext.Database.BeginTransactionAsync();
+        using var dbTransaction = DbContext.Database.BeginTransaction();
 
-        var affectedRecords = await DeleteMany(conditionExpression, reason, forceHardDelete);
+        var affectedRecords = DeleteMany(conditionExpression, reason, forceHardDelete);
 
         if (affectedRecords != 1)
         {
-            await dbTransaction.RollbackAsync();
+            dbTransaction.Rollback();
 
             throw new ExpectedAffectedRecordMismatchException(1, affectedRecords);
         }
 
-        await dbTransaction.CommitAsync();
+        dbTransaction.Commit();
     }
 
-    public virtual async Task<int> DeleteMany<T>(Expression<Func<T, bool>> conditionExpression,
-                                                 string                    reason          = null,
-                                                 bool                      forceHardDelete = false)
+    public virtual int DeleteMany<T>(Expression<Func<T, bool>> conditionExpression,
+                                           string                    reason          = null,
+                                           bool                      forceHardDelete = false)
         where T : class
     {
         const string isDeletedFieldName = nameof(BaseEntityWithAuditInfo.IsDeleted);
@@ -292,23 +292,21 @@ public class Repository : IRepository
         forceHardDelete =
             forceHardDelete || !typeof(T).HasProperty<bool>(isDeletedFieldName);
 
-        var updateTask = forceHardDelete
-                             ? Fetch(conditionExpression).ExecuteDeleteAsync()
-                             : Update(conditionExpression,
-                                      new
-                                      {
-                                          IsDeleted      = true,
-                                          DeletedDate    = DateTimeOffset.UtcNow,
-                                          DeletedBy      = CurrentLoggedInUserResolver.CurrentUserName,
-                                          DeletionReason = reason
-                                      });
-
-        var updatedRecords = await updateTask;
+        var updatedRecords = forceHardDelete
+                                 ? Fetch(conditionExpression).ExecuteDelete()
+                                 : Update(conditionExpression,
+                                          new
+                                          {
+                                              IsDeleted      = true,
+                                              DeletedDate    = DateTimeOffset.UtcNow,
+                                              DeletedBy      = CurrentLoggedInUserResolver.CurrentUserName,
+                                              DeletionReason = reason
+                                          });
 
         return updatedRecords;
     }
 
-    public async Task RestoreOne<T>(Expression<Func<T, bool>> conditionExpression) where T : class
+    public void RestoreOne<T>(Expression<Func<T, bool>> conditionExpression) where T : class
     {
         if (!typeof(T).HasProperty<bool>(nameof(BaseEntityWithAuditInfo.IsDeleted)))
         {
@@ -316,21 +314,21 @@ public class Repository : IRepository
                 NotSupportedException($"The entity type {typeof(T).Name} does not support soft-delete. Therefore, the deletion cannot be reverted");
         }
 
-        await using var dbTransaction = await DbContext.Database.BeginTransactionAsync();
+        using var dbTransaction = DbContext.Database.BeginTransaction();
 
-        var affectedRecords = await RestoreMany(conditionExpression);
+        var affectedRecords = RestoreMany(conditionExpression);
 
         if (affectedRecords != 1)
         {
-            await dbTransaction.RollbackAsync();
+            dbTransaction.Rollback();
 
             throw new ExpectedAffectedRecordMismatchException(1, affectedRecords);
         }
 
-        await dbTransaction.CommitAsync();
+        dbTransaction.Rollback();
     }
 
-    public virtual async Task<int> RestoreMany<T>(Expression<Func<T, bool>> conditionExpression)
+    public virtual int RestoreMany<T>(Expression<Func<T, bool>> conditionExpression)
         where T : class
     {
         if (!typeof(T).HasProperty<bool>(nameof(BaseEntityWithAuditInfo.IsDeleted)))
@@ -339,14 +337,14 @@ public class Repository : IRepository
                 NotSupportedException($"The entity type {typeof(T).Name} does not support soft-delete. Therefore, the deletion cannot be reverted");
         }
 
-        var updatedRecords = await Update(conditionExpression,
-                                          new
-                                          {
-                                              IsDeleted      = false,
-                                              DeletedDate    = default(DateTimeOffset?),
-                                              DeletedBy      = default(string),
-                                              DeletionReason = default(string)
-                                          });
+        var updatedRecords = Update(conditionExpression,
+                                    new
+                                    {
+                                        IsDeleted      = false,
+                                        DeletedDate    = default(DateTimeOffset?),
+                                        DeletedBy      = default(string),
+                                        DeletionReason = default(string)
+                                    });
 
         return updatedRecords;
     }

@@ -1,5 +1,4 @@
 ﻿using DotNetBrightener.DataAccess.Attributes;
-using DotNetBrightener.DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace DotNetBrightener.DataAccess.EF.Migrations;
@@ -22,20 +21,6 @@ public abstract class SqlServerVersioningMigrationEnabledDbContext : MigrationEn
         ConfigureModelBuilder(modelBuilder);
 
         ConfigureHistoryTables(modelBuilder);
-
-        modelBuilder.Model
-                    .GetEntityTypes()
-                    .ToList()
-                    .ForEach(entityType =>
-        {
-            if (entityType.ClrType.IsAssignableTo(typeof(BaseEntity<Guid>)))
-            {
-                modelBuilder.Entity(entityType.ClrType)
-                            .Property(nameof(BaseEntity.Id))
-                            .ValueGeneratedOnAdd()
-                            .HasDefaultValueSql("NEWSEQUENTIALID()");
-            }
-        });
     }
 
     /// <summary>

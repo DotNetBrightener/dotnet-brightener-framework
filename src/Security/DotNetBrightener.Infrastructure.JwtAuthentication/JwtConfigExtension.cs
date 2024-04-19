@@ -15,6 +15,9 @@ public static class JwtConfigExtension
     /// <param name="claims">The claims that form the Identity</param>
     /// <param name="expiresAt">Specifies when the generated token expires</param>
     /// <param name="audiencesString">Specifies the audiences for the generated token</param>
+    /// <param name="expiresInMinutes">
+    ///         Specifies the minutes after generated to expire the token
+    /// </param>
     /// <param name="appendData">
     ///     Performs more actions to the token before generating it to string
     /// </param>
@@ -22,8 +25,9 @@ public static class JwtConfigExtension
     public static string CreateAuthenticationToken(this JwtConfiguration    jwtConfiguration,
                                                    List<Claim>              claims,
                                                    out double               expiresAt,
-                                                   string                   audiencesString = null,
-                                                   Action<JwtSecurityToken> appendData      = null)
+                                                   string                   audiencesString  = null,
+                                                   double                   expiresInMinutes = 0,
+                                                   Action<JwtSecurityToken> appendData       = null)
     {
         // retrieve the key for signing, preferable using private signing key for more secured
         var signingKey = jwtConfiguration.PrivateSigningKey
@@ -48,9 +52,13 @@ public static class JwtConfigExtension
 
         var credentials = new SigningCredentials(key, securityAlgorithm);
 
-        var expiration = jwtConfiguration.ExpireAfterMinutes == 0
+        expiresInMinutes = expiresInMinutes == 0
+                               ? jwtConfiguration.ExpireAfterMinutes
+                               : expiresInMinutes;
+
+        var expiration = expiresInMinutes == 0
                              ? DateTime.UtcNow.AddMinutes(JwtConfiguration.DefaultExpiration)
-                             : DateTime.UtcNow.AddMinutes(jwtConfiguration.ExpireAfterMinutes);
+                             : DateTime.UtcNow.AddMinutes(expiresInMinutes);
 
         var notBefore = expiration < DateTime.UtcNow
                             ? expiration.AddMinutes(-1)
