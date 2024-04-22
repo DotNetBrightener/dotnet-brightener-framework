@@ -78,8 +78,18 @@ public static class ServiceCollectionExtensions
                               "and configure it in appsettings.json or Environment Variable named 'JwtTokenPrivateKey'");
         }
 
-        serviceCollection.AddSingleton(tokenConfiguration);
+        serviceCollection.AddSingleton(serviceProvider =>
+        {
+            var serviceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
+
+            tokenConfiguration.ServiceScopeFactory = serviceScopeFactory;
+
+            return tokenConfiguration;
+        });
+
         serviceCollection.AddSingleton<IJwtMessageHandler, NullJwtMessageHandler>();
+
+        serviceCollection.RegisterAuthAudienceResolver<NullCurrentRequestAudienceResolver>();
 
         var serviceProvider = serviceCollection.BuildServiceProvider();
         var contextAccessor = serviceProvider.GetService<IHttpContextAccessor>();
@@ -105,16 +115,38 @@ public static class ServiceCollectionExtensions
         this IServiceCollection serviceCollection)
         where TValidator : class, IAuthAudienceValidator
     {
-        serviceCollection.AddSingleton<IAuthAudienceValidator, TValidator>();
+        serviceCollection.AddScoped<IAuthAudienceValidator, TValidator>();
 
         return serviceCollection;
     }
 
-    public static IServiceCollection RegisterJwtMessageEventHandler<TValidator>(
-        this IServiceCollection serviceCollection)
-        where TValidator : class, IJwtMessageHandler
+    /// <summary>
+    ///     Registers the audience validator for JWT to the service collection
+    /// </summary>
+    /// <typeparam name="TResolver">The type of the audience validator</typeparam>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/></param>
+    /// <returns>
+    ///     The same instance of <paramref name="serviceCollection"/> for chaining operations
+    /// </returns>
+    public static IServiceCollection RegisterAuthAudienceResolver<TResolver>(this IServiceCollection serviceCollection)
+        where TResolver : class, ICurrentRequestAudienceResolver
     {
-        serviceCollection.AddSingleton<IJwtMessageHandler, TValidator>();
+        serviceCollection.AddScoped<ICurrentRequestAudienceResolver, TResolver>();
+
+        return serviceCollection;
+    }
+
+    /// <summary>
+    ///     Registers the JWT message event handler to the service collection
+    /// </summary>
+    /// <typeparam name="TMessageHandler"></typeparam>
+    /// <param name="serviceCollection"></param>
+    /// <returns></returns>
+    public static IServiceCollection RegisterJwtMessageEventHandler<TMessageHandler>(
+        this IServiceCollection serviceCollection)
+        where TMessageHandler : class, IJwtMessageHandler
+    {
+        serviceCollection.AddSingleton<IJwtMessageHandler, TMessageHandler>();
 
         return serviceCollection;
     }
@@ -185,12 +217,9 @@ public static class ServiceCollectionExtensions
             }.Distinct(),
             ValidAudiences          = audienceValidator!.ValidAudiences,
             TryAllIssuerSigningKeys = true,
-            ValidAlgorithms = new[]
-            {
-                validAlgorithms
-            },
-            RoleClaimType = CommonUserClaimKeys.UserRole,
-            NameClaimType = CommonUserClaimKeys.UserName
+            ValidAlgorithms         = [validAlgorithms],
+            RoleClaimType           = CommonUserClaimKeys.UserRole,
+            NameClaimType           = CommonUserClaimKeys.UserName
         };
     }
 }

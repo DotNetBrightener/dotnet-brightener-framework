@@ -1,13 +1,13 @@
+using System.Reflection;
 using AspNet.Extensions.SelfDocumentedProblemResult.ExceptionHandlers;
 using DotNetBrightener.DataAccess;
 using DotNetBrightener.Infrastructure.JwtAuthentication;
+using DotNetBrightener.WebSocketExt.Messages;
+using DotNetBrightener.WebSocketExt.Services;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.Text.Json.Serialization;
-using DotNetBrightener.WebSocketExt.Authentication;
-using DotNetBrightener.WebSocketExt.Messages;
-using DotNetBrightener.WebSocketExt.Services;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using WebAppCommonShared.Demo.DbContexts;
 using WebAppCommonShared.Demo.WebSocketCommandHandlers;
 
 
@@ -19,17 +19,11 @@ builder.Host.UseNLogLogging();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-builder.Services.AddCors(options =>
+if (string.IsNullOrEmpty(connectionString))
 {
-    options.AddPolicy("CorsPolicy",
-                      builder =>
-                      {
-                          builder.AllowAnyMethod()
-                                 .AllowAnyHeader();
-
-                          builder.AllowAnyOrigin();
-                      });
-});
+    throw new
+        Exception("No connection string configured. Please add 'DefaultConnection' connection string with valid value to the Environment or appsettings.json file.");
+}
 
 builder.Services
        .ConfigureLogging(builder.Configuration)
@@ -66,14 +60,33 @@ builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddExceptionHandler<UnhandledExceptionResponseHandler>();
 builder.Services.AddProblemDetails();
 
+
+//-----------------------------------------------------------------------------------------------
+//  App Client Manager: To allow only registered clients to access the APIs
+//-----------------------------------------------------------------------------------------------
+var appClientManagerBuilder = builder.Services.AddAppClientManager(builder.Configuration);
+
+appClientManagerBuilder.WithDbContextConfig(configureDatabase)
+                       .WithMigrationUsingSqlServer(dbConfiguration.ConnectionString!);
+
+builder.Services.AddAppClientAudienceValidator();
+
+builder.Services.AddEntityFrameworkDataServices<MainAppDbContext>(dbConfiguration,
+                                                                  builder.Configuration,
+                                                                  configureDatabase);
+
 var assemblies = AppDomain.CurrentDomain
-                          .GetAssemblies()
-                          .FilterSkippedAssemblies()
-                          .ToArray();
-// Web Socket Services
+                          .GetAppOnlyAssemblies();
+
+
+//-----------------------------------------------------------------------------------------------
+//  Enable Web Socket Support
+//-----------------------------------------------------------------------------------------------
 builder.Services.AddWebSocketCommandServices(builder.Configuration, assemblies);
 builder.Services.AddWebSocketAuthTokenGenerator<WebSocketAuthTokenGenerator>();
 builder.Services.AddWebSocketJwtBearerMessageHandler();
+
+builder.Services.EnableLazyResolver();
 
 var app = builder.Build();
 
@@ -95,7 +108,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseCors("CorsPolicy");
+//-----------------------------------------------------------------------------------------------
+//  App Client Manager: Enable CORS for registered clients only
+//-----------------------------------------------------------------------------------------------
+app.UseAppClientCorsPolicy();
 
 app.UseAllAuthenticators();
 
@@ -106,8 +122,6 @@ app.UseWebSocketAuthRequestEndpoint();
 app.UseWebSocketCommandServices();
 
 app.MapControllers();
-
-app.MapClientTelemetryEndpoint("api/telemetry");
 
 app.MapErrorDocsTrackerUI(options =>
 {
@@ -127,10 +141,13 @@ app.MapGet("/api/login",
                };
 
                var authToken = jwtConfig.CreateAuthenticationToken(claims,
-                                                                   out var expiration,
-                                                                   "localhost:8080");
+                                                                   out var expiration);
 
-               return Results.Ok(authToken);
+               return Results.Ok(new
+               {
+                   access_token = authToken,
+                   expires_at   = expiration
+               });
            });
 
 app.MapGet("/api/testMessage",

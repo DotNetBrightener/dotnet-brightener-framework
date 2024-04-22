@@ -96,7 +96,7 @@ public class LocaleManagementService : ILocaleManagementService
             return new LocaleNotSupportedError();
         }
 
-        AppLocaleDictionary sourceLocale = null;
+        AppLocaleDictionary? sourceLocale = null;
 
         if (!string.IsNullOrEmpty(createRequest.SourceLocale))
         {
@@ -110,7 +110,7 @@ public class LocaleManagementService : ILocaleManagementService
             }
         }
 
-        Expression<Func<AppLocaleDictionary, bool>> queryExpression;
+        Expression<Func<AppLocaleDictionary, bool>>? queryExpression;
 
         queryExpression = ad =>
             ad.AppUniqueId == createRequest.AppId &&

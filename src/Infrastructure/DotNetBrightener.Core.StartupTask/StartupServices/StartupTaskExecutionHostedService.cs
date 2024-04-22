@@ -8,19 +8,16 @@ namespace DotNetBrightener.Core.StartupTask.StartupServices;
 internal class StartupTaskExecutionHostedService : IHostedService, IDisposable
 {
     private readonly IServiceScopeFactory                       _serviceScopeFactory;
-    private readonly IServiceCollection                         _services;
     private readonly ILogger<StartupTaskExecutionHostedService> _logger;
     private readonly IHostApplicationLifetime                   _lifetime;
 
     private int _attempts;
 
     public StartupTaskExecutionHostedService(IServiceScopeFactory                       serviceScopeFactory,
-                                             IServiceCollection                         services,
                                              ILogger<StartupTaskExecutionHostedService> logger,
                                              IHostApplicationLifetime                   lifetime)
     {
         _serviceScopeFactory = serviceScopeFactory;
-        _services            = services;
         _logger              = logger;
         _lifetime            = lifetime;
     }
@@ -47,11 +44,7 @@ internal class StartupTaskExecutionHostedService : IHostedService, IDisposable
         {
             try
             {
-                using var serviceScope = _serviceScopeFactory.CreateScope();
-
-                var serviceProvider = serviceScope.ServiceProvider;
-
-                await ExecuteStartupTasks(serviceProvider, _logger);
+                await ExecuteStartupTasks(_logger);
 
                 break;
             }
@@ -65,29 +58,20 @@ internal class StartupTaskExecutionHostedService : IHostedService, IDisposable
         }
     }
 
-
-    /// <summary>
-    ///     Executes the startup tasks from the given service provider
-    /// </summary>
-    /// <param name="serviceProvider">
-    ///     The <see cref="IServiceProvider"/> to extract the startup tasks and execute them
-    /// </param>
-    /// <param name="logger"></param>
-    /// <returns></returns>
-    private async Task ExecuteStartupTasks(IServiceProvider serviceProvider,
-                                           ILogger          logger)
+    private async Task ExecuteStartupTasks(ILogger logger)
     {
         Type[] startupTaskTypes = Array.Empty<Type>();
 
         try
         {
-            using var serviceScope = serviceProvider.CreateScope();
-
-            startupTaskTypes = serviceScope.ServiceProvider
-                                           .GetServices<IStartupTask>()
-                                           .OrderBy(_ => _.Order)
-                                           .Select(_ => _.GetType())
-                                           .ToArray();
+            using (var serviceScope = _serviceScopeFactory.CreateScope())
+            {
+                startupTaskTypes = serviceScope.ServiceProvider
+                                               .GetServices<IStartupTask>()
+                                               .OrderBy(_ => _.Order)
+                                               .Select(_ => _.GetType())
+                                               .ToArray();
+            }
         }
         catch (InvalidOperationException ex)
         {
@@ -122,7 +106,7 @@ internal class StartupTaskExecutionHostedService : IHostedService, IDisposable
 
             foreach (var startupTaskType in synchronousTasks)
             {
-                await ExecuteTask(serviceProvider, startupTaskType, logger);
+                await ExecuteTask(startupTaskType, logger);
             }
         }
 
@@ -134,7 +118,7 @@ internal class StartupTaskExecutionHostedService : IHostedService, IDisposable
             await Parallel.ForEachAsync(asynchronousTasks,
                                         async (type, ct) =>
                                         {
-                                            await ExecuteTask(serviceProvider, type, logger);
+                                            await ExecuteTask(type, logger);
                                         });
         }
 
@@ -146,12 +130,12 @@ internal class StartupTaskExecutionHostedService : IHostedService, IDisposable
                                startupTaskTypes.Length);
     }
 
-    private async Task ExecuteTask(IServiceProvider serviceProvider,
-                                   Type             startupTaskType,
-                                   ILogger          logger)
+    private async Task ExecuteTask(Type    startupTaskType,
+                                   ILogger logger)
     {
-        var       taskType            = startupTaskType.Name;
-        using var backgroundTaskScope = serviceProvider.CreateScope();
+        var taskType = startupTaskType.Name;
+
+        using var backgroundTaskScope = _serviceScopeFactory.CreateScope();
 
         if (backgroundTaskScope.ServiceProvider
                                .TryGet(startupTaskType) is not IStartupTask taskInstance)

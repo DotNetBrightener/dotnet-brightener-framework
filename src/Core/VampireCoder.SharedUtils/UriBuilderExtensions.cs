@@ -1,7 +1,5 @@
-﻿using System.Web;
-
-// ReSharper disable once CheckNamespace
-namespace System;
+﻿// ReSharper disable CheckNamespace
+namespace System.Web;
 
 public static class UriBuilderExtensions
 {
@@ -9,8 +7,8 @@ public static class UriBuilderExtensions
     {
         var query = HttpUtility.ParseQueryString(uri.Query);
 
-        query [queryName] = queryValue;
-        uri.Query         = query.ToString() ?? "";
+        query[queryName] = queryValue;
+        uri.Query        = query.ToString() ?? "";
     }
 
     public static Uri AddQueryString(this Uri uri, string queryName, string queryValue)
@@ -18,8 +16,8 @@ public static class UriBuilderExtensions
         var uriBuilder = new UriBuilder(uri);
         var query      = HttpUtility.ParseQueryString(uriBuilder.Query);
 
-        query [queryName] = queryValue;
-        uriBuilder.Query  = query.ToString() ?? "";
+        query[queryName] = queryValue;
+        uriBuilder.Query = query.ToString() ?? "";
 
         return uriBuilder.Uri;
     }
@@ -28,8 +26,8 @@ public static class UriBuilderExtensions
     {
         var query = HttpUtility.ParseQueryString(uri.Query);
 
-        query [queryName] = null;
-        uri.Query         = query.ToString() ?? "";
+        query[queryName] = null;
+        uri.Query        = query.ToString() ?? "";
     }
 
     public static Uri RemoveQueryString(this Uri uri, string queryName)
@@ -37,8 +35,8 @@ public static class UriBuilderExtensions
         var uriBuilder = new UriBuilder(uri);
         var query      = HttpUtility.ParseQueryString(uriBuilder.Query);
 
-        query [queryName] = null;
-        uriBuilder.Query  = query.ToString() ?? "";
+        query[queryName] = null;
+        uriBuilder.Query = query.ToString() ?? "";
 
         return uriBuilder.Uri;
     }

@@ -9,7 +9,7 @@ public interface IBaseDataService<TEntity>: IDisposable
     /// </summary>
     /// <param name="expression">The condition to fetch the record</param>
     /// <returns>The entity record, if matched, otherwise, <c>null</c></returns>
-    TEntity Get(Expression<Func<TEntity, bool>> expression);
+    TEntity? Get(Expression<Func<TEntity, bool>> expression);
 
     /// <summary>
     ///     Generates a fetch query to the given history table of the entity, optionally provides the condition for filtering
@@ -18,16 +18,16 @@ public interface IBaseDataService<TEntity>: IDisposable
     /// <param name="from"></param>
     /// <param name="to"></param>
     /// <returns>An IQueryable of the history records of the requested entity</returns>
-    IQueryable<TEntity> FetchHistory(Expression<Func<TEntity, bool>> expression = null,
-                                     DateTimeOffset?                 from       = null,
-                                     DateTimeOffset?                 to         = null);
+    IQueryable<TEntity> FetchHistory(Expression<Func<TEntity, bool>>? expression = null,
+                                     DateTimeOffset?                  from       = null,
+                                     DateTimeOffset?                  to         = null);
 
     /// <summary>
     ///     Generates a fetch query to the given entity table, optionally provides the condition for filtering
     /// </summary>
     /// <param name="expression">The condition for filtering records in the query</param>
     /// <returns>An IQueryable of the collection of the requested entities</returns>
-    IQueryable<TEntity> Fetch(Expression<Func<TEntity, bool>> expression = null);
+    IQueryable<TEntity> Fetch(Expression<Func<TEntity, bool>>? expression = null);
 
 
     /// <summary>
@@ -35,7 +35,7 @@ public interface IBaseDataService<TEntity>: IDisposable
     /// </summary>
     /// <param name="expression">The condition for filtering records in the query</param>
     /// <returns>An IQueryable of the collection of the requested entities, which are deleted</returns>
-    IQueryable<TEntity> FetchDeletedRecords(Expression<Func<TEntity, bool>> expression = null);
+    IQueryable<TEntity> FetchDeletedRecords(Expression<Func<TEntity, bool>>? expression = null);
 
 
     /// <summary>
@@ -43,7 +43,7 @@ public interface IBaseDataService<TEntity>: IDisposable
     /// </summary>
     /// <param name="expression">The condition for filtering records in the query</param>
     /// <returns>An IQueryable of the collection of the requested entities, which are not deleted</returns>
-    IQueryable<TEntity> FetchActive(Expression<Func<TEntity, bool>> expression = null);
+    IQueryable<TEntity> FetchActive(Expression<Func<TEntity, bool>>? expression = null);
 
     /// <summary>
     ///     Inserts a new record of the entity to the database
@@ -86,7 +86,7 @@ public interface IBaseDataService<TEntity>: IDisposable
     /// </summary>
     /// <param name="filterExpression">The expression for selecting the record to update</param>
     /// <param name="updateExpression">The expression that describes the update instruction</param>
-    Task UpdateOne(Expression<Func<TEntity, bool>>    filterExpression,
+    Task UpdateOne(Expression<Func<TEntity, bool>>?   filterExpression,
                    Expression<Func<TEntity, TEntity>> updateExpression);
 
     /// <summary>
@@ -94,7 +94,7 @@ public interface IBaseDataService<TEntity>: IDisposable
     /// </summary>
     /// <param name="filterExpression">The expression for selecting the records to update</param>
     /// <param name="updateExpression">The expression that describes the update instruction</param>
-    Task<int> UpdateMany(Expression<Func<TEntity, bool>>    filterExpression,
+    Task<int> UpdateMany(Expression<Func<TEntity, bool>>?   filterExpression,
                          Expression<Func<TEntity, TEntity>> updateExpression);
 
     /// <summary>
@@ -107,7 +107,7 @@ public interface IBaseDataService<TEntity>: IDisposable
     /// <param name="forceHardDelete">
     ///     Indicates whether the deletion is permanent. Default is <c>False</c> which marks the record as deleted
     /// </param>
-    Task DeleteOne(Expression<Func<TEntity, bool>> filterExpression, string reason = null, bool forceHardDelete = false);
+    Task DeleteOne(Expression<Func<TEntity, bool>>? filterExpression, string reason = null, bool forceHardDelete = false);
 
     /// <summary>
     ///     Restore the matched deleted record with the given filter expression, expected only one record affected
@@ -115,7 +115,7 @@ public interface IBaseDataService<TEntity>: IDisposable
     /// <param name="filterExpression">
     ///     The expression for selecting the record to restore
     /// </param>
-    Task RestoreOne(Expression<Func<TEntity, bool>> filterExpression);
+    Task RestoreOne(Expression<Func<TEntity, bool>>? filterExpression);
 
 
     /// <summary>
@@ -128,9 +128,9 @@ public interface IBaseDataService<TEntity>: IDisposable
     /// <param name="forceHardDelete">
     ///     Indicates whether the deletion is permanent. Default is <c>False</c> which marks the records as deleted
     /// </param>
-    Task<int> DeleteMany(Expression<Func<TEntity, bool>> filterExpression,
-                         string                          reason          = null,
-                         bool                            forceHardDelete = false);
+    Task<int> DeleteMany(Expression<Func<TEntity, bool>>? filterExpression,
+                         string                           reason          = null,
+                         bool                             forceHardDelete = false);
 
     /// <summary>
     ///     Restore the matched deleted records with the given filter expression
@@ -138,5 +138,5 @@ public interface IBaseDataService<TEntity>: IDisposable
     /// <param name="filterExpression">
     ///     The expression describes how to get the records to restore
     /// </param>
-    Task<int> RestoreMany(Expression<Func<TEntity, bool>> filterExpression);
+    Task<int> RestoreMany(Expression<Func<TEntity, bool>>? filterExpression);
 }

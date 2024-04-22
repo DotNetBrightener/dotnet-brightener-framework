@@ -211,18 +211,3 @@ public class MemoryCacheProvider : ICacheProvider
 
     #endregion
 }
-
-internal static class CacheKeyExtensions
-{
-    public static string ToMemoryCacheKey(this CacheKey key)
-    {
-        var prefixes = new List<string>
-        {
-            key.Key
-        };
-        
-        prefixes.AddRange(key.Prefixes ?? []);
-
-        return string.Join("::", prefixes.ToArray());
-    }
-}

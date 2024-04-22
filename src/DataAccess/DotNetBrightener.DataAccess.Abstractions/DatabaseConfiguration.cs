@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-
-namespace DotNetBrightener.DataAccess;
+﻿namespace DotNetBrightener.DataAccess;
 
 /// <summary>
 ///     Represents the configuration of how to connect to the database
@@ -37,19 +35,4 @@ public class DatabaseConfiguration
     ///     The database provider for Auditing Database
     /// </summary>
     public DatabaseProvider AuditDatabaseProvider { get; set; } = DatabaseProvider.MsSql;
-
-    public static DatabaseConfiguration InitFromConfiguration(IConfiguration configuration,
-                                                              string connectionStringName = "DatabaseConnectionString",
-                                                              string auditConnectionStringName = "DatabaseConnectionString")
-    {
-        var dbConfig = new DatabaseConfiguration
-        {
-            ConnectionString        = configuration.GetConnectionString(connectionStringName),
-            DatabaseProvider        = configuration.GetValue<DatabaseProvider>(nameof(DatabaseProvider)),
-            AuditDbConnectionString = configuration.GetConnectionString(auditConnectionStringName),
-            AuditDatabaseProvider   = configuration.GetValue<DatabaseProvider>(nameof(AuditDatabaseProvider))
-        };
-
-        return dbConfig;
-    }
 }

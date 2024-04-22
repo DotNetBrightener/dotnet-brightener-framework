@@ -193,7 +193,7 @@ public abstract class BaseCRUDController<TEntityType> : BareReadOnlyController<T
     /// </returns>
     protected virtual async Task<(bool, TEntityType, IActionResult)> CanUpdateItem(long id)
     {
-        var expression =
+        Expression<Func<TEntityType?, bool>> expression =
             ExpressionExtensions.BuildPredicate<TEntityType>(id, OperatorComparer.Equals, EntityIdColumnName);
         var entity = DataService.Get(expression);
 

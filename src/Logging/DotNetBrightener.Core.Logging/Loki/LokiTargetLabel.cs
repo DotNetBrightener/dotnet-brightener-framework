@@ -1,15 +1,14 @@
 using NLog.Config;
 using NLog.Layouts;
 
-namespace DotNetBrightener.Core.Logging.Loki
-{
-    [NLogConfigurationItem]
-    public class LokiTargetLabel
-    {
-        [RequiredParameter]
-        public string Name { get; set; }
+namespace DotNetBrightener.Core.Logging.Loki;
 
-        [RequiredParameter]
-        public Layout Layout { get; set; }
-    }
+[NLogConfigurationItem]
+public class LokiTargetLabel
+{
+    [RequiredParameter]
+    public string Name { get; set; }
+
+    [RequiredParameter]
+    public Layout Layout { get; set; }
 }

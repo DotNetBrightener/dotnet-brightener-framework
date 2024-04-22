@@ -11,17 +11,17 @@ public class CreatedEntityResultModel
     public DateTimeOffset? CreatedDate { get; set; }
 
     [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-    public string CreatedBy { get; set; }
+    public string? CreatedBy { get; set; }
 
     [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
     public DateTimeOffset? ModifiedDate { get; set; }
 
     [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-    public string ModifiedBy { get; set; }
+    public string? ModifiedBy { get; set; }
 
     public CreatedEntityResultModel()
     {
-        
+
     }
 
     public CreatedEntityResultModel(BaseEntity entity)

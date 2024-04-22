@@ -16,12 +16,13 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
-		<PackageId Condition="!$(MSBuildProjectName.StartsWith('DotNetBrightener.'))">DotNetBrightener.$(MSBuildProjectName)</PackageId>
+		<PackageId Condition="!$(MSBuildProjectName.StartsWith('DotNetBrightener.')) AND !$(MSBuildProjectName.StartsWith('VampireCoder.'))">DotNetBrightener.$(MSBuildProjectName)</PackageId>
 
-		<PackageTags>DotNetBrightener</PackageTags>
+		<PackageTags>DotNetBrightener; VampireCoder;</PackageTags>
 
 		<NoWarn>$(NoWarn);0168;1701;1702;1591;1574;1723;1998;1573;RCS1194;CS8618;</NoWarn>
-		<PackageIcon>dotnet-brightener-logo.png</PackageIcon>
+		<!--<PackageIcon Condition="$(MSBuildProjectName.StartsWith('DotNetBrightener.'))">dotnet-brightener-logo.png</PackageIcon>-->
+		<PackageIcon>vampire-coder-logo.jpg</PackageIcon>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<PackageReadmeFile Condition="Exists('docs\readme.md')">readme.md</PackageReadmeFile>
 	</PropertyGroup>
@@ -31,7 +32,7 @@
 		<FileVersionPotion>$([System.DateTime]::Now.DayOfYear)$([System.DateTime]::Now.ToString(HH))</FileVersionPotion>
 		<BuildNumber>$([System.DateTime]::Now.ToString(yyMMddHH))</BuildNumber>
 
-		<VersionPrefix>2024.0.11.$(FileVersionPotion)</VersionPrefix>
+		<VersionPrefix>2024.0.12.$(FileVersionPotion)</VersionPrefix>
 
 		<AssemblyVersion>$(VersionPrefix)</AssemblyVersion>
 		<FileVersion>$(VersionPrefix)</FileVersion>
@@ -54,7 +55,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Include="..\..\..\dotnet-brightener-logo.png"  Pack="true" PackagePath="\" />
+		<!--<None Condition="$(PackageId.StartsWith('DotNetBrightener.'))" Include="..\..\..\dotnet-brightener-logo.png"  Pack="true" PackagePath="\" />-->
+		<None Include="..\..\..\vampire-coder-logo.jpg"  Pack="true" PackagePath="\" />
 		<None Include="..\..\..\LICENSE"  Pack="true" PackagePath="\" />
 		<None Condition="Exists('docs\readme.md')" Include="docs\readme.md" Pack="true" PackagePath="\"/>
 	</ItemGroup>

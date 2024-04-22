@@ -26,40 +26,40 @@ public class Repository : IRepository
     public Repository(DbContext                    dbContext,
                       ICurrentLoggedInUserResolver currentLoggedInUserResolver,
                       IEventPublisher              eventPublisher,
-                      ILogger<Repository>          logger = null)
+                      ILoggerFactory               loggerFactory)
     {
         DbContext                   = dbContext;
         CurrentLoggedInUserResolver = currentLoggedInUserResolver;
         EventPublisher              = eventPublisher;
-        Logger                      = logger;
+        Logger                      = loggerFactory.CreateLogger(GetType());
     }
 
-    public virtual T Get<T>(Expression<Func<T, bool>> expression)
+    public virtual T? Get<T>(Expression<Func<T, bool>> expression)
         where T : class
     {
         return Fetch(expression).SingleOrDefault();
     }
 
-    public virtual T GetFirst<T>(Expression<Func<T, bool>> expression) where T : class
+    public virtual T? GetFirst<T>(Expression<Func<T, bool>> expression) where T : class
     {
         return Fetch(expression).FirstOrDefault();
     }
 
-    public virtual TResult Get<T, TResult>(Expression<Func<T, bool>>    expression,
-                                           Expression<Func<T, TResult>> propertiesPickupExpression)
+    public virtual TResult? Get<T, TResult>(Expression<Func<T, bool>>?   expression,
+                                            Expression<Func<T, TResult>> propertiesPickupExpression)
         where T : class
     {
         return Fetch(expression, propertiesPickupExpression).SingleOrDefault();
     }
 
-    public virtual TResult GetFirst<T, TResult>(Expression<Func<T, bool>>    expression,
-                                                Expression<Func<T, TResult>> propertiesPickupExpression)
+    public virtual TResult? GetFirst<T, TResult>(Expression<Func<T, bool>>?   expression,
+                                                 Expression<Func<T, TResult>> propertiesPickupExpression)
         where T : class
     {
         return Fetch(expression, propertiesPickupExpression).FirstOrDefault();
     }
 
-    public virtual IQueryable<T> Fetch<T>(Expression<Func<T, bool>> expression = null)
+    public virtual IQueryable<T> Fetch<T>(Expression<Func<T, bool>>? expression = null)
         where T : class
     {
         if (expression == null)
@@ -68,9 +68,9 @@ public class Repository : IRepository
         return DbContext.Set<T>().Where(expression);
     }
 
-    public virtual IQueryable<T> FetchHistory<T>(Expression<Func<T, bool>> expression,
-                                                 DateTimeOffset?           from,
-                                                 DateTimeOffset?           to)
+    public virtual IQueryable<T> FetchHistory<T>(Expression<Func<T, bool>>? expression,
+                                                 DateTimeOffset?            from,
+                                                 DateTimeOffset?            to)
         where T : class, new()
     {
         if (!typeof(T).HasAttribute<HistoryEnabledAttribute>())
@@ -99,7 +99,7 @@ public class Repository : IRepository
         return temporalQuery;
     }
 
-    public virtual IQueryable<TResult> Fetch<T, TResult>(Expression<Func<T, bool>>    expression,
+    public virtual IQueryable<TResult> Fetch<T, TResult>(Expression<Func<T, bool>>?   expression,
                                                          Expression<Func<T, TResult>> propertiesPickupExpression)
         where T : class
     {
@@ -111,7 +111,7 @@ public class Repository : IRepository
         return query.Select(propertiesPickupExpression);
     }
 
-    public virtual int Count<T>(Expression<Func<T, bool>> expression = null)
+    public virtual int Count<T>(Expression<Func<T, bool>>? expression = null)
         where T : class
     {
         return Fetch(expression).Count();
@@ -143,10 +143,9 @@ public class Repository : IRepository
     public virtual void InsertMany<T>(IEnumerable<T> entities)
         where T : class
     {
-        Func<T, T> transformExpression = entity =>
+        T TransformExpression(T entity)
         {
-            if (entity is not BaseEntityWithAuditInfo auditableEntity)
-                return entity;
+            if (entity is not BaseEntityWithAuditInfo auditableEntity) return entity;
 
             auditableEntity.CreatedDate = DateTimeOffset.UtcNow;
 
@@ -154,9 +153,9 @@ public class Repository : IRepository
                 auditableEntity.CreatedBy = CurrentLoggedInUserResolver.CurrentUserName;
 
             return entity;
-        };
+        }
 
-        var entitiesToInserts = entities.Select(transformExpression)
+        var entitiesToInserts = entities.Select(TransformExpression)
                                         .ToList();
 
         try
@@ -178,7 +177,7 @@ public class Repository : IRepository
         }
     }
 
-    public virtual int CopyRecords<TSource, TTarget>(Expression<Func<TSource, bool>>    conditionExpression,
+    public virtual int CopyRecords<TSource, TTarget>(Expression<Func<TSource, bool>>?   conditionExpression,
                                                      Expression<Func<TSource, TTarget>> copyExpression)
         where TSource : class
         where TTarget : class
@@ -214,9 +213,9 @@ public class Repository : IRepository
         }
     }
 
-    public virtual int Update<T>(Expression<Func<T, bool>> conditionExpression,
-                                 object                    updateExpression,
-                                 int?                      expectedAffectedRows = null)
+    public virtual int Update<T>(Expression<Func<T, bool>>? conditionExpression,
+                                 object                     updateExpression,
+                                 int?                       expectedAffectedRows = null)
         where T : class
     {
         var finalUpdateExpression = DataTransferObjectUtils.BuildMemberInitExpressionFromDto<T>(updateExpression);
@@ -224,9 +223,9 @@ public class Repository : IRepository
         return Update(conditionExpression, finalUpdateExpression, expectedAffectedRows);
     }
 
-    public virtual int Update<T>(Expression<Func<T, bool>> conditionExpression,
-                                       Expression<Func<T, T>>    updateExpression,
-                                       int?                      expectedAffectedRows = null)
+    public virtual int Update<T>(Expression<Func<T, bool>>? conditionExpression,
+                                 Expression<Func<T, T>>     updateExpression,
+                                 int?                       expectedAffectedRows = null)
         where T : class
     {
         var query = DbContext.Set<T>().Where(conditionExpression);
@@ -263,9 +262,9 @@ public class Repository : IRepository
         return updatedRecords;
     }
 
-    public virtual void DeleteOne<T>(Expression<Func<T, bool>> conditionExpression,
-                                           string                    reason          = null,
-                                           bool                      forceHardDelete = false)
+    public virtual void DeleteOne<T>(Expression<Func<T, bool>>? conditionExpression,
+                                     string                     reason          = null,
+                                     bool                       forceHardDelete = false)
         where T : class
     {
         using var dbTransaction = DbContext.Database.BeginTransaction();
@@ -282,9 +281,9 @@ public class Repository : IRepository
         dbTransaction.Commit();
     }
 
-    public virtual int DeleteMany<T>(Expression<Func<T, bool>> conditionExpression,
-                                           string                    reason          = null,
-                                           bool                      forceHardDelete = false)
+    public virtual int DeleteMany<T>(Expression<Func<T, bool>>? conditionExpression,
+                                     string                     reason          = null,
+                                     bool                       forceHardDelete = false)
         where T : class
     {
         const string isDeletedFieldName = nameof(BaseEntityWithAuditInfo.IsDeleted);
@@ -306,7 +305,7 @@ public class Repository : IRepository
         return updatedRecords;
     }
 
-    public void RestoreOne<T>(Expression<Func<T, bool>> conditionExpression) where T : class
+    public void RestoreOne<T>(Expression<Func<T, bool>>? conditionExpression) where T : class
     {
         if (!typeof(T).HasProperty<bool>(nameof(BaseEntityWithAuditInfo.IsDeleted)))
         {
@@ -328,7 +327,7 @@ public class Repository : IRepository
         dbTransaction.Rollback();
     }
 
-    public virtual int RestoreMany<T>(Expression<Func<T, bool>> conditionExpression)
+    public virtual int RestoreMany<T>(Expression<Func<T, bool>>? conditionExpression)
         where T : class
     {
         if (!typeof(T).HasProperty<bool>(nameof(BaseEntityWithAuditInfo.IsDeleted)))
@@ -381,7 +380,8 @@ public class Repository : IRepository
         }
         finally
         {
-            if (insertedEntities.Length != 0 ||  updatedEntities.Length != 0)
+            if (insertedEntities.Length != 0 ||
+                updatedEntities.Length != 0)
                 OnAfterSaveChanges(insertedEntities, updatedEntities);
         }
     }

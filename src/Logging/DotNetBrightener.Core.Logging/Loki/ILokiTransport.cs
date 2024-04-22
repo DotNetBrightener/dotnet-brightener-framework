@@ -1,11 +1,10 @@
 using DotNetBrightener.Core.Logging.Loki.Model;
 
-namespace DotNetBrightener.Core.Logging.Loki
-{
-    public interface ILokiTransport
-    {
-        void WriteLogEvents(IEnumerable<LokiEvent> lokiEvents);
+namespace DotNetBrightener.Core.Logging.Loki;
 
-        Task WriteLogEventsAsync(IEnumerable<LokiEvent> lokiEvents);
-    }
+public interface ILokiTransport
+{
+    void WriteLogEvents(IEnumerable<LokiEvent> lokiEvents);
+
+    Task WriteLogEventsAsync(IEnumerable<LokiEvent> lokiEvents);
 }

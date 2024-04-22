@@ -13,26 +13,26 @@ public abstract class BaseDataService<TEntity> : IBaseDataService<TEntity> where
         Repository = repository;
     }
 
-    public virtual TEntity Get(Expression<Func<TEntity, bool>> expression)
+    public virtual TEntity? Get(Expression<Func<TEntity, bool>> expression)
     {
         return Repository.Get(expression);
     }
 
-    public IQueryable<TEntity> FetchHistory(Expression<Func<TEntity, bool>> expression = null,
-                                            DateTimeOffset?                 from       = null,
-                                            DateTimeOffset?                 to         = null)
+    public IQueryable<TEntity> FetchHistory(Expression<Func<TEntity, bool>>? expression = null,
+                                            DateTimeOffset?                  from       = null,
+                                            DateTimeOffset?                  to         = null)
     {
         var query = Repository.FetchHistory(expression, from, to);
 
         return query;
     }
 
-    public virtual IQueryable<TEntity> Fetch(Expression<Func<TEntity, bool>> expression = null)
+    public virtual IQueryable<TEntity> Fetch(Expression<Func<TEntity, bool>>? expression = null)
     {
         return Repository.Fetch(expression);
     }
 
-    public IQueryable<TEntity> FetchDeletedRecords(Expression<Func<TEntity, bool>> expression = null)
+    public IQueryable<TEntity> FetchDeletedRecords(Expression<Func<TEntity, bool>>? expression = null)
     {
         IQueryable<TEntity> query = Repository.Fetch(expression);
 
@@ -44,7 +44,7 @@ public abstract class BaseDataService<TEntity> : IBaseDataService<TEntity> where
         return query;
     }
 
-    public IQueryable<TEntity> FetchActive(Expression<Func<TEntity, bool>> expression = null)
+    public IQueryable<TEntity> FetchActive(Expression<Func<TEntity, bool>>? expression = null)
     {
         IQueryable<TEntity> query = Repository.Fetch(expression);
 
@@ -90,14 +90,14 @@ public abstract class BaseDataService<TEntity> : IBaseDataService<TEntity> where
         Repository.CommitChanges();
     }
 
-    public virtual async Task UpdateOne(Expression<Func<TEntity, bool>>    filterExpression,
+    public virtual async Task UpdateOne(Expression<Func<TEntity, bool>>?   filterExpression,
                                         Expression<Func<TEntity, TEntity>> updateExpression)
     {
         Repository.Update(filterExpression, updateExpression, 1);
         Repository.CommitChanges();
     }
 
-    public virtual async Task<int> UpdateMany(Expression<Func<TEntity, bool>>    filterExpression,
+    public virtual async Task<int> UpdateMany(Expression<Func<TEntity, bool>>?   filterExpression,
                                               Expression<Func<TEntity, TEntity>> updateExpression)
     {
         var affectedRecords = Repository.Update(filterExpression, updateExpression);
@@ -106,23 +106,23 @@ public abstract class BaseDataService<TEntity> : IBaseDataService<TEntity> where
         return affectedRecords;
     }
 
-    public virtual async Task DeleteOne(Expression<Func<TEntity, bool>> filterExpression,
-                                        string                          reason          = null,
-                                        bool                            forceHardDelete = false)
+    public virtual async Task DeleteOne(Expression<Func<TEntity, bool>>? filterExpression,
+                                        string                           reason          = null,
+                                        bool                             forceHardDelete = false)
     {
         Repository.DeleteOne(filterExpression, reason, forceHardDelete);
         Repository.CommitChanges();
     }
 
-    public virtual async Task RestoreOne(Expression<Func<TEntity, bool>> filterExpression)
+    public virtual async Task RestoreOne(Expression<Func<TEntity, bool>>? filterExpression)
     {
         Repository.RestoreOne(filterExpression);
         Repository.CommitChanges();
     }
 
-    public virtual async Task<int> DeleteMany(Expression<Func<TEntity, bool>> filterExpression,
-                                              string                          reason          = null,
-                                              bool                            forceHardDelete = false)
+    public virtual async Task<int> DeleteMany(Expression<Func<TEntity, bool>>? filterExpression,
+                                              string                           reason          = null,
+                                              bool                             forceHardDelete = false)
     {
         int updatedRecords = Repository.DeleteMany(filterExpression, reason, forceHardDelete);
         Repository.CommitChanges();
@@ -130,7 +130,7 @@ public abstract class BaseDataService<TEntity> : IBaseDataService<TEntity> where
         return updatedRecords;
     }
 
-    public virtual async Task<int> RestoreMany(Expression<Func<TEntity, bool>> filterExpression)
+    public virtual async Task<int> RestoreMany(Expression<Func<TEntity, bool>>? filterExpression)
     {
         var affectedRecords = Repository.RestoreMany(filterExpression);
         Repository.CommitChanges();

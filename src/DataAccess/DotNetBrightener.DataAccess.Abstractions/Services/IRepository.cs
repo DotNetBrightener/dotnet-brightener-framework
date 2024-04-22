@@ -19,7 +19,7 @@ public interface IRepository : IDisposable
     /// <returns>
     ///     The record of specified <see cref="T"/> if found, otherwise, <c>null</c>
     /// </returns>
-    T Get<T>(Expression<Func<T, bool>> expression)
+    T? Get<T>(Expression<Func<T, bool>> expression)
         where T : class;
 
     /// <summary>
@@ -34,7 +34,7 @@ public interface IRepository : IDisposable
     /// <returns>
     ///     The first found record of specified <see cref="T"/> if found, otherwise, <c>null</c>
     /// </returns>
-    T GetFirst<T>(Expression<Func<T, bool>> expression) where T : class;
+    T? GetFirst<T>(Expression<Func<T, bool>> expression) where T : class;
 
     /// <summary>
     ///     Retrieves a specific record of type <typeparamref name="T"/> with the given <paramref name="expression"/>
@@ -54,8 +54,8 @@ public interface IRepository : IDisposable
     /// <returns>
     ///     The record of specified <see cref="T"/> if found, otherwise, <c>null</c>
     /// </returns>
-    TResult Get<T, TResult>(Expression<Func<T, bool>>    expression,
-                            Expression<Func<T, TResult>> propertiesPickupExpression)
+    TResult? Get<T, TResult>(Expression<Func<T, bool>>?   expression,
+                             Expression<Func<T, TResult>> propertiesPickupExpression)
         where T : class;
 
     /// <summary>
@@ -76,8 +76,8 @@ public interface IRepository : IDisposable
     /// <returns>
     ///     The first found record of specified <see cref="T"/> if found, otherwise, <c>null</c>
     /// </returns>
-    TResult GetFirst<T, TResult>(Expression<Func<T, bool>>    expression,
-                                 Expression<Func<T, TResult>> propertiesPickupExpression)
+    TResult? GetFirst<T, TResult>(Expression<Func<T, bool>>?   expression,
+                                  Expression<Func<T, TResult>> propertiesPickupExpression)
         where T : class;
 
     /// <summary>
@@ -90,7 +90,7 @@ public interface IRepository : IDisposable
     /// <returns>
     ///     A collection of the records of specified <see cref="T"/> that satisfy the <paramref name="expression"/>
     /// </returns>
-    IQueryable<T> Fetch<T>(Expression<Func<T, bool>> expression = null)
+    IQueryable<T> Fetch<T>(Expression<Func<T, bool>>? expression = null)
         where T : class;
 
 
@@ -111,9 +111,9 @@ public interface IRepository : IDisposable
     /// <returns>
     ///     A collection of the history records of specified <see cref="T"/> that satisfy the <paramref name="expression"/>
     /// </returns>
-    IQueryable<T> FetchHistory<T>(Expression<Func<T, bool>> expression,
-                                  DateTimeOffset?           from,
-                                  DateTimeOffset?           to)
+    IQueryable<T> FetchHistory<T>(Expression<Func<T, bool>>? expression,
+                                  DateTimeOffset?            from,
+                                  DateTimeOffset?            to)
         where T : class, new();
 
     /// <summary>
@@ -132,7 +132,7 @@ public interface IRepository : IDisposable
     /// <returns>
     ///     A collection of the records of specified <see cref="T"/> that satisfy the <paramref name="expression"/>
     /// </returns>
-    IQueryable<TResult> Fetch<T, TResult>(Expression<Func<T, bool>>    expression,
+    IQueryable<TResult> Fetch<T, TResult>(Expression<Func<T, bool>>?   expression,
                                           Expression<Func<T, TResult>> propertiesPickupExpression)
         where T : class;
 
@@ -144,7 +144,7 @@ public interface IRepository : IDisposable
     /// <returns>
     /// The number of records that satisfies the <paramref name="expression"/>
     /// </returns>
-    int Count<T>(Expression<Func<T, bool>> expression = null)
+    int Count<T>(Expression<Func<T, bool>>? expression = null)
         where T : class;
 
     /// <summary>
@@ -184,7 +184,7 @@ public interface IRepository : IDisposable
     /// <returns>
     ///     Number of rows copied
     /// </returns>
-    int CopyRecords<TSource, TTarget>(Expression<Func<TSource, bool>>    conditionExpression,
+    int CopyRecords<TSource, TTarget>(Expression<Func<TSource, bool>>?   conditionExpression,
                                       Expression<Func<TSource, TTarget>> copyExpression)
         where TSource : class
         where TTarget : class;
@@ -233,9 +233,9 @@ public interface IRepository : IDisposable
     ///  <exception cref="ExpectedAffectedRecordMismatch">
     ///     Thrown if number of entities got updated differs from the provided expectation.
     /// </exception>
-    int Update<T>(Expression<Func<T, bool>> conditionExpression,
-                        object                    updateExpression,
-                        int?                      expectedAffectedRows = null)
+    int Update<T>(Expression<Func<T, bool>>? conditionExpression,
+                        object               updateExpression,
+                        int?                 expectedAffectedRows = null)
         where T : class;
 
     ///  <summary>
@@ -258,9 +258,9 @@ public interface IRepository : IDisposable
     ///  <exception cref="ExpectedAffectedRecordMismatch">
     ///     Thrown if number of entities got updated differs from the provided expectation.
     /// </exception>
-    int Update<T>(Expression<Func<T, bool>> conditionExpression,
-                        Expression<Func<T, T>>    updateExpression,
-                        int?                      expectedAffectedRows = null)
+    int Update<T>(Expression<Func<T, bool>>?   conditionExpression,
+                        Expression<Func<T, T>> updateExpression,
+                        int?                   expectedAffectedRows = null)
         where T : class;
 
 
@@ -283,7 +283,7 @@ public interface IRepository : IDisposable
     /// <exception cref="ExpectedAffectedRecordMismatch">
     ///     Thrown if number of entities got deleted differs from the provided expectation.
     /// </exception>
-    void DeleteOne<T>(Expression<Func<T, bool>> conditionExpression, string reason = null, bool forceHardDelete = false)
+    void DeleteOne<T>(Expression<Func<T, bool>>? conditionExpression, string reason = null, bool forceHardDelete = false)
         where T : class;
 
     /// <summary>
@@ -299,9 +299,9 @@ public interface IRepository : IDisposable
     /// <param name="forceHardDelete">
     ///     Enforcing hard-deletion on the records, default is <c>false</c> for soft-deletion
     /// </param>
-    int DeleteMany<T>(Expression<Func<T, bool>> conditionExpression,
-                            string                    reason          = null,
-                            bool                      forceHardDelete = false)
+    int DeleteMany<T>(Expression<Func<T, bool>>? conditionExpression,
+                            string               reason          = null,
+                            bool                 forceHardDelete = false)
         where T : class;
 
     /// <summary>
@@ -321,7 +321,7 @@ public interface IRepository : IDisposable
     /// <exception cref="ExpectedAffectedRecordMismatch">
     ///     Thrown if more than one entity is restored.
     /// </exception>
-    void RestoreOne<T>(Expression<Func<T, bool>> conditionExpression) where T : class;
+    void RestoreOne<T>(Expression<Func<T, bool>>? conditionExpression) where T : class;
 
     /// <summary>
     ///     Restores multiple records of type <typeparamref name="T"/>,
@@ -337,7 +337,7 @@ public interface IRepository : IDisposable
     /// <returns>
     ///     Number of records restored from deletion
     /// </returns>
-    int RestoreMany<T>(Expression<Func<T, bool>> conditionExpression) where T : class;
+    int RestoreMany<T>(Expression<Func<T, bool>>? conditionExpression) where T : class;
 
     /// <summary>
     ///     Commits all changes into the database, if any

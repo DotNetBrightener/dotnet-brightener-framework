@@ -4,7 +4,8 @@ using Microsoft.EntityFrameworkCore;
 namespace DotNetBrightener.DataAccess.EF.Migrations;
 
 /// <summary>
-///    Represents the <see cref="DbContext" /> that defines the entities, has migrations applied and versioning enabled
+///    Represents the <see cref="DbContext" /> that defines the entities,
+///    has migrations applied and versioning enabled
 /// </summary>
 public abstract class SqlServerVersioningMigrationEnabledDbContext : MigrationEnabledDbContext
 {
@@ -16,8 +17,6 @@ public abstract class SqlServerVersioningMigrationEnabledDbContext : MigrationEn
 
     protected sealed override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        base.OnModelCreating(modelBuilder);
-
         ConfigureModelBuilder(modelBuilder);
 
         ConfigureHistoryTables(modelBuilder);

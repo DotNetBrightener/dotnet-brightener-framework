@@ -99,4 +99,29 @@ public static class ServiceCollectionExtensions
 
         return serviceCollection;
     }
+
+    /// <summary>
+    ///     Add the migration <typeparamref name="TMigrationDbContext"/> to the <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <remarks>
+    ///     <typeparamref name="TMigrationDbContext"/> is derived from <typeparamref name="IMigrationDefinitionDbContext"/>
+    ///     and used for migrations
+    /// </remarks>
+    /// <typeparam name="TMigrationDbContext">
+    ///     The <see cref="DbContext" /> used for migrations
+    /// </typeparam>
+    /// <param name="serviceCollection">
+    ///     The <see cref="IServiceCollection" /> to add the migration <typeparamref name="TMigrationDbContext"/>
+    /// </param>
+    public static IServiceCollection UseMigrationDbContext<TMigrationDbContext>(
+        this IServiceCollection         serviceCollection,
+        Action<DbContextOptionsBuilder> configure)
+        where TMigrationDbContext : DbContext, IMigrationDefinitionDbContext
+    {
+        serviceCollection.AddDbContext<TMigrationDbContext>(configure);
+
+        serviceCollection.AddHostedService<AutoMigrateDbStartupTask<TMigrationDbContext>>();
+
+        return serviceCollection;
+    }
 }

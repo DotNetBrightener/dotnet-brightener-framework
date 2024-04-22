@@ -8,7 +8,7 @@ public static class JwtBearerWebSocketExtensions
 {
     public static IServiceCollection AddWebSocketJwtBearerMessageHandler(this IServiceCollection serviceCollection)
     {
-        serviceCollection.AddSingleton<IJwtMessageHandler, WebSocketJwtBearerMessageHandler>();
+        serviceCollection.RegisterJwtMessageEventHandler<WebSocketJwtBearerMessageHandler>();
 
         return serviceCollection;
     }

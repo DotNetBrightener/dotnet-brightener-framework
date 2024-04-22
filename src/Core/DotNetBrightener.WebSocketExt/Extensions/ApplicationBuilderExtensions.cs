@@ -12,6 +12,11 @@ namespace Microsoft.AspNetCore.Builder;
 
 public static class ApplicationBuilderExtensions
 {
+    /// <summary>
+    ///     Enables the websocket authentication request endpoint for the application
+    /// </summary>
+    /// <param name="app"></param>
+    /// <returns></returns>
     public static IEndpointRouteBuilder UseWebSocketAuthRequestEndpoint(this IEndpointRouteBuilder app)
     {
         var options = app.ServiceProvider.GetRequiredService<IOptions<WebSocketExtOptions>>();
@@ -23,7 +28,10 @@ public static class ApplicationBuilderExtensions
                     {
                         var connectionToken = await webSocketUserAuthExchanger.ExchangeAuthTokenForLongAccess(context.User);
 
-                        return Results.Ok(connectionToken);
+                        return Results.Ok(new
+                        {
+                            cnnToken = connectionToken
+                        });
                     })
            .RequireAuthorization();
 

@@ -20,11 +20,4 @@
 	<ItemGroup>
 	  <ProjectReference Include="..\..\Caching\DotNetBrightener.Caching\DotNetBrightener.Caching.Abstractions.csproj" />
 	</ItemGroup>
-
-	<ItemGroup>
-		<None Update="docs\readme.md">
-			<PackagePath>\</PackagePath>
-			<Pack>true</Pack>
-		</None>
-	</ItemGroup>
 </Project>

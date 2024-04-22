@@ -21,16 +21,15 @@ public class TenantSupportedRepository : Repository
 
     private static readonly object LockObj = new();
 
-    public TenantSupportedRepository(DbContext                          dbContext,
-                                     ICurrentLoggedInUserResolver       currentLoggedInUserResolver,
-                                     IEventPublisher                    eventPublisher,
-                                     ITenantAccessor                    tenantAccessor,
-                                     IServiceProvider                   backgroundServiceProvider,
-                                     ILogger<TenantSupportedRepository> logger)
-        : base(dbContext, currentLoggedInUserResolver, eventPublisher)
+    public TenantSupportedRepository(DbContext                    dbContext,
+                                     ICurrentLoggedInUserResolver currentLoggedInUserResolver,
+                                     IEventPublisher              eventPublisher,
+                                     ITenantAccessor              tenantAccessor,
+                                     IServiceProvider             backgroundServiceProvider,
+                                     ILoggerFactory               loggerFactory)
+        : base(dbContext, currentLoggedInUserResolver, eventPublisher, loggerFactory)
     {
         _tenantAccessor = tenantAccessor;
-        Logger          = logger;
 
         if (HasTenantMapping is null)
         {
@@ -39,7 +38,7 @@ public class TenantSupportedRepository : Repository
         }
     }
 
-    public override IQueryable<T> Fetch<T>(Expression<Func<T, bool>> expression = null)
+    public override IQueryable<T> Fetch<T>(Expression<Func<T, bool>>? expression = null)
     {
         // override the logic of loading a record from database for specifies tenant
         var query            = base.Fetch(expression);

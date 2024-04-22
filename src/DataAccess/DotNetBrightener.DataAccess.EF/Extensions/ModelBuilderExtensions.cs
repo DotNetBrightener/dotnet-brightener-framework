@@ -1,9 +1,10 @@
-using System.ComponentModel.DataAnnotations.Schema;
 using DotNetBrightener.DataAccess.Attributes;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Reflection;
 
-namespace DotNetBrightener.DataAccess.EF.Extensions;
+// ReSharper disable CheckNamespace
+namespace Microsoft.EntityFrameworkCore;
 
 public static class ModelBuilderExtensions
 {
@@ -25,8 +26,8 @@ public static class ModelBuilderExtensions
     /// </param>
     /// <returns></returns>
     public static EntityTypeBuilder<T> RegisterEntity<T>(this ModelBuilder modelBuilder,
-                                                         string            tableName   = null,
-                                                         string            tableSchema = null)
+                                                         string?           tableName   = null,
+                                                         string?           tableSchema = null)
         where T : class
     {
         if (string.IsNullOrWhiteSpace(tableName))
@@ -56,5 +57,19 @@ public static class ModelBuilderExtensions
                       );
 
         return entity;
+    }
+
+    /// <summary>
+    ///     Applies the configurations from all the <see cref="IEntityTypeConfiguration{TEntity}"/>
+    ///     found in the assembly that invokes this method.
+    /// </summary>
+    /// <param name="modelBuilder">
+    ///     The <see cref="ModelBuilder"/>
+    /// </param>
+    public static void ApplyConfigurationsFromCurrentAssembly(this ModelBuilder modelBuilder)
+    {
+        var derivedDbContextAssembly = Assembly.GetCallingAssembly();
+
+        modelBuilder.ApplyConfigurationsFromAssembly(derivedDbContextAssembly);
     }
 }

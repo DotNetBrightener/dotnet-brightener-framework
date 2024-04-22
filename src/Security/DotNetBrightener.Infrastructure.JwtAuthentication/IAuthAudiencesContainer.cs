@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace DotNetBrightener.Infrastructure.JwtAuthentication;
@@ -17,55 +17,73 @@ public interface IAuthAudiencesContainer
     ///     Registers the valid audiences to the container
     /// </summary>
     /// <param name="validAudiences"></param>
-    void RegisterValidAudience(params string [ ] validAudiences);
+    void RegisterValidAudiences(params string [ ] validAudiences);
 
-    void EnsureInitialized();
+    /// <summary>
+    ///     Removes the valid audiences from the container
+    /// </summary>
+    /// <param name="validAudiences"></param>
+    void RemoveAudiences(params string[] validAudiences);
 
     Task<bool> IsValidAudience(string audienceString);
 }
 
 public class DefaultAuthAudiencesContainer : IAuthAudiencesContainer
 {
-    private readonly        IHttpContextAccessor                _httpContextAccessor;
-    private readonly        List<string>                        _validAudiences = new List<string>();
-    private readonly        IEnumerable<IAuthAudienceValidator> _audienceValidators;
-    private                 bool                                _initialized = false;
-    private static readonly object                              _lockObject  = new object();
-    private readonly        ILogger                             _logger;
+    private readonly        List<string>                    _validAudiences = new();
+    private readonly        IServiceScopeFactory            _serviceScopeFactory;
+    private                 bool                            _initialized = false;
+    private static readonly object                          _lockObject  = new();
+    private readonly        ILogger                         _logger;
+    private                 TimeBaseCancellationTokenSource _refreshAudienceTimeout;
 
-    public DefaultAuthAudiencesContainer(IHttpContextAccessor                   httpContextAccessor,
-                                         IEnumerable<IAuthAudienceValidator>    audienceValidators,
-                                         ILogger<DefaultAuthAudiencesContainer> logger)
+    public DefaultAuthAudiencesContainer(ILogger<DefaultAuthAudiencesContainer> logger,
+                                         IServiceScopeFactory                   serviceScopeFactory)
     {
-        _httpContextAccessor = httpContextAccessor;
-        _audienceValidators  = audienceValidators;
-        _logger         = logger;
+        _logger                   = logger;
+        _serviceScopeFactory = serviceScopeFactory;
     }
 
     public IEnumerable<string> ValidAudiences
     {
         get
         {
-            if (_initialized)
+            if (_refreshAudienceTimeout is null ||
+                _refreshAudienceTimeout.IsCancellationRequested)
+                _initialized = false;
+
+            if (!_initialized)
             {
-                return _validAudiences;
+                lock (_lockObject)
+                {
+                    EnsureInitialized();
+                }
             }
 
-            lock (_lockObject)
-            {
-                EnsureInitialized();
-            }
+            _logger.LogInformation("Valid Audiences requested. Found {count} of valid audiences",
+                                   _validAudiences.Count);
 
             return _validAudiences;
         }
     }
 
-    public void RegisterValidAudience(params string[] validAudiences)
+    public void RegisterValidAudiences(params string[] validAudiences)
     {
         foreach (string validAudience in validAudiences)
         {
             if (!_validAudiences.Contains(validAudience))
                 _validAudiences.Add(validAudience);
+        }
+    }
+
+    public void RemoveAudiences(params string[] validAudiences)
+    {
+        lock (_lockObject)
+        {
+            foreach (var validAudience in validAudiences)
+            {
+                _validAudiences.Remove(validAudience);
+            }
         }
     }
 
@@ -75,12 +93,32 @@ public class DefaultAuthAudiencesContainer : IAuthAudiencesContainer
         {
             lock (_lockObject)
             {
-                foreach (IAuthAudienceValidator validator in _audienceValidators)
-                {
-                    validator.RegisterAudienceValidator(this);
-                }
+                _refreshAudienceTimeout?.Dispose();
+
+                _refreshAudienceTimeout = new TimeBaseCancellationTokenSource(TimeSpan.FromMinutes(2));
+
+                LoadAudiences();
 
                 _initialized = true;
+            }
+        }
+    }
+
+    private void LoadAudiences()
+    {
+        _validAudiences.Clear();
+
+        using var scope              = _serviceScopeFactory.CreateScope();
+        var       serviceProvider    = scope.ServiceProvider;
+        var       audienceValidators = serviceProvider.GetServices<IAuthAudienceValidator>();
+
+        foreach (IAuthAudienceValidator validator in audienceValidators)
+        {
+            var validAudiences = validator.GetValidAudiences();
+
+            if (validAudiences.Length > 0)
+            {
+                RegisterValidAudiences(validAudiences);
             }
         }
     }

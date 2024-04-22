@@ -1,56 +1,55 @@
-namespace DotNetBrightener.Core.Logging.Loki.Model
+namespace DotNetBrightener.Core.Logging.Loki.Model;
+
+public class LokiLabels : IEquatable<LokiLabels>
 {
-    public class LokiLabels : IEquatable<LokiLabels>
+    private readonly int hashCode;
+
+    public ISet<LokiLabel> Labels { get; }
+
+    public LokiLabels(params LokiLabel[] labels) :
+        this((IEnumerable<LokiLabel>)labels)
     {
-        private readonly int hashCode;
+    }
 
-        public ISet<LokiLabel> Labels { get; }
+    public LokiLabels(IEnumerable<LokiLabel> labels)
+    {
+        Labels = new HashSet<LokiLabel>(labels ?? Enumerable.Empty<LokiLabel>());
 
-        public LokiLabels(params LokiLabel[] labels) :
-            this((IEnumerable<LokiLabel>)labels)
+        unchecked
         {
+            hashCode =
+                Labels.Aggregate(0,
+                                 (current, label) => (current * 397) ^ label.GetHashCode());
         }
+    }
 
-        public LokiLabels(IEnumerable<LokiLabel> labels)
-        {
-            Labels = new HashSet<LokiLabel>(labels ?? Enumerable.Empty<LokiLabel>());
+    public bool Equals(LokiLabels other)
+    {
+        if(ReferenceEquals(null, other)) return false;
+        if(ReferenceEquals(this, other)) return true;
+        return Labels.SetEquals(other.Labels);
+    }
 
-            unchecked
-            {
-                hashCode =
-                    Labels.Aggregate(0,
-                        (current, label) => (current * 397) ^ label.GetHashCode());
-            }
-        }
+    public override bool Equals(object other)
+    {
+        if(ReferenceEquals(null, other)) return false;
+        if(ReferenceEquals(this, other)) return true;
+        if(other.GetType() != this.GetType()) return false;
+        return Equals((LokiLabels)other);
+    }
 
-        public bool Equals(LokiLabels other)
-        {
-            if(ReferenceEquals(null, other)) return false;
-            if(ReferenceEquals(this, other)) return true;
-            return Labels.SetEquals(other.Labels);
-        }
+    public override int GetHashCode()
+    {
+        return hashCode;
+    }
 
-        public override bool Equals(object other)
-        {
-            if(ReferenceEquals(null, other)) return false;
-            if(ReferenceEquals(this, other)) return true;
-            if(other.GetType() != this.GetType()) return false;
-            return Equals((LokiLabels)other);
-        }
+    public static bool operator ==(LokiLabels left, LokiLabels right)
+    {
+        return Equals(left, right);
+    }
 
-        public override int GetHashCode()
-        {
-            return hashCode;
-        }
-
-        public static bool operator ==(LokiLabels left, LokiLabels right)
-        {
-            return Equals(left, right);
-        }
-
-        public static bool operator !=(LokiLabels left, LokiLabels right)
-        {
-            return !Equals(left, right);
-        }
+    public static bool operator !=(LokiLabels left, LokiLabels right)
+    {
+        return !Equals(left, right);
     }
 }

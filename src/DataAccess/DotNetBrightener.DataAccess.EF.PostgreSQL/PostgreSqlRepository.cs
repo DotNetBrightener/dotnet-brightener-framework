@@ -11,14 +11,14 @@ public class PostgreSqlRepository : Repository
     public PostgreSqlRepository(DbContext                    dbContext,
                                 ICurrentLoggedInUserResolver currentLoggedInUserResolver,
                                 IEventPublisher              eventPublisher,
-                                ILogger<Repository>          logger = null)
-        : base(dbContext, currentLoggedInUserResolver, eventPublisher, logger)
+                                ILoggerFactory               loggerFactory)
+        : base(dbContext, currentLoggedInUserResolver, eventPublisher, loggerFactory)
     {
     }
 
-    public override IQueryable<T> FetchHistory<T>(Expression<Func<T, bool>> expression,
-                                                  DateTimeOffset?           from,
-                                                  DateTimeOffset?           to)
+    public override IQueryable<T> FetchHistory<T>(Expression<Func<T, bool>>? expression,
+                                                  DateTimeOffset?            from,
+                                                  DateTimeOffset?            to)
     {
 
         throw new NotSupportedException();

@@ -65,7 +65,7 @@ public class CacheKey
     /// <summary>
     ///     Prefixes to remove by prefix functionality
     /// </summary>
-    public List<string> Prefixes { get; protected set; } = new List<string>();
+    public List<string> Prefixes { get; protected set; } = [];
 
     /// <summary>
     ///     Cache time in minutes

@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\DataAccess\DotNetBrightener.DataAccess.Abstractions\DotNetBrightener.DataAccess.Abstractions.csproj" />
+		<ProjectReference Include="..\..\DataAccess\DotNetBrightener.DataAccess.EF\DotNetBrightener.DataAccess.EF.csproj" />
+		<ProjectReference Include="..\DotNetBrightener.Infrastructure.AppClientManager\DotNetBrightener.Infrastructure.AppClientManager.csproj" />
+	</ItemGroup>
+
+</Project>

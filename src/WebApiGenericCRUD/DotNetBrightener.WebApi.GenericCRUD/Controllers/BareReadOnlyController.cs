@@ -22,7 +22,7 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
     /// <summary>
     ///     The default query to fetch data
     /// </summary>
-    protected virtual Expression<Func<TEntityType, bool>> DefaultQuery { get; set; }
+    protected virtual Expression<Func<TEntityType, bool>>? DefaultQuery { get; set; }
 
     /// <summary>
     ///     The columns that will always be returned in case no columns is requested from the client

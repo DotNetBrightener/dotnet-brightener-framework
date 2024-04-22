@@ -1,7 +1,7 @@
 ﻿namespace DotNetBrightener.DataAccess;
 
 /// <summary>
-///     Defines the contracts of how to identify the current logged user who executes the database operation, and obtain user name and id
+///     Defines the contracts of how to identify the current logged user who executes the database operation, and obtain username and id
 /// </summary>
 public interface ICurrentLoggedInUserResolver
 {

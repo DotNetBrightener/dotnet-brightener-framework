@@ -21,12 +21,13 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection RegisterStartupTask<T>(this IServiceCollection serviceCollection)
         where T : class, IStartupTask
     {
+        serviceCollection.AddScoped<IStartupTask, T>();
+        serviceCollection.AddScoped<T, T>();
+
         if (!_hasHostedService)
         {
             AddStartupTasksService(serviceCollection);
         }
-
-        serviceCollection.AddScoped<IStartupTask, T>();
 
         return serviceCollection;
     }

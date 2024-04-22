@@ -1,7 +1,6 @@
-namespace DotNetBrightener.Core.Logging.Loki.Impl
+namespace DotNetBrightener.Core.Logging.Loki.Impl;
+
+internal interface IJsonSerializer
 {
-    internal interface IJsonSerializer
-    {
-        Task SerializeAsync(object instance, JsonTextWriter jsonTextWriter);
-    }
+    Task SerializeAsync(object instance, JsonTextWriter jsonTextWriter);
 }

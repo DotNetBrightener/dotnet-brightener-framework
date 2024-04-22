@@ -2,36 +2,35 @@ using System.Net.Http.Headers;
 using DotNetBrightener.Core.Logging.Loki.Impl;
 using DotNetBrightener.Core.Logging.Loki.Model;
 
-namespace DotNetBrightener.Core.Logging.Loki
+namespace DotNetBrightener.Core.Logging.Loki;
+
+/// <summary>
+/// 
+/// </summary>
+/// <remarks>
+/// See https://grafana.com/docs/loki/latest/api/#examples-4
+/// </remarks>
+public class HttpLokiTransport : ILokiTransport
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <remarks>
-    /// See https://grafana.com/docs/loki/latest/api/#examples-4
-    /// </remarks>
-    public class HttpLokiTransport : ILokiTransport
+    private readonly LokiStreamsJsonSerializer lokiStreamsJsonSerializer = new LokiStreamsJsonSerializer();
+    private readonly MediaTypeHeaderValue      contentType               = new MediaTypeHeaderValue("application/json");
+    private readonly ILokiHttpClient           lokiHttpClient;
+
+    public HttpLokiTransport(Uri uri, ILokiHttpClient lokiHttpClient)
     {
-        private readonly LokiStreamsJsonSerializer lokiStreamsJsonSerializer = new LokiStreamsJsonSerializer();
-        private readonly MediaTypeHeaderValue contentType = new MediaTypeHeaderValue("application/json");
-        private readonly ILokiHttpClient lokiHttpClient;
+        this.lokiHttpClient = lokiHttpClient;
+    }
 
-        public HttpLokiTransport(Uri uri, ILokiHttpClient lokiHttpClient)
-        {
-            this.lokiHttpClient = lokiHttpClient;
-        }
+    public void WriteLogEvents(IEnumerable<LokiEvent> lokiEvents)
+    {
+        WriteLogEventsAsync(lokiEvents).ConfigureAwait(false).GetAwaiter().GetResult();
+    }
 
-        public void WriteLogEvents(IEnumerable<LokiEvent> lokiEvents)
+    public async Task WriteLogEventsAsync(IEnumerable<LokiEvent> lokiEvents)
+    {
+        using(var jsonStreamContent = new JsonStreamContent(contentType, lokiEvents, lokiStreamsJsonSerializer))
         {
-            WriteLogEventsAsync(lokiEvents).ConfigureAwait(false).GetAwaiter().GetResult();
-        }
-
-        public async Task WriteLogEventsAsync(IEnumerable<LokiEvent> lokiEvents)
-        {
-            using(var jsonStreamContent = new JsonStreamContent(contentType, lokiEvents, lokiStreamsJsonSerializer))
-            {
-                var httpResponse = await lokiHttpClient.PostAsync("loki/api/v1/push", jsonStreamContent);
-            }
+            var httpResponse = await lokiHttpClient.PostAsync("loki/api/v1/push", jsonStreamContent);
         }
     }
 }

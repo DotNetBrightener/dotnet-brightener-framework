@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<ImplicitUsings>enable</ImplicitUsings>
+		
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\Security\DotNetBrightener.Infrastructure.JwtAuthentication\DotNetBrightener.Infrastructure.JwtAuthentication.csproj" />
+		<ProjectReference Include="..\DotNetBrightener.Infrastructure.AppClientManager\DotNetBrightener.Infrastructure.AppClientManager.csproj" />
+	</ItemGroup>
+
+	<Import Project="..\..\Shared\SharedExtensions.HttpContext\SharedExtensions.HttpContext.projitems" Label="Shared" />
+
+</Project>

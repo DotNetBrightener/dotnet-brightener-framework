@@ -14,6 +14,8 @@ using Microsoft.AspNetCore.Routing;
 using WebApp.CommonShared;
 using WebApp.CommonShared.Endpoints;
 using WebApp.CommonShared.Mvc;
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Mvc;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.Extensions.DependencyInjection;
@@ -53,10 +55,22 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddEventPubSubService();
 
         serviceCollection.EnableBackgroundTaskServices(configuration);
-
+        
         serviceCollection.AddExceptionHandler<UnhandledExceptionResponseHandler>();
 
         serviceCollection.AddProblemDetails();
+
+        serviceCollection.ConfigureHttpJsonOptions(options =>
+        {
+            options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        });
+
+        serviceCollection.Configure<JsonOptions>(options =>
+        {
+            options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        });
+
+        serviceCollection.AddSingleton(serviceCollection);
 
         return serviceCollection;
     }
@@ -85,6 +99,10 @@ public static class ServiceCollectionExtensions
             app.UseHttpsRedirection();
         }
 
+        app.UseCors(policy =>
+        {
+            policy.AllowAnyHeader();
+        });
         app.UseExceptionHandler();
 
         return app;

@@ -20,7 +20,7 @@ public class MainAppDbContext : SqlServerVersioningMigrationEnabledDbContext
 
     protected override void ConfigureModelBuilder(ModelBuilder modelBuilder)
     {
-        // no need to apply any configuration here
+        modelBuilder.ApplyConfigurationsFromCurrentAssembly();
     }
 }
 

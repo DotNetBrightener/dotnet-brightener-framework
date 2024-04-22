@@ -5,7 +5,7 @@ namespace DotNetBrightener.MultiTenancy.Services;
 
 public interface ITenantDataService : IBaseDataService<Tenant>
 {
-    Tenant GetTenantByHostName(string hostname);
+    Tenant? GetTenantByHostName(string hostname);
 }
 
 public class TenantDataService : BaseDataService<Tenant>, ITenantDataService
@@ -15,7 +15,7 @@ public class TenantDataService : BaseDataService<Tenant>, ITenantDataService
     {
     }
 
-    public Tenant GetTenantByHostName(string hostname)
+    public Tenant? GetTenantByHostName(string hostname)
     {
         if (TenantSupportedRepository.HasTenantMapping == false)
             return null;

@@ -23,14 +23,7 @@ public abstract class MigrationEnabledDbContext : DbContext
     {
         OptionsBuilder?.Invoke(optionsBuilder);
     }
-
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        var derivedDbContextAssembly = GetType().Assembly;
-
-        modelBuilder.ApplyConfigurationsFromAssembly(derivedDbContextAssembly);
-    }
-
+    
     protected override void ConfigureConventions(ModelConfigurationBuilder builder)
     {
         base.ConfigureConventions(builder);
@@ -55,7 +48,7 @@ public abstract class MigrationEnabledDbContext : DbContext
     /// <param name="modelBuilder">
     ///     The <see cref="ModelBuilder"/>
     /// </param>
-    protected void RegisterEnumLookupTable<TEnum>(ModelBuilder modelBuilder)
+    protected void RegisterEnumLookupTable<TEnum>(ModelBuilder modelBuilder, string? schema = null)
         where TEnum : struct, Enum
     {
         var enumLookupTableName = typeof(TEnum).Name + "Lookup";
@@ -70,7 +63,7 @@ public abstract class MigrationEnabledDbContext : DbContext
         lookupEntity.Property(x => x.Value).HasColumnName(typeof(TEnum).Name + "Value");
 
 
-        lookupEntity.ToTable(enumLookupTableName)
+        lookupEntity.ToTable(enumLookupTableName, schema: schema)
                     .HasData(Enum.GetValues<TEnum>()
                                  .Select(x => new EnumLookupEntity<TEnum>
                                   {

@@ -4,29 +4,31 @@ namespace DotNetBrightener.Infrastructure.JwtAuthentication;
 
 public interface IAuthAudienceValidator
 {
-    void RegisterAudienceValidator(IAuthAudiencesContainer audiencesContainer);
+    string[] GetValidAudiences();
 }
 
 public class DefaultAuthAudienceValidator : IAuthAudienceValidator
 {
     private readonly IConfiguration _configuration;
+    private readonly string?        _enableOrigins;
 
     public DefaultAuthAudienceValidator(IConfiguration configuration)
     {
         _configuration = configuration;
+        _enableOrigins = _configuration.GetValue<string>(JwtAuthConstants.EnableOriginsConfigurationName);
     }
 
-    public void RegisterAudienceValidator(IAuthAudiencesContainer audiencesContainer)
+    public string[] GetValidAudiences()
     {
-        var enableOrigins = _configuration.GetValue<string>(JwtAuthConstants.EnableOriginsConfigurationName);
+        if (string.IsNullOrEmpty(_enableOrigins))
+            return [];
 
-        if (string.IsNullOrEmpty(enableOrigins))
-            return;
+        var validAudiences = _enableOrigins.Split(new[]
+                                                  {
+                                                      ";", ","
+                                                  },
+                                                  StringSplitOptions.RemoveEmptyEntries);
 
-        audiencesContainer.RegisterValidAudience(enableOrigins.Split(new[]
-                                                                     {
-                                                                         ";", ","
-                                                                     },
-                                                                     StringSplitOptions.RemoveEmptyEntries));
+        return validAudiences;
     }
 }

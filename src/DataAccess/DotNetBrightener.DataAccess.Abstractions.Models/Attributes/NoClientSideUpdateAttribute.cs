@@ -1,4 +1,6 @@
-﻿namespace DotNetBrightener.DataAccess.Attributes;
+﻿using System.Reflection;
+
+namespace DotNetBrightener.DataAccess.Attributes;
 
 /// <summary>
 ///     Marks the associated property to not be updated by the Data transfer object.
@@ -18,5 +20,11 @@ public static class NoClientSideUpdateHelper
                          .Where(prop => prop.HasAttribute<NoClientSideUpdateAttribute>())
                          .Select(prop => prop.Name)
                          .ToArray();
+    }
+
+
+    internal static bool HasAttribute<TAttribute>(this MemberInfo type) where TAttribute : Attribute
+    {
+        return type != null && type.GetCustomAttribute<TAttribute>() != null;
     }
 }
