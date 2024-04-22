@@ -1,7 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
-using DotNetBrightener.DataAccess.Models;
-using DotNetBrightener.SiteSettings.Models;
-using Newtonsoft.Json;
+﻿using DotNetBrightener.DataAccess.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace DotNetBrightener.SiteSettings.Entities;
 

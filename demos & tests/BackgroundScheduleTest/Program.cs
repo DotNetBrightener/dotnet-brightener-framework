@@ -23,7 +23,7 @@ var app = builder.Build();
 var scheduler = app.Services.GetService<IScheduler>();
 
 scheduler.ScheduleTask<TestBackgroundTask>()
-         .EveryMinute(); 
+         .EverySeconds(5).PreventOverlapping(); 
 
 app.Run();
 

@@ -47,7 +47,14 @@ internal class SchedulerHostedService : IHostedService, IDisposable
 
         _logger.LogDebug("Scheduler is running at {now}", now);
 
+        _schedulerEnabled = false;
+
+        _timer?.Change(Timeout.Infinite, 0);
+
         await _scheduler.RunAt(now);
+
+        _timer?.Change(TimeSpan.Zero, TimeSpan.FromSeconds(1));
+        _schedulerEnabled = true;
     }
 
     public async Task StopAsync(CancellationToken cancellationToken)

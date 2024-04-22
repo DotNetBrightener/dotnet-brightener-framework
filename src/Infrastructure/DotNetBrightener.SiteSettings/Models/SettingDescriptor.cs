@@ -1,16 +1,14 @@
-﻿using Newtonsoft.Json;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DotNetBrightener.SiteSettings.Models;
 
 public abstract class SettingDescriptor
 {
+    [NotMapped]
     public abstract string SettingName { get; }
 
+    [NotMapped]
     public abstract string Description { get; }
-
-    public abstract string DescriptionLocalizationKey { get; }
-
-    public abstract string SettingNameLocalizationKey { get; }
 }
 
 public class SettingDescriptorModel: SettingDescriptor
@@ -18,12 +16,6 @@ public class SettingDescriptorModel: SettingDescriptor
     public override string SettingName { get; }
 
     public override string Description { get; }
-
-    [JsonIgnore]
-    public override string DescriptionLocalizationKey { get; }
-
-    [JsonIgnore]
-    public override string SettingNameLocalizationKey { get; }
 
     public string SettingType { get; set; }
 

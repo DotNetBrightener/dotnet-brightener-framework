@@ -104,11 +104,6 @@ public class Scheduler : IScheduler
 
     private async Task InvokeEvent(ScheduledTask scheduledTask)
     {
-        await using var scope          = _scopeFactory.CreateAsyncScope();
-        var             scopeProvider  = scope.ServiceProvider;
-        var             eventPublisher = scopeProvider.GetService<IEventPublisher>();
-
-
         async Task Invoke()
         {
             _logger.LogDebug("Scheduled task started...");
@@ -118,37 +113,43 @@ public class Scheduler : IScheduler
             _logger.LogDebug("Scheduled task finished...");
         }
 
-        try
+        using (var scope = _scopeFactory.CreateScope())
         {
-            await eventPublisher.Publish(new ScheduledEventStarted(scheduledTask));
+            var scopeProvider  = scope.ServiceProvider;
+            var eventPublisher = scopeProvider.GetService<IEventPublisher>();
 
-            if (scheduledTask.ShouldPreventOverlapping())
+            try
             {
-                if (_lockedTasksContainer.TryLock(scheduledTask.OverlappingUniqueIdentifier(),
-                                                  TimeSpan.FromHours(24)))
+                await eventPublisher.Publish(new ScheduledEventStarted(scheduledTask));
+
+                if (scheduledTask.ShouldPreventOverlapping())
                 {
-                    try
+                    if (_lockedTasksContainer.TryLock(scheduledTask.OverlappingUniqueIdentifier(),
+                                                      TimeSpan.FromHours(24)))
                     {
-                        await Invoke();
-                    }
-                    finally
-                    {
-                        _lockedTasksContainer.Release(scheduledTask.OverlappingUniqueIdentifier());
+                        try
+                        {
+                            await Invoke();
+                        }
+                        finally
+                        {
+                            _lockedTasksContainer.Release(scheduledTask.OverlappingUniqueIdentifier());
+                        }
                     }
                 }
+                else
+                {
+                    await Invoke();
+                }
+
+                await eventPublisher.Publish(new ScheduledEventEnded(scheduledTask));
             }
-            else
+            catch (Exception e)
             {
-                await Invoke();
+                _logger?.LogError(e, "A scheduled task threw an Exception: ");
+
+                await eventPublisher.Publish(new ScheduledEventFailed(scheduledTask, e));
             }
-
-            await eventPublisher.Publish(new ScheduledEventEnded(scheduledTask));
-        }
-        catch (Exception e)
-        {
-            _logger?.LogError(e, "A scheduled task threw an Exception: ");
-
-            await eventPublisher.Publish(new ScheduledEventFailed(scheduledTask, e));
         }
     }
 

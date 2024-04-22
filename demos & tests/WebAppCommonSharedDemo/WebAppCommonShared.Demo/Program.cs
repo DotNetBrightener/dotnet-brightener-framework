@@ -60,6 +60,8 @@ builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddExceptionHandler<UnhandledExceptionResponseHandler>();
 builder.Services.AddProblemDetails();
 
+builder.Services.EnableBackgroundTaskServices(builder.Configuration);
+
 
 //-----------------------------------------------------------------------------------------------
 //  App Client Manager: To allow only registered clients to access the APIs

@@ -135,30 +135,31 @@ internal class StartupTaskExecutionHostedService : IHostedService, IDisposable
     {
         var taskType = startupTaskType.Name;
 
-        using var backgroundTaskScope = _serviceScopeFactory.CreateScope();
-
-        if (backgroundTaskScope.ServiceProvider
-                               .TryGet(startupTaskType) is not IStartupTask taskInstance)
+        using (var backgroundTaskScope = _serviceScopeFactory.CreateScope())
         {
-            logger.LogWarning("Cannot resolve task {taskType} from the service collection. Skipping...",
-                              taskType);
+            if (backgroundTaskScope.ServiceProvider
+                                   .TryGet(startupTaskType) is not IStartupTask taskInstance)
+            {
+                logger.LogWarning("Cannot resolve task {taskType} from the service collection. Skipping...",
+                                  taskType);
 
-            return;
+                return;
+            }
+
+
+            logger.LogInformation("Starting task {taskType} execution {syncState}...",
+                                  taskType,
+                                  taskInstance is ISynchronousStartupTask
+                                      ? "synchronously"
+                                      : "asynchronously");
+
+            var sw = Stopwatch.StartNew();
+
+            await taskInstance.Execute();
+
+            logger.LogInformation("Finished task {taskType} execution after {Elapsed}.", taskType, sw.Elapsed);
+
+            sw.Stop();
         }
-
-
-        logger.LogInformation("Starting task {taskType} execution {syncState}...",
-                              taskType,
-                              taskInstance is ISynchronousStartupTask
-                                  ? "synchronously"
-                                  : "asynchronously");
-
-        var sw = Stopwatch.StartNew();
-
-        await taskInstance.Execute();
-
-        sw.Stop();
-
-        logger.LogInformation("Finished task {taskType} execution after {Elapsed}.", taskType, sw.Elapsed);
     }
 }

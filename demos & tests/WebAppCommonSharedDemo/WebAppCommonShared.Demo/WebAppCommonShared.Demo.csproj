@@ -28,6 +28,8 @@
 		<ProjectReference Include="..\..\..\src\AppClientManager\DotNetBrightener.Infrastructure.AppClientManager.DataStorage\DotNetBrightener.Infrastructure.AppClientManager.DataStorage.csproj" />
 		<ProjectReference Include="..\..\..\src\AppClientManager\DotNetBrightener.Infrastructure.AppClientManager.JwtAuthentication\DotNetBrightener.Infrastructure.AppClientManager.JwtAuthentication.csproj" />
 		<ProjectReference Include="..\..\..\src\AppClientManager\DotNetBrightener.Infrastructure.AppClientManager\DotNetBrightener.Infrastructure.AppClientManager.csproj" />
+		<ProjectReference Include="..\..\..\src\BackgroundTasks\DotNetBrightener.Core.BackgroundTasks.DependencyInjection\DotNetBrightener.Core.BackgroundTasks.DependencyInjection.csproj" />
+		<ProjectReference Include="..\..\..\src\BackgroundTasks\DotNetBrightener.Core.BackgroundTasks\DotNetBrightener.Core.BackgroundTasks.csproj" />
 		<ProjectReference Include="..\..\..\src\Core\DotNetBrightener.WebSocketExt\DotNetBrightener.WebSocketExt.csproj" />
 		<ProjectReference Include="..\..\..\src\Core\LanguageExts\LanguageExts.csproj" />
 		<ProjectReference Include="..\..\..\src\DataAccess\DotNetBrightener.DataAccess.Abstractions\DotNetBrightener.DataAccess.Abstractions.csproj" />

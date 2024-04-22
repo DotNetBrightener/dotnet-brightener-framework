@@ -8,7 +8,9 @@ internal class TestSetting : SiteSettingWrapper<TestSetting>
 {
     public string TestString { get; set; } = "hello world";
 
-    public          int    TestInt                    { get; set; } = 2;
+    public          int    TestInt     { get; set; } = 2;
+    public override string SettingName => "";
+    public override string Description => "";
 }
 
 public class TestSiteSettingObject

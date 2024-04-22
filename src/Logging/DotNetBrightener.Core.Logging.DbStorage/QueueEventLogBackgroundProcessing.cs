@@ -56,46 +56,30 @@ internal class QueueEventLogBackgroundProcessing : IQueueEventLogBackgroundProce
 
             var defaultLogOld = DateTime.UtcNow.AddDays(-_loggingRetentions.DefaultRetentionsInDay);
 
-            var errorLogStrings = new[]
-                {
-                    LogLevel.Error.ToString(),
-                    LogLevel.Fatal.ToString(),
-                    Microsoft.Extensions.Logging.LogLevel.Error.ToString(),
-                    Microsoft.Extensions.Logging.LogLevel.Critical.ToString()
-                }.Distinct()
-                 .ToArray();
-
-            var warningLogStrings = new[]
-            {
-                LogLevel.Warn.ToString(), Microsoft.Extensions.Logging.LogLevel.Warning.ToString()
-            };
-
-            string[] errorAndWarning = [.. errorLogStrings, .. warningLogStrings];
-
-
             _logger.LogDebug(LogMessage, LogLevel.Error, errorLogOld);
 
             var eventLogsTable = loggingDbContext.Set<EventLog>();
 
             await eventLogsTable
-                 .Where(_ => errorLogStrings.Contains(_.Level) &&
-                             _.TimeStamp <= errorLogOld)
+                 .Where(eventLog => (eventLog.Level == "Error" || eventLog.Level == "Fatal" ||
+                                     eventLog.Level == "Critical") &&
+                                    eventLog.TimeStamp <= errorLogOld)
                  .ExecuteDeleteAsync();
 
             // delete warning logs
             _logger.LogDebug(LogMessage, LogLevel.Warn, warningLogOld);
 
             await eventLogsTable
-                 .Where(_ => warningLogStrings.Contains(_.Level) &&
-                             _.TimeStamp <= warningLogOld)
+                 .Where(eventLog => (eventLog.Level == "Warn" || eventLog.Level == "Warning") &&
+                                    eventLog.TimeStamp <= warningLogOld)
                  .ExecuteDeleteAsync();
 
             // delete other logs
             _logger.LogDebug(LogMessage, "Other", defaultLogOld);
 
             await eventLogsTable
-                 .Where(_ => !errorAndWarning.Contains(_.Level) &&
-                             _.TimeStamp <= defaultLogOld)
+                 .Where(eventLog => (eventLog.Level == "Info" || eventLog.Level == "Information") &&
+                                    eventLog.TimeStamp <= defaultLogOld)
                  .ExecuteDeleteAsync();
 
             var eventLogRecords = _eventLogWatcher.GetQueuedEventLogRecords();
@@ -112,14 +96,22 @@ internal class QueueEventLogBackgroundProcessing : IQueueEventLogBackgroundProce
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex,
-                                   "BulkInsert failed to insert {numberOfRecords} records entities of type {Type}. " +
-                                   "Retrying with slow insert...",
-                                   dataToLog.Count,
-                                   nameof(EventLog));
+                try
+                {
 
-                await eventLogsTable.AddRangeAsync(dataToLog);
-                await loggingDbContext.SaveChangesAsync();
+                    _logger.LogWarning(ex,
+                                       "BulkInsert failed to insert {numberOfRecords} records entities of type {Type}. " +
+                                       "Retrying with slow insert...",
+                                       dataToLog.Count,
+                                       nameof(EventLog));
+
+                    await eventLogsTable.AddRangeAsync(dataToLog);
+                    await loggingDbContext.SaveChangesAsync();
+                }
+                catch
+                {
+                    // just ignore
+                }
             }
         }
     }

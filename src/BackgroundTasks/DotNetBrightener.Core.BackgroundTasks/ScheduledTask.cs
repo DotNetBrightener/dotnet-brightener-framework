@@ -78,37 +78,38 @@ public class ScheduledTask : IScheduleConfig
 
         var taskName = InvocableType.FullName;
 
-        await using AsyncServiceScope serviceScope = new(_scopeFactory.CreateAsyncScope());
-
-        logger.LogInformation("Resolving task instance of type {taskName}...", taskName);
-
-        if (serviceScope.ServiceProvider.GetRequiredService(InvocableType) is not IBackgroundTask invocable)
+        using (var serviceScope = _scopeFactory.CreateScope())
         {
-            logger.LogWarning("Cannot resolve task instance of type {taskName}. Exiting...", taskName);
+            logger.LogInformation("Resolving task instance of type {taskName}...", taskName);
 
-            return;
-        }
+            if (serviceScope.ServiceProvider.GetRequiredService(InvocableType) is not IBackgroundTask invocable)
+            {
+                logger.LogWarning("Cannot resolve task instance of type {taskName}. Exiting...", taskName);
 
-        if (invocable is ICancellableTask cancellableInvokable)
-        {
-            cancellableInvokable.CancellationToken = cancellationToken;
-        }
+                return;
+            }
 
-        try
-        {
-            logger.LogInformation("Executing task {taskName}...", taskName);
-            await invocable.Execute();
-        }
-        catch (Exception exception)
-        {
-            logger.LogError(exception, "Error while running background task {taskName}", taskName);
-        }
-        finally
-        {
-            stopWatch.Stop();
-            logger.LogInformation("Finished executing task {taskName} in {elapsed}",
-                                  invocable.GetType().FullName,
-                                  stopWatch.Elapsed);
+            if (invocable is ICancellableTask cancellableInvokable)
+            {
+                cancellableInvokable.CancellationToken = cancellationToken;
+            }
+
+            try
+            {
+                logger.LogInformation("Executing task {taskName}...", taskName);
+                await invocable.Execute();
+            }
+            catch (Exception exception)
+            {
+                logger.LogError(exception, "Error while running background task {taskName}", taskName);
+            }
+            finally
+            {
+                stopWatch.Stop();
+                logger.LogInformation("Finished executing task {taskName} in {elapsed}",
+                                      invocable.GetType().FullName,
+                                      stopWatch.Elapsed);
+            }
         }
     }
 
@@ -117,49 +118,51 @@ public class ScheduledTask : IScheduleConfig
         var stopWatch = Stopwatch.StartNew();
         logger.LogInformation("Starting new service scope...");
 
-        await using AsyncServiceScope scope = new(_scopeFactory.CreateAsyncScope());
+        var invocableType = ScheduledTaskAction.InvocableType;
 
-        var backgroundServiceProvider = scope.ServiceProvider;
-        var invocableType             = ScheduledTaskAction.InvocableType;
-
-        object invokingInstance = null;
-
-        try
+        using (var scope = _scopeFactory.CreateScope())
         {
-            logger.LogInformation("Trying to get instance of {invocableType}...", invocableType);
+            var backgroundServiceProvider = scope.ServiceProvider;
 
-            invokingInstance = backgroundServiceProvider.TryGet(invocableType);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error while resolving instance of {invocableType}", invocableType);
-        }
+            object invokingInstance = null;
 
-        if (invokingInstance is null)
-        {
-            logger.LogError("Unable to execute background queued task. " +
-                            "Could not find the {backgroundTaskType} instance that can invoke the scheduled method",
-                            invocableType.Name);
+            try
+            {
+                logger.LogInformation("Trying to get instance of {invocableType}...", invocableType);
 
-            return;
-        }
+                invokingInstance = backgroundServiceProvider.TryGet(invocableType);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error while resolving instance of {invocableType}", invocableType);
+            }
 
-        try
-        {
-            await ScheduledTaskAction.Invoke(logger, invokingInstance, cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex,
-                            "Error while executing background task {backgroundTaskType}.",
-                            invocableType.Name);
-        }
-        finally
-        {
-            stopWatch.Stop();
-            logger.LogInformation("Finished executing task {taskName} in {elapsed}",
-                                  ScheduledTaskAction.TaskName,
-                                  stopWatch.Elapsed);
+            if (invokingInstance is null)
+            {
+                logger.LogError("Unable to execute background queued task. " +
+                                "Could not find the {backgroundTaskType} instance that can invoke the scheduled method",
+                                invocableType.Name);
+
+                return;
+            }
+
+            try
+            {
+                await ScheduledTaskAction.Invoke(logger, invokingInstance, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex,
+                                "Error while executing background task {backgroundTaskType}.",
+                                invocableType.Name);
+            }
+            finally
+            {
+                stopWatch.Stop();
+                logger.LogInformation("Finished executing task {taskName} in {elapsed}",
+                                      ScheduledTaskAction.TaskName,
+                                      stopWatch.Elapsed);
+            }
         }
     }
 

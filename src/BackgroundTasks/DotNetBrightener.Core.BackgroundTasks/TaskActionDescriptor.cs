@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using Microsoft.CSharp.RuntimeBinder;
 using Microsoft.Extensions.Logging;
 
 namespace DotNetBrightener.Core.BackgroundTasks;
@@ -21,11 +22,11 @@ public class TaskActionDescriptor
 
     public TaskActionDescriptor(MethodInfo action, params object[] parameters)
     {
-        _isAsync = action.ReturnType.GetMethod(nameof(Task.GetAwaiter)) != null;
-        _action = action;
-        _parameters = parameters;
+        _isAsync      = action.ReturnType.GetMethod(nameof(Task.GetAwaiter)) != null;
+        _action       = action;
+        _parameters   = parameters;
         InvocableType = _action.DeclaringType;
-        Guid = Guid.NewGuid();
+        Guid          = Guid.NewGuid();
     }
 
     public async Task Invoke(ILogger logger, object invokingInstance, CancellationToken cancellationToken)
@@ -41,25 +42,21 @@ public class TaskActionDescriptor
             return;
         }
 
-        var invokeResult = Task.Run(async () =>
-                                    {
-                                        try
-                                        {
-                                            var result = await (dynamic)_action.Invoke(invokingInstance, _parameters);
+        try
+        {
+            var result = await (dynamic)_action.Invoke(invokingInstance, _parameters);
 
-                                            return result;
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            logger.LogError(ex,
-                                                            "Error executing task: {taskName}. Returning result as null.",
-                                                            TaskName);
-
-                                            return null;
-                                        }
-                                    },
-                                    cancellationToken);
-
-        TaskResult = invokeResult;
+            TaskResult = Task.FromResult(result);
+        }
+        catch (RuntimeBinderException)
+        {
+            // ignore this exception;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex,
+                            "Error executing task: {taskName}. Returning result as null.",
+                            TaskName);
+        }
     }
 }
