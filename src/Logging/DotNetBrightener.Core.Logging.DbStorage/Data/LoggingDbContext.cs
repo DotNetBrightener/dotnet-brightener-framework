@@ -28,12 +28,30 @@ public class LoggingDbContext : DbContext
 
         eventLogEntity.Property(el => el.RequestId)
                       .HasMaxLength(512);
-        
+
+        // single indexes
+        eventLogEntity.HasIndex(el => el.Level);
+        eventLogEntity.HasIndex(el => el.TimeStamp);
+        eventLogEntity.HasIndex(el => el.LoggerName);
+
+        // composite indexes
         eventLogEntity.HasIndex(el => el.TimeStamp)
                       .IncludeProperties(el => el.Level);
+        
+        eventLogEntity.HasIndex(el => el.TimeStamp)
+                      .IncludeProperties(el => new
+                       {
+                           el.Level,
+                           el.LoggerName
+                      });
 
+        eventLogEntity.HasIndex(el => el.LoggerName);
         eventLogEntity.HasIndex(el => el.LoggerName)
-                      .IncludeProperties(el => el.Level);
+                      .IncludeProperties(el => new
+                       {
+                           el.Level,
+                           el.TimeStamp
+                      });
 
         eventLogEntity.HasIndex(el => el.RequestId)
                       .IncludeProperties(el => new

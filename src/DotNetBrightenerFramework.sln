@@ -197,15 +197,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Core.Backg
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Core.BackgroundTasks.DependencyInjection", "BackgroundTasks\DotNetBrightener.Core.BackgroundTasks.DependencyInjection\DotNetBrightener.Core.BackgroundTasks.DependencyInjection.csproj", "{DAF33A92-DF8F-4BFB-B8AB-A04E6E698ED4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetBrightener.Core.BackgroundTasks.Tests", "BackgroundTasks\DotNetBrightener.Core.BackgroundTasks.Tests\DotNetBrightener.Core.BackgroundTasks.Tests.csproj", "{B42E270F-60D5-4EE6-95B2-0AFB0C947FE8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Core.BackgroundTasks.Tests", "BackgroundTasks\DotNetBrightener.Core.BackgroundTasks.Tests\DotNetBrightener.Core.BackgroundTasks.Tests.csproj", "{B42E270F-60D5-4EE6-95B2-0AFB0C947FE8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetBrightener.WebSocketExt", "Core\DotNetBrightener.WebSocketExt\DotNetBrightener.WebSocketExt.csproj", "{5F59AD9D-1CB8-4E59-A192-72F326DC77FC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.WebSocketExt", "Core\DotNetBrightener.WebSocketExt\DotNetBrightener.WebSocketExt.csproj", "{5F59AD9D-1CB8-4E59-A192-72F326DC77FC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SharedUtils", "SharedUtils", "{17CF6FFF-1966-4534-8B68-6AAE4AE440BD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VampireCoder.SharedUtils", "Core\VampireCoder.SharedUtils\VampireCoder.SharedUtils.csproj", "{052DB4F4-5DA4-4DEE-897F-C072622FCA09}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VampireCoder.SharedUtils", "Core\VampireCoder.SharedUtils\VampireCoder.SharedUtils.csproj", "{052DB4F4-5DA4-4DEE-897F-C072622FCA09}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetBrightener.DataAccess.Abstractions.Models", "DataAccess\DotNetBrightener.DataAccess.Abstractions.Models\DotNetBrightener.DataAccess.Abstractions.Models.csproj", "{62D1DEFD-E4AC-4785-9847-0AD94CDDAAB9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.DataAccess.Abstractions.Models", "DataAccess\DotNetBrightener.DataAccess.Abstractions.Models\DotNetBrightener.DataAccess.Abstractions.Models.csproj", "{62D1DEFD-E4AC-4785-9847-0AD94CDDAAB9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AppClientManager", "AppClientManager", "{BCA4DB30-569A-4C2A-A2FB-D9D042306DE3}"
 EndProject
@@ -217,7 +217,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Infrastruc
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VampireCoder.SharedUtils.Tests", "Core\VampireCoder.SharedUtils.Tests\VampireCoder.SharedUtils.Tests.csproj", "{8A958F2C-B600-4486-9CAF-0898B8799980}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetBrightener.Infrastructure.AppClientManager.JwtAuthentication", "AppClientManager\DotNetBrightener.Infrastructure.AppClientManager.JwtAuthentication\DotNetBrightener.Infrastructure.AppClientManager.JwtAuthentication.csproj", "{BABF41F8-66A1-444E-B2FC-9CEECCF86271}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Infrastructure.AppClientManager.JwtAuthentication", "AppClientManager\DotNetBrightener.Infrastructure.AppClientManager.JwtAuthentication\DotNetBrightener.Infrastructure.AppClientManager.JwtAuthentication.csproj", "{BABF41F8-66A1-444E-B2FC-9CEECCF86271}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SharedExtensions.Tasks", "Shared\SharedExtensions.Tasks\SharedExtensions.Tasks.shproj", "{11637D4C-0F4D-40A5-ADFC-F93BA27A4277}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -854,6 +856,7 @@ Global
 		{A8649AD3-87D6-4ED0-B036-CCCEBCC09CCC} = {BCA4DB30-569A-4C2A-A2FB-D9D042306DE3}
 		{8A958F2C-B600-4486-9CAF-0898B8799980} = {17CF6FFF-1966-4534-8B68-6AAE4AE440BD}
 		{BABF41F8-66A1-444E-B2FC-9CEECCF86271} = {BCA4DB30-569A-4C2A-A2FB-D9D042306DE3}
+		{11637D4C-0F4D-40A5-ADFC-F93BA27A4277} = {7205287C-4CD6-4E4D-830D-46F0BBEBB605}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CBA29A5C-A736-4EB9-8D61-8E76924706CD}
@@ -861,6 +864,7 @@ Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{052db4f4-5da4-4dee-897f-c072622fca09}*SharedItemsImports = 5
 		Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{0f0e79f0-bcb6-43d1-8a4a-5a1d50c36a22}*SharedItemsImports = 13
+		Shared\SharedExtensions.Tasks\SharedExtensions.Tasks.projitems*{11637d4c-0f4d-40a5-adfc-f93ba27a4277}*SharedItemsImports = 13
 		Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{11a36038-d86a-4dc9-b660-d881d242ee2f}*SharedItemsImports = 5
 		Shared\SharedExtensions.String\StringExtensions.projitems*{11a36038-d86a-4dc9-b660-d881d242ee2f}*SharedItemsImports = 5
 		Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{19af613c-2d7c-47aa-ac5e-eebece67dddc}*SharedItemsImports = 5
@@ -913,6 +917,7 @@ Global
 		Shared\SharedExtensions.HttpContext\SharedExtensions.HttpContext.projitems*{b105c5a6-97ed-470a-af1a-e1cb783ee3c5}*SharedItemsImports = 5
 		Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{b105c5a6-97ed-470a-af1a-e1cb783ee3c5}*SharedItemsImports = 5
 		Shared\SharedExtensions.ServiceCollection\SharedExtensions.ServiceCollectionExtensions.projitems*{b105c5a6-97ed-470a-af1a-e1cb783ee3c5}*SharedItemsImports = 5
+		Shared\SharedExtensions.Tasks\SharedExtensions.Tasks.projitems*{b105c5a6-97ed-470a-af1a-e1cb783ee3c5}*SharedItemsImports = 5
 		Shared\SharedExtensions.HttpContext\SharedExtensions.HttpContext.projitems*{ba30f962-4294-41ab-a6da-8cca94371abb}*SharedItemsImports = 5
 		Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{ba30f962-4294-41ab-a6da-8cca94371abb}*SharedItemsImports = 5
 		Shared\SharedExtensions.String\StringExtensions.projitems*{ba30f962-4294-41ab-a6da-8cca94371abb}*SharedItemsImports = 5
@@ -952,6 +957,7 @@ Global
 		Shared\SharedExtensions.XmlDocumentationHelper\SharedExtensions.XmlDocumentationHelper.projitems*{f57e424a-9d77-4321-b557-377c63832857}*SharedItemsImports = 5
 		Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{f8b759bf-443b-460f-9f75-74ca3a9b10a7}*SharedItemsImports = 5
 		Shared\SharedExtensions.ServiceCollection\SharedExtensions.ServiceCollectionExtensions.projitems*{f8b759bf-443b-460f-9f75-74ca3a9b10a7}*SharedItemsImports = 5
+		Shared\SharedExtensions.Tasks\SharedExtensions.Tasks.projitems*{f8b759bf-443b-460f-9f75-74ca3a9b10a7}*SharedItemsImports = 5
 		Shared\SharedExtensions.Exception\SharedExtensions.Exception.projitems*{fe4e97e2-286f-47ee-a7a9-aca29fd3e217}*SharedItemsImports = 13
 		Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{fee73ea3-4c91-4ceb-8236-dbf2391c4fa1}*SharedItemsImports = 5
 		Shared\SharedExtensions.UI.Core\SharedExtensions.UI.Core.projitems*{fee73ea3-4c91-4ceb-8236-dbf2391c4fa1}*SharedItemsImports = 5

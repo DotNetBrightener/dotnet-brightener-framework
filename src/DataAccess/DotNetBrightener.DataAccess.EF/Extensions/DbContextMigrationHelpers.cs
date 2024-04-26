@@ -45,7 +45,7 @@ public static class DbContextMigrationHelpers
                     logger?.LogInformation("Migration {pendingMigration} executed.", pendingMigration);
                 }
             }
-            catch (System.Exception exception)
+            catch (Exception exception)
             {
                 logger?.LogError(exception,
                                  "Error while executing migration for context {dbContextName}",

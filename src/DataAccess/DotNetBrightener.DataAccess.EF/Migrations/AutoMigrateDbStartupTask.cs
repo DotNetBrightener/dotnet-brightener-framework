@@ -21,8 +21,6 @@ public class AutoMigrateDbStartupTask<TDbContext> : IHostedService
         _logger              = logger;
     }
 
-    public int Order => 0;
-
     public Task StartAsync(CancellationToken cancellationToken)
     {
         using var scope  = _serviceScopeFactory.CreateScope();
@@ -33,7 +31,7 @@ public class AutoMigrateDbStartupTask<TDbContext> : IHostedService
 
         using var dbContext = scope.ServiceProvider.GetRequiredService<TDbContext>();
 
-        dbContext.AutoMigrateDbSchema();
+        dbContext.AutoMigrateDbSchema(_logger);
 
         return Task.CompletedTask;
     }

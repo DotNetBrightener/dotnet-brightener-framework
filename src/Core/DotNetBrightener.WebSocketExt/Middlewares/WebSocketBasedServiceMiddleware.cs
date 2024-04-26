@@ -78,6 +78,11 @@ internal class WebSocketBasedServiceMiddleware
 
             await connectionManager.AttachConnection(connectionId, webSocket);
 
+            if (httpContext.User?.Identity?.IsAuthenticated == true)
+            {
+                await connectionManager.AttachUser(connectionId, httpContext.GetCurrentUserId()!.ToString());
+            }
+
             connectionInfo.IsDebugMode = debugMode;
         }
 

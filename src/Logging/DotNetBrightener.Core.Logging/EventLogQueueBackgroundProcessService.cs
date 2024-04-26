@@ -9,8 +9,8 @@ public class EventLogQueueBackgroundProcessService : IHostedService, IDisposable
 {
     private readonly ILogger<EventLogQueueBackgroundProcessService> _logger;
     private readonly IServiceScopeFactory                           _serviceScopeFactory;
-    private          Timer?                                         _timer        = null;
-    private          bool                                           _isProcessing = false;
+    private          Timer?                                         _timer;
+    private          bool                                           _isProcessing;
 
     public EventLogQueueBackgroundProcessService(ILogger<EventLogQueueBackgroundProcessService> logger,
                                                  IServiceScopeFactory                           serviceScopeFactory)
@@ -35,7 +35,9 @@ public class EventLogQueueBackgroundProcessService : IHostedService, IDisposable
     {
         if (state is not IServiceScopeFactory serviceScopeFactory ||
             _isProcessing)
+        {
             return;
+        }
 
         _logger.LogDebug("Prevent logger from executing until finish this execution");
         _isProcessing = _timer!.Change(Timeout.Infinite, 0);
@@ -50,13 +52,6 @@ public class EventLogQueueBackgroundProcessService : IHostedService, IDisposable
 
             queueEventLogBackgroundProcessing.Execute()
                                              .Wait();
-        }
-        catch (NotImplementedException ex)
-        {
-        }
-        catch (Exception ex)
-        {
-            // unable to process logs, just ignore
         }
         finally
         {

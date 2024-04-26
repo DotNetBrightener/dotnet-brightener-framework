@@ -1,17 +1,22 @@
-﻿using System.Collections.Concurrent;
-using System.Net.WebSockets;
-using DotNetBrightener.WebSocketExt.Messages;
+﻿using DotNetBrightener.WebSocketExt.Messages;
 using Microsoft.Extensions.Options;
+using System.Collections.Concurrent;
+using System.Collections.ObjectModel;
+using System.Net.WebSockets;
 
 namespace DotNetBrightener.WebSocketExt.Services;
 
 public interface IConnectionManager
 {
+    Task<ReadOnlyCollection<ConnectionInfo>> GetAllConnections();
+
     Task AddConnection(string connectionId, ConnectionInfo connectionInfo);
 
     Task<ConnectionInfo> AddConnection(string connectionId, WebSocket socket);
 
     Task AttachConnection(string connectionId, WebSocket socket);
+
+    Task AttachUser(string connectionId, string userId);
 
     Task RemoveConnection(string connectionId);
 
@@ -20,6 +25,10 @@ public interface IConnectionManager
     Task DeliverMessage(string            connectionId,
                         ResponseMessage   responseMessage,
                         CancellationToken cancellationToken = default);
+
+    Task DeliverMessageToUser(string            userId,
+                              ResponseMessage   responseMessage,
+                              CancellationToken cancellationToken = default);
 
     Task DeliverMessageToAllChannels(ResponseMessage   responseMessage,
                                      CancellationToken cancellationToken = default);
@@ -33,6 +42,11 @@ public class DefaultConnectionManager : IConnectionManager
     public DefaultConnectionManager(IOptions<WebSocketExtOptions> options)
     {
         _options = options.Value;
+    }
+
+    public Task<ReadOnlyCollection<ConnectionInfo>> GetAllConnections()
+    {
+        return Task.FromResult(new ReadOnlyCollection<ConnectionInfo>(_activeConnections.Values.ToList()));
     }
 
     public Task AddConnection(string connectionId, ConnectionInfo connectionInfo)
@@ -66,6 +80,16 @@ public class DefaultConnectionManager : IConnectionManager
         return Task.CompletedTask;
     }
 
+    public Task AttachUser(string connectionId, string userId)
+    {
+        if (_activeConnections.TryGetValue(connectionId, out var connectionInfo))
+        {
+            connectionInfo!.UserIdentifier = userId;
+        }
+
+        return Task.CompletedTask;
+    }
+
     public Task RemoveConnection(string connectionId)
     {
         _activeConnections.Remove(connectionId, out _);
@@ -87,26 +111,51 @@ public class DefaultConnectionManager : IConnectionManager
             connectionInfo!.Socket?.State != WebSocketState.Open)
             return;
 
-        await connectionInfo.Socket.DeliverMessage(responseMessage,
-                                                   _options.SendReceiveBufferSizeInBytes,
-                                                   needCompress: !connectionInfo.IsDebugMode,
-                                                   cancellationToken);
+        await connectionInfo.DeliverMessage(responseMessage,
+                                            _options.SendReceiveBufferSizeInBytes,
+                                            needCompress: !connectionInfo.IsDebugMode,
+                                            cancellationToken);
+    }
+
+    public async Task DeliverMessageToUser(string            userId,
+                                           ResponseMessage   responseMessage,
+                                           CancellationToken cancellationToken = default)
+    {
+        var tasksList = new List<Task>();
+
+        foreach (var (k, connectionInfo) in _activeConnections)
+        {
+            if (connectionInfo.UserIdentifier == userId &&
+                connectionInfo!.Socket is not null &&
+                connectionInfo!.Socket?.State == WebSocketState.Open)
+            {
+                tasksList.Add(connectionInfo.DeliverMessage(responseMessage,
+                                                            _options.SendReceiveBufferSizeInBytes,
+                                                            needCompress: !connectionInfo.IsDebugMode,
+                                                            cancellationToken));
+            }
+        }
+
+        await Task.WhenAll(tasksList);
     }
 
     public async Task DeliverMessageToAllChannels(ResponseMessage   responseMessage,
                                                   CancellationToken cancellationToken = default)
     {
+        var tasksList = new List<Task>();
         foreach (var (k, connectionInfo) in _activeConnections)
         {
             if (connectionInfo is null ||
                 connectionInfo.Socket is null ||
                 connectionInfo.Socket.State != WebSocketState.Open)
                 continue;
-            
-            await connectionInfo.Socket.DeliverMessage(responseMessage,
-                                                       _options.SendReceiveBufferSizeInBytes,
-                                                       needCompress: !connectionInfo.IsDebugMode,
-                                                       cancellationToken);
+
+            tasksList.Add(connectionInfo.DeliverMessage(responseMessage,
+                                                        _options.SendReceiveBufferSizeInBytes,
+                                                        needCompress: !connectionInfo.IsDebugMode,
+                                                        cancellationToken));
         }
+
+        await Task.WhenAll(tasksList);
     }
 }
