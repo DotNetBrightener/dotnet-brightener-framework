@@ -1,6 +1,10 @@
 ﻿# Simple Upload API for ASP.NET Application
 
-&copy; 2024 DotNet Brightener
+
+&copy; 2024 [DotNet Brightener](mailto:admin@dotnetbrightener.com)
+
+
+![NuGet Version](https://img.shields.io/nuget/v/DotNetBrightener.SimpleUploadService)
 
 ## Installation
 
