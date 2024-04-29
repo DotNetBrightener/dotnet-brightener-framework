@@ -13,21 +13,17 @@ public class LoggingDbContext : DbContext
     {
         var eventLogEntity = modelBuilder.Entity<EventLog>();
 
-        eventLogEntity.ToTable(nameof(EventLog), "Logging");
+        eventLogEntity.ToTable(nameof(EventLog), "Log");
 
         eventLogEntity.HasKey(x => x.Id);
 
-        eventLogEntity.Property(el => el.LoggerName)
-                      .HasMaxLength(1024);
+        eventLogEntity.Property(el => el.LoggerName);
 
-        eventLogEntity.Property(el => el.Level)
-                      .HasMaxLength(32);
+        eventLogEntity.Property(el => el.Level);
 
-        eventLogEntity.Property(el => el.RemoteIpAddress)
-                      .HasMaxLength(64);
+        eventLogEntity.Property(el => el.RemoteIpAddress);
 
-        eventLogEntity.Property(el => el.RequestId)
-                      .HasMaxLength(512);
+        eventLogEntity.Property(el => el.RequestId);
 
         // single indexes
         eventLogEntity.HasIndex(el => el.Level);

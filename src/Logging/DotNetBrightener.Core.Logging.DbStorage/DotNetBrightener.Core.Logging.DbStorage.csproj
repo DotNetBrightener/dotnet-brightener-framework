@@ -31,4 +31,6 @@
 
 	<Import Project="..\..\Shared\SharedExtensions.Tasks\SharedExtensions.Tasks.projitems" Label="Shared" />
 
+	<Import Project="..\..\Shared\SharedExtensions.Expression\SharedExtensions.Expression.projitems" Label="Shared" />
+
 </Project>

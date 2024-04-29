@@ -1,11 +1,12 @@
-﻿using System.Diagnostics;
-using DotNetBrightener.Core.Logging.DbStorage.Data;
+﻿using DotNetBrightener.Core.Logging.DbStorage.Data;
 using DotNetBrightener.Core.Logging.Options;
 using LinqToDB.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Diagnostics;
+using System.Linq.Expressions;
 
 namespace DotNetBrightener.Core.Logging.DbStorage;
 
@@ -14,11 +15,7 @@ internal class QueueEventLogBackgroundProcessing : IQueueEventLogBackgroundProce
     private readonly IEventLogWatcher     _eventLogWatcher;
     private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly LoggingRetentions    _loggingRetentions;
-
-    private readonly ILogger _logger;
-
-    // delete error logs
-    private const string LogMessage = "Removing {logLevel} logs which are older than {logTimestamp}";
+    private readonly ILogger              _logger;
 
     public QueueEventLogBackgroundProcessing(IEventLogWatcher                           eventLogWatcher,
                                              IOptions<LoggingRetentions>                loggingRetentionOptions,
@@ -36,9 +33,14 @@ internal class QueueEventLogBackgroundProcessing : IQueueEventLogBackgroundProce
         var taskList = new List<Func<LoggingDbContext, Task>>
         {
             context =>
-                CleanUpLogsByLevel(context, _loggingRetentions.ErrorRetentionsInDay, ["Error", "Fatal", "Critical"]),
-            context => CleanUpLogsByLevel(context, _loggingRetentions.WarningRetentionsInDay, ["Warning", "Warn"]),
-            context => CleanUpLogsByLevel(context, _loggingRetentions.DefaultRetentionsInDay, ["Info", "Information"]),
+                CleanUpLogsByLevel(context,
+                                   TimeSpan.FromDays(_loggingRetentions.ErrorRetentionsInDay),
+                                   ["Error", "Fatal", "Critical"]),
+            context =>
+                CleanUpLogsByLevel(context,
+                                   TimeSpan.FromDays(_loggingRetentions.WarningRetentionsInDay),
+                                   ["Warning", "Warn"]),
+            context => CleanUpLogsByLevel(context, _loggingRetentions.DefaultRetentions, ["Info", "Information"]),
             WriteNewLogs,
         };
 
@@ -64,20 +66,75 @@ internal class QueueEventLogBackgroundProcessing : IQueueEventLogBackgroundProce
     {
         var retentionStartDate = DateTime.UtcNow.Subtract(retention);
 
+        _logger.LogInformation("Deleting logs from logger {logger}", loggerName);
+
+        Expression<Func<EventLog, bool>> loggerFilterExpression;
+
+        var loggerNameActuallyName = loggerName.Trim('*')
+                                               .Trim();
+
+        if (loggerName.StartsWith("*") &&
+            loggerName.EndsWith("*"))
+        {
+            loggerFilterExpression = eventLog => eventLog.LoggerName.Contains(loggerNameActuallyName);
+        }
+        else if (loggerName.StartsWith("*"))
+        {
+            loggerFilterExpression = eventLog => eventLog.LoggerName.EndsWith(loggerNameActuallyName);
+        }
+        else if (loggerName.EndsWith("*"))
+        {
+            loggerFilterExpression = eventLog => eventLog.LoggerName.StartsWith(loggerNameActuallyName);
+        }
+        else
+        {
+            loggerFilterExpression = eventLog => eventLog.LoggerName == loggerName;
+        }
+
+        loggerFilterExpression = loggerFilterExpression.And(eventLog => eventLog.TimeStamp <= retentionStartDate &&
+                                                                        (eventLog.Level == "Info" ||
+                                                                         eventLog.Level == "Information"));
+
         await context.Set<EventLog>()
-                     .Where(eventLog => eventLog.LoggerName == loggerName &&
-                                        eventLog.TimeStamp <= retentionStartDate)
+                     .Where(loggerFilterExpression)
                      .ExecuteDeleteAsync();
     }
 
-    private async Task CleanUpLogsByLevel(LoggingDbContext context, int retentionsInDays, params string[] logLevelsToDelete)
+    private async Task CleanUpLogsByLevel(LoggingDbContext context,
+                                          TimeSpan         retentions,
+                                          params string[]  logLevelsToDelete)
     {
-        var retentionStartDate = DateTime.UtcNow.AddDays(-retentionsInDays);
+        var retentionStartDate = DateTime.UtcNow.Subtract(retentions);
 
-        await context.Set<EventLog>()
-                     .Where(eventLog => logLevelsToDelete.Contains(eventLog.Level) &&
-                                        eventLog.TimeStamp <= retentionStartDate)
-                     .ExecuteDeleteAsync();
+        try
+        {
+            await context.Set<EventLog>()
+                         .Where(eventLog => logLevelsToDelete.Contains(eventLog.Level) &&
+                                            eventLog.TimeStamp <= retentionStartDate)
+                         .ExecuteDeleteAsync();
+        }
+        catch (Exception exception)
+        {
+            var fullExceptionMessage = exception.GetFullExceptionMessage();
+
+            if (fullExceptionMessage.Contains("Failed executing DbCommand") &&
+                fullExceptionMessage.Contains("OPENJSON"))
+            {
+                _logger.LogInformation(exception,
+                                       "Failed to delete {logLevel} logs which are older than {logTimestamp}. " +
+                                       "Retrying with slow delete...",
+                                       logLevelsToDelete,
+                                       retentionStartDate);
+
+                foreach (var logLevel in logLevelsToDelete)
+                {
+                    await context.Set<EventLog>()
+                                 .Where(eventLog => eventLog.Level == logLevel &&
+                                                    eventLog.TimeStamp <= retentionStartDate)
+                                 .ExecuteDeleteAsync();
+                }
+            }
+        }
     }
 
     private async Task WriteNewLogs(LoggingDbContext loggingDbContext)

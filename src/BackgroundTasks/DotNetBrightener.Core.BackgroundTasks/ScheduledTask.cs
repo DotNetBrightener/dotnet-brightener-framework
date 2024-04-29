@@ -97,6 +97,7 @@ public class ScheduledTask : IScheduleConfig
             try
             {
                 logger.LogInformation("Executing task {taskName}...", taskName);
+
                 await invocable.Execute();
             }
             catch (Exception exception)

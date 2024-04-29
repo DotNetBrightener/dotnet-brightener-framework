@@ -12,15 +12,15 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DotNetBrightener.Core.Logging.DbStorage.Migrations
 {
     [DbContext(typeof(LoggingDbContext))]
-    [Migration("20240407052825_InitializeEventLogTable")]
-    partial class InitializeEventLogTable
+    [Migration("20240426125438_InitLogTable")]
+    partial class InitLogTable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.3")
+                .HasAnnotation("ProductVersion", "8.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -40,12 +40,10 @@ namespace DotNetBrightener.Core.Logging.DbStorage.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Level")
-                        .HasMaxLength(32)
-                        .HasColumnType("nvarchar(32)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("LoggerName")
-                        .HasMaxLength(1024)
-                        .HasColumnType("nvarchar(1024)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Message")
                         .HasColumnType("nvarchar(max)");
@@ -54,12 +52,10 @@ namespace DotNetBrightener.Core.Logging.DbStorage.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RemoteIpAddress")
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RequestId")
-                        .HasMaxLength(512)
-                        .HasColumnType("nvarchar(512)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("RequestUrl")
                         .HasColumnType("nvarchar(max)");
@@ -78,9 +74,11 @@ namespace DotNetBrightener.Core.Logging.DbStorage.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Level");
+
                     b.HasIndex("LoggerName");
 
-                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("LoggerName"), new[] { "Level" });
+                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("LoggerName"), new[] { "Level", "TimeStamp" });
 
                     b.HasIndex("RequestId");
 
@@ -88,9 +86,9 @@ namespace DotNetBrightener.Core.Logging.DbStorage.Migrations
 
                     b.HasIndex("TimeStamp");
 
-                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("TimeStamp"), new[] { "Level" });
+                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("TimeStamp"), new[] { "Level", "LoggerName" });
 
-                    b.ToTable("EventLog", "Logging");
+                    b.ToTable("EventLog", "Log");
                 });
 #pragma warning restore 612, 618
         }

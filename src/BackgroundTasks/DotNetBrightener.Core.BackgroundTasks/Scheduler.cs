@@ -15,7 +15,7 @@ public class Scheduler : IScheduler
     private readonly ILogger                                     _logger;
     private readonly CancellationTokenSource                     _cancellationTokenSource;
 
-    private int  _schedulerIterationsActiveCount;
+    private int _schedulerIterationsActiveCount;
 
     public bool IsRunning => _schedulerIterationsActiveCount > 0;
 
@@ -79,44 +79,31 @@ public class Scheduler : IScheduler
             }
         }
 
-        var tasks = scheduledWorkers.Select(InvokeEventWithLoggerScope);
+        var tasks = scheduledWorkers.Select(InvokeEvent);
 
-        await Task.WhenAll(tasks);
-    }
-
-    private async Task InvokeEventWithLoggerScope(ScheduledTask scheduledEvent)
-    {
-
-        if (scheduledEvent.InvocableType is null)
-        {
-            await InvokeEvent(scheduledEvent);
-
-            return;
-        }
-
-        var eventInvocableTypeName = scheduledEvent.InvocableType?.Name;
-
-        using (_logger.BeginScope($"BackgroundTask [{eventInvocableTypeName}]"))
-        {
-            await InvokeEvent(scheduledEvent);
-        }
+        await tasks.WhenAll();
     }
 
     private async Task InvokeEvent(ScheduledTask scheduledTask)
     {
-        async Task Invoke()
+        async Task Invoke(ILogger logger)
         {
-            _logger.LogDebug("Scheduled task started...");
+            logger.LogDebug("Scheduled task started...");
 
-            await scheduledTask.Execute(_logger, _cancellationTokenSource.Token);
+            await scheduledTask.Execute(logger, _cancellationTokenSource.Token);
 
-            _logger.LogDebug("Scheduled task finished...");
+            logger.LogDebug("Scheduled task finished...");
         }
 
         using (var scope = _scopeFactory.CreateScope())
         {
             var scopeProvider  = scope.ServiceProvider;
             var eventPublisher = scopeProvider.GetService<IEventPublisher>();
+            var loggerFactory  = scopeProvider.GetService<ILoggerFactory>();
+            var logger = scheduledTask.InvocableType != null
+                             ? loggerFactory.CreateLogger("ScheduledTask: " + scheduledTask.InvocableType.FullName)
+                             : loggerFactory.CreateLogger("ScheduledTask: " +
+                                                          scheduledTask.ScheduledTaskAction.TaskName);
 
             try
             {
@@ -129,7 +116,7 @@ public class Scheduler : IScheduler
                     {
                         try
                         {
-                            await Invoke();
+                            await Invoke(logger);
                         }
                         finally
                         {
@@ -139,14 +126,14 @@ public class Scheduler : IScheduler
                 }
                 else
                 {
-                    await Invoke();
+                    await Invoke(logger);
                 }
 
                 await eventPublisher.Publish(new ScheduledEventEnded(scheduledTask));
             }
             catch (Exception e)
             {
-                _logger?.LogError(e, "A scheduled task threw an Exception: ");
+                _logger?.LogError(e, "The scheduled task threw an Exception: ");
 
                 await eventPublisher.Publish(new ScheduledEventFailed(scheduledTask, e));
             }

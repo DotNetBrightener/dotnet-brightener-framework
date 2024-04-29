@@ -37,12 +37,10 @@ namespace DotNetBrightener.Core.Logging.DbStorage.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Level")
-                        .HasMaxLength(32)
-                        .HasColumnType("nvarchar(32)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("LoggerName")
-                        .HasMaxLength(1024)
-                        .HasColumnType("nvarchar(1024)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Message")
                         .HasColumnType("nvarchar(max)");
@@ -51,12 +49,10 @@ namespace DotNetBrightener.Core.Logging.DbStorage.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RemoteIpAddress")
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RequestId")
-                        .HasMaxLength(512)
-                        .HasColumnType("nvarchar(512)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("RequestUrl")
                         .HasColumnType("nvarchar(max)");
@@ -89,7 +85,7 @@ namespace DotNetBrightener.Core.Logging.DbStorage.Migrations
 
                     SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("TimeStamp"), new[] { "Level", "LoggerName" });
 
-                    b.ToTable("EventLog", "Logging");
+                    b.ToTable("EventLog", "Log");
                 });
 #pragma warning restore 612, 618
         }

@@ -30,7 +30,7 @@
 	<!-- Version settings -->
 	<PropertyGroup>
 		<FileVersionPotion>$([System.DateTime]::Now.DayOfYear)$([System.DateTime]::Now.ToString(HH))</FileVersionPotion>
-		<BuildNumber>$([System.DateTime]::Now.ToString(yyMMddHH))</BuildNumber>
+		<BuildNumber>$([System.DateTime]::Now.ToString(yyMMddHH))04</BuildNumber>
 
 		<VersionPrefix>2024.0.12.$(FileVersionPotion)</VersionPrefix>
 
