@@ -20,11 +20,11 @@
 
 		<PackageTags>DotNetBrightener; VampireCoder;</PackageTags>
 
-		<NoWarn>$(NoWarn);0168;1701;1702;1591;1574;1723;1998;1573;RCS1194;CS8618;</NoWarn>
+		<NoWarn>$(NoWarn);0168;1701;1702;1591;1574;1723;1998;1573;RCS1194;CS8618;IDE0063;</NoWarn>
 		<!--<PackageIcon Condition="$(MSBuildProjectName.StartsWith('DotNetBrightener.'))">dotnet-brightener-logo.png</PackageIcon>-->
 		<PackageIcon>vampire-coder-logo.jpg</PackageIcon>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
-		<PackageReadmeFile Condition="Exists('docs\readme.md')">readme.md</PackageReadmeFile>
+		<PackageReadmeFile Condition="Exists('$(SolutionDir)\..\docs\wwwroot\modules\$(AssemblyName)\readme.md') OR Exists('docs\readme.md')">readme.md</PackageReadmeFile>
 	</PropertyGroup>
 
 	<!-- Version settings -->
@@ -56,8 +56,15 @@
 
 	<ItemGroup>
 		<!--<None Condition="$(PackageId.StartsWith('DotNetBrightener.'))" Include="..\..\..\dotnet-brightener-logo.png"  Pack="true" PackagePath="\" />-->
-		<None Include="..\..\..\vampire-coder-logo.jpg"  Pack="true" PackagePath="\" />
-		<None Include="..\..\..\LICENSE"  Pack="true" PackagePath="\" />
-		<None Condition="Exists('docs\readme.md')" Include="docs\readme.md" Pack="true" PackagePath="\"/>
+		<None Include="$(SolutionDir)\..\vampire-coder-logo.jpg"  Pack="true" PackagePath="\" />
+		<None Include="$(SolutionDir)\..\LICENSE"  Pack="true" PackagePath="\" />
+		<None Condition="Exists('$(SolutionDir)\..\docs\wwwroot\modules\$(AssemblyName)\readme.md')" 
+		      Include="$(SolutionDir)\..\docs\wwwroot\modules\$(AssemblyName)\readme.md" 
+		      Pack="true" 
+		      PackagePath="\"/>
+		<None Condition="!Exists('$(SolutionDir)\..\docs\wwwroot\modules\$(AssemblyName)\readme.md') AND Exists('docs\readme.md')" 
+		      Include="docs\readme.md" 
+		      Pack="true" 
+		      PackagePath="\"/>
 	</ItemGroup>
 </Project>

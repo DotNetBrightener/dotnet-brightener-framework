@@ -87,9 +87,9 @@ internal class StartupTaskExecutionHostedService : IHostedService, IDisposable
             return;
         }
 
-        logger.LogInformation("Found {tasks} start up tasks: {@tasksList}...",
+        logger.LogInformation("Found {tasks} start up tasks: \r\n\t - {tasksList}",
                               startupTaskTypes.Length,
-                              startupTaskTypes.Select(taskType => taskType.Name));
+                              string.Join("\r\n\t - ", startupTaskTypes.Select(taskType => taskType.Name)));
 
         var synchronousTasks = startupTaskTypes
                               .Where(taskType => taskType.IsAssignableTo(typeof(ISynchronousStartupTask)))
@@ -115,11 +115,11 @@ internal class StartupTaskExecutionHostedService : IHostedService, IDisposable
             logger.LogInformation("Executing {numberOfTasks} asynchronous tasks. They will be executed in parallel.",
                                   asynchronousTasks.Length);
 
-            await Parallel.ForEachAsync(asynchronousTasks,
-                                        async (type, ct) =>
-                                        {
-                                            await ExecuteTask(type, logger);
-                                        });
+            await asynchronousTasks.ParallelForEachAsync(4,
+                                                         async (type) =>
+                                                         {
+                                                             await ExecuteTask(type, logger);
+                                                         });
         }
 
         sw.Stop();

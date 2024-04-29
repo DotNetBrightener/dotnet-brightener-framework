@@ -3,6 +3,9 @@
 
 &copy; 2024 [DotNet Brightener](mailto:admin@dotnetbrightener.com)
 
+
+![NuGet Version](https://img.shields.io/nuget/v/DotNetBrightener.AspNet.Extensions.SelfDocumentedProblemResult)
+
 ## Introduction
 
 Have you ever wanted to have a consistent way of returning errors from your ASP.NET Core Web application? This package provides an abstraction for responding errors from your application to the client, base on the [RFC 9457](https://tools.ietf.org/html/rfc9457) specification. 
@@ -23,7 +26,7 @@ You can install the package from [NuGet](https://www.nuget.org/packages/DotNetBr
 
 ```bash
 
-dotnet add package BaseProblemDetailsErrorDotNetBrightener.AspNet.Extensions.SelfDocumentedProblemResult
+dotnet add package DotNetBrightener.AspNet.Extensions.SelfDocumentedProblemResult
 
 ```
 

@@ -1,6 +1,6 @@
 ﻿# Simple Upload API for ASP.NET Application
 
-&copy; 2022 DotNet Brightener
+&copy; 2024 DotNet Brightener
 
 ## Installation
 
@@ -10,11 +10,6 @@ Run this in command line:
 dotnet add package DotNetBrightener.SimpleUploadService
 ```
 
-Or add the following to `.csproj` file
-
-```xml
-<PackageReference Include="DotNetBrightener.SimpleUploadService" Version="2022.10.0" />
-```
 
 ## Usage
 

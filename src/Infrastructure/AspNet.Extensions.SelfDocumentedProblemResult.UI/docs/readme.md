@@ -2,6 +2,8 @@
 
 &copy; 2024 [DotNet Brightener](mailto:admin@dotnetbrightener.com)
 
+![NuGet Version](https://img.shields.io/nuget/v/DotNetBrightener.AspNet.Extensions.SelfDocumentedProblemResult.UI)
+
 ## Introduction
 
 This is an extensions for ASP.Net Core applications that use the [ProblemResult](https://www.nuget.org/packages/DotNetBrightener.AspNet.Extensions.SelfDocumentedProblemResult) package. This package provides a UI for viewing information about a specific error / exception that can be thrown by the application.

@@ -117,7 +117,7 @@ public class TemplateRegistrationService : ITemplateRegistrationService, ITempla
         }
         else
         {
-            await _repository.UpdateMany(_ => _.TemplateType == type,
+            await _repository.UpdateMany(r => r.TemplateType == type,
                                          record => new TemplateRecord
                                          {
                                              IsDeleted        = false,
@@ -128,14 +128,14 @@ public class TemplateRegistrationService : ITemplateRegistrationService, ITempla
                                          });
 
             if (!string.IsNullOrEmpty(templateContent))
-                await _repository.UpdateMany(_ => _.TemplateType == type && string.IsNullOrEmpty(_.TemplateContent),
+                await _repository.UpdateMany(r => r.TemplateType == type && string.IsNullOrEmpty(r.TemplateContent),
                                              record => new TemplateRecord
                                              {
                                                  TemplateContent = templateContent
                                              });
 
             if (!string.IsNullOrEmpty(templateTitle))
-                await _repository.UpdateMany(_ => _.TemplateType == type && string.IsNullOrEmpty(_.TemplateTitle),
+                await _repository.UpdateMany(r => r.TemplateType == type && string.IsNullOrEmpty(r.TemplateTitle),
                                              record => new TemplateRecord
                                              {
                                                  TemplateTitle = templateTitle

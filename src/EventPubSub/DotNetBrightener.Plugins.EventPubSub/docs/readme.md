@@ -2,6 +2,8 @@
 
 &copy; DotNet Brightener
 
+![NuGet Version](https://img.shields.io/nuget/v/DotNetBrightener.Plugins.EventPubSub)
+
 ### Usage
 
 #### Event message
