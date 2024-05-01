@@ -19,18 +19,18 @@ public class TemplateRegistrationService : ITemplateRegistrationService, ITempla
 {
     private readonly ITemplateContainer             _templateContainer;
     private readonly IEnumerable<ITemplateProvider> _providers;
-    private readonly ITemplateRecordDataService     _repository;
+    private readonly ITemplateRecordDataService     _templateRecordDataService;
     private readonly ILogger                        _logger;
 
     public TemplateRegistrationService(ITemplateContainer                   templateContainer,
                                        IEnumerable<ITemplateProvider>       providers,
-                                       ITemplateRecordDataService           repository,
+                                       ITemplateRecordDataService           templateRecordDataService,
                                        ILogger<TemplateRegistrationService> logger)
     {
-        _templateContainer = templateContainer;
-        _providers         = providers;
-        _repository        = repository;
-        _logger            = logger;
+        _templateContainer         = templateContainer;
+        _providers                 = providers;
+        _templateRecordDataService = templateRecordDataService;
+        _logger                    = logger;
     }
 
     public async Task RegisterTemplates()
@@ -44,13 +44,13 @@ public class TemplateRegistrationService : ITemplateRegistrationService, ITempla
                                 .Select(templateProvider => templateProvider.GetType().Assembly.GetName().Name)
                                 .ToArray();
 
-        await _repository.UpdateMany(record => allAssembliesNames.Contains(record.FromAssemblyName),
-                                     model => new TemplateRecord
-                                     {
-                                         IsDeleted      = true,
-                                         DeletedDate    = DateTimeOffset.UtcNow,
-                                         DeletionReason = "Removed during registration"
-                                     });
+        await _templateRecordDataService.UpdateMany(record => allAssembliesNames.Contains(record.FromAssemblyName),
+                                                    model => new TemplateRecord
+                                                    {
+                                                        IsDeleted      = true,
+                                                        DeletedDate    = DateTimeOffset.UtcNow,
+                                                        DeletionReason = "Removed during registration"
+                                                    });
 
         foreach (var templateProvider in _providers)
         {
@@ -62,7 +62,7 @@ public class TemplateRegistrationService : ITemplateRegistrationService, ITempla
     {
         try
         {
-            return _repository.Fetch().Count() > -1;
+            return _templateRecordDataService.Fetch().Count() > -1;
         }
         catch (InvalidOperationException exception)
         {
@@ -97,7 +97,7 @@ public class TemplateRegistrationService : ITemplateRegistrationService, ITempla
 
         _logger.LogInformation("Registering template type {templateType}", type);
 
-        var templatesToUpdate = _repository.Fetch(x => x.TemplateType == type);
+        var templatesToUpdate = _templateRecordDataService.Fetch(x => x.TemplateType == type);
 
         if (!templatesToUpdate.Any())
         {
@@ -113,33 +113,35 @@ public class TemplateRegistrationService : ITemplateRegistrationService, ITempla
                 FromAssemblyName = assemblyName
             };
 
-            await _repository.InsertAsync(templateRecord);
+            await _templateRecordDataService.InsertAsync(templateRecord);
         }
         else
         {
-            await _repository.UpdateMany(r => r.TemplateType == type,
-                                         record => new TemplateRecord
-                                         {
-                                             IsDeleted        = false,
-                                             FieldsString     = string.Join(";", templateFields),
-                                             FromAssemblyName = assemblyName,
-                                             DeletedDate      = null,
-                                             DeletionReason   = null
-                                         });
+            await _templateRecordDataService.UpdateMany(r => r.TemplateType == type,
+                                                        record => new TemplateRecord
+                                                        {
+                                                            IsDeleted        = false,
+                                                            FieldsString     = string.Join(";", templateFields),
+                                                            FromAssemblyName = assemblyName,
+                                                            DeletedDate      = null,
+                                                            DeletionReason   = null
+                                                        });
 
             if (!string.IsNullOrEmpty(templateContent))
-                await _repository.UpdateMany(r => r.TemplateType == type && string.IsNullOrEmpty(r.TemplateContent),
-                                             record => new TemplateRecord
-                                             {
-                                                 TemplateContent = templateContent
-                                             });
+                await _templateRecordDataService.UpdateMany(r => r.TemplateType == type &&
+                                                                 string.IsNullOrEmpty(r.TemplateContent),
+                                                            record => new TemplateRecord
+                                                            {
+                                                                TemplateContent = templateContent
+                                                            });
 
             if (!string.IsNullOrEmpty(templateTitle))
-                await _repository.UpdateMany(r => r.TemplateType == type && string.IsNullOrEmpty(r.TemplateTitle),
-                                             record => new TemplateRecord
-                                             {
-                                                 TemplateTitle = templateTitle
-                                             });
+                await _templateRecordDataService.UpdateMany(r => r.TemplateType == type &&
+                                                                 string.IsNullOrEmpty(r.TemplateTitle),
+                                                            record => new TemplateRecord
+                                                            {
+                                                                TemplateTitle = templateTitle
+                                                            });
         }
     }
 

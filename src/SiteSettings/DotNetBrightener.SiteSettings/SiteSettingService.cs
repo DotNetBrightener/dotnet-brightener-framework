@@ -1,5 +1,4 @@
 ﻿using DotNetBrightener.Caching;
-using DotNetBrightener.DataAccess.Services;
 using DotNetBrightener.SiteSettings.Abstractions;
 using DotNetBrightener.SiteSettings.Entities;
 using DotNetBrightener.SiteSettings.Extensions;
@@ -11,20 +10,20 @@ namespace DotNetBrightener.SiteSettings;
 
 public class SiteSettingService : ISiteSettingService
 {
-    private readonly IRepository                  _repository;
+    private readonly ISiteSettingDataService      _dataService;
     private readonly IEnumerable<SiteSettingBase> _siteSettingInstances;
     private readonly IStringLocalizer             _stringLocalizer;
     private readonly ICacheManager                _cacheManager;
     private readonly IServiceProvider             _serviceProvider;
 
     public SiteSettingService(IEnumerable<SiteSettingBase>         siteSettingInstances,
-                              IRepository                          repository,
+                              ISiteSettingDataService              dataService,
                               IServiceProvider                     serviceProvider,
                               IStringLocalizer<SiteSettingService> stringLocalizer,
                               ICacheManager                        cacheManager)
     {
         _siteSettingInstances = siteSettingInstances;
-        _repository           = repository;
+        _dataService          = dataService;
         _serviceProvider      = serviceProvider;
         _stringLocalizer      = stringLocalizer;
         _cacheManager         = cacheManager;
@@ -82,15 +81,14 @@ public class SiteSettingService : ISiteSettingService
 
         if (setting.Id == 0)
         {
-            _repository.Insert(setting);
+            _dataService.Insert(setting);
         }
         else
         {
-            _repository.Update(setting);
+            _dataService.Update(setting);
         }
 
         _cacheManager.Remove(GetCacheKey(settingKey));
-        _repository.CommitChanges();
     }
 
     public void SaveSetting(Type settingType, IDictionary<string, object> value)
@@ -128,10 +126,9 @@ public class SiteSettingService : ISiteSettingService
         return siteSettingRecord;
     }
 
-    private SiteSettingRecord? InternalGetSiteSettingRecord(string settingKey)
+    private SiteSettingRecord InternalGetSiteSettingRecord(string settingKey)
     {
-        return _repository.Fetch<SiteSettingRecord>()
-                          .FirstOrDefault(_ => _.SettingType == settingKey);
+        return _dataService.Get(settingRecord => settingRecord.SettingType == settingKey);
     }
 
 

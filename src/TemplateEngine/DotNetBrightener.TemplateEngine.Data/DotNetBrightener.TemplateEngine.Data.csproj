@@ -6,9 +6,10 @@
 	<ItemGroup>
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
 	</ItemGroup>
+
 	<ItemGroup>
 		<ProjectReference Include="..\..\DataAccess\DotNetBrightener.DataAccess.Abstractions\DotNetBrightener.DataAccess.Abstractions.csproj" />
-		<ProjectReference Include="..\DotNetBrightener.Core.StartupTask\DotNetBrightener.Core.StartupTask.csproj" />
+		<ProjectReference Include="..\..\Infrastructure\DotNetBrightener.Core.StartupTask\DotNetBrightener.Core.StartupTask.csproj" />
 		<ProjectReference Include="..\DotNetBrightener.TemplateEngine\DotNetBrightener.TemplateEngine.csproj" />
 	</ItemGroup>
 

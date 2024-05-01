@@ -30,8 +30,6 @@
 		<ProjectReference Include="..\..\EventPubSub\DotNetBrightener.Plugins.EventPubSub\DotNetBrightener.Plugins.EventPubSub.csproj" />
 		<ProjectReference Include="..\..\Security\DotNetBrightener.Infrastructure.Security\DotNetBrightener.Infrastructure.Security.csproj" />
 		<ProjectReference Include="..\AspNet.Extensions.SelfDocumentedProblemResult\AspNet.Extensions.SelfDocumentedProblemResult.csproj" />
-		<ProjectReference Include="..\DotNetBrightener.TemplateEngine.Data\DotNetBrightener.TemplateEngine.Data.csproj" />
-		<ProjectReference Include="..\DotNetBrightener.TemplateEngine\DotNetBrightener.TemplateEngine.csproj" />
 	</ItemGroup>
 
 	<Import Project="..\..\Shared\SharedExtensions.Expression\SharedExtensions.Expression.projitems" Label="Shared" />

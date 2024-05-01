@@ -10,8 +10,8 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class LoggingStorageServiceCollectionExtensions
 {
-    public static IServiceCollection AddLogStorage(this IServiceCollection         serviceCollection,
-                                                   Action<DbContextOptionsBuilder> buildOption)
+    public static IServiceCollection AddLogSqlServerStorage(this IServiceCollection serviceCollection,
+                                                            string                  connectionString)
     {
         serviceCollection.Replace(
                                   ServiceDescriptor
@@ -19,7 +19,9 @@ public static class LoggingStorageServiceCollectionExtensions
 
         serviceCollection.AddDbContext<LoggingDbContext>((optionBuilder) =>
         {
-            buildOption(optionBuilder);
+            optionBuilder.UseSqlServer(connectionString,
+                                       x => x.MigrationsHistoryTable("__MigrationsHistory",
+                                                                     LoggingDbContext.SchemaName));
 
             optionBuilder.UseLazyLoadingProxies();
         });

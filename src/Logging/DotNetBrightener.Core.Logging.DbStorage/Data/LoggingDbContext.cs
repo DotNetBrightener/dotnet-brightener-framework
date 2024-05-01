@@ -4,6 +4,8 @@ namespace DotNetBrightener.Core.Logging.DbStorage.Data;
 
 public class LoggingDbContext : DbContext
 {
+    internal const string SchemaName = "Log";
+
     public LoggingDbContext(DbContextOptions<LoggingDbContext> options)
         : base(options)
     {
@@ -13,18 +15,10 @@ public class LoggingDbContext : DbContext
     {
         var eventLogEntity = modelBuilder.Entity<EventLog>();
 
-        eventLogEntity.ToTable(nameof(EventLog), "Log");
+        eventLogEntity.ToTable(nameof(EventLog), SchemaName);
 
         eventLogEntity.HasKey(x => x.Id);
-
-        eventLogEntity.Property(el => el.LoggerName);
-
-        eventLogEntity.Property(el => el.Level);
-
-        eventLogEntity.Property(el => el.RemoteIpAddress);
-
-        eventLogEntity.Property(el => el.RequestId);
-
+        
         // single indexes
         eventLogEntity.HasIndex(el => el.Level);
         eventLogEntity.HasIndex(el => el.TimeStamp);

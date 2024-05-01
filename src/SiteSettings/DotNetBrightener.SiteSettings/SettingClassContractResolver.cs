@@ -4,15 +4,7 @@ using System.Reflection;
 
 namespace DotNetBrightener.SiteSettings;
 
-public class TypeOnlyContractResolver<T> : TypeOnlyContractResolver
-{
-    public TypeOnlyContractResolver(): base(typeof(T))
-    {
-        NamingStrategy = new CamelCaseNamingStrategy();
-    }
-}
-
-public class TypeOnlyContractResolver : DefaultContractResolver
+internal class TypeOnlyContractResolver : DefaultContractResolver
 {
     private readonly Type _type;
 

@@ -12,7 +12,7 @@ public static class TemplateEngineServiceCollectionExtensions
     /// <param name="serviceCollection">
     ///     The <see cref="IServiceCollection"/>
     /// </param>
-    public static void AddTemplateEngineData(this IServiceCollection serviceCollection)
+    public static IServiceCollection AddTemplateEngineData(this IServiceCollection serviceCollection)
     {
         serviceCollection.AddSingleton<ITemplateContainer, TemplateContainer>();
         serviceCollection.AddScoped<ITemplateRegistrationService, TemplateRegistrationService>();
@@ -20,6 +20,8 @@ public static class TemplateEngineServiceCollectionExtensions
         serviceCollection.AddScoped<ITemplateService, TemplateService>();
 
         serviceCollection.RegisterStartupTask<TemplateRegistrationStartupTask>();
+
+        return serviceCollection;
     }
 
     /// <summary>

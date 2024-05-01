@@ -6,7 +6,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class TemplateEngineServiceCollectionExtensions
 {
-    public static void AddTemplateEngine(this IServiceCollection serviceCollection)
+    public static IServiceCollection AddTemplateEngine(this IServiceCollection serviceCollection)
     {
         serviceCollection.AddScoped<ITemplateHelperRegistration, TemplateHelperRegistration>();
         serviceCollection.AddScoped<ITemplateParserService, TemplateParserService>();
@@ -16,6 +16,8 @@ public static class TemplateEngineServiceCollectionExtensions
         serviceCollection.AddTemplateHelperProvider<SumTemplateHelper>();
 
         serviceCollection.AddHostedService<TemplateHelperRegistrationStartupService>();
+
+        return serviceCollection;
     }
 
     public static IServiceCollection
