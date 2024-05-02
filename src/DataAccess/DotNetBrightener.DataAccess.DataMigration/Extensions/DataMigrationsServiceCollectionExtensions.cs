@@ -1,8 +1,7 @@
 ﻿using DotNetBrightener.DataAccess.DataMigration;
-using LinqToDB.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
-using System.Reflection;
 using DotNetBrightener.DataAccess.DataMigration.Extensions;
+using LinqToDB.EntityFrameworkCore;
+using System.Reflection;
 
 // ReSharper disable CheckNamespace
 namespace Microsoft.Extensions.DependencyInjection;
@@ -15,31 +14,27 @@ public static class DataMigrationsServiceCollectionExtensions
     /// <param name="serviceCollection">
     ///     The <see cref="IServiceCollection" /> 
     /// </param>
-    /// <param name="connectionString">
-    ///     The database connection string that the data migrations will be applied to
-    /// </param>
     /// <returns>
     ///     The same instance of <param name="serviceCollection" /> for chaining operations
     /// </returns>
     /// <exception cref="InvalidOperationException"></exception>
-    public static IServiceCollection EnableDataMigrations(this IServiceCollection serviceCollection,
-                                                          string                  connectionString)
+    public static DataMigrationConfiguration EnableDataMigrations(this IServiceCollection serviceCollection)
     {
-        serviceCollection.AddDbContext<DataMigrationDbContext>(options =>
+        var configuration = new DataMigrationConfiguration
         {
-            options.UseSqlServer(connectionString,
-                                 x => x.MigrationsHistoryTable("__SchemaMigrationsHistory",
-                                                               DataMigrationDbContext.SchemaName));
-        });
+            ServiceCollection = serviceCollection
+        };
 
         serviceCollection.AddHostedService<DataMigrationRunner>();
 
         LinqToDBForEFTools.Initialize();
 
         var metadata = new DataMigrationMetadata();
-        serviceCollection.AddSingleton(metadata);
 
-        return serviceCollection;
+        serviceCollection.AddSingleton(metadata);
+        serviceCollection.AddSingleton(configuration);
+
+        return configuration;
     }
 
     /// <summary>

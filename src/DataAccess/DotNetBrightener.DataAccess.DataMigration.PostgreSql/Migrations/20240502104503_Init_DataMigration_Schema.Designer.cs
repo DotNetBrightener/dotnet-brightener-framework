@@ -3,16 +3,16 @@ using System;
 using DotNetBrightener.DataAccess.DataMigration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace DotNetBrightener.DataAccess.DataMigration.Migrations
+namespace DotNetBrightener.DataAccess.DataMigration.PostgreSql.Migrations
 {
     [DbContext(typeof(DataMigrationDbContext))]
-    [Migration("20240502094152_Init_DataMigration_Schema")]
+    [Migration("20240502104503_Init_DataMigration_Schema")]
     partial class Init_DataMigration_Schema
     {
         /// <inheritdoc />
@@ -21,21 +21,18 @@ namespace DotNetBrightener.DataAccess.DataMigration.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "8.0.4")
-                .HasAnnotation("Relational:MaxIdentifierLength", 128);
+                .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("DotNetBrightener.DataAccess.DataMigration.DataMigrationHistory", b =>
                 {
                     b.Property<string>("MigrationId")
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("character varying(150)");
 
                     b.Property<DateTime?>("AppliedDateUtc")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("MigrationId");
 

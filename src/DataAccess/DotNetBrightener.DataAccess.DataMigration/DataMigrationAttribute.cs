@@ -1,4 +1,4 @@
-﻿namespace DotNetBrightener.DataAccess.DataMigration.Extensions;
+﻿namespace DotNetBrightener.DataAccess.DataMigration;
 
 [AttributeUsage(AttributeTargets.Class)]
 public class DataMigrationAttribute(string migrationId) : Attribute

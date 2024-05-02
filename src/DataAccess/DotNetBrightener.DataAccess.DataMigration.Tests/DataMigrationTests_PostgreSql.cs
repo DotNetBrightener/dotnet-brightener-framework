@@ -6,42 +6,7 @@ using NUnit.Framework;
 
 namespace DotNetBrightener.DataAccess.DataMigration.Tests;
 
-internal class ShouldNotBeRegisteredMigration : IDataMigration
-{
-    public Task MigrateData()
-    {
-        return Task.CompletedTask;
-    }
-}
-
-[DataMigration("20240502_160412_InitializeMigration")]
-internal class GoodMigration : IDataMigration
-{
-    public Task MigrateData()
-    {
-        return Task.CompletedTask;
-    }
-}
-
-[DataMigration("20240502_160413_InitializeMigration2")]
-internal class MigrationWithThrowingException : IDataMigration
-{
-    public Task MigrateData()
-    {
-        throw new InvalidOperationException("Just to break the test");
-    }
-}
-
-[DataMigration("20240502_160413_InitializeMigration3")]
-internal class GoodMigration2 : IDataMigration
-{
-    public Task MigrateData()
-    {
-        return Task.CompletedTask;
-    }
-}
-
-internal class DataMigrationTests
+internal class DataMigrationTests_PostgreSql
 {
     private string _connectionString;
 
@@ -49,7 +14,7 @@ internal class DataMigrationTests
     public void Setup()
     {
         _connectionString =
-            $"Server=(localdb)\\MSSQLLocalDB;Database=DataMigration_UnitTest{DateTime.Now:yyyyMMddHHmm};Trusted_Connection=True;MultipleActiveResultSets=true";
+            $"Server=100.117.90.128;Port=5432;Database=DataMigration_UnitTest{DateTime.Now:yyyyMMddHHmm};User Id=postgres;Password=Sup3r5tr0ngP@ssw0rd!!;";
         // _connectionString = $"Server=100.121.179.124;Database=DataMigration_UnitTest{DateTime.Now:yyyyMMddHHmm};User Id=sa;Password=sCpTXbW8jbSbbUpILfZVulTiwqcPyJWt;MultipleActiveResultSets=True;Encrypt=True;TrustServerCertificate=True;";
     }
 
@@ -108,7 +73,8 @@ internal class DataMigrationTests
         var builder = new HostBuilder()
            .ConfigureServices((hostContext, services) =>
             {
-                services.EnableDataMigrations(_connectionString);
+                services.EnableDataMigrations()
+                        .UseNpgsql(_connectionString);
 
                 services.AddDataMigrator<GoodMigration>();
                 services.AddDataMigrator<GoodMigration2>();
@@ -143,7 +109,8 @@ internal class DataMigrationTests
         var builder = new HostBuilder()
            .ConfigureServices((hostContext, services) =>
             {
-                services.EnableDataMigrations(_connectionString);
+                services.EnableDataMigrations()
+                        .UseNpgsql(_connectionString);
 
                 services.AddDataMigrator<GoodMigration>();
                 services.AddDataMigrator<MigrationWithThrowingException>();
@@ -174,7 +141,7 @@ internal class DataMigrationTests
         var builder = new HostBuilder()
            .ConfigureServices((hostContext, services) =>
             {
-                services.EnableDataMigrations(_connectionString);
+                services.EnableDataMigrations();
 
                 services.AddDataMigrator<TMigration>();
             });
@@ -191,7 +158,7 @@ internal class DataMigrationTests
             {
                 serviceCollection.AddDbContext<DataMigrationDbContext>(options =>
                 {
-                    options.UseSqlServer(_connectionString);
+                    options.UseNpgsql(_connectionString);
                 });
             });
 

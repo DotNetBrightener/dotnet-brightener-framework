@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-
-namespace DotNetBrightener.DataAccess.DataMigration.Extensions;
+﻿namespace DotNetBrightener.DataAccess.DataMigration.Extensions;
 
 internal class DataMigrationMetadata : Dictionary<string, Type>
 {

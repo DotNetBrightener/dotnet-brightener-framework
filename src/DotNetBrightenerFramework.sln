@@ -241,6 +241,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{72EE1B2A
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.DataAccess.DataMigration.Tests", "DataAccess\DotNetBrightener.DataAccess.DataMigration.Tests\DotNetBrightener.DataAccess.DataMigration.Tests.csproj", "{5BF9476D-8E11-4FF9-8C7A-CE1E9EFB124A}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.DataAccess.DataMigration.PostgreSql", "DataAccess\DotNetBrightener.DataAccess.DataMigration.PostgreSql\DotNetBrightener.DataAccess.DataMigration.PostgreSql.csproj", "{CC7DD78E-607C-4957-9CE5-ECB1961FC468}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.DataAccess.DataMigration.Mssql", "DataAccess\DotNetBrightener.DataAccess.DataMigration.Mssql\DotNetBrightener.DataAccess.DataMigration.Mssql.csproj", "{74514346-B14C-4373-9DB4-FC4A7023EC56}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -833,6 +837,22 @@ Global
 		{5BF9476D-8E11-4FF9-8C7A-CE1E9EFB124A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5BF9476D-8E11-4FF9-8C7A-CE1E9EFB124A}.Release|ARM64.ActiveCfg = Release|Any CPU
 		{5BF9476D-8E11-4FF9-8C7A-CE1E9EFB124A}.Release|ARM64.Build.0 = Release|Any CPU
+		{CC7DD78E-607C-4957-9CE5-ECB1961FC468}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC7DD78E-607C-4957-9CE5-ECB1961FC468}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC7DD78E-607C-4957-9CE5-ECB1961FC468}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{CC7DD78E-607C-4957-9CE5-ECB1961FC468}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{CC7DD78E-607C-4957-9CE5-ECB1961FC468}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC7DD78E-607C-4957-9CE5-ECB1961FC468}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC7DD78E-607C-4957-9CE5-ECB1961FC468}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{CC7DD78E-607C-4957-9CE5-ECB1961FC468}.Release|ARM64.Build.0 = Release|Any CPU
+		{74514346-B14C-4373-9DB4-FC4A7023EC56}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{74514346-B14C-4373-9DB4-FC4A7023EC56}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{74514346-B14C-4373-9DB4-FC4A7023EC56}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{74514346-B14C-4373-9DB4-FC4A7023EC56}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{74514346-B14C-4373-9DB4-FC4A7023EC56}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{74514346-B14C-4373-9DB4-FC4A7023EC56}.Release|Any CPU.Build.0 = Release|Any CPU
+		{74514346-B14C-4373-9DB4-FC4A7023EC56}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{74514346-B14C-4373-9DB4-FC4A7023EC56}.Release|ARM64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -932,6 +952,8 @@ Global
 		{14230625-AFC1-4879-BC57-0B700D37D5DC} = {9F2E3D63-2AC9-4816-ADE5-7B255E17CC6E}
 		{72EE1B2A-9365-4FAE-86A6-0977C79EB186} = {9F2E3D63-2AC9-4816-ADE5-7B255E17CC6E}
 		{5BF9476D-8E11-4FF9-8C7A-CE1E9EFB124A} = {72EE1B2A-9365-4FAE-86A6-0977C79EB186}
+		{CC7DD78E-607C-4957-9CE5-ECB1961FC468} = {9F2E3D63-2AC9-4816-ADE5-7B255E17CC6E}
+		{74514346-B14C-4373-9DB4-FC4A7023EC56} = {9F2E3D63-2AC9-4816-ADE5-7B255E17CC6E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CBA29A5C-A736-4EB9-8D61-8E76924706CD}

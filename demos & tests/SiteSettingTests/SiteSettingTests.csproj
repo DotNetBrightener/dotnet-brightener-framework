@@ -26,7 +26,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\..\src\Infrastructure\DotNetBrightener.SiteSettings\DotNetBrightener.SiteSettings.csproj" />
+	  <ProjectReference Include="..\..\src\SiteSettings\DotNetBrightener.SiteSettings\DotNetBrightener.SiteSettings.csproj" />
 	</ItemGroup>
 
 </Project>

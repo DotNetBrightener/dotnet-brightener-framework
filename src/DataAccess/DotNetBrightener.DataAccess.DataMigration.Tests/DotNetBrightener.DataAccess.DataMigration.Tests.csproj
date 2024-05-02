@@ -5,6 +5,7 @@
 
 	<ItemGroup>
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.4" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -24,6 +25,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\DotNetBrightener.DataAccess.DataMigration.Mssql\DotNetBrightener.DataAccess.DataMigration.Mssql.csproj" />
+		<ProjectReference Include="..\DotNetBrightener.DataAccess.DataMigration.PostgreSql\DotNetBrightener.DataAccess.DataMigration.PostgreSql.csproj" />
 		<ProjectReference Include="..\DotNetBrightener.DataAccess.DataMigration\DotNetBrightener.DataAccess.DataMigration.csproj" />
 	</ItemGroup>
 

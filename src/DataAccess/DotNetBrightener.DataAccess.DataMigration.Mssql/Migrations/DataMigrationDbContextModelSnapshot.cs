@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace DotNetBrightener.DataAccess.DataMigration.Migrations
+namespace DotNetBrightener.DataAccess.DataMigration.Mssql.Migrations
 {
     [DbContext(typeof(DataMigrationDbContext))]
     partial class DataMigrationDbContextModelSnapshot : ModelSnapshot
@@ -29,10 +29,7 @@ namespace DotNetBrightener.DataAccess.DataMigration.Migrations
                         .HasColumnType("nvarchar(150)");
 
                     b.Property<DateTime?>("AppliedDateUtc")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasColumnType("datetime2");
 
                     b.HasKey("MigrationId");
 

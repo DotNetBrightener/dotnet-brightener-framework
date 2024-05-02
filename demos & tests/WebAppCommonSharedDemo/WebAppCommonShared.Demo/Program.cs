@@ -1,12 +1,13 @@
-using System.Reflection;
 using AspNet.Extensions.SelfDocumentedProblemResult.ExceptionHandlers;
 using DotNetBrightener.DataAccess;
 using DotNetBrightener.Infrastructure.JwtAuthentication;
 using DotNetBrightener.WebSocketExt.Messages;
 using DotNetBrightener.WebSocketExt.Services;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection;
 using System.Security.Claims;
 using System.Text.Json.Serialization;
+using DotNetBrightener.SiteSettings;
 using WebAppCommonShared.Demo.DbContexts;
 using WebAppCommonShared.Demo.WebSocketCommandHandlers;
 
@@ -27,21 +28,27 @@ if (string.IsNullOrEmpty(connectionString))
 
 builder.Services
        .ConfigureLogging(builder.Configuration)
-       .AddLogStorage(optionsBuilder =>
-        {
-            optionsBuilder.UseSqlServer(connectionString);
-        });
+       .AddLogSqlServerStorage(connectionString);
 
-builder.Services.AddControllers();
+builder.Services
+       .AddTemplateEngine()
+       .AddTemplateEngineData()
+       .AddTemplateEngineSqlServerStorage(connectionString);
+
+var mvcBuilder = builder.Services.AddControllers();
 builder.Services.ConfigureHttpJsonOptions(options =>
         {
             options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
         });
 
+mvcBuilder.RegisterSiteSettingApi();
+builder.Services.AddSiteSettingsSqlServerStorage(connectionString);
+
 builder.Services.AddJwtBearerAuthentication(builder.Configuration);
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddLocalization();
 builder.Services.AddSwaggerGen();
 
 var dbConfiguration = new DatabaseConfiguration

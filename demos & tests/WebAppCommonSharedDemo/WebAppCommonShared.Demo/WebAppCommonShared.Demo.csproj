@@ -40,6 +40,11 @@
 		<ProjectReference Include="..\..\..\src\Logging\DotNetBrightener.Core.Logging.DbStorage\DotNetBrightener.Core.Logging.DbStorage.csproj" />
 		<ProjectReference Include="..\..\..\src\Security\DotNetBrightener.InfisicalVaultClient\DotNetBrightener.InfisicalVaultClient.csproj" />
 		<ProjectReference Include="..\..\..\src\Security\DotNetBrightener.Infrastructure.JwtAuthentication\DotNetBrightener.Infrastructure.JwtAuthentication.csproj" />
+		<ProjectReference Include="..\..\..\src\SiteSettings\DotNetBrightener.SiteSettings.Data.Mssql\DotNetBrightener.SiteSettings.Data.Mssql.csproj" />
+		<ProjectReference Include="..\..\..\src\SiteSettings\DotNetBrightener.SiteSettings\DotNetBrightener.SiteSettings.csproj" />
+		<ProjectReference Include="..\..\..\src\TemplateEngine\DotNetBrightener.TemplateEngine.Data.Mssql\DotNetBrightener.TemplateEngine.Data.Mssql.csproj" />
+		<ProjectReference Include="..\..\..\src\TemplateEngine\DotNetBrightener.TemplateEngine.Data\DotNetBrightener.TemplateEngine.Data.csproj" />
+		<ProjectReference Include="..\..\..\src\TemplateEngine\DotNetBrightener.TemplateEngine\DotNetBrightener.TemplateEngine.csproj" />
 	</ItemGroup>
 
 	<Import Project="..\..\..\src\Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems" Label="Shared" />

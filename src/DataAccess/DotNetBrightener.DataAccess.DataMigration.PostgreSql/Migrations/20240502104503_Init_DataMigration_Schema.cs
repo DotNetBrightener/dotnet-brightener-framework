@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace DotNetBrightener.DataAccess.DataMigration.Migrations
+namespace DotNetBrightener.DataAccess.DataMigration.PostgreSql.Migrations
 {
     /// <inheritdoc />
     public partial class Init_DataMigration_Schema : Migration
@@ -19,8 +19,8 @@ namespace DotNetBrightener.DataAccess.DataMigration.Migrations
                 schema: "DataMigration",
                 columns: table => new
                 {
-                    MigrationId = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
-                    AppliedDateUtc = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()")
+                    MigrationId = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
+                    AppliedDateUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
