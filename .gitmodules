@@ -1,0 +1,6 @@
+[submodule "src/LinQToSqlBuilder"]
+	path = src/LinQToSqlBuilder
+	url = https://github.com/DotNetBrightener/LinQ-To-Sql-Builder
+[submodule "src/Shared"]
+	path = src/Shared
+	url = https://github.com/JustinChasez/ShareCodeProjects
