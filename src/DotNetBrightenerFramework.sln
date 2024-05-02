@@ -235,6 +235,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.SiteSettin
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.SiteSettings.Data.Mssql", "SiteSettings\DotNetBrightener.SiteSettings.Data.Mssql\DotNetBrightener.SiteSettings.Data.Mssql.csproj", "{549344E1-DE10-41D0-AB1D-40F156A9AF09}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.DataAccess.DataMigration", "DataAccess\DotNetBrightener.DataAccess.DataMigration\DotNetBrightener.DataAccess.DataMigration.csproj", "{14230625-AFC1-4879-BC57-0B700D37D5DC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{72EE1B2A-9365-4FAE-86A6-0977C79EB186}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.DataAccess.DataMigration.Tests", "DataAccess\DotNetBrightener.DataAccess.DataMigration.Tests\DotNetBrightener.DataAccess.DataMigration.Tests.csproj", "{5BF9476D-8E11-4FF9-8C7A-CE1E9EFB124A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -811,6 +817,22 @@ Global
 		{549344E1-DE10-41D0-AB1D-40F156A9AF09}.Release|Any CPU.Build.0 = Release|Any CPU
 		{549344E1-DE10-41D0-AB1D-40F156A9AF09}.Release|ARM64.ActiveCfg = Release|Any CPU
 		{549344E1-DE10-41D0-AB1D-40F156A9AF09}.Release|ARM64.Build.0 = Release|Any CPU
+		{14230625-AFC1-4879-BC57-0B700D37D5DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{14230625-AFC1-4879-BC57-0B700D37D5DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{14230625-AFC1-4879-BC57-0B700D37D5DC}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{14230625-AFC1-4879-BC57-0B700D37D5DC}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{14230625-AFC1-4879-BC57-0B700D37D5DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{14230625-AFC1-4879-BC57-0B700D37D5DC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{14230625-AFC1-4879-BC57-0B700D37D5DC}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{14230625-AFC1-4879-BC57-0B700D37D5DC}.Release|ARM64.Build.0 = Release|Any CPU
+		{5BF9476D-8E11-4FF9-8C7A-CE1E9EFB124A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5BF9476D-8E11-4FF9-8C7A-CE1E9EFB124A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5BF9476D-8E11-4FF9-8C7A-CE1E9EFB124A}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{5BF9476D-8E11-4FF9-8C7A-CE1E9EFB124A}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{5BF9476D-8E11-4FF9-8C7A-CE1E9EFB124A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5BF9476D-8E11-4FF9-8C7A-CE1E9EFB124A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5BF9476D-8E11-4FF9-8C7A-CE1E9EFB124A}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{5BF9476D-8E11-4FF9-8C7A-CE1E9EFB124A}.Release|ARM64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -907,6 +929,9 @@ Global
 		{AD647DD3-6311-4D7E-807D-814128D1F09C} = {1C784944-C951-49E9-A248-EF800349C5F7}
 		{7CD1BE0C-E1B6-4D05-B4E3-F2AE1B85EFF7} = {78E05890-1EE2-4E9D-A0E1-21CC7F0ECA37}
 		{549344E1-DE10-41D0-AB1D-40F156A9AF09} = {78E05890-1EE2-4E9D-A0E1-21CC7F0ECA37}
+		{14230625-AFC1-4879-BC57-0B700D37D5DC} = {9F2E3D63-2AC9-4816-ADE5-7B255E17CC6E}
+		{72EE1B2A-9365-4FAE-86A6-0977C79EB186} = {9F2E3D63-2AC9-4816-ADE5-7B255E17CC6E}
+		{5BF9476D-8E11-4FF9-8C7A-CE1E9EFB124A} = {72EE1B2A-9365-4FAE-86A6-0977C79EB186}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CBA29A5C-A736-4EB9-8D61-8E76924706CD}
@@ -917,6 +942,9 @@ Global
 		Shared\SharedExtensions.Tasks\SharedExtensions.Tasks.projitems*{11637d4c-0f4d-40a5-adfc-f93ba27a4277}*SharedItemsImports = 13
 		Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{11a36038-d86a-4dc9-b660-d881d242ee2f}*SharedItemsImports = 5
 		Shared\SharedExtensions.String\StringExtensions.projitems*{11a36038-d86a-4dc9-b660-d881d242ee2f}*SharedItemsImports = 5
+		Shared\SharedExtensions.Exception\SharedExtensions.Exception.projitems*{14230625-afc1-4879-bc57-0b700d37d5dc}*SharedItemsImports = 5
+		Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{14230625-afc1-4879-bc57-0b700d37d5dc}*SharedItemsImports = 5
+		Shared\SharedExtensions.ServiceCollection\SharedExtensions.ServiceCollectionExtensions.projitems*{14230625-afc1-4879-bc57-0b700d37d5dc}*SharedItemsImports = 5
 		Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{19af613c-2d7c-47aa-ac5e-eebece67dddc}*SharedItemsImports = 5
 		Shared\SharedExtensions.ServiceCollection\SharedExtensions.ServiceCollectionExtensions.projitems*{19af613c-2d7c-47aa-ac5e-eebece67dddc}*SharedItemsImports = 5
 		Shared\SharedExtensions.Expression\SharedExtensions.Expression.projitems*{1dd493f9-6617-4e22-9ace-afc40e2e26bb}*SharedItemsImports = 13
