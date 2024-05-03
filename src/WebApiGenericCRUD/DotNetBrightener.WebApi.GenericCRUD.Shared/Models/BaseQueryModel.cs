@@ -125,11 +125,28 @@ public class BaseQueryModel
         {
             if (targetType.RetrieveMemberInfo(keyValuePair.Key) is PropertyInfo property)
             {
-                var propertyValue = Convert.ChangeType(keyValuePair.Value, property.PropertyType);
+                var propertyValue = ChangeType(keyValuePair.Value, property.PropertyType);
                 property.SetValue(queryModel, propertyValue);
             }
         }
 
         return queryModel;
+    }
+
+    protected static object ChangeType(object value, Type targetType)
+    {
+        var t = targetType;
+
+        if (t.IsGenericType && t.GetGenericTypeDefinition() == typeof(Nullable<>))
+        {
+            if (value == null)
+            {
+                return null;
+            }
+
+            t = Nullable.GetUnderlyingType(t);
+        }
+
+        return Convert.ChangeType(value, t);
     }
 }
