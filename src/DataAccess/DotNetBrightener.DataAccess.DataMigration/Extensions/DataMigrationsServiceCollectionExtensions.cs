@@ -74,6 +74,42 @@ public static class DataMigrationsServiceCollectionExtensions
     }
 
     /// <summary>
+    ///     Scans the assembly that calls this method to detect the data migration classes
+    /// </summary>
+    /// <param name="serviceCollection">
+    ///     The <see cref="IServiceCollection" />
+    /// </param>
+    /// <returns>
+    ///     The same instance of <param name="serviceCollection" /> for chaining operations
+    /// </returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    public static IServiceCollection ScanDataMigratorsFromCurrentAssembly(this IServiceCollection serviceCollection)
+    {
+        var assemblies = new[]
+        {
+            Assembly.GetCallingAssembly()
+        };
+
+        var types = assemblies.FilterSkippedAssemblies()
+                              .GetDerivedTypes<IDataMigration>()
+                              .ToList();
+
+        if (types.Count == 0)
+        {
+            return serviceCollection;
+        }
+
+        var metadata = RetrieveMigrationMetadata(serviceCollection);
+
+        foreach (var type in types)
+        {
+            AddDataMigratorType(serviceCollection, type, metadata);
+        }
+
+        return serviceCollection;
+    }
+
+    /// <summary>
     ///     Adds the specified data migration class to the service collection
     /// </summary>
     /// <typeparam name="TMigration">

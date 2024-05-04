@@ -11,9 +11,9 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace DotNetBrightener.Infrastructure.AppClientManager.DataStorage.Mssql.Migrations
 {
-    [DbContext(typeof(AppClientDbMigrationContext))]
-    [Migration("20240422014645_InitializeAppClientDb_v002")]
-    partial class InitializeAppClientDb_v002
+    [DbContext(typeof(SqlServerMigrationDbContext))]
+    [Migration("20240504043023_Init_AppClient_Tables_Schema")]
+    partial class Init_AppClient_Tables_Schema
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -31,7 +31,6 @@ namespace DotNetBrightener.Infrastructure.AppClientManager.DataStorage.Mssql.Mig
                         .HasColumnType("int");
 
                     b.Property<string>("Value")
-                        .IsRequired()
                         .HasMaxLength(1024)
                         .HasColumnType("nvarchar(1024)")
                         .HasColumnName("AppClientStatusValue");
@@ -64,7 +63,6 @@ namespace DotNetBrightener.Infrastructure.AppClientManager.DataStorage.Mssql.Mig
                         .HasColumnType("int");
 
                     b.Property<string>("Value")
-                        .IsRequired()
                         .HasMaxLength(1024)
                         .HasColumnType("nvarchar(1024)")
                         .HasColumnName("AppClientTypeValue");
@@ -113,12 +111,10 @@ namespace DotNetBrightener.Infrastructure.AppClientManager.DataStorage.Mssql.Mig
                         .HasColumnType("nvarchar(2000)");
 
                     b.Property<string>("ClientId")
-                        .IsRequired()
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("ClientName")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
@@ -177,7 +173,8 @@ namespace DotNetBrightener.Infrastructure.AppClientManager.DataStorage.Mssql.Mig
                     b.HasIndex("AllowedOrigins");
 
                     b.HasIndex("ClientId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[ClientId] IS NOT NULL");
 
                     b.ToTable("AppClient", "AppClient");
                 });
@@ -194,17 +191,14 @@ namespace DotNetBrightener.Infrastructure.AppClientManager.DataStorage.Mssql.Mig
                         .HasColumnType("bigint");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
                     b.Property<string>("Destination")
-                        .IsRequired()
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
                     b.Property<string>("Scope")
-                        .IsRequired()
                         .HasMaxLength(512)
                         .HasColumnType("nvarchar(512)");
 

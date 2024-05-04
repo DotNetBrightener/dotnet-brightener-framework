@@ -4,19 +4,16 @@ using DotNetBrightener.Infrastructure.AppClientManager.DataStorage.Mssql;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
 namespace DotNetBrightener.Infrastructure.AppClientManager.DataStorage.Mssql.Migrations
 {
-    [DbContext(typeof(AppClientDbMigrationContext))]
-    [Migration("20240422011502_InitializeAppClientDb_v001")]
-    partial class InitializeAppClientDb_v001
+    [DbContext(typeof(SqlServerMigrationDbContext))]
+    partial class SqlServerMigrationDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -31,7 +28,6 @@ namespace DotNetBrightener.Infrastructure.AppClientManager.DataStorage.Mssql.Mig
                         .HasColumnType("int");
 
                     b.Property<string>("Value")
-                        .IsRequired()
                         .HasMaxLength(1024)
                         .HasColumnType("nvarchar(1024)")
                         .HasColumnName("AppClientStatusValue");
@@ -64,7 +60,6 @@ namespace DotNetBrightener.Infrastructure.AppClientManager.DataStorage.Mssql.Mig
                         .HasColumnType("int");
 
                     b.Property<string>("Value")
-                        .IsRequired()
                         .HasMaxLength(1024)
                         .HasColumnType("nvarchar(1024)")
                         .HasColumnName("AppClientTypeValue");
@@ -77,6 +72,11 @@ namespace DotNetBrightener.Infrastructure.AppClientManager.DataStorage.Mssql.Mig
                         new
                         {
                             Id = 0,
+                            Value = "NoRestriction"
+                        },
+                        new
+                        {
+                            Id = 5,
                             Value = "Web"
                         },
                         new
@@ -86,7 +86,7 @@ namespace DotNetBrightener.Infrastructure.AppClientManager.DataStorage.Mssql.Mig
                         },
                         new
                         {
-                            Id = 50,
+                            Id = 20,
                             Value = "Desktop"
                         });
                 });
@@ -108,12 +108,10 @@ namespace DotNetBrightener.Infrastructure.AppClientManager.DataStorage.Mssql.Mig
                         .HasColumnType("nvarchar(2000)");
 
                     b.Property<string>("ClientId")
-                        .IsRequired()
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("ClientName")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
@@ -172,7 +170,8 @@ namespace DotNetBrightener.Infrastructure.AppClientManager.DataStorage.Mssql.Mig
                     b.HasIndex("AllowedOrigins");
 
                     b.HasIndex("ClientId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[ClientId] IS NOT NULL");
 
                     b.ToTable("AppClient", "AppClient");
                 });
@@ -189,17 +188,14 @@ namespace DotNetBrightener.Infrastructure.AppClientManager.DataStorage.Mssql.Mig
                         .HasColumnType("bigint");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
                     b.Property<string>("Destination")
-                        .IsRequired()
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
                     b.Property<string>("Scope")
-                        .IsRequired()
                         .HasMaxLength(512)
                         .HasColumnType("nvarchar(512)");
 

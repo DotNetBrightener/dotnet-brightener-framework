@@ -11,7 +11,8 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class ServiceCollectionExtensions
 {
-    public static AppClientManagerBuilder WithDbContextConfig(this AppClientManagerBuilder serviceCollection,
+    [Obsolete($"Use {nameof(WithStorage)} instead.")]
+    public static AppClientManagerBuilder WithDbContextConfig(this AppClientManagerBuilder    serviceCollection,
                                                               Action<DbContextOptionsBuilder> configure)
     {
         serviceCollection.Services.AddDbContext<AppClientDbContext>(configure);
@@ -22,5 +23,14 @@ public static class ServiceCollectionExtensions
         serviceCollection.Services.Replace(ServiceDescriptor.Scoped<IAppClientManager, AppClientManager>());
 
         return serviceCollection;
+    }
+
+    public static AppClientManagerBuilder WithStorage(this AppClientManagerBuilder appClientManagerBuilder)
+    {
+        appClientManagerBuilder.Services.AddSingleton<IMemoryCache, MemoryCache>();
+        appClientManagerBuilder.Services.AddScoped<IAppClientRepository, AppClientRepository>();
+        appClientManagerBuilder.Services.Replace(ServiceDescriptor.Scoped<IAppClientManager, AppClientManager>());
+
+        return appClientManagerBuilder;
     }
 }

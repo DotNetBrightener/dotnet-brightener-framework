@@ -1,14 +1,15 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
 #pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
 
-namespace DotNetBrightener.Infrastructure.AppClientManager.DataStorage.Mssql.Migrations
+namespace DotNetBrightener.Infrastructure.AppClientManager.DataStorage.PostgreSql.Migrations
 {
     /// <inheritdoc />
-    public partial class InitializeAppClientDb_v001 : Migration
+    public partial class Init_AppClient_Tables_Schema : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -22,25 +23,25 @@ namespace DotNetBrightener.Infrastructure.AppClientManager.DataStorage.Mssql.Mig
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    ClientName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    ClientId = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
-                    ClientType = table.Column<int>(type: "int", nullable: false),
-                    ClientStatus = table.Column<int>(type: "int", nullable: false),
-                    ClientSecretHashed = table.Column<string>(type: "nvarchar(max)", maxLength: 5000, nullable: true),
-                    ClientSecretSalt = table.Column<string>(type: "nvarchar(max)", maxLength: 5000, nullable: true),
-                    Description = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
-                    AllowedOrigins = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: true),
-                    AllowedAppBundleIds = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: true),
-                    DeactivatedReason = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: true),
-                    CreatedDate = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    CreatedBy = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
-                    ModifiedDate = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    ModifiedBy = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
-                    DeletedDate = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    DeletedBy = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
-                    DeletionReason = table.Column<string>(type: "nvarchar(512)", maxLength: 512, nullable: true)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    ClientName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    ClientId = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: true),
+                    ClientType = table.Column<int>(type: "integer", nullable: false),
+                    ClientStatus = table.Column<int>(type: "integer", nullable: false),
+                    ClientSecretHashed = table.Column<string>(type: "character varying(5000)", maxLength: 5000, nullable: true),
+                    ClientSecretSalt = table.Column<string>(type: "character varying(5000)", maxLength: 5000, nullable: true),
+                    Description = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
+                    AllowedOrigins = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: true),
+                    AllowedAppBundleIds = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: true),
+                    DeactivatedReason = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: true),
+                    CreatedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    CreatedBy = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
+                    ModifiedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    ModifiedBy = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    DeletedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    DeletedBy = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
+                    DeletionReason = table.Column<string>(type: "character varying(512)", maxLength: 512, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -52,8 +53,8 @@ namespace DotNetBrightener.Infrastructure.AppClientManager.DataStorage.Mssql.Mig
                 schema: "AppClient",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false),
-                    AppClientStatusValue = table.Column<string>(type: "nvarchar(1024)", maxLength: 1024, nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false),
+                    AppClientStatusValue = table.Column<string>(type: "character varying(1024)", maxLength: 1024, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -65,8 +66,8 @@ namespace DotNetBrightener.Infrastructure.AppClientManager.DataStorage.Mssql.Mig
                 schema: "AppClient",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false),
-                    AppClientTypeValue = table.Column<string>(type: "nvarchar(1024)", maxLength: 1024, nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false),
+                    AppClientTypeValue = table.Column<string>(type: "character varying(1024)", maxLength: 1024, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -79,11 +80,11 @@ namespace DotNetBrightener.Infrastructure.AppClientManager.DataStorage.Mssql.Mig
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     AppClientId = table.Column<long>(type: "bigint", nullable: false),
-                    Scope = table.Column<string>(type: "nvarchar(512)", maxLength: 512, nullable: false),
-                    Destination = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false)
+                    Scope = table.Column<string>(type: "character varying(512)", maxLength: 512, nullable: true),
+                    Destination = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
+                    Description = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -114,9 +115,10 @@ namespace DotNetBrightener.Infrastructure.AppClientManager.DataStorage.Mssql.Mig
                 columns: new[] { "Id", "AppClientTypeValue" },
                 values: new object[,]
                 {
-                    { 0, "Web" },
+                    { 0, "NoRestriction" },
+                    { 5, "Web" },
                     { 10, "Mobile" },
-                    { 50, "Desktop" }
+                    { 20, "Desktop" }
                 });
 
             migrationBuilder.CreateIndex(

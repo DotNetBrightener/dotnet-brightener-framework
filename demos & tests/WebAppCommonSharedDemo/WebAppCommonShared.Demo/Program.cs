@@ -75,8 +75,8 @@ builder.Services.EnableBackgroundTaskServices(builder.Configuration);
 //-----------------------------------------------------------------------------------------------
 var appClientManagerBuilder = builder.Services.AddAppClientManager(builder.Configuration);
 
-appClientManagerBuilder.WithDbContextConfig(configureDatabase)
-                       .WithMigrationUsingSqlServer(dbConfiguration.ConnectionString!);
+appClientManagerBuilder.WithStorage()
+                       .UseSqlServer(dbConfiguration.ConnectionString!);
 
 builder.Services.AddAppClientAudienceValidator();
 
