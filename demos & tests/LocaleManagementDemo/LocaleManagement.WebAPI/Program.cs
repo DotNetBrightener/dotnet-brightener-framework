@@ -1,6 +1,5 @@
 using DotNetBrightener.Caching.Memory;
 using DotNetBrightener.DataAccess;
-using DotNetBrightener.DataAccess.EF.Extensions;
 using LocaleManagement.Database.DbContexts;
 using LocaleManagement.WebApi;
 using Microsoft.EntityFrameworkCore;
@@ -26,6 +25,8 @@ builder.Services
        .AddEntityFrameworkDataServices<MainAppDbContext>(dbConfiguration,
                                                          builder.Configuration,
                                                          configureDatabase);
+
+builder.Services.AddAutoMigrationForDbContextAtStartup<MainAppDbContext>();
 
 builder.Services
        .EnableCachingService()
@@ -63,15 +64,5 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
-
-
-using (var scope = app.Services.CreateScope())
-{
-    app.Logger.LogInformation("Migrating database schema...");
-    var dbContext = scope.ServiceProvider.GetRequiredService<MainAppDbContext>();
-
-    dbContext.AutoMigrateDbSchema();
-    app.Logger.LogInformation("Done migrating database schema...");
-}
 
 app.Run();

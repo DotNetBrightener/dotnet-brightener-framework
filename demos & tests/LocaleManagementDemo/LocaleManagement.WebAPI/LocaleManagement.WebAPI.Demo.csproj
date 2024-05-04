@@ -18,4 +18,6 @@
     <ProjectReference Include="..\LocaleManagement.Database\LocaleManagement.Database.csproj" />
   </ItemGroup>
 
+  <Import Project="..\..\..\src\Shared\SharedExtensions.DbContext\SharedExtensions.DbContext.projitems" Label="Shared" />
+
 </Project>

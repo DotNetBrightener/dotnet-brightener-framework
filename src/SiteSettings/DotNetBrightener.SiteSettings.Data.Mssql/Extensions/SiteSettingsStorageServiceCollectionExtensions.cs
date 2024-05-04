@@ -31,7 +31,7 @@ public static class SiteSettingsStorageServiceCollectionExtensions
         serviceCollection.Replace(ServiceDescriptor
                                      .Scoped<ISiteSettingDataService, SqlServerStorageSiteSettingDataService>());
         
-        serviceCollection.AddHostedService<MigrateSiteSettingsDbContextHostedService>();
+        serviceCollection.AddAutoMigrationForDbContextAfterAppStarted<MssqlStorageSiteSettingDbContext>();
 
         LinqToDBForEFTools.Initialize();
 

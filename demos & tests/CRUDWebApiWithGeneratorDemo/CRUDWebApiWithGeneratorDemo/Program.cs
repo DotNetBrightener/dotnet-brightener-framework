@@ -38,6 +38,8 @@ builder.Services
                                                          builder.Configuration,
                                                          configureDatabase);
 
+builder.Services.AddAutoMigrationForDbContextAtStartup<MainAppDbContext>();
+
 builder.Services
        .AddControllers()
        .AddNewtonsoftJson(o =>
@@ -60,15 +62,6 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
-
-using (var scope = app.Services.CreateScope())
-{
-    app.Logger.LogInformation("Migrating database schema...");
-    var dbContext = scope.ServiceProvider.GetRequiredService<MainAppDbContext>();
-
-    dbContext.AutoMigrateDbSchema();
-    app.Logger.LogInformation("Done migrating database schema...");
-}
 
 using (var scope = app.Services.CreateScope())
 {

@@ -26,7 +26,7 @@ public static class LoggingStorageServiceCollectionExtensions
             optionBuilder.UseLazyLoadingProxies();
         });
 
-        serviceCollection.AddHostedService<MigrateLoggingContextHostedService>();
+        serviceCollection.AddAutoMigrationForDbContextAfterAppStarted<LoggingDbContext>();
 
         LinqToDBForEFTools.Initialize();
 

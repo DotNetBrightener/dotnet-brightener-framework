@@ -45,18 +45,7 @@ internal class DataMigrationRunner : IHostedService, IDisposable
     {
         using (var dbContext = scope.ServiceProvider.GetRequiredService<DataMigrationDbContext>())
         {
-            var pendingMigrations = dbContext.Database
-                                             .GetPendingMigrations()
-                                             .ToArray();
-
-            if (pendingMigrations.Any())
-            {
-                _logger.LogInformation("Migrating database for {dbContextName}", dbContext.GetType().Name);
-
-                dbContext.Database.Migrate();
-
-                _logger.LogInformation("Database migration completed for {dbContextName}", dbContext.GetType().Name);
-            }
+            dbContext.AutoMigrateDbSchema(_logger);
         }
     }
 

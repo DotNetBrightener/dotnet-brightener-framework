@@ -1,5 +1,4 @@
-﻿using DotNetBrightener.TemplateEngine.Data.Mssql;
-using DotNetBrightener.TemplateEngine.Data.Mssql.Data;
+﻿using DotNetBrightener.TemplateEngine.Data.Mssql.Data;
 using DotNetBrightener.TemplateEngine.Data.Services;
 using LinqToDB.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -30,7 +29,7 @@ public static class TemplateEngineStorageServiceCollectionExtensions
         serviceCollection.Replace(ServiceDescriptor
                                      .Scoped<ITemplateRecordDataService, InternalTemplateRecordDataService>());
 
-        serviceCollection.AddHostedService<MigrateTemplateRecordContextHostedService>();
+        serviceCollection.AddAutoMigrationForDbContextAfterAppStarted<TemplateEngineDbContext>();
 
         LinqToDBForEFTools.Initialize();
 

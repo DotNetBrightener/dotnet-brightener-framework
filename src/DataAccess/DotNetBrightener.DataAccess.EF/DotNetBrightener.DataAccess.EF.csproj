@@ -27,4 +27,6 @@
 	<Import Project="..\..\Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems" Label="Shared" />
 
 	<Import Project="..\..\Shared\SharedExtensions.String\StringExtensions.projitems" Label="Shared" />
+
+	<Import Project="..\..\Shared\SharedExtensions.DbContext\SharedExtensions.DbContext.projitems" Label="Shared" />
 </Project>

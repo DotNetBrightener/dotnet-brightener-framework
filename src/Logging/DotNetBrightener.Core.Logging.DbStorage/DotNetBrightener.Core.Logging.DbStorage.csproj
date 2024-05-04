@@ -33,4 +33,6 @@
 
 	<Import Project="..\..\Shared\SharedExtensions.Expression\SharedExtensions.Expression.projitems" Label="Shared" />
 
+	<Import Project="..\..\Shared\SharedExtensions.DbContext\SharedExtensions.DbContext.projitems" Label="Shared" />
+
 </Project>
