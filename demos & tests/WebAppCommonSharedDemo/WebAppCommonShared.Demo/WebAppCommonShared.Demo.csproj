@@ -33,6 +33,7 @@
 		<ProjectReference Include="..\..\..\src\Core\DotNetBrightener.WebSocketExt\DotNetBrightener.WebSocketExt.csproj" />
 		<ProjectReference Include="..\..\..\src\Core\LanguageExts\LanguageExts.csproj" />
 		<ProjectReference Include="..\..\..\src\DataAccess\DotNetBrightener.DataAccess.Abstractions\DotNetBrightener.DataAccess.Abstractions.csproj" />
+		<ProjectReference Include="..\..\..\src\DataAccess\DotNetBrightener.DataAccess.DataMigration\DotNetBrightener.DataAccess.DataMigration.csproj" />
 		<ProjectReference Include="..\..\..\src\DataAccess\DotNetBrightener.DataAccess.EF\DotNetBrightener.DataAccess.EF.csproj" />
 		<ProjectReference Include="..\..\..\src\Infrastructure\AspNet.Extensions.SelfDocumentedProblemResult.UI\AspNet.Extensions.SelfDocumentedProblemResult.UI.csproj" />
 		<ProjectReference Include="..\..\..\src\Infrastructure\AspNet.Extensions.SelfDocumentedProblemResult\AspNet.Extensions.SelfDocumentedProblemResult.csproj" />

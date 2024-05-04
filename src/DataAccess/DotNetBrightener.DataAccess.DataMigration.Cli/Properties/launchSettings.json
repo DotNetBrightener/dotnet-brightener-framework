@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "DotNetBrightener.DataAccess.DataMigration.Cli": {
+      "commandName": "Project",
+      "workingDirectory": "E:\\Projects\\DotNetBrightener\\dotnet-brightener-framework\\demos & tests\\WebAppCommonSharedDemo\\WebAppCommonShared.Demo"
+    }
+  }
+}

@@ -2,8 +2,14 @@
 
 &copy; 2024 [DotNet Brightener](mailto:admin@dotnetbrightener.com)
 
-![NuGet Version](https://img.shields.io/nuget/v/DotNetBrightener.DataAccess.DataMigration)
+## Versions
 
+| Package | Version |
+| --- | --- |
+| DotNetBrightener.DataAccess.DataMigration | ![NuGet Version](https://img.shields.io/nuget/v/DotNetBrightener.DataAccess.DataMigration) |
+| DotNetBrightener.DataAccess.DataMigration.Mssql | ![NuGet Version](https://img.shields.io/nuget/v/DotNetBrightener.DataAccess.DataMigration.Mssql)|
+| DotNetBrightener.DataAccess.DataMigration.PostgreSql | ![NuGet Version](https://img.shields.io/nuget/v/DotNetBrightener.DataAccess.DataMigration.PostgreSql)|
+| dotnet-dnb-datamigration | ![NuGet Version](https://img.shields.io/nuget/v/dotnet-dnb-datamigration) |
 
 ## Overview
 
@@ -85,5 +91,8 @@ public class MyMigration : IDataMigration
 - [x] Initial Release
 - [x] Add Support for SQL Server
 - [x] Add Support for PostgreSQL
-- [ ] CLI tool for creating migration class
+- [x] CLI tool for creating migration class
 
+### CLI Tool
+
+You can now install the cli tool from Nuget: [dotnet-dnb-datamigration](https://www.nuget.org/packages/dotnet-dnb-datamigration)
