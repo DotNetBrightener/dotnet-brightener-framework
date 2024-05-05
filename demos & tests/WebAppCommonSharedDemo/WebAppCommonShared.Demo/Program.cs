@@ -32,7 +32,7 @@ builder.Services
 
 builder.Services
        .AddTemplateEngine()
-       .AddTemplateEngineData()
+       .AddTemplateEngineStorage()
        .AddTemplateEngineSqlServerStorage(connectionString);
 
 var mvcBuilder = builder.Services.AddControllers();
