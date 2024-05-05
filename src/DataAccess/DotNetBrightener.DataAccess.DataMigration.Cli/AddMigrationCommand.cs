@@ -55,7 +55,8 @@ internal class {migrationName} : IDataMigration
         // Add custom constructor logic here, e.g. to inject dependencies
     }}
 
-    public Task MigrateData() {{
+    public Task MigrateData() 
+    {{
         // Add your migration logic here
     }}
 }}

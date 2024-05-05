@@ -10,26 +10,25 @@ using System.Linq.Expressions;
 
 namespace DotNetBrightener.Core.Logging.DbStorage;
 
-internal class QueueEventLogBackgroundProcessing : IQueueEventLogBackgroundProcessing
+internal class QueueEventLogBackgroundProcessing(
+    IEventLogWatcher                           eventLogWatcher,
+    IOptions<LoggingRetentions>                loggingRetentionOptions,
+    ILogger<QueueEventLogBackgroundProcessing> logger,
+    IServiceScopeFactory                       serviceScopeFactory)
+    : IQueueEventLogBackgroundProcessing
 {
-    private readonly IEventLogWatcher     _eventLogWatcher;
-    private readonly IServiceScopeFactory _serviceScopeFactory;
-    private readonly LoggingRetentions    _loggingRetentions;
-    private readonly ILogger              _logger;
+    /// <summary>
+    ///     To keep track of whether the migration has executed or not.
+    /// </summary>
+    private static   bool              _migrationHasExecuted;
 
-    public QueueEventLogBackgroundProcessing(IEventLogWatcher                           eventLogWatcher,
-                                             IOptions<LoggingRetentions>                loggingRetentionOptions,
-                                             ILogger<QueueEventLogBackgroundProcessing> logger,
-                                             IServiceScopeFactory                       serviceScopeFactory)
-    {
-        _eventLogWatcher     = eventLogWatcher;
-        _logger              = logger;
-        _serviceScopeFactory = serviceScopeFactory;
-        _loggingRetentions   = loggingRetentionOptions.Value;
-    }
+    private readonly LoggingRetentions _loggingRetentions = loggingRetentionOptions.Value;
+    private readonly ILogger           _logger            = logger;
 
     public async Task Execute()
     {
+        await ExecuteLogSchemaMigrationIfNeeded();
+
         var taskList = new List<Func<LoggingDbContext, Task>>
         {
             context =>
@@ -60,6 +59,22 @@ internal class QueueEventLogBackgroundProcessing : IQueueEventLogBackgroundProce
         sw.Stop();
 
         _logger.LogInformation("Event Log Queue Background Service executed in {elapsedTime}", sw.Elapsed);
+    }
+
+    private async Task ExecuteLogSchemaMigrationIfNeeded()
+    {
+        if (!_migrationHasExecuted)
+        {
+            using (var scope = serviceScopeFactory.CreateScope())
+            {
+                await using (var dbContext = scope.ServiceProvider.GetRequiredService<LoggingDbContext>())
+                {
+                    dbContext.AutoMigrateDbSchema(_logger);
+                }
+            }
+
+            _migrationHasExecuted = true;
+        }
     }
 
     private async Task CleanUpLogsByLogger(LoggingDbContext context, TimeSpan retention, string loggerName)
@@ -139,7 +154,7 @@ internal class QueueEventLogBackgroundProcessing : IQueueEventLogBackgroundProce
 
     private async Task WriteNewLogs(LoggingDbContext loggingDbContext)
     {
-        var eventLogRecords = _eventLogWatcher.GetQueuedEventLogRecords();
+        var eventLogRecords = eventLogWatcher.GetQueuedEventLogRecords();
 
         if (eventLogRecords.Count == 0)
             return;
@@ -173,7 +188,7 @@ internal class QueueEventLogBackgroundProcessing : IQueueEventLogBackgroundProce
 
     private async Task UsingDbContext(Func<LoggingDbContext, Task> action)
     {
-        using var        backgroundScope  = _serviceScopeFactory.CreateScope();
+        using var        backgroundScope  = serviceScopeFactory.CreateScope();
         LoggingDbContext loggingDbContext = null;
 
         try
