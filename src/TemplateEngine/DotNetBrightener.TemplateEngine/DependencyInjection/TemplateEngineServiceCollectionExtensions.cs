@@ -8,6 +8,8 @@ public static class TemplateEngineServiceCollectionExtensions
 {
     public static IServiceCollection AddTemplateEngine(this IServiceCollection serviceCollection)
     {
+        serviceCollection.AddMemoryCache();
+
         serviceCollection.AddScoped<ITemplateHelperRegistration, TemplateHelperRegistration>();
         serviceCollection.AddScoped<ITemplateParserService, TemplateParserService>();
 

@@ -3,6 +3,7 @@ using System.Reflection;
 using DotNetBrightener.TemplateEngine.Attributes;
 using DotNetBrightener.TemplateEngine.Data.Models;
 using DotNetBrightener.TemplateEngine.Exceptions;
+using DotNetBrightener.TemplateEngine.Models;
 
 namespace DotNetBrightener.TemplateEngine.Data.Services;
 
@@ -40,11 +41,12 @@ public interface ITemplateContainer
 
 public class TemplateContainer : ITemplateContainer
 {
-    private readonly ConcurrentDictionary<string, Type> _templateTypesList = new ConcurrentDictionary<string, Type>();
+    private readonly ConcurrentDictionary<string, Type> _templateTypesList = new();
 
     public void RegisterTemplate<TTemplateType>()
     {
         var typeName = typeof(TTemplateType).FullName;
+
         if (typeName == null)
             return;
 
@@ -53,15 +55,12 @@ public class TemplateContainer : ITemplateContainer
 
     public List<Type> GetAllTemplateTypes()
     {
-        return _templateTypesList.Values.ToList();
+        return [.. _templateTypesList.Values];
     }
 
     public Type GetTemplateTypeByName(string templateTypeName)
     {
-        if (_templateTypesList.TryGetValue(templateTypeName, out var templateType))
-            return templateType;
-
-        return null;
+        return _templateTypesList.GetValueOrDefault(templateTypeName);
     }
 
     public TemplateListItemModel GetTemplateInformation(string templateTypeName)
@@ -70,7 +69,7 @@ public class TemplateContainer : ITemplateContainer
 
         if (templateType == null)
             throw new TemplateTypeNotFoundException(templateTypeName);
-            
+
         var templateInformation = new TemplateListItemModel
         {
             TemplateName = GetFormattedTemplateName(templateType.Name),
@@ -78,11 +77,14 @@ public class TemplateContainer : ITemplateContainer
         };
 
         var templateDescriptionAttribute = templateType.GetCustomAttribute<TemplateDescriptionAttribute>();
+
         if (templateDescriptionAttribute != null)
         {
             templateInformation.TemplateDescription    = templateDescriptionAttribute.TemplateDescription;
             templateInformation.TemplateDescriptionKey = templateDescriptionAttribute.TemplateDescriptionKey;
         }
+
+        templateInformation.Fields = TemplateFieldsUtils.RetrieveTemplateFields(templateType);
 
         return templateInformation;
     }

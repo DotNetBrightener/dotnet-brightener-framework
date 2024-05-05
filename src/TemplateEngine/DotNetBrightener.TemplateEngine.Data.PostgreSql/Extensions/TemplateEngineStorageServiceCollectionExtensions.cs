@@ -1,7 +1,7 @@
 ﻿using DotNetBrightener.DataAccess;
 using DotNetBrightener.Plugins.EventPubSub;
-using DotNetBrightener.TemplateEngine.Data.Mssql.Data;
-using DotNetBrightener.TemplateEngine.Data.Mssql.Services;
+using DotNetBrightener.TemplateEngine.Data.PostgreSql.Data;
+using DotNetBrightener.TemplateEngine.Data.PostgreSql.Services;
 using DotNetBrightener.TemplateEngine.Data.Services;
 using LinqToDB.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -12,27 +12,30 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class TemplateEngineStorageServiceCollectionExtensions
 {
-    public static IServiceCollection AddTemplateEngineSqlServerStorage(this IServiceCollection serviceCollection,
-                                                                       string                  connectionString)
+    public static IServiceCollection AddTemplateEnginePostgreSqlStorage(this IServiceCollection serviceCollection,
+                                                                        string                  connectionString)
     {
         serviceCollection.AddDbContext<TemplateEngineDbContext>((optionBuilder) =>
         {
-            optionBuilder.UseSqlServer(connectionString,
-                                       contextOptionsBuilder =>
-                                       {
-                                           contextOptionsBuilder
-                                              .MigrationsHistoryTable("__MigrationsHistory",
-                                                                      TemplateEngineDbContext.SchemaName);
-                                       })
+            optionBuilder.UseNpgsql(connectionString,
+                                    contextOptionsBuilder =>
+                                    {
+                                        contextOptionsBuilder
+                                           .MigrationsHistoryTable("__MigrationsHistory",
+                                                                   TemplateEngineDbContext.SchemaName);
+                                    })
                          .UseLazyLoadingProxies();
         });
+
 
         serviceCollection.TryAddScoped<IEventPublisher, EventPublisher>();
         serviceCollection.TryAddScoped<ICurrentLoggedInUserResolver, DefaultCurrentUserResolver>();
         serviceCollection.AddScoped<TemplateEngineRepository>();
 
-        serviceCollection.Replace(ServiceDescriptor.Scoped<ITemplateRegistrationService, SqlServerTemplateRegistrationService>());
-        serviceCollection.Replace(ServiceDescriptor.Scoped<ITemplateStorageService, SqlServerTemplateStorageService>());
+        serviceCollection.Replace(ServiceDescriptor
+                                     .Scoped<ITemplateRegistrationService, PostgreSqlTemplateRegistrationService>());
+        serviceCollection.Replace(ServiceDescriptor.Scoped<ITemplateStorageService, PosgreSqlTemplateStorageService>());
+        
         serviceCollection.AddScoped<ITemplateRecordDataService, InternalTemplateRecordDataService>();
 
         serviceCollection.AddAutoMigrationForDbContextAfterAppStarted<TemplateEngineDbContext>();

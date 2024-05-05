@@ -9,4 +9,6 @@ public class TemplateListItemModel
     public string TemplateDescription { get; set; }
 
     public string TemplateDescriptionKey { get; set; }
+
+    public List<string> Fields { get; internal set; }
 }

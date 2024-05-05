@@ -3,21 +3,14 @@
 /// <summary>
 ///     Represents service that registers the templates to <see cref="ITemplateStore" />
 /// </summary>
-public interface ITemplateProvider 
+public interface ITemplateProvider
 {
     /// <summary>
-    ///    Registers the templates to <see cref="ITemplateStore" />
+    ///    Registers the templates to the specified <paramref name="templateStore" />
     /// </summary>
-    /// <param name="templateStore"></param>
+    /// <param name="templateStore">
+    ///     The <see cref="ITemplateStore"/> to register the templates to
+    /// </param>
     /// <returns></returns>
     Task RegisterTemplates(ITemplateStore templateStore);
-}
-
-public class DefaultTemplateProvider : ITemplateProvider
-{
-    public Task RegisterTemplates(ITemplateStore templateStore)
-    {
-        return Task.CompletedTask;
-
-    }
 }

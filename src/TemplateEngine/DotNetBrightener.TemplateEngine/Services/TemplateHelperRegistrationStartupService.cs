@@ -4,21 +4,15 @@ using Microsoft.Extensions.Logging;
 
 namespace DotNetBrightener.TemplateEngine.Services;
 
-internal class TemplateHelperRegistrationStartupService: IHostedService
+internal class TemplateHelperRegistrationStartupService(
+    IServiceScopeFactory                              serviceScopeFactory,
+    ILogger<TemplateHelperRegistrationStartupService> logger)
+    : IHostedService
 {
-    private readonly IServiceScopeFactory                              _serviceScopeFactory;
-    private readonly ILogger<TemplateHelperRegistrationStartupService> _logger;
-
-    public TemplateHelperRegistrationStartupService(IServiceScopeFactory                       serviceScopeFactory,
-                                                    ILogger<TemplateHelperRegistrationStartupService> logger)
-    {
-        _serviceScopeFactory = serviceScopeFactory;
-        _logger              = logger;
-    }
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        var serviceProvider = _serviceScopeFactory.CreateScope().ServiceProvider;
+        var serviceProvider = serviceScopeFactory.CreateScope().ServiceProvider;
 
         var templateHelperRegistration = serviceProvider.GetRequiredService<ITemplateHelperRegistration>();
 
@@ -28,10 +22,6 @@ internal class TemplateHelperRegistrationStartupService: IHostedService
     }
 
     public async Task StopAsync(CancellationToken cancellationToken)
-    {
-    }
-
-    public void Dispose()
     {
     }
 }

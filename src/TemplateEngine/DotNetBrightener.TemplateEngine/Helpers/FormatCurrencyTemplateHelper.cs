@@ -1,8 +1,4 @@
-﻿// 
-// DotNetBrightener-ECommerce - DotNetBrightener.TemplateEngine
-// Copyright (c) 2021 DotNetBrightener.
-
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Globalization;
 using DotNetBrightener.TemplateEngine.Services;
 

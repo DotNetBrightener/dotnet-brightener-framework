@@ -1,4 +1,3 @@
-using DotNetBrightener.TemplateEngine.Helpers;
 using DotNetBrightener.TemplateEngine.Services;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
@@ -14,59 +13,101 @@ public class TemplateEngineParserTest
     public void Setup()
     {
         var serviceCollection = new ServiceCollection();
-
-        serviceCollection.AddScoped<ITemplateParserService, TemplateParserService>();
-
-        serviceCollection.AddScoped<ITemplateHelperRegistration, TemplateHelperRegistration>();
-        serviceCollection.AddScoped<ITemplateParserService, TemplateParserService>();
-
-        serviceCollection.AddTemplateHelperProvider<DateTimeTemplateHelper>();
-        serviceCollection.AddTemplateHelperProvider<FormatCurrencyTemplateHelper>();
-        serviceCollection.AddTemplateHelperProvider<SumTemplateHelper>();
+        serviceCollection.AddLogging();
+        serviceCollection.AddTemplateEngine();
 
         _serviceProvider = serviceCollection.BuildServiceProvider();
 
-        
+
         var templateHelperRegistration = _serviceProvider.GetService<ITemplateHelperRegistration>();
 
         templateHelperRegistration?.RegisterHelpers();
     }
 
     [Test]
-    public void TestParseTemplate()
+    [TestCase("’", "'")]
+    [TestCase("&", "&")]
+    [TestCase("\"", "\"")]
+    [TestCase("<", "<")]
+    [TestCase(">", ">")]
+    [TestCase("€", "€")]
+    [TestCase("£", "£")]
+    [TestCase("®", "®")]
+    [TestCase("©", "©")]
+    public void TestParseTemplate_HtmlDisabled_ShouldRetainInputAsItWas(string input, string expectedValue)
     {
         var templateParserService = _serviceProvider.GetService<ITemplateParserService>();
 
-        var expectation = new Dictionary<string, string>();
+        var parsedValue = templateParserService.ParseTemplate("{{this}}", input, false);
+        Assert.That(parsedValue, Is.EqualTo(expectedValue));
+    }
+    
+    [Test]
+    [TestCase("Welcome to your home. {{Address}}",
+              "111 Adam’s MHS Test St., NorthPole, AK 66666",
+              "Welcome to your home. 111 Adam's MHS Test St., NorthPole, AK 66666")]
+    public void TestParseTemplate_ComplexObject(string template,
+                                                string inputAddress,
+                                                string expectedResult)
+    {
+        var templateParserService = _serviceProvider.GetService<ITemplateParserService>();
 
-        expectation.Add("’", "'");
-        expectation.Add("&", "&");
-        expectation.Add("\"", "\"");
-        expectation.Add("<", "<");
-        expectation.Add(">", ">");
-        expectation.Add("€", "€");
-        expectation.Add("£", "£");
-        expectation.Add("®", "®");
-        expectation.Add("©", "©");
+        var result = templateParserService.ParseTemplate(template,
+                                                         new
+                                                         {
+                                                             Address = inputAddress
+                                                         },
+                                                         isHtml: false);
+        Assert.That(result, Is.EqualTo(expectedResult));
+    }
+    
+    [Test]
+    [TestCase("Welcome to your home. {{Address}}",
+              "111 Adam’s MHS Test St., NorthPole, AK 66666",
+              "Welcome to your home. 111 Adam's MHS Test St., NorthPole, AK 66666")]
+    public void TestParseTemplate_ComplexObject_HtmlEnabled(string template,
+                                                string inputAddress,
+                                                string expectedResult)
+    {
+        var templateParserService = _serviceProvider.GetService<ITemplateParserService>();
 
-        foreach (var (key, expectedValue) in expectation)
-        {
-            var parsedValue = templateParserService.ParseTemplate("{{this}}", key, false);
-            Assert.That(expectedValue, Is.EqualTo(parsedValue));
-        }
+        var result = templateParserService.ParseTemplate(template,
+                                                         new
+                                                         {
+                                                             Address = inputAddress
+                                                         },
+                                                         isHtml: true);
+        Assert.That(result, Is.EqualTo(expectedResult));
     }
 
     [Test]
-    public void TestParseTemplate_ComplexObject()
+    [TestCase("{{formatDate Date}}",
+              "2024-04-01 12:00:00",
+              "2024-04-01T12:00:00.0000000")]
+    [TestCase("{{formatDate Date 'MMM dd, yyyy'}}",
+              "2024-04-01 12:00:00",
+              "Apr 01, 2024")]
+    [TestCase("{{formatDate Date MMM dd, yyyy}}",
+              "2024-04-01 12:00:00",
+              "Apr 01, 2024")]
+    [TestCase("{{formatDate Date MMM dd, yyyy HH:mm}}",
+              "2024-04-01 13:20:00",
+              "Apr 01, 2024 13:20")]
+    [TestCase("{{formatDate Date MMM dd, yyyy hh:mm tt}}",
+              "2024-04-01 13:20:00",
+              "Apr 01, 2024 01:20 PM")]
+    public void TestParseTemplate_FormatDateHelper(string template,
+                                                   string dateInput,
+                                                   string expectedResult)
     {
         var templateParserService = _serviceProvider.GetService<ITemplateParserService>();
 
-        var result = templateParserService.ParseTemplate("Welcome to your home. {{Address}}",
+        var result = templateParserService.ParseTemplate(template,
                                                          new
                                                          {
-                                                             Address = "111 Adam’s MHS Test St., NorthPole, AK 66666"
+                                                             Date = DateTime.Parse(dateInput)
                                                          },
                                                          isHtml: false);
-        Assert.That("Welcome to your home. 111 Adam's MHS Test St., NorthPole, AK 66666", Is.EqualTo(result));
+        Assert.That(result, Is.EqualTo(expectedResult));
     }
 }

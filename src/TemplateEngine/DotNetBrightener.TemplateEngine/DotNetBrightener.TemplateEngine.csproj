@@ -8,12 +8,6 @@
 	<ItemGroup>
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
 	</ItemGroup>
-	<ItemGroup>
-		<None Update="docs\readme.md">
-			<PackagePath>\</PackagePath>
-			<Pack>true</Pack>
-		</None>
-	</ItemGroup>
 
 	<Import Project="..\..\Shared\SharedExtensions.String\StringExtensions.projitems" Label="Shared" />
 

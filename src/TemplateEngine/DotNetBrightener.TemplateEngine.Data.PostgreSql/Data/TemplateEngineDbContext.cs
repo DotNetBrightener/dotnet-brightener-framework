@@ -1,11 +1,11 @@
 ﻿using DotNetBrightener.DataAccess.EF.Migrations;
-using DotNetBrightener.TemplateEngine.Data.Mssql.Entity;
+using DotNetBrightener.TemplateEngine.Data.PostgreSql.Entity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
-namespace DotNetBrightener.TemplateEngine.Data.Mssql.Data;
+namespace DotNetBrightener.TemplateEngine.Data.PostgreSql.Data;
 
-internal class SqlServerDbContextDesignTimeFactory : SqlServerDbContextDesignTimeFactory<TemplateEngineDbContext> { }
+internal class PostgreSqlDbContextDesignTimeFactory : PostgreSqlDbContextDesignTimeFactory<TemplateEngineDbContext> { }
 
 public class TemplateEngineDbContext : MigrationEnabledDbContext
 {

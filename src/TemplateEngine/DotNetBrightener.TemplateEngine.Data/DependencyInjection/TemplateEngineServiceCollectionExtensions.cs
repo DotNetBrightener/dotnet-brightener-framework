@@ -1,25 +1,30 @@
-﻿using DotNetBrightener.TemplateEngine.Data.Services;
-using DotNetBrightener.TemplateEngine.Data.StartupTasks;
+﻿using DotNetBrightener.TemplateEngine.Data;
+using DotNetBrightener.TemplateEngine.Data.Services;
 // ReSharper disable CheckNamespace
 
 namespace Microsoft.Extensions.DependencyInjection;
 
 public static class TemplateEngineServiceCollectionExtensions
 {
+    [Obsolete("Use AddTemplateEngineStorage() instead")]
+    public static IServiceCollection AddTemplateEngineData(this IServiceCollection serviceCollection)
+        => AddTemplateEngineStorage(serviceCollection);
+
+
     /// <summary>
     ///     Registers the data access services for the template engine to the service collection
     /// </summary>
     /// <param name="serviceCollection">
     ///     The <see cref="IServiceCollection"/>
     /// </param>
-    public static IServiceCollection AddTemplateEngineData(this IServiceCollection serviceCollection)
+    public static IServiceCollection AddTemplateEngineStorage(this IServiceCollection serviceCollection)
     {
         serviceCollection.AddSingleton<ITemplateContainer, TemplateContainer>();
         serviceCollection.AddScoped<ITemplateRegistrationService, TemplateRegistrationService>();
-        serviceCollection.AddScoped<ITemplateRecordDataService, TemplateRecordDataService>();
-        serviceCollection.AddScoped<ITemplateService, TemplateService>();
+        serviceCollection.AddScoped<ITemplateStorageService, PhysicalTemplateStorageService>();
+        serviceCollection.AddScoped<ITemplateService, DefaultTemplateService>();
 
-        serviceCollection.RegisterStartupTask<TemplateRegistrationStartupTask>();
+        serviceCollection.AddHostedService<TemplateRegistrationStartupTask>();
 
         return serviceCollection;
     }

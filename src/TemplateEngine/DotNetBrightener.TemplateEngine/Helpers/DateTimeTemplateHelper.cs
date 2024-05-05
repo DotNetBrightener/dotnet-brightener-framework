@@ -10,23 +10,33 @@ public class DateTimeTemplateHelper : ITemplateHelperProvider
 
     public void ResolveTemplate(TextWriter output, object context, object[] arguments)
     {
-        if (arguments.Length != 2 || context == null)
+        if (context == null)
             return;
 
+        if (arguments.Length < 1)
+            throw new ArgumentException("Invalid number of arguments");
+
         var fieldValue = arguments[0];
+
         if (fieldValue == null)
         {
             return;
         }
 
-        var format = arguments[1].ToString();
+        var formatArg =
+            new List<string>(arguments.Select(a => a.ToString()?.Trim('\''))
+                                      .Where(argument => !string.IsNullOrEmpty(argument)));
+
+        formatArg.RemoveAt(0);
+
+        var format = formatArg.Count > 0
+                         ? string.Join(" ", formatArg)
+                         : "O";
 
         if (fieldValue is DateTime dateTime)
-            output.Write(string.IsNullOrEmpty(format) ? dateTime.ToString("O") : dateTime.ToString(format));
+            output.Write(dateTime.ToString(format));
 
         if (fieldValue is DateTimeOffset dateTimeOffset)
-            output.Write(string.IsNullOrEmpty(format)
-                             ? dateTimeOffset.ToString("O")
-                             : dateTimeOffset.ToString(format));
+            output.Write(dateTimeOffset.ToString(format));
     }
 }
