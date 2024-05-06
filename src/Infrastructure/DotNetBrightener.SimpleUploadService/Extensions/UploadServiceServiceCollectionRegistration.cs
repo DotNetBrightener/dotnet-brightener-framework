@@ -32,7 +32,7 @@ public static class UploadServiceServiceCollectionRegistration
         serviceCollection.AddScoped<IMediaFileProvider, MediaFileProvider>();
         serviceCollection.AddScoped<IUploadService, UploadService>();
 
-        builder.AddUploadServiceProvider<DefaultUploadServiceProvider>();
+        builder.AddUploadServiceProvider<PhysicalFileUploadServiceProvider>();
         builder.UseImageResizer<NoneImageResizer>();
         builder.UseUploadRootPath<DefaultUploadRootPathProvider>();
 

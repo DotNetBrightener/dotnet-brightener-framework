@@ -10,22 +10,12 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 // ReSharper disable InconsistentNaming
 namespace DotNetBrightener.MultiTenancy.Events;
 
-internal class DbContextAfterSaveChanges_StoreTenantMapping
+internal class DbContextAfterSaveChanges_StoreTenantMapping(
+    ITenantAccessor tenantAccessor,
+    Lazy<DbContext> dbContext,
+    IScheduler      scheduler)
     : IEventHandler<DbContextAfterSaveChanges>
 {
-    private readonly IScheduler               _scheduler;
-    private readonly ITenantAccessor          _tenantAccessor;
-    private readonly Lazy<DbContext>          _dbContext;
-
-    public DbContextAfterSaveChanges_StoreTenantMapping(ITenantAccessor          tenantAccessor,
-                                                        Lazy<DbContext>          dbContext,
-                                                        IScheduler               scheduler)
-    {
-        _tenantAccessor = tenantAccessor;
-        _dbContext      = dbContext;
-        _scheduler = scheduler;
-    }
-
     public int Priority => 0;
 
     public Task<bool> HandleEvent(DbContextAfterSaveChanges eventMessage)
@@ -38,9 +28,9 @@ internal class DbContextAfterSaveChanges_StoreTenantMapping
         if (TenantSupportedRepository.HasTenantMapping == false)
             return Task.FromResult(true);
 
-        var listOfTenantsToLimits = _tenantAccessor.CurrentTenantIds.Any()
-                                        ? _tenantAccessor.CurrentTenantIds
-                                        : _tenantAccessor.LimitedTenantIdsToRecordsPersistence;
+        var listOfTenantsToLimits = tenantAccessor.CurrentTenantIds.Any()
+                                        ? tenantAccessor.CurrentTenantIds
+                                        : tenantAccessor.LimitedTenantIdsToRecordsPersistence;
 
         // ignore if no tenant limit is available
         if (listOfTenantsToLimits.Length == 0)
@@ -74,17 +64,17 @@ internal class DbContextAfterSaveChanges_StoreTenantMapping
         // enqueue in a separate task to not block the current thread
         var methodInfo = this.GetMethodWithName(nameof(AssignTenantMapping));
 
-        _scheduler.ScheduleTask(methodInfo, tenantEntityMappings);
+        scheduler.ScheduleTaskOnce(methodInfo, tenantEntityMappings);
 
         return Task.FromResult(true);
     }
 
     private async Task AssignTenantMapping(IEnumerable<TenantEntityMapping> tenantMappingEntries)
     {
-        await _dbContext.Value
-                        .Set<TenantEntityMapping>()
-                        .AddRangeAsync(tenantMappingEntries);
+        await dbContext.Value
+                       .Set<TenantEntityMapping>()
+                       .AddRangeAsync(tenantMappingEntries);
 
-        await _dbContext.Value.SaveChangesAsync();
+        await dbContext.Value.SaveChangesAsync();
     }
 }

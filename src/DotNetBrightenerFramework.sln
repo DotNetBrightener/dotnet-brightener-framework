@@ -249,7 +249,7 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SharedExtensions.DbContext"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Infrastructure.AppClientManager.DataStorage.PostgreSql", "AppClientManager\DotNetBrightener.Infrastructure.AppClientManager.DataStorage.PostgreSql\DotNetBrightener.Infrastructure.AppClientManager.DataStorage.PostgreSql.csproj", "{B420CF11-9DC3-4A80-BD60-514EF5A087C6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetBrightener.DataAccess.DataMigration.Cli", "DataAccess\DotNetBrightener.DataAccess.DataMigration.Cli\DotNetBrightener.DataAccess.DataMigration.Cli.csproj", "{90E123A9-198A-4158-9AC6-5484F58AD3DD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.DataAccess.DataMigration.Cli", "DataAccess\DotNetBrightener.DataAccess.DataMigration.Cli\DotNetBrightener.DataAccess.DataMigration.Cli.csproj", "{90E123A9-198A-4158-9AC6-5484F58AD3DD}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DataMigrations", "DataMigrations", "{263BAFDA-F482-40C8-80CF-9CC108C5C70D}"
 EndProject
@@ -264,6 +264,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.TemplateEngine.Tests.Data.Mssql", "TemplateEngine\DotNetBrightener.TemplateEngine.Tests.Data.Mssql\DotNetBrightener.TemplateEngine.Tests.Data.Mssql.csproj", "{3FC41691-9C16-472C-8D21-8886CC22C6BA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Core.Logging.OpenTelemetryEnabled", "Logging\DotNetBrightener.Core.Logging.OpenTelemetryEnabled\DotNetBrightener.Core.Logging.OpenTelemetryEnabled.csproj", "{E8453D14-33D3-4E0C-9A44-A6A3C55C76DB}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SharedExtensions.ObjectMethods", "Shared\SharedExtensions.ObjectMethods\SharedExtensions.ObjectMethods.shproj", "{EDA17464-72BB-485E-B43B-A62AF402559B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1040,6 +1042,7 @@ Global
 		{C591C9BE-339B-48E0-82DF-D2C9D5EC90E1} = {6B582092-B96F-471F-BD9B-C9F00E00CB2F}
 		{3FC41691-9C16-472C-8D21-8886CC22C6BA} = {6B582092-B96F-471F-BD9B-C9F00E00CB2F}
 		{E8453D14-33D3-4E0C-9A44-A6A3C55C76DB} = {0CAF89D9-E9F1-40C4-9CA3-018BB8455767}
+		{EDA17464-72BB-485E-B43B-A62AF402559B} = {7205287C-4CD6-4E4D-830D-46F0BBEBB605}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CBA29A5C-A736-4EB9-8D61-8E76924706CD}
@@ -1061,6 +1064,7 @@ Global
 		Shared\SharedExtensions.String\StringExtensions.projitems*{2cb41a59-4f22-4813-a509-a43bbc02dac2}*SharedItemsImports = 13
 		Shared\SharedExtensions.Exception\SharedExtensions.Exception.projitems*{35f8279b-db86-4412-b519-bc9ee20d4405}*SharedItemsImports = 5
 		Shared\SharedExtensions.HttpContext\SharedExtensions.HttpContext.projitems*{35f8279b-db86-4412-b519-bc9ee20d4405}*SharedItemsImports = 5
+		Shared\SharedExtensions.Tasks\SharedExtensions.Tasks.projitems*{35f8279b-db86-4412-b519-bc9ee20d4405}*SharedItemsImports = 5
 		Shared\SharedExtensions.Object\SharedExtensions.ObjectExtensions.projitems*{37fcad5c-ac17-49ef-966a-0b6e18c89276}*SharedItemsImports = 13
 		Shared\SharedExtensions.DbContext\SharedExtensions.DbContext.projitems*{543d648c-1d83-44fc-b2ee-0fe9043a5393}*SharedItemsImports = 13
 		Shared\SharedExtensions.DbContext\SharedExtensions.DbContext.projitems*{549344e1-de10-41d0-ab1d-40f156a9af09}*SharedItemsImports = 5
@@ -1079,13 +1083,14 @@ Global
 		Shared\SharedExtensions.DbContext\SharedExtensions.DbContext.projitems*{63e57b2a-52d4-4373-bdce-0d6374dd9c71}*SharedItemsImports = 5
 		Shared\SharedExtensions.Exception\SharedExtensions.Exception.projitems*{666de9da-442b-4a5d-b875-4e877ab36aa9}*SharedItemsImports = 5
 		Shared\SharedExtensions.HttpContext\SharedExtensions.HttpContext.projitems*{666de9da-442b-4a5d-b875-4e877ab36aa9}*SharedItemsImports = 5
+		Shared\SharedExtensions.ObjectMethods\SharedExtensions.ObjectMethods.projitems*{666de9da-442b-4a5d-b875-4e877ab36aa9}*SharedItemsImports = 5
 		Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{6ee8521b-ca33-45a6-899d-bd48d8dccbac}*SharedItemsImports = 5
 		Shared\SharedExtensions.ServiceCollection\SharedExtensions.ServiceCollectionExtensions.projitems*{6ee8521b-ca33-45a6-899d-bd48d8dccbac}*SharedItemsImports = 5
 		Shared\SharedExtensions.String\StringExtensions.projitems*{6ee8521b-ca33-45a6-899d-bd48d8dccbac}*SharedItemsImports = 5
 		Shared\SharedExtensions.XmlDocumentationHelper\SharedExtensions.XmlDocumentationHelper.projitems*{6ee8521b-ca33-45a6-899d-bd48d8dccbac}*SharedItemsImports = 5
 		Shared\SharedExtensions.Expression\SharedExtensions.Expression.projitems*{6ffc158f-337d-4001-8261-f22c5a757b67}*SharedItemsImports = 5
 		Shared\SharedExtensions.HttpContext\SharedExtensions.HttpContext.projitems*{6ffc158f-337d-4001-8261-f22c5a757b67}*SharedItemsImports = 5
-		Shared\SharedExtensions.Object\SharedExtensions.ObjectExtensions.projitems*{6ffc158f-337d-4001-8261-f22c5a757b67}*SharedItemsImports = 5
+		Shared\SharedExtensions.ObjectMethods\SharedExtensions.ObjectMethods.projitems*{6ffc158f-337d-4001-8261-f22c5a757b67}*SharedItemsImports = 5
 		Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{6ffc158f-337d-4001-8261-f22c5a757b67}*SharedItemsImports = 5
 		Shared\SharedExtensions.ServiceCollection\SharedExtensions.ServiceCollectionExtensions.projitems*{6ffc158f-337d-4001-8261-f22c5a757b67}*SharedItemsImports = 5
 		Shared\SharedExtensions.String\StringExtensions.projitems*{6ffc158f-337d-4001-8261-f22c5a757b67}*SharedItemsImports = 5
@@ -1159,6 +1164,7 @@ Global
 		Shared\SharedExtensions.Exception\SharedExtensions.Exception.projitems*{e7088f1b-434a-42f3-a025-5ee967a62214}*SharedItemsImports = 5
 		Shared\SharedExtensions.HttpContext\SharedExtensions.HttpContext.projitems*{e7088f1b-434a-42f3-a025-5ee967a62214}*SharedItemsImports = 5
 		Shared\SharedExtensions.HttpContext\SharedExtensions.HttpContext.projitems*{eb78590d-83be-404a-b554-1e436ecd64f7}*SharedItemsImports = 13
+		Shared\SharedExtensions.ObjectMethods\SharedExtensions.ObjectMethods.projitems*{eda17464-72bb-485e-b43b-a62af402559b}*SharedItemsImports = 13
 		Shared\SharedExtensions.Exception\SharedExtensions.Exception.projitems*{ef16f907-7da4-4816-b0e3-f3097a46d66b}*SharedItemsImports = 5
 		Shared\SharedExtensions.HttpContext\SharedExtensions.HttpContext.projitems*{ef16f907-7da4-4816-b0e3-f3097a46d66b}*SharedItemsImports = 5
 		Shared\SharedExtensions.String\StringExtensions.projitems*{ef16f907-7da4-4816-b0e3-f3097a46d66b}*SharedItemsImports = 5

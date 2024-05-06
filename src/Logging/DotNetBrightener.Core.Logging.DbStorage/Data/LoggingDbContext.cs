@@ -17,7 +17,7 @@ public class LoggingDbContext : DbContext
 
         eventLogEntity.ToTable(nameof(EventLog), SchemaName);
 
-        eventLogEntity.HasKey(x => x.Id);
+        eventLogEntity.HasNoKey();
         
         // single indexes
         eventLogEntity.HasIndex(el => el.Level);

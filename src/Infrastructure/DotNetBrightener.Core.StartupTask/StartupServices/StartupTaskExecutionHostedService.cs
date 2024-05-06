@@ -115,11 +115,10 @@ internal class StartupTaskExecutionHostedService : IHostedService, IDisposable
             logger.LogInformation("Executing {numberOfTasks} asynchronous tasks. They will be executed in parallel.",
                                   asynchronousTasks.Length);
 
-            await asynchronousTasks.ParallelForEachAsync(4,
-                                                         async (type) =>
-                                                         {
-                                                             await ExecuteTask(type, logger);
-                                                         });
+            await asynchronousTasks.ParallelForEachAsync(async (type) =>
+            {
+                await ExecuteTask(type, logger);
+            });
         }
 
         sw.Stop();

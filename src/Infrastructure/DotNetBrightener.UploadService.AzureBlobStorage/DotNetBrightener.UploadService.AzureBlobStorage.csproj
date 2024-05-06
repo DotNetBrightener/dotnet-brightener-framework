@@ -3,7 +3,6 @@
 		<PackageDescription>
 			Azure Blob Storage Upload API for ASP.NET Core Applications
 		</PackageDescription>
-		<Platforms>AnyCPU;ARM64</Platforms>
 	</PropertyGroup>
 	<ItemGroup>
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
@@ -13,11 +12,13 @@
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 	</ItemGroup>
 	<ItemGroup>
+		<ProjectReference Include="..\..\BackgroundTasks\DotNetBrightener.Core.BackgroundTasks.DependencyInjection\DotNetBrightener.Core.BackgroundTasks.DependencyInjection.csproj" />
 		<ProjectReference Include="..\..\EventPubSub\DotNetBrightener.Plugins.EventPubSub\DotNetBrightener.Plugins.EventPubSub.csproj" />
 		<ProjectReference Include="..\DotNetBrightener.SimpleUploadService\DotNetBrightener.SimpleUploadService.csproj" />
 	</ItemGroup>
 	<Import Project="..\..\Shared\SharedExtensions.Exception\SharedExtensions.Exception.projitems" Label="Shared" />
 	<Import Project="..\..\Shared\SharedExtensions.HttpContext\SharedExtensions.HttpContext.projitems" Label="Shared" />
+	<Import Project="..\..\Shared\SharedExtensions.ObjectMethods\SharedExtensions.ObjectMethods.projitems" Label="Shared" />
 
 
 </Project>

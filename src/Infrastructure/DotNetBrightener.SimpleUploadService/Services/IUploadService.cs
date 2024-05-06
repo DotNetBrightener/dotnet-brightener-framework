@@ -1,6 +1,7 @@
 ﻿using DotNetBrightener.Plugins.EventPubSub;
 using DotNetBrightener.SimpleUploadService.Events;
 using DotNetBrightener.SimpleUploadService.Models;
+using Microsoft.AspNetCore.StaticFiles;
 
 namespace DotNetBrightener.SimpleUploadService.Services;
 
@@ -15,12 +16,15 @@ public interface IUploadService
 public class UploadService : IUploadService
 {
     private readonly IEnumerable<IUploadServiceProvider> _uploadServiceProviders;
+    private readonly IContentTypeProvider                _contentTypeProvider;
     private readonly IEventPublisher                     _eventPublisher;
 
     public UploadService(IEnumerable<IUploadServiceProvider> uploadServiceProviders,
-                         IEventPublisher                     eventPublisher)
+                         IEventPublisher                     eventPublisher,
+                         IContentTypeProvider                contentTypeProvider)
     {
         _eventPublisher         = eventPublisher;
+        _contentTypeProvider    = contentTypeProvider;
         _uploadServiceProviders = uploadServiceProviders.OrderByDescending(_ => _.Priority);
     }
 
@@ -29,13 +33,17 @@ public class UploadService : IUploadService
                                               string             fileName,
                                               string             currentRequestUrl)
     {
+        _contentTypeProvider.TryGetContentType(fileName, out var contentType);
+        uploadRequestModel.ContentType = contentType;
+
         foreach (var uploadServiceProvider in _uploadServiceProviders)
         {
             var uploadResult =
-                await uploadServiceProvider.ProcessUpload(fileUploadStream, 
-                                                          uploadRequestModel, 
+                await uploadServiceProvider.ProcessUpload(fileUploadStream,
+                                                          uploadRequestModel,
                                                           fileName,
                                                           currentRequestUrl);
+
             if (uploadResult != null)
             {
                 var eventMessage = new FileUploadedEventMessage
