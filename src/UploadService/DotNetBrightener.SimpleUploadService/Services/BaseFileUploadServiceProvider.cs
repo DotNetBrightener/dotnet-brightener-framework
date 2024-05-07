@@ -53,6 +53,8 @@ public abstract class BaseFileUploadServiceProvider : IUploadServiceProvider
 
             await this.ProcessThumbnails(fileUploadStream, uploadRequestModel, Logger);
 
+            var modifiedFileName = fileResult?.Name ?? fileName;
+
             await uploadRequestModel.ThumbnailGenerateRequests
                                     .Where(model => model.GeneratedThumbnailStream is not null &&
                                                     model.GeneratedThumbnailStream.Length > 0)
@@ -70,7 +72,7 @@ public abstract class BaseFileUploadServiceProvider : IUploadServiceProvider
                                         var result =
                                              await ProcessUploadThumbnail(thumbnailRequest.GeneratedThumbnailStream,
                                                                           uploadRequestModel,
-                                                                          fileName,
+                                                                          modifiedFileName,
                                                                           baseUrl,
                                                                           thumbnailRequest.ThumbnailWidth,
                                                                           thumbnailRequest.ThumbnailHeight);

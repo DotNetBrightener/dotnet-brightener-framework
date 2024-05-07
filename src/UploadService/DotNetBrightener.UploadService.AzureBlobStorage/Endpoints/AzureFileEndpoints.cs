@@ -10,6 +10,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Diagnostics;
+using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Extensions.Hosting;
 
 namespace DotNetBrightener.UploadService.AzureBlobStorage.Endpoints;
 
@@ -30,8 +32,10 @@ public static class AzureFileEndpoints
         azureFileEndpointGroup.MapGet("{*filePath}",
                                       async (string                                  filePath,
                                              IOptions<AzureBlobStorageConfiguration> azureBlobStorageConfiguration,
+                                             IHostEnvironment                        environment,
                                              ILoggerFactory                          loggerFactory,
                                              IUploadService                          uploadService,
+                                             IContentTypeProvider contentTypeProvider,
                                              [FromQuery]
                                              int? width = null,
                                              [FromQuery]
@@ -41,7 +45,9 @@ public static class AzureFileEndpoints
 
                                           return await DownloadFileFromBlobStorage(filePath,
                                                                                    azureBlobStorageConfiguration.Value,
+                                                                                   environment,
                                                                                    uploadService,
+                                                                                   contentTypeProvider,
                                                                                    logger,
                                                                                    width,
                                                                                    height);
@@ -50,7 +56,9 @@ public static class AzureFileEndpoints
 
     private static async Task<IResult> DownloadFileFromBlobStorage(string                        filePath,
                                                                    AzureBlobStorageConfiguration cfg,
+                                                                   IHostEnvironment              environment,
                                                                    IUploadService                uploadService,
+                                                                   IContentTypeProvider          contentTypeProvider,
                                                                    ILogger                       logger,
                                                                    int?                          width  = null,
                                                                    int?                          height = null)
@@ -71,6 +79,33 @@ public static class AzureFileEndpoints
         {
             blobName = AzureThumbnailNameUtils.GetThumbnailFileName(originalBlobName, width ?? 0, height ?? 0);
         }
+
+        var tmpLocalFile = Path.Combine(environment.ContentRootPath, cfg.TempDownloadFolder, blobName);
+
+        if (File.Exists(tmpLocalFile))
+        {
+            contentTypeProvider.TryGetContentType(tmpLocalFile, out var contentType);
+            logger.LogInformation("Response from local file {blocName}", blobName);
+
+            return Results.File(tmpLocalFile, contentType ?? "application/octet-stream");
+        }
+
+        if (blobName != originalBlobName)
+        {
+            tmpLocalFile = Path.Combine(environment.ContentRootPath, cfg.TempDownloadFolder, originalBlobName);
+
+            if (File.Exists(tmpLocalFile))
+            {
+                contentTypeProvider.TryGetContentType(tmpLocalFile, out var contentType);
+
+                logger.LogInformation("Response from local file {blocName}", originalBlobName);
+
+                return Results.File(tmpLocalFile, contentType ?? "application/octet-stream");
+            }
+        }
+
+        logger.LogInformation("No local file available for requested blob {blob}. Try fetching from Azure Blob Storage.",
+                              originalBlobName);
 
         var container = new BlobContainerClient(cfg.ConnectionString, blobContainer);
 
