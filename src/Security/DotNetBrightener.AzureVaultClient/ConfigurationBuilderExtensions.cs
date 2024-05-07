@@ -6,11 +6,10 @@ namespace Microsoft.Extensions.Configuration;
 
 public static class ConfigurationBuilderExtensions
 {
-    public static IConfigurationBuilder AddAzureSecretsConfiguration(this IConfigurationBuilder configurationBuilder,
-                                                                     string azureKeyVaultUrlConfigName =
-                                                                         "AzureVaultUrl",
-                                                                     string vaultSecretKeyIdentifierPrefix =
-                                                                         "Secret:") =>
+    public static IConfigurationBuilder
+        AddAzureSecretsConfiguration(this IConfigurationBuilder configurationBuilder,
+                                     string                     azureKeyVaultUrlConfigName     = "AzureVaultUrl",
+                                     string                     vaultSecretKeyIdentifierPrefix = "Secret:") =>
         configurationBuilder.Add(new AzureSecretsConfigurationSource(configurationBuilder.Build(),
                                                                      azureKeyVaultUrlConfigName,
                                                                      vaultSecretKeyIdentifierPrefix));

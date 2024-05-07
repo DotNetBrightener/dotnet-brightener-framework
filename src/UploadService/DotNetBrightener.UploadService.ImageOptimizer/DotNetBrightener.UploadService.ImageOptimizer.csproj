@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<PackageDescription>
+			An Image Resizer used with DotNetBrightener.SimpleUploadService package
+		</PackageDescription>
+	</PropertyGroup>
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Magick.NET-Q16-AnyCPU" Version="13.6.0" />
+		<PackageReference Include="Magick.NET.Core" Version="13.6.0" />
+	</ItemGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\DotNetBrightener.SimpleUploadService\DotNetBrightener.SimpleUploadService.csproj" />
+	</ItemGroup>
+</Project>

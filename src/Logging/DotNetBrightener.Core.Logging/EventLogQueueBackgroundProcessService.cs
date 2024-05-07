@@ -41,6 +41,7 @@ public class EventLogQueueBackgroundProcessService : IHostedService, IDisposable
 
         _logger.LogDebug("Prevent logger from executing until finish this execution");
         _isProcessing = _timer!.Change(Timeout.Infinite, 0);
+        var shouldReEnable = true;
 
         using var scope = serviceScopeFactory.CreateScope();
 
@@ -50,14 +51,29 @@ public class EventLogQueueBackgroundProcessService : IHostedService, IDisposable
                                                          .GetRequiredService<
                                                               IQueueEventLogBackgroundProcessing>();
 
+            if (queueEventLogBackgroundProcessing is NullEventLogBackgroundProcessing)
+            {
+                _logger.LogWarning("QueueEventLogBackgroundProcessing is not registered in the service provider.");
+                shouldReEnable = false;
+
+                return;
+            }
+
             queueEventLogBackgroundProcessing.Execute()
                                              .Wait();
         }
         finally
         {
-            _logger.LogDebug("Resetting timer to processing logs after 10 seconds");
-            _timer.Change(TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
-            _isProcessing = false;
+            if (shouldReEnable)
+            {
+                _logger.LogDebug("Resetting timer to processing logs after 10 seconds");
+                _timer.Change(TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
+                _isProcessing = false;
+            }
+            else
+            {
+                _timer = null;
+            }
         }
     }
 

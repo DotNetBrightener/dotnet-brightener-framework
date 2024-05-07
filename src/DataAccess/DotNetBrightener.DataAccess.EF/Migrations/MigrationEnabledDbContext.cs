@@ -35,7 +35,10 @@ public abstract class MigrationEnabledDbContext : DbContext
                .HaveConversion<TimeOnlyConverter>();
 
         if (ConfigureConverter.Any())
-            ConfigureConverter.ForEach(action => action(builder));
+            foreach (var action in ConfigureConverter)
+            {
+                action(builder);
+            }
     }
 
     /// <summary>

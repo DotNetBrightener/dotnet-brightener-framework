@@ -47,12 +47,12 @@ public static class EndpointRouteBuilderExtensions
                              ClientTelemetryModel message,
                              ILoggerFactory       loggerFactory) =>
                       {
-                          var logger = loggerFactory.CreateLogger(loggerName);
+                          var logger = loggerFactory.CreateLogger("[ClientTelemetry]:"+loggerName);
 
                           if (!string.IsNullOrEmpty(message.StackTrace))
                           {
                               logger.Log(message.Level,
-                                         new StackTraceOnlyException(message.StackTrace),
+                                         new InformativeStackTrace(message.StackTrace),
                                          message.Message,
                                          message.Properties);
                           }

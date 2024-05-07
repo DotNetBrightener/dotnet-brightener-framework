@@ -1,4 +1,3 @@
-using Microsoft.ApplicationInsights.NLogTarget;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,8 +17,7 @@ namespace DotNetBrightener.Core.Logging;
 public class EventLoggingWatcher : TargetWithLayout, IEventLogWatcher
 {
     private readonly IHostEnvironment _webHostEnvironment;
-    private readonly IConfiguration _configuration;
-    private readonly string _appInsightsInstrumentationKey;
+
     public static           EventLoggingWatcher Instance { get; private set; }
     private static readonly Layout              RequestUrlLayoutRenderer       = Layout.FromString("${aspnet-request-url}");
     private static readonly Layout              RequestIpLayoutRenderer        = Layout.FromString("${aspnet-request-ip}");
@@ -31,11 +29,10 @@ public class EventLoggingWatcher : TargetWithLayout, IEventLogWatcher
     private const string DefaultLogLayout =
         "[${longdate}] | ${aspnet-traceidentifier} | ${event-properties:item=EventId.Id} | [${logger}] | ${uppercase:${level}} | ${message} ${exception:format=ToString,StackTrace} | requesturl=${aspnet-request-url} | requestip=${aspnet-request-ip:CheckForwardedForHeader=true} | useragent=${aspnet-request-useragent}";
 
-    private          LokiTarget                _lokiTarget;
-    private readonly Queue<EventLogBaseModel>  _queue = new();
-    private          IServiceScopeFactory      _serviceScopeFactory;
-    private          bool                      _serviceProviderSet;
-    private readonly ApplicationInsightsTarget _appInsightsTarget;
+    private                 LokiTarget               _lokiTarget;
+    private readonly        Queue<EventLogBaseModel> _queue = new();
+    private                 IServiceScopeFactory     _serviceScopeFactory;
+    private                 bool                     _serviceProviderSet;
 
     public static void Initialize(IHostEnvironment environment, IConfiguration configuration)
     {
@@ -45,18 +42,6 @@ public class EventLoggingWatcher : TargetWithLayout, IEventLogWatcher
     private EventLoggingWatcher(IHostEnvironment webHostEnvironment, IConfiguration configuration)
     {
         _webHostEnvironment = webHostEnvironment;
-        _configuration = configuration;
-
-        _appInsightsInstrumentationKey = configuration.GetValue<string>("ApplicationInsightsInstrumentationKey");
-
-        if (!string.IsNullOrEmpty(_appInsightsInstrumentationKey))
-        {
-            _appInsightsTarget = new ApplicationInsightsTarget
-            {
-                InstrumentationKey = _appInsightsInstrumentationKey,
-                Layout            = Layout.FromString(DefaultLogLayout)
-            };
-        }
     }
 
     internal void SetServiceScopeFactory(IServiceScopeFactory serviceScopeFactory)
@@ -97,16 +82,13 @@ public class EventLoggingWatcher : TargetWithLayout, IEventLogWatcher
 
     public List<EventLogBaseModel> GetQueuedEventLogRecords()
     {
-        lock (_queue)
-        {
-            if (_queue.Count == 0)
-                return new List<EventLogBaseModel>();
+        if (_queue.Count == 0)
+            return new List<EventLogBaseModel>();
 
-            List<EventLogBaseModel> queuedEventLogRecords = [.._queue];
-            _queue.Clear();
+        List<EventLogBaseModel> queuedEventLogRecords = [.._queue];
+        _queue.Clear();
 
-            return queuedEventLogRecords;
-        }
+        return queuedEventLogRecords;
     }
 
     protected override void Write(LogEventInfo logEvent)
@@ -116,10 +98,9 @@ public class EventLoggingWatcher : TargetWithLayout, IEventLogWatcher
             return;
 
         _lokiTarget?.WriteAsyncTask(logEvent, CancellationToken.None);
-        _appInsightsTarget?.WriteAsyncLogEvent(new AsyncLogEventInfo(logEvent, Continuation));
 
         EventLogBaseModel eventLogModel =
-            logEvent.Exception is StackTraceOnlyException stackTraceOnlyException
+            logEvent.Exception is InformativeStackTrace stackTraceOnlyException
                 ? new ClientTelemetryLogModel()
                 {
                     StackTrace = stackTraceOnlyException.Message
@@ -155,10 +136,15 @@ public class EventLoggingWatcher : TargetWithLayout, IEventLogWatcher
         }
 
         if (logEvent.Exception != null &&
-            logEvent.Exception is not StackTraceOnlyException)
+            logEvent.Exception is not InformativeStackTrace)
         {
             eventLogModel.FullMessage = logEvent.Exception.GetFullExceptionMessage();
             eventLogModel.StackTrace  = logEvent.Exception.StackTrace;
+        }
+
+        if (logEvent.Exception is InformativeStackTrace)
+        {
+            logEvent.Exception = null;
         }
 
         _queue.Enqueue(eventLogModel);
@@ -202,10 +188,5 @@ public class EventLoggingWatcher : TargetWithLayout, IEventLogWatcher
         }
 
         return false;
-    }
-
-    private static void Continuation(Exception exception)
-    {
-
     }
 }

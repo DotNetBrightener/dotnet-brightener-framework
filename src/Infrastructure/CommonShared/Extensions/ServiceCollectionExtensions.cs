@@ -177,13 +177,14 @@ public static class ServiceCollectionExtensions
     public static void MapEndpointsFromRegistrars(this IEndpointRouteBuilder endpoints,
                                                   RouteGroupBuilder          groupBuilder = null)
     {
-        endpoints.ServiceProvider
-                 .GetServices<IEndpointRegistrar>()
-                 .ToList()
-                 .ForEach(registrar =>
-                  {
-                      registrar.Map(groupBuilder ?? endpoints);
-                  });
+        var endpointRegistrars = endpoints.ServiceProvider
+                                          .GetServices<IEndpointRegistrar>()
+                                          .ToList();
+
+        foreach (var registrar in endpointRegistrars)
+        {
+            registrar.Map(groupBuilder ?? endpoints);
+        }
     }
 
     /// <summary>

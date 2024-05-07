@@ -74,7 +74,7 @@ public class ScheduledTask : IScheduleConfig
     private async Task ExecuteInvocableTask(ILogger logger, CancellationToken cancellationToken)
     {
         var stopWatch = Stopwatch.StartNew();
-        logger.LogInformation("Starting new service scope...");
+        logger.LogDebug("Starting new service scope...");
 
         var taskName = InvocableType.FullName;
 
@@ -117,7 +117,7 @@ public class ScheduledTask : IScheduleConfig
     private async Task ExecuteTaskAction(ILogger logger, CancellationToken cancellationToken)
     {
         var stopWatch = Stopwatch.StartNew();
-        logger.LogInformation("Starting new service scope...");
+        logger.LogDebug("Starting new service scope...");
 
         var invocableType = ScheduledTaskAction.InvocableType;
 
