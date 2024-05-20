@@ -50,7 +50,10 @@ public class DefaultAuthAudiencesContainer : IAuthAudiencesContainer
         {
             if (_refreshAudienceTimeout is null ||
                 _refreshAudienceTimeout.IsCancellationRequested)
+            {
+                _logger.LogInformation("Refreshing list of audiences...");
                 _initialized = false;
+            }
 
             if (!_initialized)
             {
@@ -59,6 +62,8 @@ public class DefaultAuthAudiencesContainer : IAuthAudiencesContainer
                     EnsureInitialized();
                 }
             }
+
+            _logger.LogInformation("Valid audiences: {@validAudiences}", _validAudiences);
 
             _logger.LogInformation("Valid Audiences requested. Found {count} of valid audiences",
                                    _validAudiences.Count);
@@ -94,12 +99,12 @@ public class DefaultAuthAudiencesContainer : IAuthAudiencesContainer
             lock (_lockObject)
             {
                 _refreshAudienceTimeout?.Dispose();
-
-                _refreshAudienceTimeout = new TimeBaseCancellationTokenSource(TimeSpan.FromMinutes(2));
+                _refreshAudienceTimeout = null;
 
                 LoadAudiences();
 
-                _initialized = true;
+                _refreshAudienceTimeout = new TimeBaseCancellationTokenSource(TimeSpan.FromMinutes(2));
+                _initialized            = true;
             }
         }
     }
@@ -125,10 +130,9 @@ public class DefaultAuthAudiencesContainer : IAuthAudiencesContainer
 
     public async Task<bool> IsValidAudience(string audienceString)
     {
-        var audiences = audienceString.Split(new[]
-                                             {
+        var audiences = audienceString.Split([
                                                  ";", ","
-                                             },
+                                             ],
                                              StringSplitOptions.RemoveEmptyEntries);
 
 

@@ -10,13 +10,13 @@ public class AppClientIdentifyingResult
 
     internal bool ShortCircuit { get; set; }
 
-    public AppClient? AppClient { get; set; }
+    public AppClient AppClient { get; set; }
 
     public string RequestFromAppClientId { get; set; }
 
     public string RequestFromAppBundleId { get; set; }
 
-    public string RequestFromAppDomain   { get; set; }
+    public string RequestFromAppDomain { get; set; }
 
     internal void Success(AppClient appClient, bool isCorsEnabled)
     {

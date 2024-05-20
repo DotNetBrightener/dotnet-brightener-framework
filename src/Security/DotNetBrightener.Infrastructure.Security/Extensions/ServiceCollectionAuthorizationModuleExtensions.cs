@@ -1,8 +1,8 @@
 ﻿using DotNetBrightener.Infrastructure.Security.AuthorizationHandlers;
+using DotNetBrightener.Infrastructure.Security.HostedService;
 using DotNetBrightener.Infrastructure.Security.Providers;
 using DotNetBrightener.Infrastructure.Security.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Builder;
 
 // ReSharper disable CheckNamespace
 namespace Microsoft.Extensions.DependencyInjection;
@@ -26,23 +26,9 @@ public static class ServiceCollectionAuthorizationModuleExtensions
 
         servicesCollection.RegisterPermissionProvider<DefaultPermissions>();
 
+        servicesCollection.AddHostedService<PermissionLoaderAndValidator>();
+
         return servicesCollection;
-    }
-
-    /// <summary>
-    ///     Loads permissions into the application pipeline and validates to prevent duplications
-    /// </summary>
-    /// <param name="appBuilder">
-    ///     The application pipeline
-    /// </param>
-    public static void LoadAndValidatePermissions(this IApplicationBuilder appBuilder)
-    {
-        using (var scope = appBuilder.ApplicationServices.CreateScope())
-        {
-            var permissionContainer = scope.ServiceProvider.GetService<IPermissionsContainer>();
-
-            permissionContainer?.LoadAndValidatePermissions();
-        }
     }
 
     /// <summary>
@@ -57,12 +43,13 @@ public static class ServiceCollectionAuthorizationModuleExtensions
         this IServiceCollection servicesCollection)
         where TPermissionProvider : class, IPermissionProvider
     {
-        var existingTypeRegistras = servicesCollection.Where(_ => _.ImplementationType == typeof(TPermissionProvider))
-                                                      .ToList();
+        var existingTypeRegistrations = servicesCollection
+                                       .Where(sd => sd.ImplementationType == typeof(TPermissionProvider))
+                                       .ToList();
 
-        foreach (var registra in existingTypeRegistras)
+        foreach (var serviceDescriptor in existingTypeRegistrations)
         {
-            servicesCollection.Remove(registra);
+            servicesCollection.Remove(serviceDescriptor);
         }
 
         servicesCollection.AddSingleton<IPermissionProvider, TPermissionProvider>();

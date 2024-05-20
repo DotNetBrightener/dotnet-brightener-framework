@@ -9,7 +9,7 @@ internal class AzureSecretsConfigurationProvider : ConfigurationProvider
 {
     private readonly IConfiguration _originalConfiguration;
     private readonly string         _vaultSecretKeyIdentifierPrefix;
-    private readonly SecretClient?  _secretClient = null;
+    private readonly SecretClient   _secretClient = null;
 
     public AzureSecretsConfigurationProvider(IConfiguration originalConfiguration,
                                              string         vaultSecretKeyIdentifierPrefix = "Secret:",
@@ -20,10 +20,10 @@ internal class AzureSecretsConfigurationProvider : ConfigurationProvider
 
         var vaultUrl = _originalConfiguration.GetValue<string>(azureKeyVaultUrlConfigName);
 
-        if (vaultUrl is null) 
-            throw new InvalidOperationException("Cannot obtain Azure Vault URL. Either remove this Configuration Source, or provide the valid Azure Vault URL");
-
-        _secretClient = new SecretClient(vaultUri: new Uri(vaultUrl), credential: new DefaultAzureCredential());
+        _secretClient = vaultUrl is not null
+                            ? new SecretClient(vaultUri: new Uri(vaultUrl), credential: new DefaultAzureCredential())
+                            : throw new
+                                  InvalidOperationException("Cannot obtain Azure Vault URL. Either remove this Configuration Source, or provide the valid Azure Vault URL");
     }
 
     public override void Load()

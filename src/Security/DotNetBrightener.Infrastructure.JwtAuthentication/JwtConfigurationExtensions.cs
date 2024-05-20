@@ -7,7 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace DotNetBrightener.Infrastructure.JwtAuthentication;
 
-public static class JwtConfigExtension
+public static class JwtConfigurationExtensions
 {
     /// <summary>
     ///     Generates the JWT token for authenticating from given <see cref="claims"/>
@@ -66,30 +66,38 @@ public static class JwtConfigExtension
 
         List<string> audiences = [];
 
-        if (string.IsNullOrEmpty(audiencesString))
+        IAuthAudiencesContainer audiencesContainer = null;
+
+        using (var serviceScope = jwtConfiguration.ServiceScopeFactory.CreateScope())
         {
-            using var serviceScope = jwtConfiguration.ServiceScopeFactory.CreateScope();
+            audiencesContainer = serviceScope.ServiceProvider
+                                             .GetService<IAuthAudiencesContainer>();
 
-            var audienceResolvers = serviceScope.ServiceProvider
-                                                .GetServices<ICurrentRequestAudienceResolver>();
-
-            foreach (var getAudience in audienceResolvers)
+            if (string.IsNullOrEmpty(audiencesString))
             {
-                audiences.AddRange(getAudience.GetAudiences());
+                var audienceResolvers = serviceScope.ServiceProvider
+                                                    .GetServices<ICurrentRequestAudienceResolver>();
+
+                foreach (var getAudience in audienceResolvers)
+                {
+                    audiences.AddRange(getAudience.GetAudiences());
+                }
             }
-        }
-        else
-        {
-            audiences = audiencesString.Split([
-                                                  ";"
-                                              ],
-                                              StringSplitOptions.RemoveEmptyEntries)
-                                       .ToList();
+
+            else
+            {
+                audiences = audiencesString.Split([
+                                                      ";"
+                                                  ],
+                                                  StringSplitOptions.RemoveEmptyEntries)
+                                           .ToList();
+            }
         }
 
         foreach (var audience in audiences.Distinct())
         {
-            claims.Add(new Claim(JwtRegisteredClaimNames.Aud, audience));
+            if (audiencesContainer.IsValidAudience(audience).Result)
+                claims.Add(new Claim(JwtRegisteredClaimNames.Aud, audience));
         }
 
         var token = new JwtSecurityToken(jwtConfiguration.Issuer,

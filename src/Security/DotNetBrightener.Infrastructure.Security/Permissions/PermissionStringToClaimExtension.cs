@@ -1,6 +1,8 @@
-﻿using System.Security.Claims;
+﻿using DotNetBrightener.Infrastructure.Security.Permissions;
 
-namespace DotNetBrightener.Infrastructure.Security.Permissions;
+// ReSharper disable CheckNamespace
+
+namespace System.Security.Claims;
 
 public static class PermissionStringToClaimExtension
 {

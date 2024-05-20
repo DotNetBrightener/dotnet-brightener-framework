@@ -4,13 +4,13 @@ namespace DotNetBrightener.Infrastructure.AppClientManager.Services;
 
 public interface IAppClientManager
 {
-    Task             CreateAppClient(AppClient appClient);
+    Task CreateAppClient(AppClient appClient);
 
-    Task             UpdateAppClient(AppClient appClient);
+    Task UpdateAppClient(AppClient appClient);
 
     List<AppClient> GetAllAppClients();
 
-    Task<AppClient?> GetClientByHostNameOrByBundleId(string hostNameOrBundleId);
+    Task<AppClient> GetClientByHostNameOrByBundleId(string hostNameOrBundleId);
 
-    Task<AppClient?> GetClientByClientId(string clientId);
+    Task<AppClient> GetClientByClientId(string clientId);
 }

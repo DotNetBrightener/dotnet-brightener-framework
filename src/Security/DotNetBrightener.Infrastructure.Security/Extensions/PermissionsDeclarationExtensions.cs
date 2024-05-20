@@ -28,7 +28,7 @@ public static class PermissionsDeclarationExtensions
         var typeInfo = typeContainsPermissions.GetTypeInfo();
 
         var declaredConstants = typeInfo.DeclaredFields
-                                        .Where(_ => _.FieldType.IsAssignableTo(typeof(string)));
+                                        .Where(f => f.FieldType.IsAssignableTo(typeof(string)));
 
         return declaredConstants.Select(constant => new Permission
                                  {
@@ -36,7 +36,7 @@ public static class PermissionsDeclarationExtensions
                                                      constant.GetValue(null)?.ToString(),
                                      Description = constant.GetXmlDocumentation()
                                  })
-                                .Where(_ => !string.IsNullOrEmpty(_.PermissionKey))
+                                .Where(p => !string.IsNullOrEmpty(p.PermissionKey))
                                 .ToArray();
     }
 }

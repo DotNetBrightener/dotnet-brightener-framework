@@ -1,4 +1,5 @@
-﻿using DotNetBrightener.WebSocketExt.Internal;
+﻿using DotNetBrightener.Utils.MessageCompression;
+using DotNetBrightener.WebSocketExt.Internal;
 using DotNetBrightener.WebSocketExt.Messages;
 using DotNetBrightener.WebSocketExt.Services;
 using Microsoft.AspNetCore.Http;
@@ -149,8 +150,7 @@ internal class WebSocketBasedServiceMiddleware
                         {
 
                             request = JsonSerializer.Deserialize<RequestMessage>(jsonRequest,
-                                                                                 JsonSerializerSettings
-                                                                                    .DeserializeOptions)!;
+                                                                                 JsonSerializerSettings.DeserializeOptions)!;
                         }
                         catch
                         {
@@ -163,7 +163,7 @@ internal class WebSocketBasedServiceMiddleware
                     case WebSocketMessageType.Binary:
                         // TODO: Read file upload request if possible
 
-                        request = await msRequest.Decompress(bufferSize);
+                        request = await msRequest.Decompress<RequestMessage>(bufferSize);
 
                         break;
                     default:

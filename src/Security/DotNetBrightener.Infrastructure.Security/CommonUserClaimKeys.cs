@@ -3,7 +3,7 @@
 namespace DotNetBrightener.Infrastructure.Security;
 
 /// <summary>
-///     The default claim keys for the user authorization 
+///     The default claim keys for the user authorization
 /// </summary>
 public class CommonUserClaimKeys
 {

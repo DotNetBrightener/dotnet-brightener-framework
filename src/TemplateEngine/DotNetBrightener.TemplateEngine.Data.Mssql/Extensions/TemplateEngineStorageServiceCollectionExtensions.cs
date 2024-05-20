@@ -27,7 +27,7 @@ public static class TemplateEngineStorageServiceCollectionExtensions
                          .UseLazyLoadingProxies();
         });
 
-        serviceCollection.TryAddScoped<IEventPublisher, EventPublisher>();
+        serviceCollection.TryAddScoped<IEventPublisher, DefaultEventPublisher>();
         serviceCollection.TryAddScoped<ICurrentLoggedInUserResolver, DefaultCurrentUserResolver>();
         serviceCollection.AddScoped<TemplateEngineRepository>();
 

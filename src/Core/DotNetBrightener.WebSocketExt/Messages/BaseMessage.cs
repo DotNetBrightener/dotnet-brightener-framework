@@ -1,6 +1,6 @@
-﻿using System.Text.Json;
+﻿using DotNetBrightener.Utils.MessageCompression;
+using System.Text.Json;
 using System.Text.Json.Serialization;
-using DotNetBrightener.WebSocketExt.Internal;
 
 namespace DotNetBrightener.WebSocketExt.Messages;
 

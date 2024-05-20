@@ -5,7 +5,4 @@
 ///     but all of its <see cref="IEventHandler{T}"/>s will all be executed,
 ///     even if the implemented <see cref="IEventHandler{T}.HandleEvent"/> method returns <c>false</c>
 /// </summary>
-public interface INonStoppedEventMessage : IEventMessage
-{
-        
-}
+public interface INonStoppedEventMessage : IEventMessage;

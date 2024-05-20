@@ -30,11 +30,9 @@ public class AppClientCorsEnableMiddleware
                              IEnumerable<IAppBundleDetectionService> appBundleDetectionServices,
                              ILogger<AppClientCorsEnableMiddleware>  logger)
     {
-
         var option = appClientConfig.Value;
 
         var defaultPolicy = corsOptions.Value.GetPolicy(corsOptions.Value.DefaultPolicyName);
-
 
         if (option.OpenForPublicAccess)
         {
@@ -112,9 +110,12 @@ public class AppClientCorsEnableMiddleware
         AppClientIdentifyingResult? appClientIdentifyingResult = new AppClientIdentifyingResult();
 
         // 1. Process for browser CORS first.
-        if (!context.Request
-                    .Headers
-                    .TryGetValue(CorsConstants.Origin, out var origin) &&
+        if ((!context.Request
+                     .Headers
+                     .TryGetValue(CorsConstants.Origin, out var origin) ||
+             !context.Request
+                     .Headers
+                     .TryGetValue("Referer", out origin)) &&
             !context.Request
                     .Headers
                     .TryGetValue(option.ClientIdHeaderKey,

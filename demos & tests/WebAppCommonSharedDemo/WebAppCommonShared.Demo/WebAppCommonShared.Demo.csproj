@@ -39,6 +39,7 @@
 		<ProjectReference Include="..\..\..\src\Infrastructure\AspNet.Extensions.SelfDocumentedProblemResult\AspNet.Extensions.SelfDocumentedProblemResult.csproj" />
 		<ProjectReference Include="..\..\..\src\Infrastructure\DotNetBrightener.Core.StartupTask\DotNetBrightener.Core.StartupTask.csproj" />
 		<ProjectReference Include="..\..\..\src\Logging\DotNetBrightener.Core.Logging.DbStorage\DotNetBrightener.Core.Logging.DbStorage.csproj" />
+		<ProjectReference Include="..\..\..\src\Logging\DotNetBrightener.Core.Logging.OpenTelemetryEnabled\DotNetBrightener.Core.Logging.OpenTelemetryEnabled.csproj" />
 		<ProjectReference Include="..\..\..\src\Security\DotNetBrightener.InfisicalVaultClient\DotNetBrightener.InfisicalVaultClient.csproj" />
 		<ProjectReference Include="..\..\..\src\Security\DotNetBrightener.Infrastructure.JwtAuthentication\DotNetBrightener.Infrastructure.JwtAuthentication.csproj" />
 		<ProjectReference Include="..\..\..\src\SiteSettings\DotNetBrightener.SiteSettings.Data.Mssql\DotNetBrightener.SiteSettings.Data.Mssql.csproj" />

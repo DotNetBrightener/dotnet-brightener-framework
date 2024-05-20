@@ -43,7 +43,7 @@ public class ApiKeyAuthenticationHandler : AuthenticationHandler<ApiKeyAuthentic
         {
             Logger.LogInformation("An API request was received with an invalid x-api-key header");
 
-            return AuthenticateResult.Fail($"Invalid API Key Provided");
+            return AuthenticateResult.Fail("Invalid API Key Provided");
         }
 
         var claims = new List<Claim>();

@@ -4,20 +4,20 @@ using Microsoft.Extensions.Logging;
 
 namespace DotNetBrightener.Plugins.EventPubSub;
 
-public class EventPublisher : IEventPublisher
+public class DefaultEventPublisher : IEventPublisher
 {
     private readonly ConcurrentDictionary<object, Timer> _queue = new();
     private readonly ILogger                             _logger;
     private readonly IServiceScopeFactory                _serviceResolver;
 
-    public EventPublisher(IServiceScopeFactory    serviceResolver,
-                          ILogger<EventPublisher> logger)
+    public DefaultEventPublisher(IServiceScopeFactory serviceResolver,
+                                 ILoggerFactory       loggerFactory)
     {
-        _logger          = logger;
+        _logger          = loggerFactory.CreateLogger(GetType());
         _serviceResolver = serviceResolver;
     }
 
-    public Task Publish<T>(T eventMessage, bool runInBackground = false) where T : class, IEventMessage
+    public virtual Task Publish<T>(T eventMessage, bool runInBackground = false) where T : class, IEventMessage
     {
         if (eventMessage != null)
         {
@@ -43,11 +43,20 @@ public class EventPublisher : IEventPublisher
 
         await using (var serviceScope = _serviceResolver.CreateAsyncScope())
         {
-            eventHandlersTypes = serviceScope.ServiceProvider
-                                             .GetServices<IEventHandler<T>>()
-                                             .OrderByDescending(_ => _.Priority)
-                                             .Select(_ => _.GetType())
-                                             .ToArray();
+            var eventHandlers = serviceScope.ServiceProvider
+                                            .GetServices<IEventHandler<T>>()
+                                            .OrderByDescending(_ => _.Priority)
+                                            .ToArray();
+
+            if (eventMessage is INonStoppedEventMessage)
+            {
+                await Task.WhenAll(eventHandlers.Select(eventHandler => PublishEvent(eventHandler, eventMessage)));
+
+                return;
+            }
+
+            eventHandlersTypes = eventHandlers.Select(eventHandler => eventHandler.GetType())
+                                              .ToArray();
         }
 
         if (!eventHandlersTypes.Any())
@@ -55,18 +64,6 @@ public class EventPublisher : IEventPublisher
 
         await using (var serviceScope = _serviceResolver.CreateAsyncScope())
         {
-            if (eventMessage is INonStoppedEventMessage)
-            {
-                var eventHandlers = serviceScope.ServiceProvider
-                                                .GetServices<IEventHandler<T>>()
-                                                .OrderByDescending(_ => _.Priority)
-                                                .ToArray();
-
-                await Task.WhenAll(eventHandlers.Select(eventHandler => PublishEvent(eventHandler, eventMessage)));
-
-                return;
-            }
-
             foreach (var eventHandlerType in eventHandlersTypes)
             {
                 if (serviceScope.ServiceProvider.GetService(eventHandlerType) is not IEventHandler<T> eventHandler)

@@ -6,25 +6,18 @@ using Microsoft.Extensions.Options;
 
 namespace DotNetBrightener.WebSocketExt.Authentication;
 
-internal class WebSocketJwtBearerMessageHandler : IJwtMessageHandler
+internal class WebSocketJwtBearerMessageHandler(IOptions<WebSocketExtOptions> options) : IJwtMessageHandler
 {
-    private readonly IOptions<WebSocketExtOptions> _options;
-
-    public WebSocketJwtBearerMessageHandler(IOptions<WebSocketExtOptions> options)
-    {
-        this._options = options;
-    }
-
     public void OnMessageReceived(MessageReceivedContext context)
     {
         var httpContext = context.HttpContext;
 
-        if (httpContext.Request.Path != _options.Value.Path)
+        if (httpContext.Request.Path != options.Value.Path)
         {
             return;
         }
 
-        if (!httpContext.Request.Query.TryGetValue(_options.Value.ConnectionTokenQueryParamName, out var token) ||
+        if (!httpContext.Request.Query.TryGetValue(options.Value.ConnectionTokenQueryParamName, out var token) ||
             string.IsNullOrEmpty(token))
         {
             return;

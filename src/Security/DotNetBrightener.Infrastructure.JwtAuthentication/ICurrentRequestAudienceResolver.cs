@@ -1,14 +1,28 @@
-﻿namespace DotNetBrightener.Infrastructure.JwtAuthentication;
+﻿using Microsoft.AspNetCore.Http;
+
+namespace DotNetBrightener.Infrastructure.JwtAuthentication;
 
 public interface ICurrentRequestAudienceResolver
 {
     string[] GetAudiences();
 }
 
-class NullCurrentRequestAudienceResolver : ICurrentRequestAudienceResolver
+class NullCurrentRequestAudienceResolver(IHttpContextAccessor httpContextAccessor) : ICurrentRequestAudienceResolver
 {
     public string[] GetAudiences()
     {
-        return [];
+        var referer = httpContextAccessor.HttpContext?.Request.Headers.Referer.ToString();
+
+        if (string.IsNullOrEmpty(referer))
+        {
+            return [];
+        }
+
+        var refererUrl = new Uri(new Uri(referer), "/").ToString();
+
+        return
+        [
+            refererUrl
+        ];
     }
 }

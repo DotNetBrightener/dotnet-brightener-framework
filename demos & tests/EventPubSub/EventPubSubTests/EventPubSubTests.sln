@@ -1,0 +1,87 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34607.119
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EventPubSub.WebApiDemo.Consumer", "..\..\EventPubSub.WebApiDemo.Consumer\EventPubSub.WebApiDemo.Consumer.csproj", "{831F20EB-8193-44FC-BFC6-99AD28324A3E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EventPubSub", "EventPubSub", "{7DBFC7A1-E4AC-4CAB-87DF-2DCA9D96CB87}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Plugins.EventPubSub.DependencyInjection", "..\..\..\src\EventPubSub\DotNetBrightener.Plugins.EventPubSub.DependencyInjection\DotNetBrightener.Plugins.EventPubSub.DependencyInjection.csproj", "{CF789274-4D2B-406F-B044-1789B5E121CF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Plugins.EventPubSub", "..\..\..\src\EventPubSub\DotNetBrightener.Plugins.EventPubSub\DotNetBrightener.Plugins.EventPubSub.csproj", "{6C75B7D2-7E73-4EE1-8828-F54516AC71AD}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EventPubSub.WebApiDemo.Contracts", "..\..\EventPubSub.WebApiDemo.Contracts\EventPubSub.WebApiDemo.Contracts.csproj", "{F156E5D9-FF38-4E09-B3AB-0C601B71B041}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Plugins.EventPubSub.AzureServiceBus", "..\..\..\src\EventPubSub\DotNetBrightener.Plugins.EventPubSub.AzureServiceBus\DotNetBrightener.Plugins.EventPubSub.AzureServiceBus.csproj", "{D2C97903-7C1B-4619-B74F-9AE1E7F501EF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|ARM64 = Debug|ARM64
+		Release|Any CPU = Release|Any CPU
+		Release|ARM64 = Release|ARM64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{831F20EB-8193-44FC-BFC6-99AD28324A3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{831F20EB-8193-44FC-BFC6-99AD28324A3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{831F20EB-8193-44FC-BFC6-99AD28324A3E}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{831F20EB-8193-44FC-BFC6-99AD28324A3E}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{831F20EB-8193-44FC-BFC6-99AD28324A3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{831F20EB-8193-44FC-BFC6-99AD28324A3E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{831F20EB-8193-44FC-BFC6-99AD28324A3E}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{831F20EB-8193-44FC-BFC6-99AD28324A3E}.Release|ARM64.Build.0 = Release|Any CPU
+		{CF789274-4D2B-406F-B044-1789B5E121CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF789274-4D2B-406F-B044-1789B5E121CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CF789274-4D2B-406F-B044-1789B5E121CF}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{CF789274-4D2B-406F-B044-1789B5E121CF}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{CF789274-4D2B-406F-B044-1789B5E121CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CF789274-4D2B-406F-B044-1789B5E121CF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CF789274-4D2B-406F-B044-1789B5E121CF}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{CF789274-4D2B-406F-B044-1789B5E121CF}.Release|ARM64.Build.0 = Release|Any CPU
+		{6C75B7D2-7E73-4EE1-8828-F54516AC71AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6C75B7D2-7E73-4EE1-8828-F54516AC71AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6C75B7D2-7E73-4EE1-8828-F54516AC71AD}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{6C75B7D2-7E73-4EE1-8828-F54516AC71AD}.Debug|ARM64.Build.0 = Debug|ARM64
+		{6C75B7D2-7E73-4EE1-8828-F54516AC71AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6C75B7D2-7E73-4EE1-8828-F54516AC71AD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6C75B7D2-7E73-4EE1-8828-F54516AC71AD}.Release|ARM64.ActiveCfg = Release|ARM64
+		{6C75B7D2-7E73-4EE1-8828-F54516AC71AD}.Release|ARM64.Build.0 = Release|ARM64
+		{F156E5D9-FF38-4E09-B3AB-0C601B71B041}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F156E5D9-FF38-4E09-B3AB-0C601B71B041}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F156E5D9-FF38-4E09-B3AB-0C601B71B041}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{F156E5D9-FF38-4E09-B3AB-0C601B71B041}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{F156E5D9-FF38-4E09-B3AB-0C601B71B041}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F156E5D9-FF38-4E09-B3AB-0C601B71B041}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F156E5D9-FF38-4E09-B3AB-0C601B71B041}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{F156E5D9-FF38-4E09-B3AB-0C601B71B041}.Release|ARM64.Build.0 = Release|Any CPU
+		{D2C97903-7C1B-4619-B74F-9AE1E7F501EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2C97903-7C1B-4619-B74F-9AE1E7F501EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2C97903-7C1B-4619-B74F-9AE1E7F501EF}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{D2C97903-7C1B-4619-B74F-9AE1E7F501EF}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{D2C97903-7C1B-4619-B74F-9AE1E7F501EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2C97903-7C1B-4619-B74F-9AE1E7F501EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D2C97903-7C1B-4619-B74F-9AE1E7F501EF}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{D2C97903-7C1B-4619-B74F-9AE1E7F501EF}.Release|ARM64.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{CF789274-4D2B-406F-B044-1789B5E121CF} = {7DBFC7A1-E4AC-4CAB-87DF-2DCA9D96CB87}
+		{6C75B7D2-7E73-4EE1-8828-F54516AC71AD} = {7DBFC7A1-E4AC-4CAB-87DF-2DCA9D96CB87}
+		{D2C97903-7C1B-4619-B74F-9AE1E7F501EF} = {7DBFC7A1-E4AC-4CAB-87DF-2DCA9D96CB87}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E8331BD2-0279-442D-BC6D-8F4CB88315FC}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		..\..\..\src\Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{831f20eb-8193-44fc-bfc6-99ad28324a3e}*SharedItemsImports = 5
+		..\..\..\src\Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{cf789274-4d2b-406f-b044-1789b5e121cf}*SharedItemsImports = 5
+		..\..\..\src\Shared\SharedExtensions.ServiceCollection\SharedExtensions.ServiceCollectionExtensions.projitems*{cf789274-4d2b-406f-b044-1789b5e121cf}*SharedItemsImports = 5
+		..\..\..\src\Shared\SharedExtensions.String\StringExtensions.projitems*{cf789274-4d2b-406f-b044-1789b5e121cf}*SharedItemsImports = 5
+		..\..\..\src\Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{d2c97903-7c1b-4619-b74f-9ae1e7f501ef}*SharedItemsImports = 5
+		..\..\..\src\Shared\SharedExtensions.ServiceCollection\SharedExtensions.ServiceCollectionExtensions.projitems*{d2c97903-7c1b-4619-b74f-9ae1e7f501ef}*SharedItemsImports = 5
+		..\..\..\src\Shared\SharedExtensions.Tasks\SharedExtensions.Tasks.projitems*{d2c97903-7c1b-4619-b74f-9ae1e7f501ef}*SharedItemsImports = 5
+	EndGlobalSection
+EndGlobal

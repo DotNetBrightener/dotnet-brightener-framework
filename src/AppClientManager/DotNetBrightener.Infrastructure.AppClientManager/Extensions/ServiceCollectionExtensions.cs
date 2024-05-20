@@ -14,6 +14,7 @@ public static class ServiceCollectionExtensions
                                                               Action<CorsOptions>     setupAction = null)
     {
         serviceCollection.AddCors();
+        serviceCollection.AddHttpContextAccessor();
 
         if (setupAction is not null)
             serviceCollection.Configure(setupAction);

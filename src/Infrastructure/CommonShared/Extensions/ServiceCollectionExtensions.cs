@@ -4,18 +4,18 @@ using DotNetBrightener.CryptoEngine.DependencyInjection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Newtonsoft.Json;
 using System.Net;
 using System.Reflection;
-using Microsoft.AspNetCore.Routing;
+using System.Text.Json.Serialization;
 using WebApp.CommonShared;
 using WebApp.CommonShared.Endpoints;
 using WebApp.CommonShared.Mvc;
-using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Mvc;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.Extensions.DependencyInjection;
@@ -30,8 +30,8 @@ public static class ServiceCollectionExtensions
     /// <returns>
     ///     The same instance of this <see cref="IServiceCollection"/> for chaining operations
     /// </returns>
-    public static IServiceCollection AddCommonWebAppServices(this IServiceCollection serviceCollection,
-                                                             IConfiguration          configuration)
+    public static CommonAppBuilder AddCommonWebAppServices(this IServiceCollection serviceCollection,
+                                                           IConfiguration          configuration)
     {
         System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
         ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
@@ -52,10 +52,16 @@ public static class ServiceCollectionExtensions
         serviceCollection.EnableMemoryCacheService();
 
         serviceCollection.AddPermissionAuthorization();
-        serviceCollection.AddEventPubSubService();
+        var eventPubSubBuilder = serviceCollection.AddEventPubSubService();
+
+        var commonAppBuilder = new CommonAppBuilder
+        {
+            Services           = serviceCollection,
+            EventPubSubServiceBuilder = eventPubSubBuilder
+        };
 
         serviceCollection.EnableBackgroundTaskServices(configuration);
-        
+
         serviceCollection.AddExceptionHandler<UnhandledExceptionResponseHandler>();
 
         serviceCollection.AddProblemDetails();
@@ -71,8 +77,9 @@ public static class ServiceCollectionExtensions
         });
 
         serviceCollection.AddSingleton(serviceCollection);
+        serviceCollection.AddSingleton(commonAppBuilder);
 
-        return serviceCollection;
+        return commonAppBuilder;
     }
 
     /// <summary>
@@ -98,11 +105,7 @@ public static class ServiceCollectionExtensions
         {
             app.UseHttpsRedirection();
         }
-
-        app.UseCors(policy =>
-        {
-            policy.AllowAnyHeader();
-        });
+        
         app.UseExceptionHandler();
 
         return app;

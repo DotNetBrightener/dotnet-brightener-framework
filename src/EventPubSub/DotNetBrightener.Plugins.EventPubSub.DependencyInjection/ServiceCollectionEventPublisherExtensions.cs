@@ -13,49 +13,73 @@ public static class ServiceCollectionEventPublisherExtensions
     /// <param name="serviceCollection">
     ///     The <see cref="IServiceCollection"/>
     /// </param>
-    public static IServiceCollection AddEventPubSubService(this IServiceCollection serviceCollection)
+    public static EventPubSubServiceBuilder AddEventPubSubService(this   IServiceCollection serviceCollection,
+                                                                  params Assembly[]         assembliesContainMessages)
     {
-        // Event Pub/Sub
-        serviceCollection.TryAddScoped<IEventPublisher, EventPublisher>();
+        var appAssemblies = assembliesContainMessages.Length == 0
+                                ? AppDomain.CurrentDomain.GetAppOnlyAssemblies()
+                                : assembliesContainMessages;
 
-        return serviceCollection;
+        var eventHandlerTypes = appAssemblies.GetDerivedTypes<IEventMessage>();
+
+        // Event Pub/Sub
+        serviceCollection.TryAddScoped<IEventPublisher, DefaultEventPublisher>();
+
+        var eventPubSubBuilder = new EventPubSubServiceBuilder
+        {
+            Services          = serviceCollection,
+            EventMessageTypes = eventHandlerTypes
+        };
+
+        serviceCollection.AddSingleton(eventPubSubBuilder);
+
+        return eventPubSubBuilder;
     }
 
     /// <summary>
     ///     Detects and registers the event handlers from given list of assemblies
     /// </summary>
-    /// <param name="serviceCollection">
-    ///     The <see cref="IServiceCollection"/>
+    /// <param name="serviceBuilder">
+    ///     The <see cref="EventPubSubServiceBuilder"/>
     /// </param>
     /// <param name="assemblies">
     ///     The array of assemblies to detect <see cref="IEventHandler"/> implementations and register them
     /// </param>
     /// <returns></returns>
-    public static IServiceCollection AddEventHandlersFromAssemblies(this IServiceCollection serviceCollection,
-                                                                    Assembly[]              assemblies)
+    public static EventPubSubServiceBuilder AddEventHandlersFromAssemblies(
+        this EventPubSubServiceBuilder serviceBuilder,
+        Assembly[]                     assemblies)
     {
-        serviceCollection.RegisterServiceImplementations<IEventHandler>(assemblies,
-                                                                        ServiceLifetime.Scoped,
-                                                                        true);
+        serviceBuilder.Services.RegisterServiceImplementations<IEventHandler>(assemblies,
+                                                                              ServiceLifetime.Scoped,
+                                                                              true);
 
-        return serviceCollection;
+        return serviceBuilder;
     }
 
     /// <summary>
-    ///     Registers the provided implementation type <typeparamref name="TEventHandler"/> as <see cref="IEventHandler"/> to the <paramref name="serviceCollection"/>
+    ///     Registers the provided implementation type <typeparamref name="TEventHandler"/> as <see cref="IEventHandler"/> to the <paramref name="serviceBuilder"/>
     /// </summary>
     /// <typeparam name="TEventHandler">The type of the implementation for <see cref="IEventHandler"/></typeparam>
-    /// <param name="serviceCollection">
-    ///     The <see cref="IServiceCollection"/>
+    /// <param name="serviceBuilder">
+    ///     The <see cref="EventPubSubServiceBuilder"/>
     /// </param>
     /// <returns>
     ///     The <see cref="IServiceCollection"/> for chaining operations
     /// </returns>
-    public static IServiceCollection AddEventHandler<TEventHandler>(this IServiceCollection serviceCollection)
+    public static EventPubSubServiceBuilder AddEventHandler<TEventHandler>(
+        this EventPubSubServiceBuilder serviceBuilder)
         where TEventHandler : class, IEventHandler
     {
-        serviceCollection.AddScoped<IEventHandler, TEventHandler>();
+        serviceBuilder.Services.AddScoped<IEventHandler, TEventHandler>();
 
-        return serviceCollection;
+        return serviceBuilder;
+    }
+
+    internal static Assembly[] GetAppOnlyAssemblies(this AppDomain appDomain)
+    {
+        return appDomain.GetAssemblies()
+                        .FilterSkippedAssemblies()
+                        .ToArray();
     }
 }

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.8/axios.min.js"></script>
+    <script src="https://unpkg.com/pako@2.1.0/dist/pako.min.js"></script>
+</head>
+<body>
+    <script>
+        /**
+         *  Compresses the given message using GZIP compressor
+         * */
+        function _compress(message) {
+            const jsonMessage = JSON.stringify(message);
+            const jsonBytes = new window.TextEncoder().encode(jsonMessage);
+
+            return window.pako.gzip(jsonBytes);
+        }
+
+        /**
+         *  Decompresses the given message using GZIP compressor then converts it to JSON object
+         * */
+        function _decompress(compressedMessage) {
+            const bytes = new Uint8Array(compressedMessage);
+            const decompressedBytes = window.pako.ungzip(bytes);
+            const decodedMessage = new window.TextDecoder().decode(decompressedBytes);
+            return JSON.parse(decodedMessage);
+        }
+
+
+        function _generateGuid() {
+            var temp_url = URL.createObjectURL(new Blob());
+            var uuid = temp_url.toString();
+            URL.revokeObjectURL(temp_url);
+            return uuid.substring(uuid.lastIndexOf('/') + 1);
+        }
+
+
+        //(async function a() {
+        //    const httpClient = axios.create({
+        //        baseURL: 'https://localhost:7085'
+        //    });
+
+        //    const tasks = [];
+
+        //    for (let i = 0; i < 200; i++) {
+        //        const user = {
+        //            name: 'John Doe ' + i,
+        //            email: 'test@gmail.com',
+        //            syncId: _generateGuid()
+        //        };
+
+        //        const syncData = {
+        //            action: 'syncUser',
+        //            ...user
+        //        };
+
+
+        //        tasks.push(httpClient.put('/synchronize', _compress(syncData),
+        //            {
+        //                responseType: 'arraybuffer'
+        //            })
+        //            .then(response => {
+        //                const decompressedData = _decompress(response.data);
+        //                console.log(decompressedData);
+
+        //            })
+        //            .catch(error => {
+        //                console.error(error);
+        //            }));
+        //    }
+
+        //    await Promise.all(tasks);
+
+        //})();
+
+        (async function a() {
+            const baseURL = 'https://localhost:7085';
+            const tasks = [];
+
+            for (let i = 0; i < 200; i++) {
+                const user = {
+                    name: 'John Doe ' + i,
+                    email: 'test@gmail.com',
+                    syncId: _generateGuid()
+                };
+
+                const syncData = {
+                    ...user
+                };
+
+                const requestOptions = {
+                    method: 'PUT',
+                    body: _compress(syncData),
+                    headers: {
+                    }
+                };
+
+                tasks.push(fetch(baseURL + '/synchronize/syncUser', requestOptions)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.arrayBuffer();
+                    })
+                    .then(buffer => {
+                        const decompressedData = _decompress(buffer);
+                        console.log(decompressedData);
+                    })
+                    .catch(error => {
+                        console.error('There was a problem with the fetch operation:', error);
+                    }));
+            }
+
+            await Promise.all(tasks);
+
+        })();
+    </script>
+</body>
+</html>

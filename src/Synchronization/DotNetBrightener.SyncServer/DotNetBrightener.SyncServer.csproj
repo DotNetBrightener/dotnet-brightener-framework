@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+	<ItemGroup>
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+	</ItemGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\..\DataAccess\DotNetBrightener.DataAccess.Abstractions.Models\DotNetBrightener.DataAccess.Abstractions.Models.csproj" />
+	  <ProjectReference Include="..\DotNetBrightener.SecuredApi\DotNetBrightener.SecuredApi.csproj" />
+	</ItemGroup>
+	<Import Project="..\..\Shared\SharedExtensions.MessageCompression\SharedExtensions.MessageCompression.projitems" Label="Shared" />
+
+</Project>

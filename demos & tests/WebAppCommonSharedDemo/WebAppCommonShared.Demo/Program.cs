@@ -30,6 +30,8 @@ builder.Services
        .ConfigureLogging(builder.Configuration)
        .AddLogSqlServerStorage(connectionString);
 
+builder.EnableOpenTelemetry("https://otlpendpoint.dotnetbrightener.com", "SfVxZSrjOELVVUIzxy63GhQbobFGg2ZZsA480IBQ7pPBzDs4k03RGgfkxgVhrTrK");
+
 builder.Services
        .AddTemplateEngine()
        .AddTemplateEngineStorage()

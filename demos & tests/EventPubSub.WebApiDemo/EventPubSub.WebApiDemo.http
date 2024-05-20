@@ -1,0 +1,6 @@
+@EventPubSub.WebApiDemo_HostAddress = http://localhost:5293
+
+GET {{EventPubSub.WebApiDemo_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -1,4 +1,4 @@
-﻿using DotNetBrightener.WebSocketExt.Internal;
+﻿using DotNetBrightener.Utils.MessageCompression;
 using System.Text.Json;
 
 namespace DotNetBrightener.WebSocketExt.Messages;

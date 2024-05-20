@@ -38,14 +38,12 @@ public static class ServiceCollectionExtensions
     /// <exception cref="DataException"></exception>
     public static AuthenticationBuilder AddJwtBearerAuthentication(this IServiceCollection serviceCollection,
                                                                    IConfiguration          configuration,
+                                                                   string                  defaultScheme = JwtBearerDefaults.AuthenticationScheme,
                                                                    bool                    includeCookieSupport = true)
     {
 
-        serviceCollection
-           .AddSingleton<IAuthAudiencesContainer, DefaultAuthAudiencesContainer>();
-
-        serviceCollection.RegisterAuthAudienceValidator<DefaultAuthAudienceValidator>();
-
+        serviceCollection.AddSingleton<IAuthAudiencesContainer, DefaultAuthAudiencesContainer>();
+        
         var tokenConfiguration = new JwtConfiguration
         {
             Issuer             = configuration.GetValue<string>("JwtTokenIssuer"),
@@ -94,7 +92,7 @@ public static class ServiceCollectionExtensions
         var serviceProvider = serviceCollection.BuildServiceProvider();
         var contextAccessor = serviceProvider.GetService<IHttpContextAccessor>();
 
-        var builder = serviceCollection.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        var builder = serviceCollection.AddAuthentication(defaultScheme: defaultScheme)
                                        .AddJwtBearer(cfg => ConfigureJwtOptions(cfg, contextAccessor!));
 
         if (includeCookieSupport)

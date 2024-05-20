@@ -36,10 +36,10 @@ public static class ServiceCollectionExtensions
 
         serviceCollection.AddScoped<IRepository, Repository>();
 
-        serviceCollection.TryAddScoped<IEventPublisher, EventPublisher>();
+        serviceCollection.TryAddScoped<IEventPublisher, DefaultEventPublisher>();
 
         serviceCollection.TryAddScoped<ITransactionWrapper, TransactionWrapper>();
-        serviceCollection.TryAddScoped<IEventPublisher, EventPublisher>();
+        serviceCollection.TryAddScoped<IEventPublisher, DefaultEventPublisher>();
         serviceCollection.TryAddScoped<ICurrentLoggedInUserResolver, DefaultCurrentUserResolver>();
 
         serviceCollection.Configure<DataMigrationOptions>(configuration.GetSection(nameof(DataMigrationOptions)));
