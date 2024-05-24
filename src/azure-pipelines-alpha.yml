@@ -31,7 +31,7 @@ jobs:
     displayName: Build
     inputs:
       projects: $(BuildParameters.RestoreBuildProjects)
-      arguments: --configuration $(BuildConfiguration) -p:VerSuf=alpha$(rev:.r)
+      arguments: --configuration $(BuildConfiguration) -p:VerSuf=alpha$(Build.BuildId)
   - task: ArchiveFiles@2
     inputs:
       rootFolderOrFile: 'nupkg_release'
@@ -41,10 +41,10 @@ jobs:
       replaceExistingArchive: true
   - task: NuGetCommand@2
     inputs:
-    command: 'push'
-    packagesToPush: 'nupkg_release/*.nupkg'
-    nuGetFeedType: 'external'
-    publishFeedCredentials: 'DotNetBrightener Nuget'
+      command: 'push'
+      packagesToPush: 'nupkg_release/*.nupkg'
+      nuGetFeedType: 'external'
+      publishFeedCredentials: 'DotNetBrightener Nuget'
   # - task: DotNetCoreCLI@2
   #   displayName: Push Nuget Package
   #   inputs:
