@@ -8,7 +8,7 @@ trigger: none
 pr:
   branches:
     include:
-    - master
+    - release/alpha
 jobs:
 - job: Job_1
   displayName: Agent job 1
@@ -31,7 +31,7 @@ jobs:
     displayName: Build
     inputs:
       projects: $(BuildParameters.RestoreBuildProjects)
-      arguments: --configuration $(BuildConfiguration)
+      arguments: --configuration $(BuildConfiguration) -p:VerSuf=alpha$(rev:.r)
   - task: ArchiveFiles@2
     inputs:
       rootFolderOrFile: 'nupkg_release'
@@ -39,12 +39,12 @@ jobs:
       archiveType: 'zip'
       archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
       replaceExistingArchive: true
-  # - task: NuGetCommand@2
-  #   inputs:
-  #   command: 'push'
-  #   packagesToPush: 'nupkg_release/*.nupkg'
-  #   nuGetFeedType: 'external'
-  #   publishFeedCredentials: 'DotNetBrightener Nuget'
+  - task: NuGetCommand@2
+    inputs:
+    command: 'push'
+    packagesToPush: 'nupkg_release/*.nupkg'
+    nuGetFeedType: 'external'
+    publishFeedCredentials: 'DotNetBrightener Nuget'
   # - task: DotNetCoreCLI@2
   #   displayName: Push Nuget Package
   #   inputs:
