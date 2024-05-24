@@ -12,7 +12,7 @@ nuget.config
 *.sln.docstates
 
 # Generated files by the code generator, if you want to keep them in source control, comment the next line
-*.g.cs
+# *.g.cs
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
