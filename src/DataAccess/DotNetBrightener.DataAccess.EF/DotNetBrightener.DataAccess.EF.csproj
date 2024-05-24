@@ -20,7 +20,6 @@
 
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\EventPubSub\DotNetBrightener.Plugins.EventPubSub\DotNetBrightener.Plugins.EventPubSub.csproj" />
 		<ProjectReference Include="..\DotNetBrightener.DataAccess.Abstractions\DotNetBrightener.DataAccess.Abstractions.csproj" />
 	</ItemGroup>
 
@@ -29,4 +28,6 @@
 	<Import Project="..\..\Shared\SharedExtensions.String\StringExtensions.projitems" Label="Shared" />
 
 	<Import Project="..\..\Shared\SharedExtensions.DbContext\SharedExtensions.DbContext.projitems" Label="Shared" />
+
+	<Import Project="..\..\Shared\SharedExtensions.ServiceCollection\SharedExtensions.ServiceCollectionExtensions.projitems" Label="Shared" />
 </Project>

@@ -29,9 +29,8 @@ public class CreatedEntityResultModel
         EntityId = entity.Id;
     }
 
-    public CreatedEntityResultModel(BaseEntityWithAuditInfo auditableEntity)
+    public CreatedEntityResultModel(IAuditableEntity auditableEntity)
     {
-        EntityId     = auditableEntity.Id;
         CreatedDate  = auditableEntity.CreatedDate;
         CreatedBy    = auditableEntity.CreatedBy;
         ModifiedDate = auditableEntity.ModifiedDate;

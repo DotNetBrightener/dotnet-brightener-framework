@@ -6,27 +6,129 @@ namespace DotNetBrightener.Plugins.EventPubSub.AzureServiceBus;
 
 public static class AzureServiceBusEnabledServiceCollectionExtensions
 {
+    /// <summary>
+    ///     Adds Azure Service Bus as a message publisher / subscriber service to the <see cref="EventPubSubServiceBuilder"/>'s <seealso cref="IServiceCollection"/>
+    /// </summary>
+    /// <param name="builder">
+    ///     The <seealso cref="EventPubSubServiceBuilder"/>
+    /// </param>
+    /// <param name="connectionString">
+    ///     The Azure Service Bus connection string
+    /// </param>
+    /// <param name="subscriptionName">
+    ///     The name of subscription to use for the Azure Service Bus
+    /// </param>
+    /// <returns>
+    ///     The same <seealso cref="EventPubSubServiceBuilder"/> for chaining operations
+    /// </returns>
     public static EventPubSubServiceBuilder AddAzureServiceBus(this EventPubSubServiceBuilder builder,
                                                                string                         connectionString,
                                                                string                         subscriptionName = null)
     {
-        builder.Services.Configure<ServiceBusConfiguration>(c =>
+        AddAzureServiceBus(builder.Services, connectionString, subscriptionName);
+
+        return builder;
+    }
+
+    /// <summary>
+    ///     Adds Azure Service Bus as a message publisher / subscriber service to the specified <seealso cref="IServiceCollection"/>
+    /// </summary>
+    /// <param name="serviceCollection">
+    ///     The <see cref="IServiceCollection"/>
+    /// </param>
+    /// <param name="connectionString">
+    ///     The Azure Service Bus connection string
+    /// </param>
+    /// <param name="subscriptionName">
+    ///     The name of subscription to use for the Azure Service Bus
+    /// </param>
+    /// <returns>
+    ///     The same <see cref="IServiceCollection"/> for chaining operations
+    /// </returns>
+    public static IServiceCollection AddAzureServiceBus(this IServiceCollection serviceCollection,
+                                                        string                  connectionString,
+                                                        string                  subscriptionName = null)
+    {
+        serviceCollection.Configure<ServiceBusConfiguration>(c =>
         {
             c.ConnectionString = connectionString;
         });
 
-        return AddAzureServiceBus(builder, (IConfiguration)null, subscriptionName);
+        return AddAzureServiceBus(serviceCollection, (IConfiguration)null, subscriptionName);
     }
 
     public static EventPubSubServiceBuilder AddAzureServiceBus(this EventPubSubServiceBuilder builder,
                                                                IConfiguration                 configuration,
                                                                string                         subscriptionName = null)
     {
-        if (configuration is not null)
-            builder.Services
-                   .Configure<ServiceBusConfiguration>(configuration.GetSection(nameof(ServiceBusConfiguration)));
+        var serviceCollection = builder.Services;
 
-        builder.Services.Configure<ServiceBusConfiguration>(c =>
+        AddAzureServiceBus(serviceCollection, configuration, subscriptionName);
+
+        return builder;
+    }
+
+    public static IServiceCollection AddAzureServiceBus(this IServiceCollection serviceCollection,
+                                                        IConfiguration          configuration,
+                                                        string                  subscriptionName = null)
+    {
+
+        var handlerMapping = new AzureServiceBusHandlerMapping();
+        serviceCollection.AddSingleton(handlerMapping);
+
+        serviceCollection.AddScoped<IServiceBusMessagePublisher, ServiceBusMessagePublisher>();
+        serviceCollection.AddScoped<IAzureServiceBusHelperService, AzureServiceBusHelperService>();
+        serviceCollection.AddScoped<IServiceBusMessageProcessor, ServiceBusMessageProcessor<SimpleAzureEventMessage>>();
+
+        serviceCollection.Replace(ServiceDescriptor.Scoped<IEventPublisher, AzureServiceBusEnabledEventPublisher>());
+
+        serviceCollection.AddScoped(typeof(AzureServiceBusEventSubscription<>));
+
+        if (configuration is not null)
+            serviceCollection
+               .Configure<ServiceBusConfiguration>(configuration.GetSection(nameof(ServiceBusConfiguration)));
+
+        serviceCollection.Configure<ServiceBusConfiguration>(c =>
+        {
+            if (serviceCollection.FirstOrDefault(_ => _.ServiceType == typeof(EventPubSubServiceBuilder) &&
+                                                      _.ImplementationInstance is not null)
+                                ?.ImplementationInstance is not EventPubSubServiceBuilder builder)
+            {
+                throw new
+                    InvalidOperationException("Failed to register Azure Service Bus: EventPubSubServiceBuilder is not initialized within the ServiceCollection");
+            }
+
+            var distributedEventMessageTypes = builder.EventMessageTypes
+                                                      .Where(evtMsgType => evtMsgType is not null &&
+                                                                           evtMsgType
+                                                                              .IsAssignableTo(typeof(
+                                                                                                  IDistributedEventMessage)));
+            var errors = new List<string>();
+
+            foreach (var eventMessageType in distributedEventMessageTypes)
+            {
+                var topicName = eventMessageType.GetTopicName();
+
+                if (topicName.Length > 260)
+                {
+                    errors.Add($"Topic name {topicName} for event message type {eventMessageType.FullName} is too long. " +
+                               $"Must be less than 260 characters. " +
+                               $"Adjust the namespace of the event message type will help.");
+
+                    continue;
+                }
+
+                var consumerType = typeof(AzureServiceBusEventSubscription<>).MakeGenericType(eventMessageType);
+
+                handlerMapping.TryAdd(eventMessageType, consumerType);
+            }
+
+            if (errors.Any())
+                throw new
+                    InvalidOperationException($"Failed to register Azure Service Bus: {string.Join(", ", errors)}");
+        });
+
+        serviceCollection.Configure<ServiceBusConfiguration>(c =>
         {
             if (string.IsNullOrEmpty(c.SubscriptionName) &&
                 !string.IsNullOrEmpty(subscriptionName))
@@ -39,48 +141,9 @@ public static class AzureServiceBusEnabledServiceCollectionExtensions
                 throw new InvalidOperationException("SubscriptionName must be provided");
         });
 
+        serviceCollection.AddHostedService<AzureServiceBusSubscribeHostedService>();
 
-        var handlerMapping = new AzureServiceBusHandlerMapping();
-        builder.Services.AddSingleton(handlerMapping);
-
-        builder.Services.AddScoped<IServiceBusMessagePublisher, ServiceBusMessagePublisher>();
-        builder.Services.AddScoped<IAzureServiceBusHelperService, AzureServiceBusHelperService>();
-        builder.Services.AddScoped<IServiceBusMessageProcessor, ServiceBusMessageProcessor<SimpleAzureEventMessage>>();
-
-        builder.Services.Replace(ServiceDescriptor.Scoped<IEventPublisher, AzureServiceBusEnabledEventPublisher>());
-
-        var distributedEventMessageTypes = builder.EventMessageTypes
-                                                  .Where(evtMsgType => evtMsgType is not null &&
-                                                                       evtMsgType
-                                                                          .IsAssignableTo(typeof(
-                                                                                              IDistributedEventMessage)));
-        var errors = new List<string>();
-
-        foreach (var eventMessageType in distributedEventMessageTypes)
-        {
-            var topicName = eventMessageType.GetTopicName();
-
-            if (topicName.Length > 260)
-            {
-                errors.Add($"Topic name {topicName} for event message type {eventMessageType.FullName} is too long. " +
-                           $"Must be less than 260 characters. " +
-                           $"Adjust the namespace of the event message type will help.");
-                continue;
-            }
-
-            var consumerType = typeof(AzureServiceBusEventSubscription<>).MakeGenericType(eventMessageType);
-
-            handlerMapping.Add(eventMessageType, consumerType);
-
-            builder.Services.AddScoped(consumerType);
-        }
-
-        if (errors.Any())
-            throw new InvalidOperationException($"Failed to register Azure Service Bus: {string.Join(", ", errors)}");
-
-        builder.Services.AddHostedService<AzureServiceBusSubscribeHostedService>();
-
-        return builder;
+        return serviceCollection;
     }
 
     /// <summary>

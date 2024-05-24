@@ -1,5 +1,4 @@
 ﻿using DotNetBrightener.DataAccess.EF.Repositories;
-using DotNetBrightener.Plugins.EventPubSub;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
@@ -10,9 +9,9 @@ public class PostgreSqlRepository : Repository
 {
     public PostgreSqlRepository(DbContext                    dbContext,
                                 ICurrentLoggedInUserResolver currentLoggedInUserResolver,
-                                IEventPublisher              eventPublisher,
+                                IServiceProvider             serviceProvider,
                                 ILoggerFactory               loggerFactory)
-        : base(dbContext, currentLoggedInUserResolver, eventPublisher, loggerFactory)
+        : base(dbContext, serviceProvider, loggerFactory)
     {
     }
 

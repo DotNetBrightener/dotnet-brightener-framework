@@ -4,16 +4,24 @@ using Microsoft.Extensions.Logging;
 namespace DotNetBrightener.Plugins.EventPubSub.AzureServiceBus;
 
 internal class AzureServiceBusEnabledEventPublisher(
-    IServiceScopeFactory        serviceResolver,
-    ILoggerFactory              loggerFactory,
-    IServiceBusMessagePublisher serviceBusMessagePublisher)
-    : DefaultEventPublisher(serviceResolver, loggerFactory)
+    IServiceScopeFactory        serviceScopeFactory,
+    ILoggerFactory              loggerFactory)
+    : DefaultEventPublisher(serviceScopeFactory, loggerFactory)
 {
     public override async Task Publish<T>(T eventMessage, bool runInBackground = false)
     {
         if (eventMessage is IDistributedEventMessage message)
         {
-            await serviceBusMessagePublisher.SendMessageAsync(message);
+            Task.Run(async () =>
+            {
+                using (var scope = serviceScopeFactory.CreateScope())
+                {
+                    var serviceBusMessagePublisher =
+                        scope.ServiceProvider.GetRequiredService<IServiceBusMessagePublisher>();
+
+                    await serviceBusMessagePublisher.SendMessageAsync(message);
+                }
+            });
         }
         else
         {

@@ -49,7 +49,7 @@ public abstract class BaseCRUDController<TEntityType> : BareReadOnlyController<T
 
         await PostCreateItem(model);
 
-        if (model is BaseEntity baseEntity)
+        if (model is IBaseEntity baseEntity)
         {
             return StatusCode((int)HttpStatusCode.Created, GetCreatedResult(baseEntity));
         }
@@ -96,7 +96,7 @@ public abstract class BaseCRUDController<TEntityType> : BareReadOnlyController<T
 
         if (entity is BaseEntity baseEntity)
         {
-            if (entity is BaseEntityWithAuditInfo auditableEntity)
+            if (entity is IAuditableEntity auditableEntity)
             {
                 return StatusCode((int)HttpStatusCode.OK,
                                   new
@@ -284,13 +284,24 @@ public abstract class BaseCRUDController<TEntityType> : BareReadOnlyController<T
         return Task.CompletedTask;
     }
 
-    protected virtual CreatedEntityResultModel GetCreatedResult(BaseEntity baseEntity)
+    protected virtual CreatedEntityResultModel GetCreatedResult(IBaseEntity baseEntity)
     {
-        if (baseEntity is BaseEntityWithAuditInfo auditableEntity)
+        CreatedEntityResultModel createdEntityResultModel;
+
+        if (baseEntity is IAuditableEntity auditableEntity)
         {
-            return new CreatedEntityResultModel(auditableEntity);
+            createdEntityResultModel = new CreatedEntityResultModel(auditableEntity);
+        }
+        else
+        {
+            createdEntityResultModel = new CreatedEntityResultModel();
         }
 
-        return new CreatedEntityResultModel(baseEntity);
+        if (baseEntity is BaseEntity ett)
+        {
+            createdEntityResultModel.EntityId = ett.Id;
+        }
+
+        return createdEntityResultModel;
     }
 }

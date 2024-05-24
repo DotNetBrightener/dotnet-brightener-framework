@@ -1,3 +1,5 @@
+#nullable enable
+
 using DotNetBrightener.DataAccess.Attributes;
 using DotNetBrightener.DataAccess.EF.Events;
 using DotNetBrightener.DataAccess.EF.Extensions;
@@ -13,24 +15,24 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
 using System.Reflection;
+using DotNetBrightener.DataAccess.Events;
 
 namespace DotNetBrightener.DataAccess.EF.Repositories;
 
 public class Repository : IRepository
 {
-    protected readonly DbContext                    DbContext;
-    protected readonly ICurrentLoggedInUserResolver CurrentLoggedInUserResolver;
-    protected readonly IEventPublisher              EventPublisher;
-    protected          ILogger                      Logger { get; init; }
+    protected readonly DbContext                     DbContext;
+    protected readonly ICurrentLoggedInUserResolver? CurrentLoggedInUserResolver;
+    protected readonly IEventPublisher?              EventPublisher;
+    protected          ILogger                       Logger { get; init; }
 
-    public Repository(DbContext                    dbContext,
-                      ICurrentLoggedInUserResolver currentLoggedInUserResolver,
-                      IEventPublisher              eventPublisher,
-                      ILoggerFactory               loggerFactory)
+    public Repository(DbContext        dbContext,
+                      IServiceProvider serviceProvider,
+                      ILoggerFactory   loggerFactory)
     {
         DbContext                   = dbContext;
-        CurrentLoggedInUserResolver = currentLoggedInUserResolver;
-        EventPublisher              = eventPublisher;
+        CurrentLoggedInUserResolver = serviceProvider.TryGet<ICurrentLoggedInUserResolver>();
+        EventPublisher              = serviceProvider.TryGet<IEventPublisher>();
         Logger                      = loggerFactory.CreateLogger(GetType());
     }
 
@@ -120,12 +122,12 @@ public class Repository : IRepository
     public virtual void Insert<T>(T entity)
         where T : class
     {
-        if (entity is BaseEntityWithAuditInfo auditableEntity)
+        if (entity is IAuditableEntity auditableEntity)
         {
             auditableEntity.CreatedDate = DateTimeOffset.UtcNow;
 
             if (string.IsNullOrEmpty(auditableEntity.CreatedBy))
-                auditableEntity.CreatedBy = CurrentLoggedInUserResolver.CurrentUserName;
+                auditableEntity.CreatedBy = CurrentLoggedInUserResolver?.CurrentUserName;
         }
 
         var entityEntry = DbContext.Entry(entity);
@@ -138,19 +140,28 @@ public class Repository : IRepository
         {
             DbContext.Set<T>().Add(entity);
         }
+
+        EventPublisher?.Publish(new EntityCreated<T>
+        {
+            Entity   = entity,
+            UserName = CurrentLoggedInUserResolver?.CurrentUserName,
+            UserId   = CurrentLoggedInUserResolver?.CurrentUserId
+        });
     }
 
     public virtual void InsertMany<T>(IEnumerable<T> entities)
         where T : class
     {
+        var now = DateTimeOffset.UtcNow;
+
         T TransformExpression(T entity)
         {
-            if (entity is not BaseEntityWithAuditInfo auditableEntity) return entity;
+            if (entity is not IAuditableEntity auditableEntity) return entity;
 
-            auditableEntity.CreatedDate = DateTimeOffset.UtcNow;
+            auditableEntity.CreatedDate = now;
 
             if (string.IsNullOrEmpty(auditableEntity.CreatedBy))
-                auditableEntity.CreatedBy = CurrentLoggedInUserResolver.CurrentUserName;
+                auditableEntity.CreatedBy = CurrentLoggedInUserResolver?.CurrentUserName;
 
             return entity;
         }
@@ -192,7 +203,7 @@ public class Repository : IRepository
         if (entity is BaseEntityWithAuditInfo auditableEntity)
         {
             auditableEntity.ModifiedDate = DateTimeOffset.UtcNow;
-            auditableEntity.ModifiedBy   = CurrentLoggedInUserResolver.CurrentUserName;
+            auditableEntity.ModifiedBy   = CurrentLoggedInUserResolver?.CurrentUserName;
         }
 
         var entityEntry = DbContext.Entry(entity);
@@ -203,6 +214,15 @@ public class Repository : IRepository
         }
 
         entityEntry.State = EntityState.Modified;
+
+
+        EventPublisher?.Publish(new EntityUpdated<T>
+        {
+            Entity   = entity,
+            UserName = CurrentLoggedInUserResolver?.CurrentUserName,
+            UserId   = CurrentLoggedInUserResolver?.CurrentUserId
+        });
+
     }
 
     public virtual void UpdateMany<T>(IEnumerable<T> entities) where T : class
@@ -228,7 +248,9 @@ public class Repository : IRepository
                                  int?                       expectedAffectedRows = null)
         where T : class
     {
-        var query = DbContext.Set<T>().Where(conditionExpression);
+        var query = conditionExpression is not null
+                        ? DbContext.Set<T>().Where(conditionExpression)
+                        : DbContext.Set<T>();
 
         int updatedRecords;
 
@@ -259,30 +281,40 @@ public class Repository : IRepository
             updatedRecords = PerformUpdate();
         }
 
+        EventPublisher?.Publish(new EntityUpdatedByExpression<T>
+        {
+            FilterExpression = conditionExpression,
+            UpdateExpression = updateExpression,
+            AffectedRecords  = updatedRecords,
+            UserName         = CurrentLoggedInUserResolver?.CurrentUserName,
+            UserId           = CurrentLoggedInUserResolver?.CurrentUserId
+        });
+
         return updatedRecords;
     }
 
     public virtual void DeleteOne<T>(Expression<Func<T, bool>>? conditionExpression,
-                                     string                     reason          = null,
+                                     string?                    reason          = null,
                                      bool                       forceHardDelete = false)
         where T : class
     {
-        using var dbTransaction = DbContext.Database.BeginTransaction();
-
-        var affectedRecords = DeleteMany(conditionExpression, reason, forceHardDelete);
-
-        if (affectedRecords != 1)
+        using (var dbTransaction = DbContext.Database.BeginTransaction())
         {
-            dbTransaction.Rollback();
+            var affectedRecords = DeleteMany(conditionExpression, reason, forceHardDelete);
 
-            throw new ExpectedAffectedRecordMismatchException(1, affectedRecords);
+            if (affectedRecords != 1)
+            {
+                dbTransaction.Rollback();
+
+                throw new ExpectedAffectedRecordMismatchException(1, affectedRecords);
+            }
+
+            dbTransaction.Commit();
         }
-
-        dbTransaction.Commit();
     }
 
     public virtual int DeleteMany<T>(Expression<Func<T, bool>>? conditionExpression,
-                                     string                     reason          = null,
+                                     string?                    reason          = null,
                                      bool                       forceHardDelete = false)
         where T : class
     {
@@ -298,9 +330,19 @@ public class Repository : IRepository
                                           {
                                               IsDeleted      = true,
                                               DeletedDate    = DateTimeOffset.UtcNow,
-                                              DeletedBy      = CurrentLoggedInUserResolver.CurrentUserName,
+                                              DeletedBy      = CurrentLoggedInUserResolver?.CurrentUserName,
                                               DeletionReason = reason
                                           });
+
+
+        EventPublisher?.Publish(new EntityDeletedByExpression<T>
+        {
+            DeletionReason   = reason,
+            FilterExpression = conditionExpression,
+            AffectedRecords  = updatedRecords,
+            UserName         = CurrentLoggedInUserResolver?.CurrentUserName,
+            UserId           = CurrentLoggedInUserResolver?.CurrentUserId
+        });
 
         return updatedRecords;
     }
@@ -409,14 +451,14 @@ public class Repository : IRepository
                                                    e.State == EntityState.Deleted)
                                        .ToArray();
 
-        EventPublisher.Publish(new DbContextBeforeSaveChanges
-                       {
-                           InsertedEntityEntries = insertedEntities,
-                           UpdatedEntityEntries  = updatedEntities,
-                           CurrentUserId         = CurrentLoggedInUserResolver.CurrentUserId,
-                           CurrentUserName       = CurrentLoggedInUserResolver.CurrentUserName,
-                       })
-                      .Wait();
+        EventPublisher?.Publish(new DbContextBeforeSaveChanges
+                        {
+                            InsertedEntityEntries = insertedEntities,
+                            UpdatedEntityEntries  = updatedEntities,
+                            CurrentUserId         = CurrentLoggedInUserResolver?.CurrentUserId,
+                            CurrentUserName       = CurrentLoggedInUserResolver?.CurrentUserName,
+                        })
+                       .Wait();
     }
 
     public void OnAfterSaveChanges(EntityEntry[] insertedEntities, EntityEntry[] updatedEntities)
@@ -425,12 +467,12 @@ public class Repository : IRepository
             updatedEntities.Length == 0)
             return;
 
-        EventPublisher.Publish(new DbContextAfterSaveChanges
+        EventPublisher?.Publish(new DbContextAfterSaveChanges
         {
             InsertedEntityEntries = insertedEntities,
             UpdatedEntityEntries  = updatedEntities,
-            CurrentUserId         = CurrentLoggedInUserResolver.CurrentUserId,
-            CurrentUserName       = CurrentLoggedInUserResolver.CurrentUserName,
+            CurrentUserId         = CurrentLoggedInUserResolver?.CurrentUserId,
+            CurrentUserName       = CurrentLoggedInUserResolver?.CurrentUserName,
         });
     }
 
@@ -475,17 +517,17 @@ public class Repository : IRepository
         }
 
         if (!hasModifiedDate &&
-            typeof(T).IsAssignableTo(typeof(BaseEntityWithAuditInfo)))
+            typeof(T).IsAssignableTo(typeof(IAuditableEntity)))
         {
-            setPropBuilder.SetPropertyByName<DateTimeOffset?>(nameof(BaseEntityWithAuditInfo.ModifiedDate),
+            setPropBuilder.SetPropertyByName<DateTimeOffset?>(nameof(IAuditableEntity.ModifiedDate),
                                                               DateTimeOffset.UtcNow);
         }
 
         if (!hasModifiedBy &&
-            typeof(T).HasProperty<string>(nameof(BaseEntityWithAuditInfo.ModifiedBy)))
+            typeof(T).HasProperty<string>(nameof(IAuditableEntity.ModifiedBy)))
         {
-            setPropBuilder.SetPropertyByName(nameof(BaseEntityWithAuditInfo.ModifiedBy),
-                                             CurrentLoggedInUserResolver.CurrentUserName);
+            setPropBuilder.SetPropertyByName(nameof(IAuditableEntity.ModifiedBy),
+                                             CurrentLoggedInUserResolver?.CurrentUserName);
         }
 
         return setPropBuilder;

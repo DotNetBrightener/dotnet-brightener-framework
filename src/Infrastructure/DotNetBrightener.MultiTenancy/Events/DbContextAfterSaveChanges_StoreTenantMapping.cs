@@ -21,11 +21,9 @@ internal class DbContextAfterSaveChanges_StoreTenantMapping(
     public Task<bool> HandleEvent(DbContextAfterSaveChanges eventMessage)
     {
         // ignore if no record being inserted
-        if (eventMessage.InsertedEntityEntries.Length == 0)
-            return Task.FromResult(true);
-
-        // ignore if no tenant mapping is available
-        if (TenantSupportedRepository.HasTenantMapping == false)
+        if (eventMessage.InsertedEntityEntries.Length == 0 ||
+            // ignore if no tenant mapping is available
+            TenantSupportedRepository.HasTenantMapping == false)
             return Task.FromResult(true);
 
         var listOfTenantsToLimits = tenantAccessor.CurrentTenantIds.Any()

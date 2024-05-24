@@ -3,15 +3,16 @@ using DotNetBrightener.DataAccess.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.ComponentModel.DataAnnotations;
+using System.Reflection;
+using DotNetBrightener.DataAccess.Models;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace DotNetBrightener.DataAccess.EF.Tests;
 
-public class TestEntity
+public class TestEntity: GuidBaseEntityWithAuditInfo
 {
-    [Key]
-    public long Id { get; set; }
-
 
     [MaxLength(512)]
     public string Value { get; set; }
@@ -29,6 +30,12 @@ public class TestDbContext : DbContext
     {
         modelBuilder.Entity<TestEntity>();
     }
+}
+
+internal class UserResolver : ICurrentLoggedInUserResolver
+{
+    public string CurrentUserName => "Unit Test Runner";
+    public string CurrentUserId   => "UnitTestRunner";
 }
 
 public class EfRepositoryTests
@@ -58,8 +65,11 @@ public class EfRepositoryTests
                                                                             optionBuilder.UseSqlite(ConnectionString);
                                                                         });
 
-        serviceCollection.AddLogging();
+        serviceCollection.AddLogging(builder => builder.AddConsole());
         serviceCollection.AddEventPubSubService();
+        serviceCollection.AddEventHandlersFromAssemblies(Assembly.GetExecutingAssembly());
+        serviceCollection.Replace(ServiceDescriptor.Scoped<ICurrentLoggedInUserResolver, UserResolver>());
+
         _serviceProvider = serviceCollection.BuildServiceProvider();
 
         var dbContext = _serviceProvider.GetService<TestDbContext>();
@@ -120,7 +130,7 @@ public class EfRepositoryTests
         repository.CommitChanges();
 
         repository.Update<TestEntity>(_ => _.Id == testInstance.Id,
-                                      new TestEntity
+                                      _ => new TestEntity
                                       {
                                           Value = "_updated"
                                       });

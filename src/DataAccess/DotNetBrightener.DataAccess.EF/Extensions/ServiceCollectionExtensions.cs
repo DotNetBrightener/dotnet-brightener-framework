@@ -3,7 +3,6 @@ using DotNetBrightener.DataAccess.EF.Migrations;
 using DotNetBrightener.DataAccess.EF.Options;
 using DotNetBrightener.DataAccess.EF.Repositories;
 using DotNetBrightener.DataAccess.Services;
-using DotNetBrightener.Plugins.EventPubSub;
 using LinqToDB.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -35,11 +34,8 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddScoped<DbContext, TDbContext>();
 
         serviceCollection.AddScoped<IRepository, Repository>();
-
-        serviceCollection.TryAddScoped<IEventPublisher, DefaultEventPublisher>();
-
+        
         serviceCollection.TryAddScoped<ITransactionWrapper, TransactionWrapper>();
-        serviceCollection.TryAddScoped<IEventPublisher, DefaultEventPublisher>();
         serviceCollection.TryAddScoped<ICurrentLoggedInUserResolver, DefaultCurrentUserResolver>();
 
         serviceCollection.Configure<DataMigrationOptions>(configuration.GetSection(nameof(DataMigrationOptions)));

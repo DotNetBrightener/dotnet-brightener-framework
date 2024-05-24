@@ -93,7 +93,8 @@ public static class ServiceCollectionExtensions
         var contextAccessor = serviceProvider.GetService<IHttpContextAccessor>();
 
         var builder = serviceCollection.AddAuthentication(defaultScheme: defaultScheme)
-                                       .AddJwtBearer(cfg => ConfigureJwtOptions(cfg, contextAccessor!));
+                                       .AddJwtBearer(defaultScheme,
+                                                     cfg => ConfigureJwtOptions(cfg, contextAccessor!));
 
         if (includeCookieSupport)
             builder.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme);

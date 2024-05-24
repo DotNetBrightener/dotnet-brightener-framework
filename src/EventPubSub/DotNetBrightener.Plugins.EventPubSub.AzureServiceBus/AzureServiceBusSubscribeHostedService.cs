@@ -1,4 +1,5 @@
-﻿using Azure.Messaging.ServiceBus;
+﻿using System.Collections.Concurrent;
+using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -15,7 +16,7 @@ internal class AzureServiceBusSubscribeHostedService(
     ILoggerFactory                                 loggerFactory)
     : IHostedService, IDisposable
 {
-    private readonly Dictionary<Type, ServiceBusProcessor> _serviceBusProcessors = new();
+    private readonly ConcurrentDictionary<Type, ServiceBusProcessor> _serviceBusProcessors = new();
     private readonly ILogger _logger = loggerFactory.CreateLogger<AzureServiceBusSubscribeHostedService>();
     private readonly string _subscriptionName = serviceBusConfiguration.Value.SubscriptionName;
 
@@ -33,14 +34,19 @@ internal class AzureServiceBusSubscribeHostedService(
         {
             var (messageType, handlerType) = pair;
 
-            await CreateBusProcessor(messageType, handlerType, serviceBusService, cancellationToken);
+            var busProcessor = await CreateBusProcessor(messageType,
+                                                        handlerType,
+                                                        serviceBusService,
+                                                        cancellationToken);
+
+            _serviceBusProcessors.TryAdd(messageType, busProcessor);
         });
     }
 
-    private async Task CreateBusProcessor(Type                          messageType,
-                                          Type                          handlerType,
-                                          IAzureServiceBusHelperService serviceBusService,
-                                          CancellationToken             cancellationToken)
+    private async Task<ServiceBusProcessor> CreateBusProcessor(Type                          messageType,
+                                                               Type                          handlerType,
+                                                               IAzureServiceBusHelperService serviceBusService,
+                                                               CancellationToken             cancellationToken)
     {
         var topicName = messageType.GetTopicName();
 
@@ -57,17 +63,17 @@ internal class AzureServiceBusSubscribeHostedService(
         busProcessor.ProcessMessageAsync += args => ProcessMessage(args, handlerType);
         busProcessor.ProcessErrorAsync   += args => OnFailure(args, topicName, _subscriptionName);
 
-        _serviceBusProcessors.Add(messageType, busProcessor);
-
         logger.LogInformation("Subscription {subscriptionName} for topic {topicName} is subscribing...",
                               _subscriptionName,
                               topicName);
-
+        
         await busProcessor.StartProcessingAsync(cancellationToken);
 
         logger.LogInformation("Subscribe successfully. Subscription {subscriptionName} for topic {topicName} is listening",
                               _subscriptionName,
                               topicName);
+
+        return busProcessor;
     }
 
     public async Task StopAsync(CancellationToken cancellationToken)

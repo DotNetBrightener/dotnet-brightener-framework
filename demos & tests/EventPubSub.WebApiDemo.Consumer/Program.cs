@@ -6,28 +6,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services
         // Initialize EventPubSubService
-       .AddEventPubSubService(
-                              Assembly.GetExecutingAssembly(),
-                              // assemblies where the event messages are defined
-                              typeof(DistributedTestMessage).Assembly
-                             )
+       .AddEventPubSubService()
         // Add Azure Service Bus
-       .AddAzureServiceBus(builder.Configuration)
-        // Add event handlers
-       .AddEventHandlersFromAssemblies([
-            Assembly.GetExecutingAssembly(),
-            // assemblies where the event handlers are defined
-        ]);
+       .AddAzureServiceBus(builder.Configuration);
 
-//builder.Services
-//       .AddEventPubSubService(Assembly.GetExecutingAssembly(), typeof(DistributedTestMessage).Assembly)
-//       .InitMassTransitConfig()
-//       .WithAzureServiceBus("Endpoint=sb://hs-temp-sb-core.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=59hTxGwZnmvIRA4qsl3i1PYsTy/ST+PpRmNDfU+dddA=")
-//        //.WithRabbitMq("100.102.153.17", "/", "rabbit", "dj1ig6BVoeATqhJfAuziSk76fLP4QDAU")
-//       .AddEventHandlersFromAssemblies([
-//            Assembly.GetExecutingAssembly(),
-//        ])
-//       .Build();
+builder.Services.AddEventMessagesFromAssemblies(typeof(DistributedTestMessage).Assembly);
+builder.Services.AddEventHandlersFromAssemblies(Assembly.GetExecutingAssembly());
 
 // Add services to the container.
 

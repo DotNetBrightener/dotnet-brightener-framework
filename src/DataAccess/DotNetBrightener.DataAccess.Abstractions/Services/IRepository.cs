@@ -300,7 +300,7 @@ public interface IRepository : IDisposable
     ///     Enforcing hard-deletion on the records, default is <c>false</c> for soft-deletion
     /// </param>
     int DeleteMany<T>(Expression<Func<T, bool>>? conditionExpression,
-                            string               reason          = null,
+                            string              reason          = null,
                             bool                 forceHardDelete = false)
         where T : class;
 

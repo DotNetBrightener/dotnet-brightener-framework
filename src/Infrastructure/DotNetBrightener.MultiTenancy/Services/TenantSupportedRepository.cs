@@ -2,7 +2,6 @@
 using DotNetBrightener.DataAccess.EF.Repositories;
 using DotNetBrightener.DataAccess.Models;
 using DotNetBrightener.MultiTenancy.Entities;
-using DotNetBrightener.Plugins.EventPubSub;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -23,18 +22,17 @@ public class TenantSupportedRepository : Repository
 
     public TenantSupportedRepository(DbContext                    dbContext,
                                      ICurrentLoggedInUserResolver currentLoggedInUserResolver,
-                                     IEventPublisher              eventPublisher,
                                      ITenantAccessor              tenantAccessor,
-                                     IServiceProvider             backgroundServiceProvider,
+                                     IServiceProvider             serviceProvider,
                                      ILoggerFactory               loggerFactory)
-        : base(dbContext, currentLoggedInUserResolver, eventPublisher, loggerFactory)
+        : base(dbContext, serviceProvider, loggerFactory)
     {
         _tenantAccessor = tenantAccessor;
 
         if (HasTenantMapping is null)
         {
             lock (LockObj)
-                CheckTenantMappingTable(backgroundServiceProvider, dbContext.GetType());
+                CheckTenantMappingTable(serviceProvider, dbContext.GetType());
         }
     }
 
@@ -85,9 +83,9 @@ public class TenantSupportedRepository : Repository
         return joinedResult;
     }
 
-    private static void CheckTenantMappingTable(IServiceProvider backgroundServiceProvider, Type dbContextType)
+    private static void CheckTenantMappingTable(IServiceProvider serviceProvider, Type dbContextType)
     {
-        using var scope = backgroundServiceProvider.CreateScope();
+        using var scope = serviceProvider.CreateScope();
 
         var serviceType = scope.ServiceProvider.GetService(dbContextType);
 

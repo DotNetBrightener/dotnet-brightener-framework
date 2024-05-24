@@ -1,6 +1,6 @@
-﻿using System.Collections.Concurrent;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System.Collections.Concurrent;
 
 namespace DotNetBrightener.Plugins.EventPubSub;
 
@@ -8,13 +8,13 @@ public class DefaultEventPublisher : IEventPublisher
 {
     private readonly ConcurrentDictionary<object, Timer> _queue = new();
     private readonly ILogger                             _logger;
-    private readonly IServiceScopeFactory                _serviceResolver;
+    private readonly IServiceScopeFactory                _serviceScopeFactory;
 
-    public DefaultEventPublisher(IServiceScopeFactory serviceResolver,
+    public DefaultEventPublisher(IServiceScopeFactory serviceScopeFactory,
                                  ILoggerFactory       loggerFactory)
     {
-        _logger          = loggerFactory.CreateLogger(GetType());
-        _serviceResolver = serviceResolver;
+        _logger              = loggerFactory.CreateLogger(GetType());
+        _serviceScopeFactory = serviceScopeFactory;
     }
 
     public virtual Task Publish<T>(T eventMessage, bool runInBackground = false) where T : class, IEventMessage
@@ -39,9 +39,9 @@ public class DefaultEventPublisher : IEventPublisher
 
     private async Task PublishEvent<T>(T eventMessage) where T : class, IEventMessage
     {
-        Type[] eventHandlersTypes = Array.Empty<Type>();
+        Type[] eventHandlersTypes;
 
-        await using (var serviceScope = _serviceResolver.CreateAsyncScope())
+        await using (var serviceScope = _serviceScopeFactory.CreateAsyncScope())
         {
             var eventHandlers = serviceScope.ServiceProvider
                                             .GetServices<IEventHandler<T>>()
@@ -62,7 +62,7 @@ public class DefaultEventPublisher : IEventPublisher
         if (!eventHandlersTypes.Any())
             return;
 
-        await using (var serviceScope = _serviceResolver.CreateAsyncScope())
+        await using (var serviceScope = _serviceScopeFactory.CreateAsyncScope())
         {
             foreach (var eventHandlerType in eventHandlersTypes)
             {

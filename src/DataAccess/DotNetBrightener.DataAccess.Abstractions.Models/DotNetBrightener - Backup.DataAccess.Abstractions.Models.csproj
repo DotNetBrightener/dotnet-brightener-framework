@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<RootNamespace>DotNetBrightener.DataAccess.Models</RootNamespace>
+		<RootNamespace>DotNetBrightener.DataAccess</RootNamespace>
 	</PropertyGroup>
 
 	<PropertyGroup>
@@ -14,6 +14,10 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\EventPubSub\DotNetBrightener.Plugins.EventPubSub.Abstractions\DotNetBrightener.Plugins.EventPubSub.Abstractions.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Events\" />
 	</ItemGroup>
 
 </Project>
