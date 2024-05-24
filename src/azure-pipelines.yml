@@ -1,6 +1,6 @@
 variables:
 - name: BuildParameters.RestoreBuildProjects
-  value: '**/*.csproj'
+  value: 'src/**/*.csproj'
 - name: BuildConfiguration
   value: Release
 name: $(date:yyyyMMdd)$(rev:.r)
@@ -16,6 +16,7 @@ jobs:
     vmImage: windows-latest
   steps:
   - checkout: self
+    submodules: true
   - task: UseDotNet@2
     displayName: Use .NET Core sdk 8.x
     inputs:
