@@ -34,7 +34,7 @@ jobs:
       arguments: --configuration $(BuildConfiguration) -p:VerSuf=alpha$(Build.BuildId)
   - task: ArchiveFiles@2
     inputs:
-      rootFolderOrFile: 'nupkg_release'
+      rootFolderOrFile: 'src/nupkg_release'
       includeRootFolder: true
       archiveType: 'zip'
       archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
@@ -42,7 +42,7 @@ jobs:
   - task: NuGetCommand@2
     inputs:
       command: 'push'
-      packagesToPush: 'nupkg_release/*.nupkg'
+      packagesToPush: 'src/nupkg_release/*.nupkg'
       nuGetFeedType: 'external'
       publishFeedCredentials: 'DotNetBrightener Nuget'
   # - task: DotNetCoreCLI@2
