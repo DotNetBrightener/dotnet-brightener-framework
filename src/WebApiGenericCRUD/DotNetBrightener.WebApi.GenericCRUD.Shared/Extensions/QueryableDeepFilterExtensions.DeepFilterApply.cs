@@ -25,7 +25,7 @@ public static partial class QueryableDeepFilterExtensions
         var columnsToReturn = columnsToPick.Except(alwaysIgnoreColumns)
                                            .ToArray();
 
-        if (typeof(BaseEntity<>).IsAssignableFrom(typeof(TIn)) &&
+        if (typeof(IBaseEntity).IsAssignableFrom(typeof(TIn)) &&
             columnsToReturn.All(columnName =>
                                     !columnName.Equals(nameof(BaseEntity.Id), StringComparison.OrdinalIgnoreCase)))
         {

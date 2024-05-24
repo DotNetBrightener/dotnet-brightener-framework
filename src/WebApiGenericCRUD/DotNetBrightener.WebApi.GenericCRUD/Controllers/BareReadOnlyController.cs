@@ -40,7 +40,7 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
 
         AlwaysReturnColumns = [];
 
-        if (typeof(BaseEntity<>).IsAssignableFrom(typeof(TEntityType)))
+        if (typeof(IBaseEntity).IsAssignableFrom(typeof(TEntityType)))
         {
             AlwaysReturnColumns =
             [
@@ -48,7 +48,7 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
             ];
         }
 
-        if (typeof(BaseEntityWithAuditInfo<>).IsAssignableFrom(typeof(TEntityType)))
+        if (typeof(IAuditableEntity).IsAssignableFrom(typeof(TEntityType)))
         {
             AlwaysReturnColumns =
             [
