@@ -32,12 +32,13 @@ jobs:
     inputs:
       projects: $(BuildParameters.RestoreBuildProjects)
       arguments: --configuration $(BuildConfiguration)
-  - task: DotNetCoreCLI@2
-    displayName: Create Nuget Package
+  - task: ArchiveFiles@2
     inputs:
-      command: 'pack'
-      projects: $(BuildParameters.RestoreBuildProjects)
-      arguments: --configuration $(BuildConfiguration)
+      rootFolderOrFile: 'nupkg_release'
+      includeRootFolder: true
+      archiveType: 'zip'
+      archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+      replaceExistingArchive: true
   # - task: DotNetCoreCLI@2
   #   displayName: Push Nuget Package
   #   inputs:
