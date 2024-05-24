@@ -10,10 +10,13 @@ pr:
     include:
     - master
 jobs:
-- job: Job_1
-  displayName: Agent job 1
+- job: Building_Release
+  displayName: Running on self-hosted agent
   pool:
-    vmImage: windows-latest
+    name: dotnetbrightener-selfhosted
+    demands: 
+    - agent.name -equals self-hosted
+    #vmImage: windows-latest
   steps:
   - checkout: self
     submodules: true
