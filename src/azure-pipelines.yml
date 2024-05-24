@@ -1,0 +1,46 @@
+variables:
+- name: BuildParameters.RestoreBuildProjects
+  value: '**/*.csproj'
+- name: BuildConfiguration
+  value: Release
+name: $(date:yyyyMMdd)$(rev:.r)
+trigger: none 
+pr:
+  branches:
+    include:
+    - master
+jobs:
+- job: Job_1
+  displayName: Agent job 1
+  pool:
+    vmImage: windows-latest
+  steps:
+  - checkout: self
+  - task: UseDotNet@2
+    displayName: Use .NET Core sdk 8.x
+    inputs:
+      version: 8.x
+      performMultiLevelLookup: true
+  - task: DotNetCoreCLI@2
+    displayName: Restore
+    inputs:
+      command: restore
+      projects: $(BuildParameters.RestoreBuildProjects)
+  - task: DotNetCoreCLI@2
+    displayName: Build
+    inputs:
+      projects: $(BuildParameters.RestoreBuildProjects)
+      arguments: --configuration $(BuildConfiguration)
+  - task: DotNetCoreCLI@2
+    displayName: Create Nuget Package
+    inputs:
+      command: 'pack'
+      projects: $(BuildParameters.RestoreBuildProjects)
+      arguments: --configuration $(BuildConfiguration)
+  # - task: DotNetCoreCLI@2
+  #   displayName: Push Nuget Package
+  #   inputs:
+  #     command: 'push'
+  #     packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
+  #     nuGetFeedType: 'internal'
+  #     publishVstsFeed: '034af936-b352-4b46-b58f-cb0cf6975259'
