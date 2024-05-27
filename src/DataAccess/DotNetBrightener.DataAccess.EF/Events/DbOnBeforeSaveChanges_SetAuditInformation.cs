@@ -6,16 +6,19 @@ using Microsoft.Extensions.Logging;
 
 namespace DotNetBrightener.DataAccess.EF.Events;
 
-public class DbOnBeforeSaveChanges_SetAuditInformation : IEventHandler<DbContextBeforeSaveChanges>
+public class DbOnBeforeSaveChanges_SetAuditInformation(
+    ILogger<DbOnBeforeSaveChanges_SetAuditInformation> logger,
+    IDateTimeProvider                                  dateTimeProvider)
+    : IEventHandler<DbContextBeforeSaveChanges>
 {
     public int Priority => 0;
 
-    private readonly ILogger _logger;
+    private readonly ILogger _logger = logger;
 
-    public DbOnBeforeSaveChanges_SetAuditInformation(ILogger<DbOnBeforeSaveChanges_SetAuditInformation> logger)
-    {
-        _logger = logger;
-    }
+    private const string createdDatePropName   = nameof(BaseEntityWithAuditInfo.CreatedDate);
+    private const string createdByPropName     = nameof(BaseEntityWithAuditInfo.CreatedBy);
+    private const string lastUpdatedByPropName = nameof(BaseEntityWithAuditInfo.ModifiedBy);
+    private const string lastUpdatedPropName   = nameof(BaseEntityWithAuditInfo.ModifiedDate);
 
     public Task<bool> HandleEvent(DbContextBeforeSaveChanges eventMessage)
     {
@@ -23,9 +26,7 @@ public class DbOnBeforeSaveChanges_SetAuditInformation : IEventHandler<DbContext
         {
             try
             {
-                var createdByPropName = nameof(BaseEntityWithAuditInfo.CreatedBy);
-
-                if (entry.Properties.Any(_ => _.Metadata.Name == createdByPropName) &&
+                if (entry.Properties.Any(p => p.Metadata.Name == createdByPropName) &&
                     entry.Property(createdByPropName).CurrentValue == null)
                 {
                     entry.Property(createdByPropName).CurrentValue =
@@ -33,11 +34,10 @@ public class DbOnBeforeSaveChanges_SetAuditInformation : IEventHandler<DbContext
                         eventMessage.CurrentUserId;
                 }
 
-                var createdDatePropName = nameof(BaseEntityWithAuditInfo.CreatedDate);
-                if (entry.Properties.Any(_ => _.Metadata.Name == createdDatePropName) &&
+                if (entry.Properties.Any(p => p.Metadata.Name == createdDatePropName) &&
                     entry.Property(createdDatePropName).CurrentValue == null)
                 {
-                    entry.Property(createdDatePropName).CurrentValue = DateTimeOffset.UtcNow;
+                    entry.Property(createdDatePropName).CurrentValue = dateTimeProvider.UtcNow;
                 }
             }
             catch (Exception error)
@@ -52,9 +52,7 @@ public class DbOnBeforeSaveChanges_SetAuditInformation : IEventHandler<DbContext
         {
             try
             {
-                var lastUpdatedByPropName = nameof(BaseEntityWithAuditInfo.ModifiedBy);
-
-                if (entry.Properties.Any(_ => _.Metadata.Name == lastUpdatedByPropName) &&
+                if (entry.Properties.Any(p => p.Metadata.Name == lastUpdatedByPropName) &&
                     entry.Property(lastUpdatedByPropName).CurrentValue == null)
                 {
                     entry.Property(lastUpdatedByPropName).CurrentValue =
@@ -62,11 +60,10 @@ public class DbOnBeforeSaveChanges_SetAuditInformation : IEventHandler<DbContext
                         eventMessage.CurrentUserId;
                 }
 
-                var lastUpdatedPropName = nameof(BaseEntityWithAuditInfo.ModifiedDate);
-                if (entry.Properties.Any(_ => _.Metadata.Name == lastUpdatedPropName) &&
+                if (entry.Properties.Any(p => p.Metadata.Name == lastUpdatedPropName) &&
                     entry.Property(lastUpdatedPropName).CurrentValue == null)
                 {
-                    entry.Property(lastUpdatedPropName).CurrentValue = DateTimeOffset.UtcNow;
+                    entry.Property(lastUpdatedPropName).CurrentValue = dateTimeProvider.UtcNow;
                 }
             }
             catch (Exception error)

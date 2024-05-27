@@ -15,8 +15,6 @@
 	  <ProjectReference Include="..\DotNetBrightener.DataAccess.Abstractions.Models\DotNetBrightener.DataAccess.Abstractions.Models.csproj" />
 	</ItemGroup>
 
-	<Import Project="..\..\Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems" Label="Shared" />
-
 	<Import Project="..\..\Shared\SharedExtensions.String\StringExtensions.projitems" Label="Shared" />
 
 	<Import Project="..\..\Shared\SharedExtensions.ServiceCollection\SharedExtensions.ServiceCollectionExtensions.projitems" Label="Shared" />

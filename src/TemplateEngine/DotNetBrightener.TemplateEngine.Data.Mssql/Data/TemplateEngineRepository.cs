@@ -4,13 +4,8 @@ using Microsoft.Extensions.Logging;
 
 namespace DotNetBrightener.TemplateEngine.Data.Mssql.Data;
 
-internal class TemplateEngineRepository : Repository
-{
-    public TemplateEngineRepository(TemplateEngineDbContext      dbContext,
-                                    ICurrentLoggedInUserResolver currentLoggedInUserResolver,
-                                    IServiceProvider             serviceProvider,
-                                    ILoggerFactory               loggerFactory)
-        : base(dbContext, serviceProvider, loggerFactory)
-    {
-    }
-}
+internal class TemplateEngineRepository(
+    TemplateEngineDbContext dbContext,
+    IServiceProvider        serviceProvider,
+    ILoggerFactory          loggerFactory)
+    : Repository(dbContext, serviceProvider, loggerFactory);

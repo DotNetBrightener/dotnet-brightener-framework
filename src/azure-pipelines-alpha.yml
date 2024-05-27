@@ -48,10 +48,3 @@ jobs:
       packagesToPush: 'src/nupkg_release/*.nupkg'
       nuGetFeedType: 'external'
       publishFeedCredentials: 'DotNetBrightener Nuget'
-  # - task: DotNetCoreCLI@2
-  #   displayName: Push Nuget Package
-  #   inputs:
-  #     command: 'push'
-  #     packagesToPush: 'nupkg_release/*.nupkg'
-  #     nuGetFeedType: 'internal'
-  #     publishVstsFeed: '034af936-b352-4b46-b58f-cb0cf6975259'

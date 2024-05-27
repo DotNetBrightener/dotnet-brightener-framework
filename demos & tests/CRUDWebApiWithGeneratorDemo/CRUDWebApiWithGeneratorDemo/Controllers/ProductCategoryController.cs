@@ -68,7 +68,7 @@ public partial class ProductCategoryController
         return base.CanUpdateItem(id);
     }
 
-    protected override Task<bool> CanDeleteItem(long id)
+    protected override Task<(bool, ProductCategory, IActionResult)> CanDeleteItem(long id)
     {
         // override the base method to add your custom logic of checking
         // if the current user can delete the ProductCategory item
@@ -76,7 +76,7 @@ public partial class ProductCategoryController
         return base.CanDeleteItem(id);
     }
 
-    protected override Task<bool> CanRestoreDeletedItem(long id)
+    protected override Task<(bool, ProductCategory, IActionResult)> CanRestoreDeletedItem(long id)
     {
         // override the base method to add your custom logic of checking
         // if the current user can restore the ProductCategory item

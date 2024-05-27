@@ -110,7 +110,11 @@ public static class ServiceCollectionEventPublisherExtensions
     public static IServiceCollection AddEventHandlersFromAssemblies(this   IServiceCollection serviceBuilder,
                                                                     params Assembly[]         assemblies)
     {
-        serviceBuilder.RegisterServiceImplementations<IEventHandler>(assemblies,
+        var appAssemblies = assemblies.Length == 0
+                                ? AppDomain.CurrentDomain.GetAppOnlyAssemblies()
+                                : assemblies;
+
+        serviceBuilder.RegisterServiceImplementations<IEventHandler>(appAssemblies,
                                                                      ServiceLifetime.Scoped,
                                                                      true);
 

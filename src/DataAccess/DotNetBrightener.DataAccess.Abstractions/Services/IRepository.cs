@@ -209,7 +209,20 @@ public interface IRepository : IDisposable
     /// <param name="entities">
     ///     The entities to update
     /// </param>
+    [Obsolete("Will be removed in the future version with the favor of new UpdateMany() method that uses params keyword")]
     void UpdateMany<T>(IEnumerable<T> entities) where T : class;
+
+
+    /// <summary>
+    ///     Updates multiple records of type <typeparamref name="T"/>
+    /// </summary>
+    /// <typeparam name="T">
+    ///     Type of the entity
+    /// </typeparam>
+    /// <param name="entities">
+    ///     The entities to update
+    /// </param>
+    void UpdateMany<T>(params T[] entities) where T : class;
 
     /// <summary>
     ///     Updates records of type <typeparamref name="T"/> from the query using an object that describes the changes without retrieving entities

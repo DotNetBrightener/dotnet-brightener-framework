@@ -74,8 +74,8 @@ public class BaseQueryModel
     [DebuggerStepThrough]
     public static BaseQueryModel FromQuery(IQueryCollection query)
     {
-        var queryDictionary = query.ToDictionary(_ => _.Key,
-                                                 _ => _.Value.ToString());
+        var queryDictionary = query.ToDictionary(p => p.Key,
+                                                 p => p.Value.ToString());
 
 
         return FromDictionary<BaseQueryModel>(queryDictionary);
@@ -85,8 +85,8 @@ public class BaseQueryModel
     internal static TOutputModel FromQuery<TOutputModel>(IQueryCollection query)
         where TOutputModel : BaseQueryModel, new()
     {
-        var queryDictionary = query.ToDictionary(_ => _.Key,
-                                                 _ => _.Value.ToString());
+        var queryDictionary = query.ToDictionary(p => p.Key,
+                                                 p => p.Value.ToString());
 
         return FromDictionary<TOutputModel>(queryDictionary);
     }

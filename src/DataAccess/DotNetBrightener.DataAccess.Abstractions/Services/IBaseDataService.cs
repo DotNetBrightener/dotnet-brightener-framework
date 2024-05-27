@@ -76,10 +76,21 @@ public interface IBaseDataService<TEntity>: IDisposable
     void Update(TEntity entity);
 
     /// <summary>
+    ///     Updates the given entity using the provided DTO
+    /// </summary>
+    /// <param name="entity">
+    ///     The record to update
+    /// </param>
+    /// <param name="dto">
+    ///     The data-transfer-object to update the entity with
+    /// </param>
+    void Update(TEntity entity, object dto);
+    
+    /// <summary>
     ///     Updates multiple records of the entity to the database
     /// </summary>
     /// <param name="entities">The records to update</param>
-    void UpdateMany(IEnumerable<TEntity> entities);
+    void UpdateMany(params TEntity[] entities);
 
     /// <summary>
     ///     Update the matched record with the given filter expression, expected only one record affected

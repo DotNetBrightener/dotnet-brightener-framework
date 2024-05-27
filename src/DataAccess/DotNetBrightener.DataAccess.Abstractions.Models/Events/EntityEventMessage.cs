@@ -7,6 +7,18 @@ namespace DotNetBrightener.DataAccess.Events;
 
 public abstract class EntityEventMessage<TEntity> : IEventMessage where TEntity : class
 {
+    protected EntityEventMessage()
+    {
+        
+    }
+
+    protected EntityEventMessage(TEntity entity, string? userId, string? userName)
+    {
+        Entity   = entity;
+        UserId   = userId;
+        UserName = userName;
+    }
+
     public long EntityId { get; set; }
 
     public TEntity? Entity { get; set; }
@@ -24,7 +36,17 @@ public abstract class EntityEventMessage<TEntity> : IEventMessage where TEntity 
 /// <typeparam name="TEntity">
 ///     The type of the entity specified in the event
 /// </typeparam>
-public class EntityCreated<TEntity>: EntityEventMessage<TEntity> where TEntity : class;
+public class EntityCreated<TEntity> : EntityEventMessage<TEntity> where TEntity : class
+{
+    public EntityCreated(): base()
+    {
+        
+    }
+
+    public EntityCreated(TEntity entity, string? userId, string? userName): base(entity, userId, userName)
+    {
+    }
+}
 
 
 /// <summary>
@@ -33,7 +55,18 @@ public class EntityCreated<TEntity>: EntityEventMessage<TEntity> where TEntity :
 /// <typeparam name="TEntity">
 ///     The type of the entity specified in the event
 /// </typeparam>
-public class EntityUpdated<TEntity>: EntityEventMessage<TEntity> where TEntity : class;
+public class EntityUpdated<TEntity> : EntityEventMessage<TEntity> where TEntity : class
+{
+    public EntityUpdated()
+    {
+        
+    }
+
+    public EntityUpdated(TEntity entity, string? userId, string? userName) : base(entity, userId, userName)
+    {
+        
+    }
+}
 
 
 /// <summary>
@@ -42,7 +75,18 @@ public class EntityUpdated<TEntity>: EntityEventMessage<TEntity> where TEntity :
 /// <typeparam name="TEntity">
 ///     The type of the entity specified in the event
 /// </typeparam>
-public class EntityDeleted<TEntity>: EntityEventMessage<TEntity> where TEntity : class;
+public class EntityDeleted<TEntity> : EntityEventMessage<TEntity> where TEntity : class
+{
+    public EntityDeleted()
+    {
+        
+    }
+
+    public EntityDeleted(TEntity entity, string? userId, string? userName) : base(entity, userId, userName)
+    {
+        
+    }
+}
 
 
 /// <summary>

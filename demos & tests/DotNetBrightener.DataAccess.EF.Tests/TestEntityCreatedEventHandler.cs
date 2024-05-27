@@ -30,27 +30,3 @@ internal class TestEntityCreatedEventHandler: IEventHandler<EntityCreated<TestEn
         return true;
     }
 }
-
-internal class EntityEventsHandler<TEntity>
-    : IEventHandler<EntityCreated<TEntity>>,
-      IEventHandler<EntityUpdatedByExpression<TEntity>> where TEntity : class
-{
-    public int Priority => 1000;
-
-    private readonly ILogger _logger;
-
-    public EntityEventsHandler(ILogger<EntityEventsHandler<TEntity>> logger)
-    {
-        _logger = logger;
-    }
-
-    public Task<bool> HandleEvent(EntityUpdatedByExpression<TEntity> eventMessage)
-    {
-        return Task.FromResult<bool>(true);
-    }
-
-    public Task<bool> HandleEvent(EntityCreated<TEntity> eventMessage)
-    {
-        return Task.FromResult<bool>(true);
-    }
-}

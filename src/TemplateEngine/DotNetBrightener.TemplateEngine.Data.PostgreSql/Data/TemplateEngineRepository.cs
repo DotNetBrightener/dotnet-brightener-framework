@@ -1,16 +1,10 @@
-﻿using DotNetBrightener.DataAccess;
-using DotNetBrightener.DataAccess.EF.Repositories;
+﻿using DotNetBrightener.DataAccess.EF.Repositories;
 using Microsoft.Extensions.Logging;
 
 namespace DotNetBrightener.TemplateEngine.Data.PostgreSql.Data;
 
-internal class TemplateEngineRepository : Repository
-{
-    public TemplateEngineRepository(TemplateEngineDbContext      dbContext,
-                                    ICurrentLoggedInUserResolver currentLoggedInUserResolver,
-                                    IServiceProvider             serviceProvider,
-                                    ILoggerFactory               loggerFactory)
-        : base(dbContext, serviceProvider, loggerFactory)
-    {
-    }
-}
+internal class TemplateEngineRepository(
+    TemplateEngineDbContext dbContext,
+    IServiceProvider        serviceProvider,
+    ILoggerFactory          loggerFactory)
+    : Repository(dbContext, serviceProvider, loggerFactory);

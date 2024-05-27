@@ -359,10 +359,12 @@ public static class DataTransferObjectUtils
         if (!propertyOnEntity.CanWrite)
             return false;
 
-        if (propertyOnEntity.GetGetMethod()?.IsVirtual == true)
-        {
-            return false;
-        }
+        var getMethod = propertyOnEntity.GetGetMethod();
+        var isGetMethodVirtual = getMethod?.IsVirtual == true;
+        //if (propertyOnEntity.GetGetMethod()?.IsVirtual == true)
+        //{
+        //    return false;
+        //}
 
         valueToUpdate = propertyFromDto.Value.ToObject(propertyOnEntity.PropertyType);
 

@@ -229,7 +229,7 @@ public partial class {className}
         return base.CanUpdateItem(id);
     }}
 
-    protected override Task<bool> CanDeleteItem(long id)
+    protected override Task<(bool, {modelClass.TargetEntity}, IActionResult)> CanDeleteItem(long id)
     {{
         // override the base method to add your custom logic of checking
         // if the current user can delete the {modelClass.TargetEntity} item
@@ -237,7 +237,7 @@ public partial class {className}
         return base.CanDeleteItem(id);
     }}
 
-    protected override Task<bool> CanRestoreDeletedItem(long id)
+    protected override Task<(bool, {modelClass.TargetEntity}, IActionResult)> CanRestoreDeletedItem(long id)
     {{
         // override the base method to add your custom logic of checking
         // if the current user can restore the {modelClass.TargetEntity} item
