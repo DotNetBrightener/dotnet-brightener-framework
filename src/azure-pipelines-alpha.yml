@@ -34,7 +34,7 @@ jobs:
     displayName: Build
     inputs:
       projects: $(BuildParameters.RestoreBuildProjects)
-      arguments: --configuration $(BuildConfiguration) -p:VerSuf=alpha$(Build.BuildId)
+      arguments: --configuration $(BuildConfiguration) -p:VerSuf=$(version.suffix)$(Build.BuildId)
   - task: ArchiveFiles@2
     inputs:
       rootFolderOrFile: 'src/nupkg_release'
