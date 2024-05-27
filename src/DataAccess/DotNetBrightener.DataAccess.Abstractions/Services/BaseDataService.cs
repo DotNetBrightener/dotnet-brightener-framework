@@ -1,6 +1,8 @@
 ﻿using DotNetBrightener.DataAccess.Models;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
+using DotNetBrightener.DataAccess.Attributes;
+using DotNetBrightener.DataAccess.Utils;
 
 namespace DotNetBrightener.DataAccess.Services;
 
@@ -36,7 +38,7 @@ public abstract class BaseDataService<TEntity> : IBaseDataService<TEntity> where
     {
         IQueryable<TEntity> query = Repository.Fetch(expression);
 
-        if (typeof(TEntity).HasProperty<bool>(nameof(BaseEntityWithAuditInfo.IsDeleted)))
+        if (typeof(TEntity).HasProperty<bool>(nameof(IAuditableEntity.IsDeleted)))
         {
             query = query.Where("IsDeleted == True");
         }
@@ -48,7 +50,7 @@ public abstract class BaseDataService<TEntity> : IBaseDataService<TEntity> where
     {
         IQueryable<TEntity> query = Repository.Fetch(expression);
 
-        if (typeof(TEntity).HasProperty<bool>(nameof(BaseEntityWithAuditInfo.IsDeleted)))
+        if (typeof(TEntity).HasProperty<bool>(nameof(IAuditableEntity.IsDeleted)))
         {
             query = query.Where("IsDeleted != True");
         }
@@ -84,7 +86,18 @@ public abstract class BaseDataService<TEntity> : IBaseDataService<TEntity> where
         Repository.CommitChanges();
     }
 
-    public virtual void UpdateMany(IEnumerable<TEntity> entities)
+    public virtual void Update(TEntity entity, object dto)
+    {
+        var ignoreProperties = typeof(TEntity).GetPropertiesWithNoClientSideUpdate();
+
+        entity.UpdateFromDto(dto,
+                             out var auditTrail,
+                             ignoreProperties);
+
+        Update(entity);
+    }
+
+    public virtual void UpdateMany(params TEntity[] entities)
     {
         Repository.UpdateMany(entities);
         Repository.CommitChanges();
@@ -130,7 +143,7 @@ public abstract class BaseDataService<TEntity> : IBaseDataService<TEntity> where
         return updatedRecords;
     }
 
-    public virtual async Task<int> RestoreMany(Expression<Func<TEntity, bool>>? filterExpression)
+    public virtual async Task<int> RestoreMany(Expression<Func<TEntity, bool>> filterExpression)
     {
         var affectedRecords = Repository.RestoreMany(filterExpression);
         Repository.CommitChanges();

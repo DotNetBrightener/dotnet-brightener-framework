@@ -67,7 +67,7 @@ public class EfRepositoryTests
 
         serviceCollection.AddLogging(builder => builder.AddConsole());
         serviceCollection.AddEventPubSubService();
-        serviceCollection.AddEventHandlersFromAssemblies(Assembly.GetExecutingAssembly());
+        serviceCollection.AddEventHandlersFromAssemblies();
         serviceCollection.Replace(ServiceDescriptor.Scoped<ICurrentLoggedInUserResolver, UserResolver>());
 
         _serviceProvider = serviceCollection.BuildServiceProvider();

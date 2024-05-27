@@ -43,10 +43,23 @@ public class DefaultEventPublisher : IEventPublisher
 
         await using (var serviceScope = _serviceScopeFactory.CreateAsyncScope())
         {
+            var t       = typeof(IEventHandler<>);
+            var evtType = eventMessage.GetType();
+
+            var eventHandlerType = t.MakeGenericType(evtType);
+
             var eventHandlers = serviceScope.ServiceProvider
-                                            .GetServices<IEventHandler<T>>()
-                                            .OrderByDescending(_ => _.Priority)
+                                            .GetServices(eventHandlerType)
+                                            .OfType<IEventHandler>()
+                                            .OrderByDescending(handler => handler.Priority)
                                             .ToArray();
+            if (!eventHandlers.Any())
+            {
+                eventHandlers = serviceScope.ServiceProvider
+                                            .GetServices<IEventHandler<T>>()
+                                            .OrderByDescending(handler => handler.Priority)
+                                            .ToArray();
+            }
 
             if (eventMessage is INonStoppedEventMessage)
             {
@@ -66,7 +79,7 @@ public class DefaultEventPublisher : IEventPublisher
         {
             foreach (var eventHandlerType in eventHandlersTypes)
             {
-                if (serviceScope.ServiceProvider.GetService(eventHandlerType) is not IEventHandler<T> eventHandler)
+                if (serviceScope.ServiceProvider.GetService(eventHandlerType) is not IEventHandler eventHandler)
                     continue;
 
                 var shouldContinue = await PublishEvent(eventHandler, eventMessage);
@@ -77,15 +90,21 @@ public class DefaultEventPublisher : IEventPublisher
         }
     }
 
-    private async Task<bool> PublishEvent<T>(IEventHandler<T> x, T eventMessage) where T : class, IEventMessage
+    private async Task<bool> PublishEvent<T>(IEventHandler x, T eventMessage) where T : class, IEventMessage
     {
         try
         {
-            return await x.HandleEvent(eventMessage);
+            var handleEventMethod = x.GetMethodWithName("HandleEvent", eventMessage.GetType());
+
+            return await (((Task<bool>)handleEventMethod.Invoke(x,
+                                                                new object[]
+                                                                {
+                                                                    eventMessage
+                                                                }))!);
         }
         catch (NotImplementedException exception)
         {
-            _logger.LogWarning(exception, "Event handler not implemented for {eventMessageType}", typeof(T).Name);
+            _logger.LogDebug(exception, "Event handler not implemented for {eventMessageType}", typeof(T).Name);
 
             return true;
         }
@@ -93,7 +112,7 @@ public class DefaultEventPublisher : IEventPublisher
         {
             _logger.LogError(exception, "Error while executing event handler for {eventMessageType}", typeof(T).Name);
 
-            return false;
+            throw;
         }
     }
 

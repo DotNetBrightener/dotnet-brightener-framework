@@ -1,5 +1,4 @@
-﻿using DotNetBrightener.DataAccess;
-using DotNetBrightener.DataAccess.EF.Repositories;
+﻿using DotNetBrightener.DataAccess.EF.Repositories;
 using DotNetBrightener.DataAccess.Models;
 using DotNetBrightener.MultiTenancy.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -20,11 +19,10 @@ public class TenantSupportedRepository : Repository
 
     private static readonly object LockObj = new();
 
-    public TenantSupportedRepository(DbContext                    dbContext,
-                                     ICurrentLoggedInUserResolver currentLoggedInUserResolver,
-                                     ITenantAccessor              tenantAccessor,
-                                     IServiceProvider             serviceProvider,
-                                     ILoggerFactory               loggerFactory)
+    public TenantSupportedRepository(DbContext        dbContext,
+                                     ITenantAccessor  tenantAccessor,
+                                     IServiceProvider serviceProvider,
+                                     ILoggerFactory   loggerFactory)
         : base(dbContext, serviceProvider, loggerFactory)
     {
         _tenantAccessor = tenantAccessor;

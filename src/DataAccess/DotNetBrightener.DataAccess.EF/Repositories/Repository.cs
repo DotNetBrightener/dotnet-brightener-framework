@@ -16,6 +16,7 @@ using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
 using System.Reflection;
 using DotNetBrightener.DataAccess.Events;
+using DotNetBrightener.DataAccess.Models.Guards;
 
 namespace DotNetBrightener.DataAccess.EF.Repositories;
 
@@ -24,6 +25,7 @@ public class Repository : IRepository
     protected readonly DbContext                     DbContext;
     protected readonly ICurrentLoggedInUserResolver? CurrentLoggedInUserResolver;
     protected readonly IEventPublisher?              EventPublisher;
+    protected readonly IDateTimeProvider?            DateTimeProvider;
     protected          ILogger                       Logger { get; init; }
 
     public Repository(DbContext        dbContext,
@@ -33,6 +35,7 @@ public class Repository : IRepository
         DbContext                   = dbContext;
         CurrentLoggedInUserResolver = serviceProvider.TryGet<ICurrentLoggedInUserResolver>();
         EventPublisher              = serviceProvider.TryGet<IEventPublisher>();
+        DateTimeProvider            = serviceProvider.TryGet<IDateTimeProvider>();
         Logger                      = loggerFactory.CreateLogger(GetType());
     }
 
@@ -124,7 +127,7 @@ public class Repository : IRepository
     {
         if (entity is IAuditableEntity auditableEntity)
         {
-            auditableEntity.CreatedDate = DateTimeOffset.UtcNow;
+            auditableEntity.CreatedDate = DateTimeProvider?.UtcNow ?? DateTime.UtcNow;
 
             if (string.IsNullOrEmpty(auditableEntity.CreatedBy))
                 auditableEntity.CreatedBy = CurrentLoggedInUserResolver?.CurrentUserName;
@@ -140,19 +143,12 @@ public class Repository : IRepository
         {
             DbContext.Set<T>().Add(entity);
         }
-
-        EventPublisher?.Publish(new EntityCreated<T>
-        {
-            Entity   = entity,
-            UserName = CurrentLoggedInUserResolver?.CurrentUserName,
-            UserId   = CurrentLoggedInUserResolver?.CurrentUserId
-        });
     }
 
     public virtual void InsertMany<T>(IEnumerable<T> entities)
         where T : class
     {
-        var now = DateTimeOffset.UtcNow;
+        var now = DateTimeProvider?.UtcNow ?? DateTime.UtcNow;
 
         T TransformExpression(T entity)
         {
@@ -202,7 +198,7 @@ public class Repository : IRepository
     {
         if (entity is BaseEntityWithAuditInfo auditableEntity)
         {
-            auditableEntity.ModifiedDate = DateTimeOffset.UtcNow;
+            auditableEntity.ModifiedDate = DateTimeProvider?.UtcNow ?? DateTime.UtcNow;
             auditableEntity.ModifiedBy   = CurrentLoggedInUserResolver?.CurrentUserName;
         }
 
@@ -214,18 +210,11 @@ public class Repository : IRepository
         }
 
         entityEntry.State = EntityState.Modified;
-
-
-        EventPublisher?.Publish(new EntityUpdated<T>
-        {
-            Entity   = entity,
-            UserName = CurrentLoggedInUserResolver?.CurrentUserName,
-            UserId   = CurrentLoggedInUserResolver?.CurrentUserId
-        });
-
     }
 
-    public virtual void UpdateMany<T>(IEnumerable<T> entities) where T : class
+    public virtual void UpdateMany<T>(IEnumerable<T> entities) where T : class => UpdateMany(entities.ToArray());
+
+    public virtual void UpdateMany<T>(params T[] entities) where T : class
     {
         foreach (var entity in entities)
         {
@@ -318,7 +307,7 @@ public class Repository : IRepository
                                      bool                       forceHardDelete = false)
         where T : class
     {
-        const string isDeletedFieldName = nameof(BaseEntityWithAuditInfo.IsDeleted);
+        const string isDeletedFieldName = nameof(IAuditableEntity.IsDeleted);
 
         forceHardDelete =
             forceHardDelete || !typeof(T).HasProperty<bool>(isDeletedFieldName);
@@ -349,11 +338,7 @@ public class Repository : IRepository
 
     public void RestoreOne<T>(Expression<Func<T, bool>>? conditionExpression) where T : class
     {
-        if (!typeof(T).HasProperty<bool>(nameof(BaseEntityWithAuditInfo.IsDeleted)))
-        {
-            throw new
-                NotSupportedException($"The entity type {typeof(T).Name} does not support soft-delete. Therefore, the deletion cannot be reverted");
-        }
+        Guards.AssertEntityRecoverable<T>();
 
         using var dbTransaction = DbContext.Database.BeginTransaction();
 
@@ -372,11 +357,7 @@ public class Repository : IRepository
     public virtual int RestoreMany<T>(Expression<Func<T, bool>>? conditionExpression)
         where T : class
     {
-        if (!typeof(T).HasProperty<bool>(nameof(BaseEntityWithAuditInfo.IsDeleted)))
-        {
-            throw new
-                NotSupportedException($"The entity type {typeof(T).Name} does not support soft-delete. Therefore, the deletion cannot be reverted");
-        }
+        Guards.AssertEntityRecoverable<T>();
 
         var updatedRecords = Update(conditionExpression,
                                     new
@@ -392,8 +373,8 @@ public class Repository : IRepository
 
     public int CommitChanges()
     {
-        EntityEntry[] insertedEntities = Array.Empty<EntityEntry>();
-        EntityEntry[] updatedEntities  = Array.Empty<EntityEntry>();
+        EntityEntry[] insertedEntities = [];
+        EntityEntry[] updatedEntities  = [];
 
         try
         {
@@ -434,8 +415,8 @@ public class Repository : IRepository
     {
         if (!DbContext.ChangeTracker.HasChanges())
         {
-            insertedEntities = Array.Empty<EntityEntry>();
-            updatedEntities  = Array.Empty<EntityEntry>();
+            insertedEntities = [];
+            updatedEntities  = [];
 
             return;
         }
@@ -465,7 +446,9 @@ public class Repository : IRepository
     {
         if (insertedEntities.Length == 0 &&
             updatedEntities.Length == 0)
+        {
             return;
+        }
 
         EventPublisher?.Publish(new DbContextAfterSaveChanges
         {
@@ -509,18 +492,17 @@ public class Repository : IRepository
 
             setPropMethod?.MakeGenericMethod(propertyInfo.PropertyType)
                           .Invoke(setPropBuilder,
-                                  new object[]
-                                  {
-                                      propertyInfo.Name,
+                           [
+                               propertyInfo.Name,
                                       Expression.Lambda(binding.Expression, updateExpression.Parameters)
-                                  });
+                           ]);
         }
 
         if (!hasModifiedDate &&
             typeof(T).IsAssignableTo(typeof(IAuditableEntity)))
         {
             setPropBuilder.SetPropertyByName<DateTimeOffset?>(nameof(IAuditableEntity.ModifiedDate),
-                                                              DateTimeOffset.UtcNow);
+                                                              DateTimeProvider?.UtcNow ?? DateTime.UtcNow);
         }
 
         if (!hasModifiedBy &&
@@ -535,7 +517,6 @@ public class Repository : IRepository
 
     public void Dispose()
     {
-        if (DbContext != null)
-            DbContext.Dispose();
+        DbContext?.Dispose();
     }
 }

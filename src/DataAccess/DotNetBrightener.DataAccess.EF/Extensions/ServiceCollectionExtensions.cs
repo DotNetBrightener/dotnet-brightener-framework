@@ -34,7 +34,10 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddScoped<DbContext, TDbContext>();
 
         serviceCollection.AddScoped<IRepository, Repository>();
-        
+
+        serviceCollection.AddSystemDateTimeProvider();
+
+
         serviceCollection.TryAddScoped<ITransactionWrapper, TransactionWrapper>();
         serviceCollection.TryAddScoped<ICurrentLoggedInUserResolver, DefaultCurrentUserResolver>();
 

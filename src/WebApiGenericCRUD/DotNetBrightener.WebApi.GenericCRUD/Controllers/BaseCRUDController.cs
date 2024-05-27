@@ -1,8 +1,6 @@
-﻿using DotNetBrightener.DataAccess.Attributes;
-using DotNetBrightener.DataAccess.Auditing;
-using DotNetBrightener.DataAccess.Models;
+﻿using DotNetBrightener.DataAccess.Models;
+using DotNetBrightener.DataAccess.Models.Guards;
 using DotNetBrightener.DataAccess.Services;
-using DotNetBrightener.DataAccess.Utils;
 using DotNetBrightener.GenericCRUD.Models;
 using DotNetBrightener.WebApi.GenericCRUD.ActionFilters;
 using Microsoft.AspNetCore.Http;
@@ -13,20 +11,15 @@ using System.Net;
 namespace DotNetBrightener.WebApi.GenericCRUD.Controllers;
 
 // ReSharper disable once InconsistentNaming
-public abstract class BaseCRUDController<TEntityType> : BareReadOnlyController<TEntityType>
+public abstract class BaseCRUDController<TEntityType>(
+    IBaseDataService<TEntityType> dataService,
+    IHttpContextAccessor          httpContextAccessor)
+    : BareReadOnlyController<TEntityType>(dataService, httpContextAccessor)
     where TEntityType : class
 {
-    protected BaseCRUDController(IBaseDataService<TEntityType> dataService,
-                                 IHttpContextAccessor          httpContextAccessor)
-        : base(dataService, httpContextAccessor)
-    {
-
-    }
-
     /// <summary>
     ///    Creates a new <typeparamref name="TEntityType" /> record in the database with the provided data
     /// </summary>
-    /// <typeparam name="TEntityType">The type of entity record</typeparam>
     /// <param name="model">
     ///     The data to be inserted into the database
     /// </param> 
@@ -60,7 +53,6 @@ public abstract class BaseCRUDController<TEntityType> : BareReadOnlyController<T
     /// <summary>
     ///     Updates the <typeparamref name="TEntityType"/> record in the database with the provided data
     /// </summary>
-    /// <typeparam name="TEntityType">The type of entity record</typeparam>
     /// <param name="id">
     ///     The identifier of the <typeparamref name="TEntityType"/> record to update
     /// </param>
@@ -71,6 +63,7 @@ public abstract class BaseCRUDController<TEntityType> : BareReadOnlyController<T
     /// <response code="401">Unauthorized request to update the <typeparamref name="TEntityType"/> record.</response> 
     /// <response code="500">Unknown internal server error.</response>
     [HttpPut("{id:long}")]
+    [HttpPatch("{id:long}")]
     [RequestBodyReader]
     [ProducesResponseType(200)]
     [ProducesResponseType(401)]
@@ -88,9 +81,7 @@ public abstract class BaseCRUDController<TEntityType> : BareReadOnlyController<T
 
         var entityToUpdate = HttpContextAccessor.ObtainRequestBodyAsJObject();
 
-        var auditTrail = await UpdateEntity(entity, entityToUpdate);
-
-        DataService.Update(entity);
+        DataService.Update(entity, entityToUpdate);
 
         await PostUpdateEntity(entity);
 
@@ -120,7 +111,6 @@ public abstract class BaseCRUDController<TEntityType> : BareReadOnlyController<T
     /// <summary>
     ///     Deletes the <typeparamref name="TEntityType"/> record from the database
     /// </summary>
-    /// <typeparam name="TEntityType">The type of entity record</typeparam>
     /// <param name="id">
     ///     The identifier of the <typeparamref name="TEntityType"/> record to delete
     /// </param> 
@@ -130,7 +120,13 @@ public abstract class BaseCRUDController<TEntityType> : BareReadOnlyController<T
     [HttpDelete("{id:long}")]
     public virtual async Task<IActionResult> DeleteItem(long id)
     {
-        if (!await CanDeleteItem(id))
+        var (canDelete, entity, result) = await CanDeleteItem(id);
+
+        if (result is not null)
+            return result;
+
+        if (!canDelete ||
+            entity is null)
             throw new UnauthorizedAccessException();
 
         var expression =
@@ -144,7 +140,6 @@ public abstract class BaseCRUDController<TEntityType> : BareReadOnlyController<T
     /// <summary>
     ///     Restores the deleted <typeparamref name="TEntityType"/> record from the database
     /// </summary>
-    /// <typeparam name="TEntityType">The type of entity record</typeparam>
     /// <param name="id">
     ///     The identifier of the deleted <typeparamref name="TEntityType"/> record
     /// </param> 
@@ -154,7 +149,13 @@ public abstract class BaseCRUDController<TEntityType> : BareReadOnlyController<T
     [HttpPut("{id:long}/undelete")]
     public virtual async Task<IActionResult> RestoreDeletedItem(long id)
     {
-        if (!await CanRestoreDeletedItem(id))
+        var (canRestore, entity, result) = await CanRestoreDeletedItem(id);
+
+        if (result is not null)
+            return result;
+
+        if (!canRestore ||
+            entity is null)
             throw new UnauthorizedAccessException();
 
         var expression =
@@ -171,7 +172,7 @@ public abstract class BaseCRUDController<TEntityType> : BareReadOnlyController<T
     ///     Considers if the current user is authorized to do the <see cref="CreateItem"/> action
     /// </summary>
     /// <remarks>
-    ///     If the <see cref="entityType"/> needs to be assigned to the logged in user,
+    ///     If the <see cref="entityType"/> needs to be assigned to the logged-in user,
     ///     you need to do that assignment in the override method of this
     /// </remarks>
     /// <param name="entityItem">
@@ -193,12 +194,12 @@ public abstract class BaseCRUDController<TEntityType> : BareReadOnlyController<T
     /// </returns>
     protected virtual async Task<(bool, TEntityType, IActionResult)> CanUpdateItem(long id)
     {
-        Expression<Func<TEntityType?, bool>> expression =
+        Expression<Func<TEntityType, bool>> expression =
             ExpressionExtensions.BuildPredicate<TEntityType>(id, OperatorComparer.Equals, EntityIdColumnName);
+
         var entity = DataService.Get(expression);
-
-
-        return (true, entity, entity is null ? NotFound() : null);
+        
+        return (entity is not null, entity, entity is null ? NotFound() : null);
     }
 
     /// <summary>
@@ -208,9 +209,14 @@ public abstract class BaseCRUDController<TEntityType> : BareReadOnlyController<T
     /// <returns>
     ///     <c>true</c> if user is authorized to perform the action; otherwise, <c>false</c>
     /// </returns>
-    protected virtual async Task<bool> CanDeleteItem(long id)
+    protected virtual async Task<(bool, TEntityType, IActionResult)> CanDeleteItem(long id)
     {
-        return true;
+        Expression<Func<TEntityType, bool>> expression =
+            ExpressionExtensions.BuildPredicate<TEntityType>(id, OperatorComparer.Equals, EntityIdColumnName);
+
+        var entity = DataService.Get(expression);
+
+        return (entity is not null, entity, entity is null ? NotFound() : null);
     }
 
     /// <summary>
@@ -220,36 +226,18 @@ public abstract class BaseCRUDController<TEntityType> : BareReadOnlyController<T
     /// <returns>
     ///     <c>true</c> if user is authorized to perform the action; otherwise, <c>false</c>
     /// </returns>
-    protected virtual async Task<bool> CanRestoreDeletedItem(long id)
+    protected virtual async Task<(bool, TEntityType, IActionResult)> CanRestoreDeletedItem(long id)
     {
-        return true;
+        Guards.AssertEntityRecoverable<TEntityType>();
+
+        Expression<Func<TEntityType, bool>> expression =
+            ExpressionExtensions.BuildPredicate<TEntityType>(id, OperatorComparer.Equals, EntityIdColumnName);
+
+        var entity = DataService.Get(expression);
+
+        return (entity is not null, entity, entity is null ? NotFound() : null);
     }
-
-    /// <summary>
-    ///     Performs the necessary updates to the <see cref="entityToPersist"/> from the <see cref="dataToUpdate"/>
-    /// </summary>
-    /// <remarks>
-    ///     The logic to implement in the derived classes are specific for how to save the <typeparamref name="TEntityType"/>.
-    ///     If the logic is complex, consider to call the Business Service layer to perform the necessary updates
-    /// </remarks>
-    /// <param name="entityToPersist">
-    ///     The data to be persisted into the data storage
-    /// </param>
-    /// <param name="dataToUpdate">
-    ///     The data came from the request contains the changes needed.
-    /// </param>
-    /// <returns></returns>
-    protected virtual Task<AuditTrail<TEntityType>> UpdateEntity(TEntityType entityToPersist, object dataToUpdate)
-    {
-        var ignoreProperties = typeof(TEntityType).GetPropertiesWithNoClientSideUpdate();
-
-        entityToPersist.UpdateFromDto(dataToUpdate,
-                                      out var auditTrail,
-                                      ignoreProperties);
-
-        return Task.FromResult(auditTrail);
-    }
-
+    
     /// <summary>
     ///     Performs some action prior to item being inserted into the database.
     ///     Exception thrown during this method will interrupt the insertion, prevent it from continuing

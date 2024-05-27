@@ -1,14 +1,14 @@
-﻿using DotNetBrightener.DataAccess.Attributes;
-using DotNetBrightener.DataAccess.Models;
-using DotNetBrightener.DataAccess.Services;
-using DotNetBrightener.WebApi.GenericCRUD.Extensions;
-using DotNetBrightener.GenericCRUD.Extensions;
-using DotNetBrightener.GenericCRUD.Models;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using System.Linq.Dynamic.Core;
+﻿using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using System.Net;
+using DotNetBrightener.DataAccess.Attributes;
+using DotNetBrightener.DataAccess.Models;
+using DotNetBrightener.DataAccess.Services;
+using DotNetBrightener.GenericCRUD.Extensions;
+using DotNetBrightener.GenericCRUD.Models;
+using DotNetBrightener.WebApi.GenericCRUD.Extensions;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace DotNetBrightener.WebApi.GenericCRUD.Controllers;
 
@@ -133,11 +133,11 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
             return StatusCode((int)HttpStatusCode.Forbidden,
                               new
                               {
-                                  ErrorMessage = $"Requesting for deleted entries is not allowed."
+                                  ErrorMessage = "Requesting for deleted entries is not allowed."
                               });
         }
 
-        var entitiesQuery = currentRequestQueryStrings?.DeletedRecordsOnly == true
+        var entitiesQuery = currentRequestQueryStrings.DeletedRecordsOnly == true
                                 ? DataService.FetchDeletedRecords(DefaultQuery)
                                 : DataService.FetchActive(DefaultQuery);
 
@@ -348,7 +348,7 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
                         .ToList();
 
         var availableColumns = typeof(TIn).GetDefaultColumns()
-                                          .OrderByDescending(_ => _.Length)
+                                          .OrderByDescending(s => s.Length)
                                           .ToList();
 
         var correctedColumns = new List<string>();
@@ -360,16 +360,16 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
                 continue;
             }
 
-            Func<string, bool> equalPredicate = property =>
+            bool EqualPredicate(string property) =>
                 property.Equals(queriedColumn,
-                                StringComparison.OrdinalIgnoreCase) ;
+                                StringComparison.OrdinalIgnoreCase);
 
-            Func<string, bool> startsWithPredicate = property =>
+            bool StartsWithPredicate(string property) =>
                 queriedColumn.StartsWith(property,
                                          StringComparison.OrdinalIgnoreCase);
 
-            var columnAvailable = availableColumns.FirstOrDefault(equalPredicate) ??
-                                  availableColumns.FirstOrDefault(startsWithPredicate);
+            var columnAvailable = availableColumns.FirstOrDefault(EqualPredicate) ??
+                                  availableColumns.FirstOrDefault(StartsWithPredicate);
 
             if (columnAvailable != null)
             {
