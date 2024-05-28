@@ -40,7 +40,7 @@ jobs:
     displayName: Build
     inputs:
       projects: $(BuildParameters.RestoreBuildProjects)
-      arguments: --configuration $(BuildConfiguration) -p:VerSuf=alpha$(rev:.r) -p:BuildNumber=$(date:yyyyMMddHH)$(Build.BuildId)
+      arguments: --configuration $(BuildConfiguration) -p:VerSuf=$(version.suffix)$(rev:.r) -p:BuildNumber=$(date:yyyyMMddHH)$(Build.BuildId)
   - task: ArchiveFiles@2
     displayName: Archive files
     inputs:
