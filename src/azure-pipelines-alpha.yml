@@ -31,11 +31,18 @@ jobs:
       command: restore
       projects: $(BuildParameters.RestoreBuildProjects)
   - task: DotNetCoreCLI@2
+    displayName: Test
+    inputs:
+      command: test
+      projects: $(BuildParameters.RestoreBuildProjects)
+      arguments: -p:GeneratePackageOnBuild=false --configuration $(BuildConfiguration)
+  - task: DotNetCoreCLI@2
     displayName: Build
     inputs:
       projects: $(BuildParameters.RestoreBuildProjects)
       arguments: --configuration $(BuildConfiguration) -p:VerSuf=$(version.suffix)$(Build.BuildId)
   - task: ArchiveFiles@2
+    displayName: Archive files
     inputs:
       rootFolderOrFile: 'src/nupkg_release'
       includeRootFolder: true
@@ -43,6 +50,7 @@ jobs:
       archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
       replaceExistingArchive: true
   - task: NuGetCommand@2
+    displayName: Push to Nuget
     inputs:
       command: 'push'
       packagesToPush: 'src/nupkg_release/*.nupkg'

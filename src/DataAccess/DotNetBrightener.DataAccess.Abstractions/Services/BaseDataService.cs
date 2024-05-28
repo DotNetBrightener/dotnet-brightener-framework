@@ -88,13 +88,8 @@ public abstract class BaseDataService<TEntity> : IBaseDataService<TEntity> where
 
     public virtual void Update(TEntity entity, object dto)
     {
-        var ignoreProperties = typeof(TEntity).GetPropertiesWithNoClientSideUpdate();
-
-        entity.UpdateFromDto(dto,
-                             out var auditTrail,
-                             ignoreProperties);
-
-        Update(entity);
+        Repository.Update(entity, dto);
+        Repository.CommitChanges();
     }
 
     public virtual void UpdateMany(params TEntity[] entities)
