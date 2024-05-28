@@ -15,8 +15,7 @@ public static class SiteSettingRecordExtensions
         var serializedDefaultValue = JsonConvert.SerializeObject(defaultValue,
                                                                  settings: new JsonSerializerSettings
                                                                  {
-                                                                     ContractResolver =
-                                                                         new TypeOnlyContractResolver(type)
+                                                                     ContractResolver = SiteSettingsContractResolver.Instance
                                                                  });
         var defaultValueDictionary = JsonConvert.DeserializeObject<IDictionary<string, object>>(serializedDefaultValue);
 
@@ -39,8 +38,7 @@ public static class SiteSettingRecordExtensions
         record.SettingContent = JsonConvert.SerializeObject(value,
                                                             settings: new JsonSerializerSettings
                                                             {
-                                                                ContractResolver =
-                                                                    new TypeOnlyContractResolver(value.GetType())
+                                                                ContractResolver = SiteSettingsContractResolver.Instance
                                                             });
     }
 }

@@ -190,7 +190,7 @@ public interface IRepository : IDisposable
         where TTarget : class;
 
     /// <summary>
-    ///     Mark the given entity in updated status
+    ///     Mark the given entity with updated status
     /// </summary>
     /// <typeparam name="T">
     ///     Type of the entity
@@ -199,6 +199,23 @@ public interface IRepository : IDisposable
     ///     The entity to update
     /// </param>
     void Update<T>(T entity) where T : class;
+
+    /// <summary>
+    ///     Updates the given entity's data with the specified <see cref="dataToUpdate"/>, and set status of the entity as updated
+    /// </summary>
+    /// <remarks>
+    ///     The given <see cref="entity"/> is fetched into memory for this call.
+    /// </remarks>
+    /// <typeparam name="T">
+    ///     Type of the entity
+    /// </typeparam>
+    /// <param name="entity">
+    ///     The entity to update
+    /// </param>
+    /// <param name="dataToUpdate">
+    ///     The data to save to the entity
+    /// </param>
+    void Update<T>(T entity, object dataToUpdate) where T : class;
 
     /// <summary>
     ///     Updates multiple records of type <typeparamref name="T"/>

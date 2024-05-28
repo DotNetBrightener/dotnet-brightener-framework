@@ -133,6 +133,14 @@ public class Repository : IRepository
                 auditableEntity.CreatedBy = CurrentLoggedInUserResolver?.CurrentUserName;
         }
 
+        EventPublisher?.Publish(new EntityCreating<T>
+                        {
+                            UserName = CurrentLoggedInUserResolver?.CurrentUserName,
+                            UserId   = CurrentLoggedInUserResolver?.CurrentUserId,
+                            Entity   = entity
+                        })
+                       .Wait();
+
         var entityEntry = DbContext.Entry(entity);
 
         if (entityEntry.State != EntityState.Detached)
@@ -158,6 +166,14 @@ public class Repository : IRepository
 
             if (string.IsNullOrEmpty(auditableEntity.CreatedBy))
                 auditableEntity.CreatedBy = CurrentLoggedInUserResolver?.CurrentUserName;
+
+            EventPublisher?.Publish(new EntityCreating<T>
+                            {
+                                UserName = CurrentLoggedInUserResolver?.CurrentUserName,
+                                UserId   = CurrentLoggedInUserResolver?.CurrentUserId,
+                                Entity   = entity
+                            })
+                           .Wait();
 
             return entity;
         }
@@ -196,6 +212,14 @@ public class Repository : IRepository
 
     public virtual void Update<T>(T entity) where T : class
     {
+        EventPublisher?.Publish(new EntityUpdating<T>()
+                        {
+                            UserName = CurrentLoggedInUserResolver?.CurrentUserName,
+                            UserId   = CurrentLoggedInUserResolver?.CurrentUserId,
+                            Entity   = entity
+                        })
+                       .Wait();
+
         if (entity is BaseEntityWithAuditInfo auditableEntity)
         {
             auditableEntity.ModifiedDate = DateTimeProvider?.UtcNow ?? DateTime.UtcNow;
@@ -210,6 +234,17 @@ public class Repository : IRepository
         }
 
         entityEntry.State = EntityState.Modified;
+    }
+
+    public virtual void Update<T>(T entity, object dataToUpdate) where T : class
+    {
+        var ignoreProperties = typeof(T).GetPropertiesWithNoClientSideUpdate();
+
+        entity.UpdateFromDto(dataToUpdate,
+                             out var auditTrail,
+                             ignoreProperties);
+
+        Update(entity);
     }
 
     public virtual void UpdateMany<T>(IEnumerable<T> entities) where T : class => UpdateMany(entities.ToArray());
@@ -321,7 +356,8 @@ public class Repository : IRepository
                                               DeletedDate    = DateTimeOffset.UtcNow,
                                               DeletedBy      = CurrentLoggedInUserResolver?.CurrentUserName,
                                               DeletionReason = reason
-                                          });
+                                          },
+                                          expectedAffectedRows: null);
 
 
         EventPublisher?.Publish(new EntityDeletedByExpression<T>
@@ -366,7 +402,8 @@ public class Repository : IRepository
                                         DeletedDate    = default(DateTimeOffset?),
                                         DeletedBy      = default(string),
                                         DeletionReason = default(string)
-                                    });
+                                    },
+                                    expectedAffectedRows: null);
 
         return updatedRecords;
     }
