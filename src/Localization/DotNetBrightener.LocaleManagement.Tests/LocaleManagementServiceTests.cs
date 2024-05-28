@@ -19,7 +19,7 @@ public class LocaleManagementServiceTests
 
         Assert.That(supportedLocales, Is.Not.Null);
 
-        Console.WriteLine(JsonConvert.SerializeObject(supportedLocales, Formatting.Indented));
+        //Console.WriteLine(JsonConvert.SerializeObject(supportedLocales, Formatting.Indented));
     }
 
     [TearDown]
