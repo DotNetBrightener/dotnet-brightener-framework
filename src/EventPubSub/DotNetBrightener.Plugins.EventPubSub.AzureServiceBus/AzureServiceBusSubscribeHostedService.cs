@@ -5,6 +5,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Text;
+using DotNetBrightener.Plugins.EventPubSub.AzureServiceBus.Internals;
 
 namespace DotNetBrightener.Plugins.EventPubSub.AzureServiceBus;
 
@@ -101,11 +102,11 @@ internal class AzureServiceBusSubscribeHostedService(
 
         var messageProcessor = scope.ServiceProvider.GetRequiredService<IServiceBusMessageProcessor>();
 
-        var domainEvent = await messageProcessor.ProcessIncomingMessage(bytesAsString);
+        var domainEvent = await messageProcessor.ParseIncomingMessage(bytesAsString);
 
         if (scope.ServiceProvider.GetRequiredService(handlerType) is IAzureServiceBusEventSubscription handler)
         {
-            var shouldComplete = await handler.ProcessMessageAsync(domainEvent);
+            var shouldComplete = await handler.ProcessMessage(domainEvent);
 
             if (shouldComplete)
                 await args.CompleteMessageAsync(args.Message);

@@ -23,7 +23,7 @@ public static class ServiceCollectionEventPublisherExtensions
                                 ? AppDomain.CurrentDomain.GetAppOnlyAssemblies()
                                 : assembliesContainMessages;
 
-        var eventHandlerTypes = appAssemblies.GetDerivedTypes<IEventMessage>()
+        var eventMessageTypes = appAssemblies.GetDerivedTypes<IEventMessage>()
                                              .Distinct();
 
         // Event Pub/Sub
@@ -34,7 +34,7 @@ public static class ServiceCollectionEventPublisherExtensions
             Services = serviceCollection
         };
 
-        eventPubSubBuilder.EventMessageTypes.AddRange(eventHandlerTypes);
+        eventPubSubBuilder.EventMessageTypes.AddRange(eventMessageTypes);
 
         serviceCollection.AddSingleton(eventPubSubBuilder);
 
@@ -45,11 +45,11 @@ public static class ServiceCollectionEventPublisherExtensions
         this   EventPubSubServiceBuilder eventPubSubBuilder,
         params Assembly[]                assemblies)
     {
-        var eventHandlerTypes = assemblies.GetDerivedTypes<IEventMessage>()
+        var eventMessageTypes = assemblies.GetDerivedTypes<IEventMessage>()
                                           .Distinct()
                                           .Except(eventPubSubBuilder.EventMessageTypes);
 
-        eventPubSubBuilder.EventMessageTypes.AddRange(eventHandlerTypes);
+        eventPubSubBuilder.EventMessageTypes.AddRange(eventMessageTypes);
 
         return eventPubSubBuilder;
     }
@@ -57,8 +57,8 @@ public static class ServiceCollectionEventPublisherExtensions
     public static IServiceCollection AddEventMessagesFromAssemblies(this   IServiceCollection serviceCollection,
                                                                     params Assembly[]         assemblies)
     {
-        if (serviceCollection.FirstOrDefault(_ => _.ServiceType == typeof(EventPubSubServiceBuilder) &&
-                                                  _.ImplementationInstance is not null)
+        if (serviceCollection.FirstOrDefault(d => d.ServiceType == typeof(EventPubSubServiceBuilder) &&
+                                                  d.ImplementationInstance is not null)
                             ?.ImplementationInstance is not EventPubSubServiceBuilder eventPubSubBuilder)
         {
             eventPubSubBuilder = new EventPubSubServiceBuilder
