@@ -1,8 +1,12 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+﻿using DotNetBrightener.Plugins.EventPubSub;
+using DotNetBrightener.Plugins.EventPubSub.AzureServiceBus;
+using DotNetBrightener.Plugins.EventPubSub.AzureServiceBus.Internals;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace DotNetBrightener.Plugins.EventPubSub.AzureServiceBus;
+// ReSharper disable CheckNamespace
+
+namespace Microsoft.Extensions.DependencyInjection;
 
 public static class AzureServiceBusEnabledServiceCollectionExtensions
 {
@@ -25,7 +29,7 @@ public static class AzureServiceBusEnabledServiceCollectionExtensions
                                                                string                         connectionString,
                                                                string                         subscriptionName = null)
     {
-        AddAzureServiceBus(builder.Services, connectionString, subscriptionName);
+        builder.Services.AddAzureServiceBus(connectionString, subscriptionName);
 
         return builder;
     }
@@ -54,7 +58,7 @@ public static class AzureServiceBusEnabledServiceCollectionExtensions
             c.ConnectionString = connectionString;
         });
 
-        return AddAzureServiceBus(serviceCollection, (IConfiguration)null, subscriptionName);
+        return serviceCollection.AddAzureServiceBus((IConfiguration)null, subscriptionName);
     }
 
     public static EventPubSubServiceBuilder AddAzureServiceBus(this EventPubSubServiceBuilder builder,
@@ -63,7 +67,7 @@ public static class AzureServiceBusEnabledServiceCollectionExtensions
     {
         var serviceCollection = builder.Services;
 
-        AddAzureServiceBus(serviceCollection, configuration, subscriptionName);
+        serviceCollection.AddAzureServiceBus(configuration, subscriptionName);
 
         return builder;
     }
@@ -78,7 +82,8 @@ public static class AzureServiceBusEnabledServiceCollectionExtensions
 
         serviceCollection.AddScoped<IServiceBusMessagePublisher, ServiceBusMessagePublisher>();
         serviceCollection.AddScoped<IAzureServiceBusHelperService, AzureServiceBusHelperService>();
-        serviceCollection.AddScoped<IServiceBusMessageProcessor, ServiceBusMessageProcessor<SimpleAzureEventMessage>>();
+        serviceCollection.AddScoped<IServiceBusMessageProcessor,
+            DefaultServiceBusMessageProcessor<SimpleAzureEventMessageWrapper>>();
 
         serviceCollection.Replace(ServiceDescriptor.Scoped<IEventPublisher, AzureServiceBusEnabledEventPublisher>());
 
@@ -90,19 +95,33 @@ public static class AzureServiceBusEnabledServiceCollectionExtensions
 
         serviceCollection.Configure<ServiceBusConfiguration>(c =>
         {
-            if (serviceCollection.FirstOrDefault(_ => _.ServiceType == typeof(EventPubSubServiceBuilder) &&
-                                                      _.ImplementationInstance is not null)
+            if (serviceCollection.FirstOrDefault(d => d.ServiceType == typeof(EventPubSubServiceBuilder) &&
+                                                      d.ImplementationInstance is not null)
                                 ?.ImplementationInstance is not EventPubSubServiceBuilder builder)
             {
                 throw new
                     InvalidOperationException("Failed to register Azure Service Bus: EventPubSubServiceBuilder is not initialized within the ServiceCollection");
             }
 
+
+            if (string.IsNullOrEmpty(c.SubscriptionName) &&
+                !string.IsNullOrEmpty(subscriptionName))
+                c.SubscriptionName = subscriptionName;
+
+            if (string.IsNullOrEmpty(c.ConnectionString))
+                throw new InvalidOperationException("Azure Service Bus ConnectionString must be provided");
+
+            if (string.IsNullOrEmpty(c.SubscriptionName))
+                throw new InvalidOperationException("SubscriptionName must be provided");
+
+            TypeToAzureTopicNameUtil.ServiceBusConfiguration = c;
+
             var distributedEventMessageTypes = builder.EventMessageTypes
                                                       .Where(evtMsgType => evtMsgType is not null &&
                                                                            evtMsgType
                                                                               .IsAssignableTo(typeof(
                                                                                                   IDistributedEventMessage)));
+
             var errors = new List<string>();
 
             foreach (var eventMessageType in distributedEventMessageTypes)
@@ -128,19 +147,6 @@ public static class AzureServiceBusEnabledServiceCollectionExtensions
                     InvalidOperationException($"Failed to register Azure Service Bus: {string.Join(", ", errors)}");
         });
 
-        serviceCollection.Configure<ServiceBusConfiguration>(c =>
-        {
-            if (string.IsNullOrEmpty(c.SubscriptionName) &&
-                !string.IsNullOrEmpty(subscriptionName))
-                c.SubscriptionName = subscriptionName;
-
-            if (string.IsNullOrEmpty(c.ConnectionString))
-                throw new InvalidOperationException("Azure Service Bus ConnectionString must be provided");
-
-            if (string.IsNullOrEmpty(c.SubscriptionName))
-                throw new InvalidOperationException("SubscriptionName must be provided");
-        });
-
         serviceCollection.AddHostedService<AzureServiceBusSubscribeHostedService>();
 
         return serviceCollection;
@@ -157,11 +163,79 @@ public static class AzureServiceBusEnabledServiceCollectionExtensions
     /// </typeparam>
     public static EventPubSubServiceBuilder UseDecorationMessageType<TMessageType>(
         this EventPubSubServiceBuilder builder)
-        where TMessageType : AzureServiceBusEventMessage
+        where TMessageType : EventMessageWrapper
     {
-        builder.Services.Replace(ServiceDescriptor
-                                    .Scoped<IServiceBusMessageProcessor, ServiceBusMessageProcessor<TMessageType>>());
+        builder.Services.UseDecorationMessageType<TMessageType>();
 
         return builder;
+    }
+
+    /// <summary>
+    ///     Uses a custom message type for the Azure Service Bus message decoration
+    /// </summary>
+    /// <remarks>
+    ///     During ConfigureServices phases of the application, only the last call to this method will take effect.
+    /// </remarks>>
+    /// <typeparam name="TMessageType">
+    ///     The type of the topic message that will be sent to / received from the Azure Service Bus
+    /// </typeparam>
+    public static IServiceCollection UseDecorationMessageType<TMessageType>(this IServiceCollection services)
+        where TMessageType : EventMessageWrapper
+    {
+        services.UseDecorationMessageType<TMessageType, DefaultServiceBusMessageProcessor<TMessageType>>();
+
+        return services;
+    }
+
+    /// <summary>
+    ///     Uses a custom message type for the Azure Service Bus message decoration
+    /// </summary>
+    /// <remarks>
+    ///     During ConfigureServices phases of the application, only the last call to this method will take effect.
+    /// </remarks>>
+    /// <typeparam name="TMessageType">
+    ///     The type of the topic message that will be sent to / received from the Azure Service Bus
+    /// </typeparam>
+    /// <typeparam name="TMessageTypeProcessor">
+    ///     The processor that processes the <typeparamref name="TMessageType"/> message
+    /// </typeparam>
+    public static EventPubSubServiceBuilder UseDecorationMessageType<TMessageType, TMessageTypeProcessor>(
+        this EventPubSubServiceBuilder builder)
+        where TMessageType : EventMessageWrapper
+        where TMessageTypeProcessor : ServiceBusMessageProcessor<TMessageType>
+    {
+        builder.Services.UseDecorationMessageType<TMessageType, TMessageTypeProcessor>();
+
+        return builder;
+    }
+
+    /// <summary>
+    ///     Uses a custom message type for the Azure Service Bus message decoration
+    /// </summary>
+    /// <remarks>
+    ///     During ConfigureServices phases of the application, only the last call to this method will take effect.
+    /// </remarks>>
+    /// <typeparam name="TMessageType">
+    ///     The type of the topic message that will be sent to / received from the Azure Service Bus
+    /// </typeparam>
+    /// <typeparam name="TMessageTypeProcessor">
+    ///     The processor that processes the <typeparamref name="TMessageType"/> message
+    /// </typeparam>
+    public static IServiceCollection UseDecorationMessageType<TMessageType, TMessageTypeProcessor>(
+        this IServiceCollection services)
+        where TMessageType : EventMessageWrapper
+        where TMessageTypeProcessor : ServiceBusMessageProcessor<TMessageType>
+    {
+        if (services.FirstOrDefault(d => d.ServiceType == typeof(EventPubSubServiceBuilder) &&
+                                         d.ImplementationInstance is not null)
+                   ?.ImplementationInstance is not EventPubSubServiceBuilder)
+        {
+            throw new
+                InvalidOperationException("Failed to register Azure Service Bus: EventPubSubServiceBuilder is not initialized within the ServiceCollection");
+        }
+
+        services.Replace(ServiceDescriptor.Scoped<IServiceBusMessageProcessor, TMessageTypeProcessor>());
+
+        return services;
     }
 }

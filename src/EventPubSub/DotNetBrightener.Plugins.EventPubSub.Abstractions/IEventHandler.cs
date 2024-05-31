@@ -8,11 +8,17 @@ public interface IEventHandler
     int Priority { get; }
 }
 
-public interface IEventHandler<T> : IEventHandler where T: IEventMessage
+/// <summary>
+///     Represents the event handler that handles the event message of the specified type
+/// </summary>
+/// <typeparam name="T">
+///     The type of the event message
+/// </typeparam>
+public interface IEventHandler<in T> : IEventHandler where T : IEventMessage
 {
 
     /// <summary>
-    ///		Process the given event message
+    ///		Processes the <typeparamref name="T"/> event message
     /// </summary>
     /// <param name="eventMessage">The event message</param>
     /// <returns>

@@ -1,21 +1,20 @@
 ﻿using Azure.Messaging.ServiceBus.Administration;
 using Microsoft.Extensions.Options;
 
-namespace DotNetBrightener.Plugins.EventPubSub.AzureServiceBus;
+namespace DotNetBrightener.Plugins.EventPubSub.AzureServiceBus.Internals;
 
 internal interface IAzureServiceBusHelperService
 {
     Task CreateTopicIfNotExists(string topicName, CancellationToken? cancellationToken = default);
 
-    Task CreateSubscriptionIfNotExists(string             topicName,
-                                       string             subscriptionName,
+    Task CreateSubscriptionIfNotExists(string topicName,
+                                       string subscriptionName,
                                        CancellationToken? cancellationToken = default);
 }
 
 internal class AzureServiceBusHelperService(IOptions<ServiceBusConfiguration> serviceBusConfiguration) : IAzureServiceBusHelperService
 {
-    private const    int      MaxSizeInMb                          = 5120;
-    private const    bool     RequiresDuplicateDetection           = true;
+    private const bool RequiresDuplicateDetection = true;
 
     public async Task CreateTopicIfNotExists(string topicName, CancellationToken? cancellationToken = default)
     {
@@ -28,11 +27,11 @@ internal class AzureServiceBusHelperService(IOptions<ServiceBusConfiguration> se
 
         var td = new CreateTopicOptions(topicName)
         {
-            AutoDeleteOnIdle                    = serviceBusConfiguration.Value.AutoDeleteOnIdle,
-            DefaultMessageTimeToLive            = serviceBusConfiguration.Value.DefaultMessageTimeToLive,
+            AutoDeleteOnIdle = serviceBusConfiguration.Value.AutoDeleteOnIdle,
+            DefaultMessageTimeToLive = serviceBusConfiguration.Value.DefaultMessageTimeToLive,
             DuplicateDetectionHistoryTimeWindow = serviceBusConfiguration.Value.DuplicateDetectionHistoryTimeWindow,
-            MaxSizeInMegabytes                  = serviceBusConfiguration.Value.MaxSizeInMegabytes,
-            RequiresDuplicateDetection          = RequiresDuplicateDetection
+            MaxSizeInMegabytes = serviceBusConfiguration.Value.MaxSizeInMegabytes,
+            RequiresDuplicateDetection = RequiresDuplicateDetection
         };
 
         var result = await adminClient.CreateTopicAsync(td);
@@ -41,8 +40,8 @@ internal class AzureServiceBusHelperService(IOptions<ServiceBusConfiguration> se
             throw new Exception($"Failed to create topic {topicName}");
     }
 
-    public async Task CreateSubscriptionIfNotExists(string             topicName,
-                                                    string             subscriptionName,
+    public async Task CreateSubscriptionIfNotExists(string topicName,
+                                                    string subscriptionName,
                                                     CancellationToken? cancellationToken = default)
     {
         var adminClient = new ServiceBusAdministrationClient(serviceBusConfiguration.Value.ConnectionString);
