@@ -17,7 +17,9 @@ public class DefaultEventPublisher : IEventPublisher
         _serviceScopeFactory = serviceScopeFactory;
     }
 
-    public virtual Task Publish<T>(T eventMessage, bool runInBackground = false) where T : class, IEventMessage
+    public virtual Task Publish<T>(T                   eventMessage,
+                                   bool                runInBackground = false,
+                                   EventMessageWrapper originMessage   = null) where T : class, IEventMessage
     {
         if (eventMessage != null)
         {
@@ -63,7 +65,7 @@ public class DefaultEventPublisher : IEventPublisher
 
             if (eventMessage is INonStoppedEventMessage)
             {
-                await Task.WhenAll(eventHandlers.Select(eventHandler => PublishEvent(eventHandler, eventMessage)));
+                await Task.WhenAll(eventHandlers.Select(eventHandler => HandleEventMessage(eventHandler, eventMessage)));
 
                 return;
             }
@@ -82,7 +84,7 @@ public class DefaultEventPublisher : IEventPublisher
                 if (serviceScope.ServiceProvider.GetService(eventHandlerType) is not IEventHandler eventHandler)
                     continue;
 
-                var shouldContinue = await PublishEvent(eventHandler, eventMessage);
+                var shouldContinue = await HandleEventMessage(eventHandler, eventMessage);
 
                 if (!shouldContinue)
                     break;
@@ -90,7 +92,7 @@ public class DefaultEventPublisher : IEventPublisher
         }
     }
 
-    private async Task<bool> PublishEvent<T>(IEventHandler x, T eventMessage) where T : class, IEventMessage
+    private async Task<bool> HandleEventMessage<T>(IEventHandler x, T eventMessage) where T : class, IEventMessage
     {
         try
         {

@@ -2,10 +2,9 @@
 
 public class ServiceBusConfiguration
 {
-    public string ConnectionString { get; set; }
-
-    public string SubscriptionName { get; set; }
-
+    public string   ConnectionString                    { get; set; }
+    public string   SubscriptionName                    { get; set; }
+    public bool     IncludeNamespaceForTopicName        { get; set; } = true;
     public TimeSpan AutoDeleteOnIdle                    { get; set; } = TimeSpan.FromDays(90);
     public TimeSpan DefaultMessageTimeToLive            { get; set; } = TimeSpan.FromDays(5);
     public TimeSpan DuplicateDetectionHistoryTimeWindow { get; set; } = TimeSpan.FromMinutes(1);

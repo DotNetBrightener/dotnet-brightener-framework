@@ -1,37 +1,37 @@
-﻿using Newtonsoft.Json;
+﻿namespace DotNetBrightener.Plugins.EventPubSub.AzureServiceBus;
 
-namespace DotNetBrightener.Plugins.EventPubSub.AzureServiceBus;
-
+/// <summary>
+///     Represents the processor to convert the message to appropriate format for the service bus, and convert
+/// </summary>
 public interface IServiceBusMessageProcessor
 {
-    Task<AzureServiceBusEventMessage> PreprocessMessage<T>(T message) where T : IDistributedEventMessage;
+    /// <summary>
+    ///     Prepares the message payload to be sent to the service bus
+    /// </summary>
+    /// <typeparam name="T">
+    ///     The type of the actual event message
+    /// </typeparam>
+    /// <param name="message">
+    ///     The message payload
+    /// </param>
+    /// <param name="originMessage">
+    ///     Specifies the original message, if the <see cref="message"/> is a result of that message
+    /// </param>
+    /// <returns>
+    ///     The new message payload to be sent to the service bus
+    /// </returns>
+    Task<EventMessageWrapper> PrepareOutgoingMessage<T>(T                   message,
+                                                        EventMessageWrapper originMessage = null)
+        where T : IDistributedEventMessage;
 
-    Task<AzureServiceBusEventMessage> ProcessIncomingMessage(string incomingJson);
-}
-
-public class ServiceBusMessageProcessor<TEventMessage> : IServiceBusMessageProcessor
-    where TEventMessage : AzureServiceBusEventMessage
-{
-    private readonly IServiceProvider _serviceProvider;
-
-    public ServiceBusMessageProcessor(IServiceProvider serviceProvider)
-    {
-        _serviceProvider = serviceProvider;
-    }
-
-    public async Task<AzureServiceBusEventMessage> PreprocessMessage<T>(T message) where T : IDistributedEventMessage
-    {
-        var eventMessage = _serviceProvider.TryGet<TEventMessage>();
-
-        eventMessage.WithPayload(message);
-
-        return eventMessage;
-    }
-
-    public async Task<AzureServiceBusEventMessage> ProcessIncomingMessage(string incomingJson)
-    {
-        var eventMessage = JsonConvert.DeserializeObject<TEventMessage>(incomingJson);
-
-        return eventMessage;
-    }
+    /// <summary>
+    ///     Parses the incoming message from the message broker
+    /// </summary>
+    /// <param name="incomingJson">
+    ///     The incoming message in JSON format
+    /// </param>
+    /// <returns>
+    ///     The message payload from the given JSON
+    /// </returns>
+    Task<EventMessageWrapper> ParseIncomingMessage(string incomingJson);
 }
