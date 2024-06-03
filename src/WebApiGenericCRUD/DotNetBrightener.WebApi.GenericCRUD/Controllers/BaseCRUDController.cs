@@ -11,10 +11,8 @@ using System.Net;
 namespace DotNetBrightener.WebApi.GenericCRUD.Controllers;
 
 // ReSharper disable once InconsistentNaming
-public abstract class BaseCRUDController<TEntityType>(
-    IBaseDataService<TEntityType> dataService,
-    IHttpContextAccessor          httpContextAccessor)
-    : BareReadOnlyController<TEntityType>(dataService, httpContextAccessor)
+public abstract class BaseCRUDController<TEntityType>(IBaseDataService<TEntityType> dataService)
+    : BareReadOnlyController<TEntityType>(dataService)
     where TEntityType : class
 {
     /// <summary>
@@ -79,7 +77,7 @@ public abstract class BaseCRUDController<TEntityType>(
             entity is null)
             throw new UnauthorizedAccessException();
 
-        var entityToUpdate = HttpContextAccessor.ObtainRequestBodyAsJObject();
+        var entityToUpdate = HttpContext.ObtainRequestBodyAsJObject();
 
         DataService.Update(entity, entityToUpdate);
 
@@ -166,8 +164,6 @@ public abstract class BaseCRUDController<TEntityType>(
         return StatusCode((int)HttpStatusCode.OK);
     }
 
-    protected async Task<bool> AuthorizedCreateItem(TEntityType entityItem) => await CanCreateItem(entityItem);
-
     /// <summary>
     ///     Considers if the current user is authorized to do the <see cref="CreateItem"/> action
     /// </summary>
@@ -198,7 +194,7 @@ public abstract class BaseCRUDController<TEntityType>(
             ExpressionExtensions.BuildPredicate<TEntityType>(id, OperatorComparer.Equals, EntityIdColumnName);
 
         var entity = DataService.Get(expression);
-        
+
         return (entity is not null, entity, entity is null ? NotFound() : null);
     }
 
@@ -237,7 +233,7 @@ public abstract class BaseCRUDController<TEntityType>(
 
         return (entity is not null, entity, entity is null ? NotFound() : null);
     }
-    
+
     /// <summary>
     ///     Performs some action prior to item being inserted into the database.
     ///     Exception thrown during this method will interrupt the insertion, prevent it from continuing

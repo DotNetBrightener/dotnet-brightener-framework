@@ -1,7 +1,6 @@
 using DotNetBrightener.Plugins.EventPubSub;
 using EventPubSub.WebApiDemo.Contracts;
 using System.Reflection;
-using DotNetBrightener.Plugins.EventPubSub.AzureServiceBus.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -4,24 +4,14 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 namespace DotNetBrightener.DataAccess.Auditing.Interceptors;
 
 
-public class AuditContext : DbContext
+public class AuditContext(DatabaseConfiguration dbConfiguration) : DbContext
 {
-    private readonly DatabaseConfiguration _dbConfiguration;
-
-    public AuditContext(DatabaseConfiguration dbConfiguration)
-    {
-        _dbConfiguration = dbConfiguration;
-    }
+    private readonly DatabaseConfiguration _dbConfiguration = dbConfiguration;
 }
 
-public class SavingChangesInterceptor: ISaveChangesInterceptor
+public class SavingChangesInterceptor(DatabaseConfiguration dbConfiguration) : ISaveChangesInterceptor
 {
-    private readonly DatabaseConfiguration _dbConfiguration;
-
-    public SavingChangesInterceptor(DatabaseConfiguration dbConfiguration)
-    {
-        _dbConfiguration = dbConfiguration;
-    }
+    private readonly DatabaseConfiguration _dbConfiguration = dbConfiguration;
 
     #region SavingChanges
     public async ValueTask<InterceptionResult<int>> SavingChangesAsync(

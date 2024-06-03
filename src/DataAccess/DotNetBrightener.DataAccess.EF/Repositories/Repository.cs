@@ -15,6 +15,7 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
 using System.Reflection;
+using DotNetBrightener.DataAccess.Auditing;
 using DotNetBrightener.DataAccess.Events;
 using DotNetBrightener.DataAccess.Models.Guards;
 
@@ -212,11 +213,28 @@ public class Repository : IRepository
 
     public virtual void Update<T>(T entity) where T : class
     {
+        UpdateWithAuditTrail(entity, auditTrail: null);
+    }
+
+    public virtual void Update<T>(T entity, object dataToUpdate) where T : class
+    {
+        var ignoreProperties = typeof(T).GetPropertiesWithNoClientSideUpdate();
+
+        entity.UpdateFromDto(dataToUpdate,
+                             out var auditTrail,
+                             ignoreProperties);
+
+        UpdateWithAuditTrail(entity, auditTrail);
+    }
+
+    protected virtual void UpdateWithAuditTrail<T>(T entity, AuditTrail<T>? auditTrail) where T : class
+    {
         EventPublisher?.Publish(new EntityUpdating<T>()
                         {
-                            UserName = CurrentLoggedInUserResolver?.CurrentUserName,
-                            UserId   = CurrentLoggedInUserResolver?.CurrentUserId,
-                            Entity   = entity
+                            UserName   = CurrentLoggedInUserResolver?.CurrentUserName,
+                            UserId     = CurrentLoggedInUserResolver?.CurrentUserId,
+                            Entity     = entity,
+                            AuditTrail = auditTrail
                         })
                        .Wait();
 
@@ -234,17 +252,6 @@ public class Repository : IRepository
         }
 
         entityEntry.State = EntityState.Modified;
-    }
-
-    public virtual void Update<T>(T entity, object dataToUpdate) where T : class
-    {
-        var ignoreProperties = typeof(T).GetPropertiesWithNoClientSideUpdate();
-
-        entity.UpdateFromDto(dataToUpdate,
-                             out var auditTrail,
-                             ignoreProperties);
-
-        Update(entity);
     }
 
     public virtual void UpdateMany<T>(IEnumerable<T> entities) where T : class => UpdateMany(entities.ToArray());
@@ -366,7 +373,8 @@ public class Repository : IRepository
             FilterExpression = conditionExpression,
             AffectedRecords  = updatedRecords,
             UserName         = CurrentLoggedInUserResolver?.CurrentUserName,
-            UserId           = CurrentLoggedInUserResolver?.CurrentUserId
+            UserId           = CurrentLoggedInUserResolver?.CurrentUserId,
+            IsHardDeleted    = forceHardDelete
         });
 
         return updatedRecords;
@@ -458,9 +466,9 @@ public class Repository : IRepository
             return;
         }
 
-        EntityEntry[] entityEntries = DbContext.ChangeTracker
-                                               .Entries()
-                                               .ToArray();
+        var entityEntries = DbContext.ChangeTracker
+                                     .Entries()
+                                     .ToArray();
 
         insertedEntities = entityEntries.Where(e => e.State == EntityState.Added)
                                         .ToArray();
@@ -507,7 +515,7 @@ public class Repository : IRepository
 
         bool hasModifiedDate = false, hasModifiedBy = false;
 
-        foreach (MemberAssignment binding in memberAssignmentList.OfType<MemberAssignment>())
+        foreach (var binding in memberAssignmentList.OfType<MemberAssignment>())
         {
             var propertyInfo = (PropertyInfo)binding.Member;
 
@@ -531,7 +539,7 @@ public class Repository : IRepository
                           .Invoke(setPropBuilder,
                            [
                                propertyInfo.Name,
-                                      Expression.Lambda(binding.Expression, updateExpression.Parameters)
+                               Expression.Lambda(binding.Expression, updateExpression.Parameters)
                            ]);
         }
 
@@ -554,6 +562,6 @@ public class Repository : IRepository
 
     public void Dispose()
     {
-        DbContext?.Dispose();
+        DbContext.Dispose();
     }
 }

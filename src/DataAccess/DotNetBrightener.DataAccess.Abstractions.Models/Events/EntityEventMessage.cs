@@ -37,7 +37,7 @@ public abstract class EntityEventMessage<TEntity> : IEventMessage where TEntity 
 }
 
 /// <summary>
-///     Event fired when an entity of type <typeparamref name="TEntity" /> is created
+///     Event fired when an entity of type <typeparamref name="TEntity" /> is created, after it's persisted to the data store
 /// </summary>
 /// <typeparam name="TEntity">
 ///     The type of the entity specified in the event
@@ -56,7 +56,7 @@ public class EntityCreated<TEntity> : EntityEventMessage<TEntity> where TEntity 
 
 
 /// <summary>
-///     Event fired before the entity of type <typeparam name="TEntity" /> is created and persisted
+///     Event fired before the entity of type <typeparam name="TEntity" /> is preparing, before it's persisted to the data store
 /// </summary>
 /// <remarks>
 ///     The <seealso cref="EntityEventMessage{TEntity}.Entity"/> contains the data of the entity that are being persisted.
@@ -173,7 +173,7 @@ public class EntityDeletedByExpression<TEntity> : EntityEventMessage<TEntity> wh
 
     public bool IsHardDeleted { get; set; }
 
-    public int     AffectedRecords { get; set; }
+    public int AffectedRecords { get; set; }
 
-    public string? DeletionReason  { get; set; }
+    public string? DeletionReason { get; set; }
 }

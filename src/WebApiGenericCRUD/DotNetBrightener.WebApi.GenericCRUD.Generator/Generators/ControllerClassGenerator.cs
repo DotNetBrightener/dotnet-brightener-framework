@@ -105,25 +105,32 @@ public class ControllerClassGenerator : ISourceGenerator
 
 using System;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Mvc;
 
 using DotNetBrightener.WebApi.GenericCRUD.Controllers;
 using DotNetBrightener.DataAccess.Services;
 using {modelClass.DataServiceNamespace};
 using {modelClass.TargetEntityNamespace};
 
+/****************************************************
+
+This partial class is added with customized document comments that are fit for the linked type {modelClass.TargetEntity}.
+
+Any overriden logic should be done in the other part of the file, {className}.cs.
+
+****************************************************/
+
 namespace {modelClass.ControllerNamespace};
 
-public partial class {className} : BaseCRUDController<{modelClass.TargetEntity}>
+public partial class {className}
 {{
     
     internal {className}(
-            I{modelClass.TargetEntity}DataService dataService,
-            IHttpContextAccessor httpContextAccessor)
-        : base(dataService, httpContextAccessor)
+        I{modelClass.TargetEntity}DataService dataService)
+        : base(dataService)
     {{
     }}
 
@@ -159,7 +166,8 @@ public partial class {className} : BaseCRUDController<{modelClass.TargetEntity}>
 
         if (!File.Exists(defaultPathFile))
         {
-            var defaultControllerFileContent = $@"
+            var defaultControllerFileContent = $@"using DotNetBrightener.WebApi.GenericCRUD.Controllers;
+
 using Microsoft.AspNetCore.Mvc;
 using {modelClass.DataServiceNamespace};
 using {modelClass.TargetEntityNamespace};
@@ -170,23 +178,21 @@ namespace {modelClass.ControllerNamespace};
 ///     Provide public APIs for <see cref=""{modelClass.TargetEntity}"" /> entity.
 /// </summary>
 /// 
-/// Uncomment the next line to enable authorization for this controller
-/// [Authorize]
+// Uncomment the next line to enable authorization for this controller
+// [Authorize]
 [ApiController]
 [Route(""api/[controller]"")]
-public partial class {className}
+public partial class {className}: BaseCRUDController<{modelClass.TargetEntity}>
 {{
     private readonly ILogger _logger;
 
     public {className}(
-            I{modelClass.TargetEntity}DataService dataService,
-            IHttpContextAccessor httpContextAccessor,
-            ILogger<{className}> logger)
-        : this(dataService, httpContextAccessor)
+        I{modelClass.TargetEntity}DataService dataService,
+        ILogger<{className}> logger)
+        : this(dataService)
     {{
         _logger = logger;
     }}
-
 
     public override partial Task<IActionResult> GetList()
     {{
@@ -194,8 +200,6 @@ public partial class {className}
 
         return base.GetList();
     }}
-
-    #region Override Authorization Methods
 
     protected override Task<bool> CanRetrieveList()
     {{
@@ -244,8 +248,6 @@ public partial class {className}
 
         return base.CanRestoreDeletedItem(id);
     }}
-
-    #endregion
 }}";
             File.WriteAllText(defaultPathFile, defaultControllerFileContent);
         }
