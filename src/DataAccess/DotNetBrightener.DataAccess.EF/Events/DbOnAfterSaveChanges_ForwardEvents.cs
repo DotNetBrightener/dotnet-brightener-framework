@@ -19,15 +19,15 @@ public class DbOnAfterSaveChanges_ForwardEvents(IServiceProvider serviceProvider
             return true;
 
 
-        var tasksList = new List<IEventMessage>();
+        var eventMessages = new List<IEventMessage>();
 
-        ProcessEntitiesEvent(eventMessage.InsertedEntityEntries, tasksList, typeof(EntityCreated<>));
+        ProcessEntitiesEvent(eventMessage.InsertedEntityEntries, eventMessages, typeof(EntityCreated<>));
 
-        ProcessEntitiesUpdatedEvent(eventMessage.UpdatedEntityEntries, tasksList, typeof(EntityUpdated<>));
+        ProcessEntitiesUpdatedEvent(eventMessage.UpdatedEntityEntries, eventMessages, typeof(EntityUpdated<>));
 
-        if (tasksList.Any())
+        if (eventMessages.Any())
         {
-            await tasksList.ParallelForEachAsync(eventMsg => _eventPublisher.Publish(eventMsg));
+            await eventMessages.ParallelForEachAsync(eventMsg => _eventPublisher.Publish(eventMsg));
         }
 
         return true;

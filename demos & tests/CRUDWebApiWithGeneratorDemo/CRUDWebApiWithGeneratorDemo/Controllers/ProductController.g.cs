@@ -19,10 +19,10 @@ which should be in the same folder as this file.
 
 using System;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Mvc;
 
 using DotNetBrightener.WebApi.GenericCRUD.Controllers;
 using DotNetBrightener.DataAccess.Services;
@@ -31,13 +31,12 @@ using CRUDWebApiWithGeneratorDemo.Core.Entities;
 
 namespace CRUDWebApiWithGeneratorDemo.Controllers;
 
-public partial class ProductController : BaseCRUDController<Product>
+public partial class ProductController
 {
     
     internal ProductController(
-            IProductDataService dataService,
-            IHttpContextAccessor httpContextAccessor)
-        : base(dataService, httpContextAccessor)
+        IProductDataService dataService)
+        : base(dataService)
     {
     }
 

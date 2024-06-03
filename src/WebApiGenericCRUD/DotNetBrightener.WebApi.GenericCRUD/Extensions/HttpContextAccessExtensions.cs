@@ -21,4 +21,19 @@ public static class HttpContextAccessExtensions
     {
         return RequestBodyReader.ObtainBody(httpContextAccessor);
     }
+
+    public static JObject ObtainRequestBodyAsJObject(this HttpContext httpContext)
+    {
+        return RequestBodyReader.ObtainBodyAsJObject(httpContext);
+    }
+
+    public static TModel ObtainRequestBodyAs<TModel>(this HttpContext httpContext)
+    {
+        return RequestBodyReader.ObtainBodyAs<TModel>(httpContext);
+    }
+
+    public static string ObtainRequestBody(this HttpContext httpContext)
+    {
+        return RequestBodyReader.ObtainBody(httpContext);
+    }
 }

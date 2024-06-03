@@ -3,7 +3,6 @@ using CRUDWebApiWithGeneratorDemo.Core.Entities;
 using CRUDWebApiWithGeneratorDemo.Database.DbContexts;
 using CRUDWebApiWithGeneratorDemo.Services.Data;
 using DotNetBrightener.DataAccess;
-using DotNetBrightener.DataAccess.EF.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;

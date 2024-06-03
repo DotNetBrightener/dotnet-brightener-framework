@@ -1,28 +1,27 @@
-﻿using System.Linq.Dynamic.Core;
-using System.Linq.Expressions;
-using System.Net;
-using DotNetBrightener.DataAccess.Attributes;
+﻿using DotNetBrightener.DataAccess.Attributes;
 using DotNetBrightener.DataAccess.Models;
 using DotNetBrightener.DataAccess.Services;
 using DotNetBrightener.GenericCRUD.Extensions;
 using DotNetBrightener.GenericCRUD.Models;
 using DotNetBrightener.WebApi.GenericCRUD.Extensions;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq.Dynamic.Core;
+using System.Linq.Expressions;
+using System.Net;
 
 namespace DotNetBrightener.WebApi.GenericCRUD.Controllers;
 
 public abstract class BareReadOnlyController<TEntityType> : Controller where TEntityType : class
 {
     /// <summary>
-    ///     Specifies the name of the entity Id's column
+    ///     Specifies the name of the entity Identifier's column
     /// </summary>
     protected virtual string EntityIdColumnName => nameof(BaseEntity.Id);
 
     /// <summary>
     ///     The default query to fetch data
     /// </summary>
-    protected virtual Expression<Func<TEntityType, bool>>? DefaultQuery { get; set; }
+    protected virtual Expression<Func<TEntityType, bool>> DefaultQuery { get; set; }
 
     /// <summary>
     ///     The columns that will always be returned in case no columns is requested from the client
@@ -30,13 +29,10 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
     protected string[] AlwaysReturnColumns;
 
     protected readonly IBaseDataService<TEntityType> DataService;
-    protected readonly IHttpContextAccessor          HttpContextAccessor;
 
-    protected BareReadOnlyController(IBaseDataService<TEntityType> dataService,
-                                     IHttpContextAccessor          httpContextAccessor)
+    protected BareReadOnlyController(IBaseDataService<TEntityType> dataService)
     {
-        DataService         = dataService;
-        HttpContextAccessor = httpContextAccessor;
+        DataService = dataService;
 
         AlwaysReturnColumns = [];
 
@@ -137,7 +133,7 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
                               });
         }
 
-        var entitiesQuery = currentRequestQueryStrings.DeletedRecordsOnly == true
+        var entitiesQuery = currentRequestQueryStrings.DeletedRecordsOnly
                                 ? DataService.FetchDeletedRecords(DefaultQuery)
                                 : DataService.FetchActive(DefaultQuery);
 

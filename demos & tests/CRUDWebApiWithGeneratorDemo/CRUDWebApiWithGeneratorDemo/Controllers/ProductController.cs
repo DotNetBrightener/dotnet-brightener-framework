@@ -1,3 +1,4 @@
+using DotNetBrightener.WebApi.GenericCRUD.Controllers;
 
 using Microsoft.AspNetCore.Mvc;
 using CRUDWebApiWithGeneratorDemo.Services.Data;
@@ -9,23 +10,21 @@ namespace CRUDWebApiWithGeneratorDemo.Controllers;
 ///     Provide public APIs for <see cref="Product" /> entity.
 /// </summary>
 /// 
-/// Uncomment the next line to enable authorization for this controller
-/// [Authorize]
+// Uncomment the next line to enable authorization for this controller
+// [Authorize]
 [ApiController]
 [Route("api/[controller]")]
-public partial class ProductController
+public partial class ProductController: BaseCRUDController<Product>
 {
     private readonly ILogger _logger;
 
     public ProductController(
-            IProductDataService dataService,
-            IHttpContextAccessor httpContextAccessor,
-            ILogger<ProductController> logger)
-        : this(dataService, httpContextAccessor)
+        IProductDataService dataService,
+        ILogger<ProductController> logger)
+        : this(dataService)
     {
         _logger = logger;
     }
-
 
     public override partial Task<IActionResult> GetList()
     {
@@ -33,8 +32,6 @@ public partial class ProductController
 
         return base.GetList();
     }
-
-    #region Override Authorization Methods
 
     protected override Task<bool> CanRetrieveList()
     {
@@ -83,6 +80,4 @@ public partial class ProductController
 
         return base.CanRestoreDeletedItem(id);
     }
-
-    #endregion
 }

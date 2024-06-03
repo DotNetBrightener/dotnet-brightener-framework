@@ -21,23 +21,18 @@ public class RequestBodyReader
     private const string RequestBodyKey = "request_body";
 
     private static readonly string[] SupportedMethods =
-    {
+    [
         "POST", "PATCH", "PUT"
-    };
+    ];
 
     public void OnAuthorization(AuthorizationFilterContext context)
     {
-        // if not POST / PATCH request, ignore
-        if (!SupportedMethods.Any(method => method.Equals(context?.HttpContext.Request.Method,
+        if (!SupportedMethods.Any(method => method.Equals(context.HttpContext.Request.Method,
                                                           StringComparison.OrdinalIgnoreCase)))
             return;
 
         var req = context.HttpContext.Request;
-
-        // no point reading body if it's not available
-        if (req.Body is null)
-            return;
-
+        
         var syncIoFeature = context.HttpContext.Features.Get<IHttpBodyControlFeature>();
 
         if (syncIoFeature == null)
@@ -66,39 +61,51 @@ public class RequestBodyReader
             httpContextAccessor.StoreValue(RequestBodyKey, bodyStreamString);
         }
 
-        // rewind the body back to beginning so it can be processed by other filters.
+        // rewind the body back to beginning, so it can be processed by other filters.
         req.Body.Seek(0, SeekOrigin.Begin);
     }
 
     public Task OnAuthorizationAsync(AuthorizationFilterContext context)
     {
-        return Task.Run(() => OnAuthorization(context));
+        return Task.Run(() =>
+        {
+            OnAuthorization(context);
+        });
     }
 
     internal static string ObtainBody(IHttpContextAccessor httpContextAccessor)
+        => ObtainBody(httpContextAccessor.HttpContext);
+
+    internal static string ObtainBody(HttpContext httpContext)
     {
-        return httpContextAccessor.RetrieveValue<string>(RequestBodyKey);
+        return httpContext.RetrieveValue<string>(RequestBodyKey);
     }
 
     internal static TModel ObtainBodyAs<TModel>(IHttpContextAccessor httpContextAccessor)
+        => ObtainBodyAs<TModel>(httpContextAccessor.HttpContext);
+
+    internal static TModel ObtainBodyAs<TModel>(HttpContext httpContext)
     {
-        var bodyObject = httpContextAccessor.RetrieveValue<TModel>();
+        var bodyObject = httpContext.RetrieveValue<TModel>();
 
         if (bodyObject is not null)
             return bodyObject;
 
-        var bodyString = httpContextAccessor.RetrieveValue<string>(RequestBodyKey);
+        var bodyString = httpContext.RetrieveValue<string>(RequestBodyKey);
 
         bodyObject = JsonConvert.DeserializeObject<TModel>(bodyString);
 
-        httpContextAccessor.StoreValue(bodyObject);
+        httpContext.StoreValue(bodyObject);
 
         return bodyObject;
     }
 
     internal static JObject ObtainBodyAsJObject(IHttpContextAccessor httpContextAccessor)
+        => ObtainBodyAsJObject(httpContextAccessor.HttpContext);
+
+    internal static JObject ObtainBodyAsJObject(HttpContext httpContext)
     {
-        var bodyString = httpContextAccessor.RetrieveValue<string>(RequestBodyKey);
+        var bodyString = httpContext.RetrieveValue<string>(RequestBodyKey);
 
         return JObject.Parse(bodyString);
     }

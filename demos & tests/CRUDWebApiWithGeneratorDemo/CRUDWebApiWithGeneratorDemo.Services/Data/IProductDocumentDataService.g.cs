@@ -26,11 +26,4 @@ using CRUDWebApiWithGeneratorDemo.Core.Entities;
 
 namespace CRUDWebApiWithGeneratorDemo.Services.Data;
 
-public partial class ProductDocumentDataService : BaseDataService<ProductDocument>, IProductDocumentDataService {
-    
-    internal ProductDocumentDataService(IRepository repository)
-        : base(repository)
-    {
-    }
-
-}
+public partial interface IProductDocumentDataService : IBaseDataService<ProductDocument>;
