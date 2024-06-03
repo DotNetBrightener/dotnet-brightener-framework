@@ -169,6 +169,7 @@ public partial class {className}
             var defaultControllerFileContent = $@"using DotNetBrightener.WebApi.GenericCRUD.Controllers;
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using {modelClass.DataServiceNamespace};
 using {modelClass.TargetEntityNamespace};
 
