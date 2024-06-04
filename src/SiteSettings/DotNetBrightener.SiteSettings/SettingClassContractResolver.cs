@@ -23,7 +23,8 @@ internal class SiteSettingsContractResolver : DefaultContractResolver
     protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
     {
         JsonProperty property = base.CreateProperty(member, memberSerialization);
-        Predicate<object> propertyShouldSerialize = instance =>
+
+        bool PropertyShouldSerialize(object instance)
         {
             var propertyPropertyName = property.PropertyName!;
 
@@ -32,9 +33,9 @@ internal class SiteSettingsContractResolver : DefaultContractResolver
                                                              propertyPropertyName.Substring(1));
 
             return shouldSerialize;
-        };
+        }
 
-        property.ShouldSerialize = propertyShouldSerialize;
+        property.ShouldSerialize = PropertyShouldSerialize;
 
         return property;
     }
