@@ -3,29 +3,31 @@ variables:
   value: 'src/DotNetBrightenerFramework.sln'
 - name: BuildConfiguration
   value: Release
-name: $(date:yyyyMMdd)$(rev:.r)
+name: 2024.0.14.$(Rev:r)
 trigger: none 
 pr:
   branches:
     include:
     - master
 jobs:
-- job: Building_Release
-  displayName: Running on self-hosted agent
+- job: Build_Packages
+  displayName: Building on self-hosted agent
   pool:
     name: dotnetbrightener-selfhosted
     demands: 
     - agent.name -equals self-hosted
   steps:
   - checkout: self
+    displayName: Checking out for building version $(Build.BuildNumber)
     submodules: true
+    persistCredentials: true
   - task: UseDotNet@2
-    displayName: Use .NET Core sdk 8.x
+    displayName: Ensure .NET Core SDK Installed
     inputs:
       version: 8.x
       performMultiLevelLookup: true
   - task: DotNetCoreCLI@2
-    displayName: Restore
+    displayName: Restore Packages
     inputs:
       command: restore
       projects: $(BuildParameters.RestoreBuildProjects)
@@ -36,10 +38,10 @@ jobs:
       projects: $(BuildParameters.RestoreBuildProjects)
       arguments: -p:GeneratePackageOnBuild=false --configuration $(BuildConfiguration)
   - task: DotNetCoreCLI@2
-    displayName: Build
+    displayName: Building version $(Build.BuildNumber)
     inputs:
       projects: $(BuildParameters.RestoreBuildProjects)
-      arguments: --configuration $(BuildConfiguration)
+      arguments: --configuration $(BuildConfiguration) -p:Version=$(Build.BuildNumber)
   - task: ArchiveFiles@2
     displayName: Archive files
     inputs:
@@ -55,3 +57,10 @@ jobs:
       packagesToPush: 'src/nupkg_release/*.nupkg'
       nuGetFeedType: 'external'
       publishFeedCredentials: 'DotNetBrightener Nuget'
+  - script: |
+      git config --global user.name "Automation Build Service"
+      git config --global user.email "autobuild@dotnetbrightener.com"
+      git tag -a $(Build.BuildNumber) -m "Build Number $(Build.BuildNumber)"
+      git push origin $(Build.BuildNumber)
+    workingDirectory: $(Build.SourcesDirectory)
+    displayName: Setting Tag name $(Build.BuildNumber)

@@ -26,8 +26,6 @@ using CRUDWebApiWithGeneratorDemo.Core.Entities;
 
 namespace CRUDWebApiWithGeneratorDemo.Services.Data;
 
-public partial interface IProductCategoryDataService : IBaseDataService<ProductCategory> { }
-
 public partial class ProductCategoryDataService : BaseDataService<ProductCategory>, IProductCategoryDataService {
     
     internal ProductCategoryDataService(IRepository repository)

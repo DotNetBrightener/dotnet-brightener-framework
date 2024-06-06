@@ -6,14 +6,6 @@ using CRUDWebApiWithGeneratorDemo.Core.Entities;
 
 namespace CRUDWebApiWithGeneratorDemo.Services.Data;
 
-/// <summary>
-///     Provides the data access methods for <see cref="Product" /> entity.
-/// </summary>
-public partial interface IProductDataService 
-{
-    // Provide your custom methods here
-}
-
 public partial class ProductDataService
 {
     private readonly ILogger _logger;

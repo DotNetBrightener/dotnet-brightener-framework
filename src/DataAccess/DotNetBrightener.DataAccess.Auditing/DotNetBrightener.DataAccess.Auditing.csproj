@@ -1,17 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<IsPackable>false</IsPackable>
+	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="linq2db.EntityFrameworkCore" Version="8.1.0" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.4" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="8.0.4" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.4" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.6" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="8.0.6" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.6" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.4">
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.6">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.4">
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.6">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
@@ -22,14 +25,6 @@
 		<ProjectReference Include="..\..\EventPubSub\DotNetBrightener.Plugins.EventPubSub\DotNetBrightener.Plugins.EventPubSub.csproj" />
 		<ProjectReference Include="..\DotNetBrightener.DataAccess.Abstractions\DotNetBrightener.DataAccess.Abstractions.csproj" />
 		<ProjectReference Include="..\DotNetBrightener.DataAccess.EF\DotNetBrightener.DataAccess.EF.csproj" />
-	</ItemGroup>
-
-
-	<ItemGroup>
-		<None Update="docs\readme.md">
-			<PackagePath>\</PackagePath>
-			<Pack>true</Pack>
-		</None>
 	</ItemGroup>
 
 	<Import Project="..\..\Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems" Label="Shared" />
