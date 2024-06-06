@@ -31,7 +31,7 @@
 		<FileVersionPotion>$([System.DateTime]::UtcNow.DayOfYear)$([System.DateTime]::UtcNow.ToString(HH))</FileVersionPotion>
 		<BuildNumber Condition="'$(BuildNumber)' == ''">$([System.DateTime]::UtcNow.ToString(yyMMddHH))</BuildNumber>
 
-		<VersionPrefix>2024.0.12.$(FileVersionPotion)</VersionPrefix>
+		<VersionPrefix>2024.0.14.$(FileVersionPotion)</VersionPrefix>
 
 		<AssemblyVersion>$(VersionPrefix)</AssemblyVersion>
 		<FileVersion>$(VersionPrefix)</FileVersion>
