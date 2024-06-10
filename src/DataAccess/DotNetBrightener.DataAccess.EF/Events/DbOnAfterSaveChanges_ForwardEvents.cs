@@ -23,7 +23,7 @@ public class DbOnAfterSaveChanges_ForwardEvents(IServiceProvider serviceProvider
 
         ProcessEntitiesEvent(eventMessage.InsertedEntityEntries, eventMessages, typeof(EntityCreated<>));
 
-        ProcessEntitiesUpdatedEvent(eventMessage.UpdatedEntityEntries, eventMessages, typeof(EntityUpdated<>));
+        ProcessEntitiesEvent(eventMessage.UpdatedEntityEntries, eventMessages, typeof(EntityUpdated<>));
 
         if (eventMessages.Any())
         {
@@ -35,44 +35,27 @@ public class DbOnAfterSaveChanges_ForwardEvents(IServiceProvider serviceProvider
 
     public int Priority => 10_000;
 
+    private const string CastleProxies = "Castle.Proxies.";
 
-    private void ProcessEntitiesEvent(EntityEntry[] entityEntries, List<IEventMessage> tasksList, Type eventType)
+
+    private void ProcessEntitiesEvent(EntityEntry[] entityEntries, List<IEventMessage> eventMessages, Type eventType)
     {
-        var entityTypes = entityEntries.Select(entry => entry.Entity.GetType())
-                                       .Distinct()
-                                       .ToArray();
-
-        foreach (var entityType in entityTypes)
+        if (!entityEntries.Any())
         {
-            var eventMessageType = eventType.MakeGenericType(entityType);
-
-            var entries = entityEntries.Where(entry => entry.Entity.GetType() == entityType)
-                                       .ToArray();
-
-            foreach (var record in entries)
-            {
-                if (Activator.CreateInstance(eventMessageType,
-                                             record.Entity,
-                                             _currentLoggedInUserResolver?.CurrentUserId,
-                                             _currentLoggedInUserResolver?.CurrentUserName) is IEventMessage
-                    entityEventMsg)
-                {
-                    tasksList.Add(entityEventMsg);
-                }
-            }
+            return;
         }
-    }
 
-
-    private void ProcessEntitiesUpdatedEvent(EntityEntry[] entityEntries, List<IEventMessage> tasksList, Type eventType)
-    {
         var entityTypes = entityEntries.Select(entry => entry.Entity.GetType())
                                        .Distinct()
                                        .ToArray();
 
         foreach (var entityType in entityTypes)
         {
-            var eventMessageType = eventType.MakeGenericType(entityType);
+            var actualEntityType = entityType.FullName?.StartsWith(CastleProxies) == true
+                                       ? entityType.BaseType
+                                       : entityType;
+
+            var eventMessageType = eventType.MakeGenericType(actualEntityType!);
 
             var entries = entityEntries.Where(entry => entry.Entity.GetType() == entityType)
                                        .ToArray();
@@ -85,7 +68,7 @@ public class DbOnAfterSaveChanges_ForwardEvents(IServiceProvider serviceProvider
                                              _currentLoggedInUserResolver?.CurrentUserName) is IEventMessage
                     entityEventMsg)
                 {
-                    tasksList.Add(entityEventMsg);
+                    eventMessages.Add(entityEventMsg);
                 }
             }
         }

@@ -1,37 +1,10 @@
-﻿using DotNetBrightener.DataAccess.Events;
-using DotNetBrightener.DataAccess.Services;
-using DotNetBrightener.Plugins.EventPubSub;
+﻿using DotNetBrightener.DataAccess.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NUnit.Framework;
-using System.Reflection;
 
 namespace DotNetBrightener.DataAccess.EF.Tests;
-
-public class TestEntityOnCreatedEventHandler: IEventHandler<EntityCreated<TestEntity>>
-{
-    public int Priority => 100;
-    private readonly TestDbContext _dbContext;
-
-    public TestEntityOnCreatedEventHandler(TestDbContext dbContext)
-    {
-        _dbContext = dbContext;
-    }
-
-    public async Task<bool> HandleEvent(EntityCreated<TestEntity> eventMessage)
-    {
-        Assert.That(eventMessage.Entity, Is.Not.Null);
-
-        eventMessage.Entity.Name = $"{eventMessage.Entity.Name}_Updated by event handler";
-
-        _dbContext.Set<TestEntity>().Update(eventMessage.Entity);
-        await _dbContext.SaveChangesAsync();
-
-        return true;
-    }
-}
-
 
 internal class EfRepositoryTest
 {
@@ -82,7 +55,48 @@ internal class EfRepositoryTest
             var serviceProvider = serviceScope.ServiceProvider;
             var repository      = serviceProvider.GetRequiredService<IRepository>();
 
+            repository.Insert(new TestEntity
+            {
+                Name = "Name1"
+            });
+            repository.CommitChanges();
+        }
+
+        using (var serviceScope = host.Services.CreateScope())
+        {
+            var serviceProvider = serviceScope.ServiceProvider;
+            var repository      = serviceProvider.GetRequiredService<IRepository>();
+
+            var firstEntity = repository.GetFirst<TestEntity>(_ => true);
+            Assert.That(firstEntity.Name, Is.EqualTo("Name1_Updated by event handler"));
+        }
+    }
+
+
+    [Test]
+    public async Task Update_ShouldExecuteSuccessfully()
+    {
+        var host = ConfigureServices((services) =>
+        {
+        });
+
+        using (var serviceScope = host.Services.CreateScope())
+        {
+            var serviceProvider = serviceScope.ServiceProvider;
+            var repository      = serviceProvider.GetRequiredService<IRepository>();
+
             repository.Insert(new TestEntity { Name = "Name1" });
+            repository.CommitChanges();
+        }
+
+        using (var serviceScope = host.Services.CreateScope())
+        {
+            var serviceProvider = serviceScope.ServiceProvider;
+            var repository      = serviceProvider.GetRequiredService<IRepository>();
+
+            var firstEntity = repository.GetFirst<TestEntity>(_ => true);
+            firstEntity.Name = "Name1_Updated";
+            repository.Update(firstEntity);
             repository.CommitChanges();
         }
         
@@ -92,10 +106,106 @@ internal class EfRepositoryTest
             var repository      = serviceProvider.GetRequiredService<IRepository>();
 
             var firstEntity = repository.GetFirst<TestEntity>(_ => true);
-            Assert.That(firstEntity.Name, Is.EqualTo("Name1_Updated by event handler"));
+            Assert.That(firstEntity.Name, Is.EqualTo("Name1_Updated_Updated by update event handler"));
+        }
+    }
+
+
+    [Test]
+    public async Task UpdateWithDto_ShouldExecuteSuccessfully()
+    {
+        var host = ConfigureServices((services) =>
+        {
+        });
+
+        using (var serviceScope = host.Services.CreateScope())
+        {
+            var serviceProvider = serviceScope.ServiceProvider;
+            var repository      = serviceProvider.GetRequiredService<IRepository>();
+
+            repository.Insert(new TestEntity { Name = "Name1" });
+            repository.CommitChanges();
         }
 
+        using (var serviceScope = host.Services.CreateScope())
+        {
+            var serviceProvider = serviceScope.ServiceProvider;
+            var repository      = serviceProvider.GetRequiredService<IRepository>();
 
+            var firstEntity = repository.GetFirst<TestEntity>(_ => true);
+            
+            repository.Update(firstEntity, new
+            {
+                Name = "Name1_Updated_From_Logic, "
+            });
+            repository.CommitChanges();
+        }
+        
+        using (var serviceScope = host.Services.CreateScope())
+        {
+            var serviceProvider = serviceScope.ServiceProvider;
+            var repository      = serviceProvider.GetRequiredService<IRepository>();
+
+            var firstEntity = repository.GetFirst<TestEntity>(_ => true);
+            Assert.That(firstEntity.Name, Is.EqualTo("Name1_Updated_From_Logic, _Updated by update event handler"));
+        }
+    }
+
+
+    [Test]
+    public async Task UpdateMany_ShouldExecuteSuccessfully()
+    {
+        var host = ConfigureServices((services) =>
+        {
+        });
+
+        using (var serviceScope = host.Services.CreateScope())
+        {
+            var serviceProvider = serviceScope.ServiceProvider;
+            var repository      = serviceProvider.GetRequiredService<IRepository>();
+
+            repository.Insert(new TestEntity { Name = "Name 1" });
+            repository.Insert(new TestEntity { Name = "Name 2" });
+            repository.Insert(new TestEntity { Name = "Name 3" });
+            repository.Insert(new TestEntity { Name = "Name 4" });
+            repository.Insert(new TestEntity { Name = "Name 5" });
+            repository.Insert(new TestEntity { Name = "To update 1" });
+            repository.Insert(new TestEntity { Name = "To update 2" });
+            repository.Insert(new TestEntity { Name = "To update 3" });
+            repository.CommitChanges();
+        }
+
+        using (var serviceScope = host.Services.CreateScope())
+        {
+            var serviceProvider = serviceScope.ServiceProvider;
+            var repository      = serviceProvider.GetRequiredService<IRepository>();
+
+            var affectedRecords = repository.Update<TestEntity>(entity => entity.Name.StartsWith("To update"),
+                                                                entity => new TestEntity
+                                                                {
+                                                                    Name = entity
+                                                                          .Name.Replace("_Updated by event handler", "")
+                                                                          .Replace("To update", "Already Updated")
+                                                                });
+
+            Assert.That(affectedRecords, Is.EqualTo(3));
+        }
+        
+        using (var serviceScope = host.Services.CreateScope())
+        {
+            var serviceProvider = serviceScope.ServiceProvider;
+            var repository      = serviceProvider.GetRequiredService<IRepository>();
+
+            var updatedEntities = repository.Fetch<TestEntity>(_ => _.Name.StartsWith("Already Updated"))
+                                            .ToArray();
+
+            int index = 1;
+            foreach (var record in updatedEntities)
+            {
+                Assert.That(record, Is.Not.Null);
+                Assert.That(record.Name, Is.EqualTo($"Already Updated {index++}"));
+            }
+        }
     }
 
     [Test]
@@ -177,7 +287,7 @@ internal class EfRepositoryTest
                 new TestEntity {Name = "Name10"}
             };
 
-            repository.InsertMany(entities);
+            repository.BulkInsert(entities);
             repository.CommitChanges();
         }
     }

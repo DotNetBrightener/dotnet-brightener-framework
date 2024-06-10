@@ -155,6 +155,43 @@ public class Repository : IRepository
     }
 
     public virtual void InsertMany<T>(IEnumerable<T> entities)
+        where T : class => InsertManyAsync(entities).Wait();
+
+    public virtual async Task InsertManyAsync<T>(IEnumerable<T> entities) where T : class
+    {
+        var now = DateTimeProvider?.UtcNow ?? DateTime.UtcNow;
+
+        T TransformExpression(T entity)
+        {
+            if (entity is not IAuditableEntity auditableEntity) return entity;
+
+            auditableEntity.CreatedDate = now;
+
+            if (string.IsNullOrEmpty(auditableEntity.CreatedBy))
+                auditableEntity.CreatedBy = CurrentLoggedInUserResolver?.CurrentUserName;
+
+            EventPublisher?.Publish(new EntityCreating<T>
+                            {
+                                UserName = CurrentLoggedInUserResolver?.CurrentUserName,
+                                UserId   = CurrentLoggedInUserResolver?.CurrentUserId,
+                                Entity   = entity
+                            })
+                           .Wait();
+
+            return entity;
+        }
+
+        var entitiesToInserts = entities.Select(TransformExpression)
+                                        .ToList();
+
+        await DbContext.Set<T>()
+                       .AddRangeAsync(entitiesToInserts);
+    }
+
+    public virtual void BulkInsert<T>(IEnumerable<T> entities)
+        where T : class => BulkInsertAsync(entities).Wait();
+
+    public virtual async Task BulkInsertAsync<T>(IEnumerable<T> entities)
         where T : class
     {
         var now = DateTimeProvider?.UtcNow ?? DateTime.UtcNow;
@@ -188,7 +225,7 @@ public class Repository : IRepository
                                   entitiesToInserts.Count,
                                   typeof(T).Name);
 
-            DbContext.BulkCopy(entitiesToInserts);
+            await DbContext.BulkCopyAsync(entitiesToInserts);
         }
         catch (Exception e)
         {
@@ -197,7 +234,8 @@ public class Repository : IRepository
                               entitiesToInserts.Count,
                               typeof(T).Name);
 
-            DbContext.Set<T>().AddRange(entitiesToInserts);
+            await DbContext.Set<T>()
+                           .AddRangeAsync(entitiesToInserts);
         }
     }
 

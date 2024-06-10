@@ -61,13 +61,25 @@ public interface IBaseDataService<TEntity>: IDisposable
     ///     Inserts multiple records of the entity to the database
     /// </summary>
     /// <param name="entities">The records to insert</param>
-    void Insert(IEnumerable<TEntity> entities);
+    void InsertMany(IEnumerable<TEntity> entities);
 
     /// <summary>
     ///     Inserts multiple records of the entity to the database
     /// </summary>
     /// <param name="entities">The records to insert</param>
     Task InsertManyAsync(IEnumerable<TEntity> entities);
+
+    /// <summary>
+    ///     Inserts multiple records of the entity to the database
+    /// </summary>
+    /// <param name="entities">The records to insert</param>
+    void BulkInsert(IEnumerable<TEntity> entities);
+
+    /// <summary>
+    ///     Inserts multiple records of the entity to the database
+    /// </summary>
+    /// <param name="entities">The records to insert</param>
+    Task BulkInsertAsync(IEnumerable<TEntity> entities);
 
     /// <summary>
     ///     Updates a record of the entity to the database

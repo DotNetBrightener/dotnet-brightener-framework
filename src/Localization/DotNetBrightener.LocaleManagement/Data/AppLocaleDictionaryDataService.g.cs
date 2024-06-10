@@ -26,8 +26,6 @@ using LocaleManagement.Entities;
 
 namespace LocaleManagement.Data;
 
-public partial interface IAppLocaleDictionaryDataService : IBaseDataService<AppLocaleDictionary> { }
-
 public partial class AppLocaleDictionaryDataService : BaseDataService<AppLocaleDictionary>, IAppLocaleDictionaryDataService {
     
     internal AppLocaleDictionaryDataService(IRepository repository)

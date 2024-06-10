@@ -1,19 +1,14 @@
-﻿using DotNetBrightener.DataAccess.Models;
+﻿#nullable enable
+using DotNetBrightener.DataAccess.Models;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
-using DotNetBrightener.DataAccess.Attributes;
-using DotNetBrightener.DataAccess.Utils;
 
 namespace DotNetBrightener.DataAccess.Services;
 
-public abstract class BaseDataService<TEntity> : IBaseDataService<TEntity> where TEntity : class, new()
+public abstract class BaseDataService<TEntity>(IRepository repository) : IBaseDataService<TEntity>
+    where TEntity : class, new()
 {
-    protected readonly IRepository Repository;
-
-    protected BaseDataService(IRepository repository)
-    {
-        Repository = repository;
-    }
+    protected readonly IRepository Repository = repository;
 
     public virtual TEntity? Get(Expression<Func<TEntity, bool>> expression)
     {
@@ -63,9 +58,14 @@ public abstract class BaseDataService<TEntity> : IBaseDataService<TEntity> where
         InsertAsync(entity).Wait();
     }
 
-    public virtual void Insert(IEnumerable<TEntity> entities)
+    public virtual void InsertMany(IEnumerable<TEntity> entities)
     {
         InsertManyAsync(entities).Wait();
+    }
+
+    public virtual void BulkInsert(IEnumerable<TEntity> entities)
+    {
+        BulkInsertAsync(entities).Wait();
     }
 
     public virtual async Task InsertAsync(TEntity entity)
@@ -76,7 +76,14 @@ public abstract class BaseDataService<TEntity> : IBaseDataService<TEntity> where
 
     public virtual async Task InsertManyAsync(IEnumerable<TEntity> entities)
     {
-        Repository.InsertMany(entities);
+        await Repository.InsertManyAsync(entities);
+        Repository.CommitChanges();
+    }
+
+
+    public virtual async Task BulkInsertAsync(IEnumerable<TEntity> entities)
+    {
+        await Repository.BulkInsertAsync(entities);
         Repository.CommitChanges();
     }
 
@@ -115,7 +122,7 @@ public abstract class BaseDataService<TEntity> : IBaseDataService<TEntity> where
     }
 
     public virtual async Task DeleteOne(Expression<Func<TEntity, bool>>? filterExpression,
-                                        string                           reason          = null,
+                                        string?                          reason          = null,
                                         bool                             forceHardDelete = false)
     {
         Repository.DeleteOne(filterExpression, reason, forceHardDelete);
@@ -129,7 +136,7 @@ public abstract class BaseDataService<TEntity> : IBaseDataService<TEntity> where
     }
 
     public virtual async Task<int> DeleteMany(Expression<Func<TEntity, bool>>? filterExpression,
-                                              string                           reason          = null,
+                                              string?                          reason          = null,
                                               bool                             forceHardDelete = false)
     {
         int updatedRecords = Repository.DeleteMany(filterExpression, reason, forceHardDelete);
@@ -138,7 +145,7 @@ public abstract class BaseDataService<TEntity> : IBaseDataService<TEntity> where
         return updatedRecords;
     }
 
-    public virtual async Task<int> RestoreMany(Expression<Func<TEntity, bool>> filterExpression)
+    public virtual async Task<int> RestoreMany(Expression<Func<TEntity, bool>>? filterExpression)
     {
         var affectedRecords = Repository.RestoreMany(filterExpression);
         Repository.CommitChanges();

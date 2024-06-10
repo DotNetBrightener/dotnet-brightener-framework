@@ -158,6 +158,22 @@ public interface IRepository : IDisposable
     /// <summary>
     ///     Insert multiple records of type <typeparamref name="T"/> into the database
     /// </summary>
+    /// <typeparam name="T">The type of the records</typeparam>
+    /// <param name="entities">The records to insert into the database</param>
+    void InsertMany<T>(IEnumerable<T> entities)
+        where T : class;
+
+    /// <summary>
+    ///     Insert multiple records of type <typeparamref name="T"/> into the database
+    /// </summary>
+    /// <typeparam name="T">The type of the records</typeparam>
+    /// <param name="entities">The records to insert into the database</param>
+    Task InsertManyAsync<T>(IEnumerable<T> entities)
+        where T : class;
+
+    /// <summary>
+    ///     Bulk Insert multiple records of type <typeparamref name="T"/> into the database
+    /// </summary>
     /// <remarks>
     ///     This method is not working in multi-tenant environment.
     ///     If you need to perform insert multiple records in multi-tenant environment,
@@ -166,8 +182,20 @@ public interface IRepository : IDisposable
     /// </remarks>
     /// <typeparam name="T">The type of the records</typeparam>
     /// <param name="entities">The records to insert into the database</param>
-    void InsertMany<T>(IEnumerable<T> entities)
-        where T : class;
+    void BulkInsert<T>(IEnumerable<T> entities) where T : class;
+
+    /// <summary>
+    ///     Bulk Insert multiple records of type <typeparamref name="T"/> into the database
+    /// </summary>
+    /// <remarks>
+    ///     This method is not working in multi-tenant environment.
+    ///     If you need to perform insert multiple records in multi-tenant environment,
+    ///     consider looping through the records.
+    ///     That will be slower in performance, but will guarantee the tenant for the records are captured properly.
+    /// </remarks>
+    /// <typeparam name="T">The type of the records</typeparam>
+    /// <param name="entities">The records to insert into the database</param>
+    Task BulkInsertAsync<T>(IEnumerable<T> entities) where T : class;
 
     /// <summary>
     ///     Copies the records that match the <paramref name="conditionExpression"/> to the <typeparamref name="TTarget"/>

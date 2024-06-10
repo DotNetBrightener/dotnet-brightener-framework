@@ -26,11 +26,4 @@ using LocaleManagement.Entities;
 
 namespace LocaleManagement.Data;
 
-public partial class DictionaryEntryDataService : BaseDataService<DictionaryEntry>, IDictionaryEntryDataService {
-    
-    internal DictionaryEntryDataService(IRepository repository)
-        : base(repository)
-    {
-    }
-
-}
+public partial interface IDictionaryEntryDataService : IBaseDataService<DictionaryEntry>;
