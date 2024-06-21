@@ -21,10 +21,12 @@ internal class DbContextAfterSaveChanges_StoreTenantMapping(
     public Task<bool> HandleEvent(DbContextAfterSaveChanges eventMessage)
     {
         // ignore if no record being inserted
-        if (eventMessage.InsertedEntityEntries.Length == 0 ||
+        if (eventMessage.InsertedEntityEntries.Count == 0 ||
             // ignore if no tenant mapping is available
             TenantSupportedRepository.HasTenantMapping == false)
+        {
             return Task.FromResult(true);
+        }
 
         var listOfTenantsToLimits = tenantAccessor.CurrentTenantIds.Any()
                                         ? tenantAccessor.CurrentTenantIds
@@ -45,9 +47,9 @@ internal class DbContextAfterSaveChanges_StoreTenantMapping(
                 entityEntry.Entity is not BaseEntity entity)
                 continue;
 
-            var mappings = listOfTenantsToLimits.Select(_ => new TenantEntityMapping
+            var mappings = listOfTenantsToLimits.Select(tenantId => new TenantEntityMapping
             {
-                TenantId   = _,
+                TenantId   = tenantId,
                 EntityId   = entity.Id,
                 EntityType = MultiTenantConfiguration.GetEntityType(entityType)
             });
