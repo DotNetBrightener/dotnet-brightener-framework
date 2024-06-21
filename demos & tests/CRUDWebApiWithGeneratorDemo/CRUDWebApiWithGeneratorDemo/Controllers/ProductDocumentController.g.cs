@@ -29,6 +29,14 @@ using DotNetBrightener.DataAccess.Services;
 using CRUDWebApiWithGeneratorDemo.Services.Data;
 using CRUDWebApiWithGeneratorDemo.Core.Entities;
 
+/****************************************************
+
+This partial class is added with customized document comments that are fit for the linked type ProductDocument.
+
+Any overriden logic should be done in the other part of the file, ProductDocumentController.cs.
+
+****************************************************/
+
 namespace CRUDWebApiWithGeneratorDemo.Controllers;
 
 public partial class ProductDocumentController

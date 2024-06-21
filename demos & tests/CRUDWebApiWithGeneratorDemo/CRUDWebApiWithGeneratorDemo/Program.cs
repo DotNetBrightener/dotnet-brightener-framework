@@ -89,7 +89,7 @@ using (var scope = app.Services.CreateScope())
             categoriesList.Add(productCategory);
         }
 
-        productCategoryService.Insert(categoriesList);
+        productCategoryService.InsertMany(categoriesList);
     }
 
 
@@ -115,7 +115,7 @@ using (var scope = app.Services.CreateScope())
             productsList.Add(product);
         }
 
-        productService.Insert(productsList);
+        productService.InsertMany(productsList);
     }
 
     if (!productDocumentDataService.Fetch().Any())
@@ -139,7 +139,7 @@ using (var scope = app.Services.CreateScope())
             productsList.Add(product);
         }
 
-        productDocumentDataService.Insert(productsList);
+        productDocumentDataService.InsertMany(productsList);
     }
 }
 

@@ -11,8 +11,8 @@ namespace DotNetBrightener.DataAccess.EF.Events;
 /// </summary>
 public class DbContextAfterSaveChanges : IEventMessage
 {
-    public EntityEntry [ ] InsertedEntityEntries { get; set; }
-    public EntityEntry [ ] UpdatedEntityEntries  { get; set; }
-    public string          CurrentUserId         { get; set; }
-    public string          CurrentUserName       { get; set; }
+    public List<EntityEntry> InsertedEntityEntries { get; set; }
+    public List<EntityEntry> UpdatedEntityEntries  { get; set; }
+    public string            CurrentUserId         { get; set; }
+    public string            CurrentUserName       { get; set; }
 }
