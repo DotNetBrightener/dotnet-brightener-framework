@@ -124,6 +124,9 @@ public class Repository : IRepository
     }
 
     public virtual void Insert<T>(T entity)
+        where T : class => InsertAsync<T>(entity).Wait();
+
+    public virtual async Task InsertAsync<T>(T entity)
         where T : class
     {
         if (entity is IAuditableEntity auditableEntity)
@@ -134,23 +137,26 @@ public class Repository : IRepository
                 auditableEntity.CreatedBy = CurrentLoggedInUserResolver?.CurrentUserName;
         }
 
-        EventPublisher?.Publish(new EntityCreating<T>
-                        {
-                            UserName = CurrentLoggedInUserResolver?.CurrentUserName,
-                            UserId   = CurrentLoggedInUserResolver?.CurrentUserId,
-                            Entity   = entity
-                        })
-                       .Wait();
+        if (EventPublisher is not null)
+        {
+            await EventPublisher.Publish(new EntityCreating<T>
+            {
+                UserName = CurrentLoggedInUserResolver?.CurrentUserName,
+                UserId   = CurrentLoggedInUserResolver?.CurrentUserId,
+                Entity   = entity
+            });
+        }
 
         var entityEntry = DbContext.Entry(entity);
 
         if (entityEntry.State != EntityState.Detached)
         {
             entityEntry.State = EntityState.Added;
+            DbContext.Set<T>().Attach(entity);
         }
         else
         {
-            DbContext.Set<T>().Add(entity);
+            await DbContext.Set<T>().AddAsync(entity);
         }
     }
 
@@ -242,11 +248,17 @@ public class Repository : IRepository
     public virtual int CopyRecords<TSource, TTarget>(Expression<Func<TSource, bool>>?   conditionExpression,
                                                      Expression<Func<TSource, TTarget>> copyExpression)
         where TSource : class
+        where TTarget : class => CopyRecordsAsync(conditionExpression, copyExpression).Result;
+
+    public virtual async Task<int> CopyRecordsAsync<TSource, TTarget>(
+        Expression<Func<TSource, bool>>?   conditionExpression,
+        Expression<Func<TSource, TTarget>> copyExpression)
+        where TSource : class
         where TTarget : class
     {
         var query = Fetch(conditionExpression);
 
-        return query.Insert(DbContext.Set<TTarget>().ToLinqToDBTable(), copyExpression);
+        return await query.InsertAsync(DbContext.Set<TTarget>().ToLinqToDBTable(), copyExpression);
     }
 
     public virtual void Update<T>(T entity) where T : class
@@ -454,10 +466,12 @@ public class Repository : IRepository
         return updatedRecords;
     }
 
-    public int CommitChanges()
+    public       int       CommitChanges() => CommitChangesAsync().Result;
+
+    public async Task<int> CommitChangesAsync()
     {
-        EntityEntry[] insertedEntities = [];
-        EntityEntry[] updatedEntities  = [];
+        List<EntityEntry> insertedEntities = [];
+        List<EntityEntry> updatedEntities  = [];
 
         try
         {
@@ -466,9 +480,9 @@ public class Repository : IRepository
                 return 0;
             }
 
-            OnBeforeSaveChanges(out insertedEntities, out updatedEntities);
+            await OnBeforeSaveChanges(insertedEntities,  updatedEntities);
 
-            return DbContext.SaveChanges();
+            return await DbContext.SaveChangesAsync();
         }
         catch (ObjectDisposedException ex)
         {
@@ -486,21 +500,21 @@ public class Repository : IRepository
         }
         finally
         {
-            if (insertedEntities.Length != 0 ||
-                updatedEntities.Length != 0)
+            if (insertedEntities.Count != 0 ||
+                updatedEntities.Count != 0)
+            {
                 OnAfterSaveChanges(insertedEntities, updatedEntities);
+            }
         }
     }
 
 
-    public void OnBeforeSaveChanges(out EntityEntry[] insertedEntities,
-                                    out EntityEntry[] updatedEntities)
+    protected virtual async Task OnBeforeSaveChanges(List<EntityEntry> insertedEntities,
+                                                     List<EntityEntry> updatedEntities)
     {
-        if (!DbContext.ChangeTracker.HasChanges())
+        if (!DbContext.ChangeTracker.HasChanges() ||
+            EventPublisher is null)
         {
-            insertedEntities = [];
-            updatedEntities  = [];
-
             return;
         }
 
@@ -508,27 +522,24 @@ public class Repository : IRepository
                                      .Entries()
                                      .ToArray();
 
-        insertedEntities = entityEntries.Where(e => e.State == EntityState.Added)
-                                        .ToArray();
+        insertedEntities.AddRange(entityEntries.Where(e => e.State == EntityState.Added));
 
-        updatedEntities = entityEntries.Where(e => e.State == EntityState.Modified ||
-                                                   e.State == EntityState.Deleted)
-                                       .ToArray();
+        updatedEntities.AddRange(entityEntries.Where(e => e.State == EntityState.Modified ||
+                                                          e.State == EntityState.Deleted));
 
-        EventPublisher?.Publish(new DbContextBeforeSaveChanges
-                        {
-                            InsertedEntityEntries = insertedEntities,
-                            UpdatedEntityEntries  = updatedEntities,
-                            CurrentUserId         = CurrentLoggedInUserResolver?.CurrentUserId,
-                            CurrentUserName       = CurrentLoggedInUserResolver?.CurrentUserName,
-                        })
-                       .Wait();
+        await EventPublisher.Publish(new DbContextBeforeSaveChanges
+        {
+            InsertedEntityEntries = insertedEntities,
+            UpdatedEntityEntries  = updatedEntities,
+            CurrentUserId         = CurrentLoggedInUserResolver?.CurrentUserId,
+            CurrentUserName       = CurrentLoggedInUserResolver?.CurrentUserName,
+        });
     }
 
-    public void OnAfterSaveChanges(EntityEntry[] insertedEntities, EntityEntry[] updatedEntities)
+    protected virtual void OnAfterSaveChanges(List<EntityEntry> insertedEntities, List<EntityEntry> updatedEntities)
     {
-        if (insertedEntities.Length == 0 &&
-            updatedEntities.Length == 0)
+        if (insertedEntities.Count == 0 &&
+            updatedEntities.Count == 0)
         {
             return;
         }

@@ -15,6 +15,7 @@ public class FirebasePushNotificationProvider(
     public string PushNotificationType => PushNotificationEndpointType.FirebaseCloudMessaging;
 
     private readonly ILogger                          _logger          = logger;
+
     private readonly PushNotificationFirebaseSettings _firebaseSetting = firebaseSetting.Value;
 
     public async Task DeliverNotification(string[] deviceTokens, PushNotificationPayload payload)
@@ -74,6 +75,7 @@ public class FirebasePushNotificationProvider(
     private async Task<string> GetAccessToken(string serviceKeyJson)
     {
         var scopes = "https://www.googleapis.com/auth/firebase.messaging";
+
         var accessToken = await GoogleCredential.FromJson(serviceKeyJson)
                                                 .CreateScoped(scopes)
                                                 .UnderlyingCredential

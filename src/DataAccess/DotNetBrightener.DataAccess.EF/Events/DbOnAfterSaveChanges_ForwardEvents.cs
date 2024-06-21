@@ -38,7 +38,9 @@ public class DbOnAfterSaveChanges_ForwardEvents(IServiceProvider serviceProvider
     private const string CastleProxies = "Castle.Proxies.";
 
 
-    private void ProcessEntitiesEvent(EntityEntry[] entityEntries, List<IEventMessage> eventMessages, Type eventType)
+    private void ProcessEntitiesEvent(List<EntityEntry>   entityEntries,
+                                      List<IEventMessage> eventMessages,
+                                      Type                eventType)
     {
         if (!entityEntries.Any())
         {

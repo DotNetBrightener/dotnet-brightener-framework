@@ -1,12 +1,11 @@
 ﻿namespace DotNetBrightener.PushNotification.FirebaseIntegration.Models;
 
-public class PushNotificationMessageWrapper
+internal class PushNotificationMessageWrapper
 {
     public PushNotificationMessageModel MessageModel { get; set; }
 }
 
-
-public class PushNotificationMessageModel
+internal class PushNotificationMessageModel
 {
     public string                     topic        { get; set; } = null;
     public string                     token        { get; set; }
@@ -14,7 +13,7 @@ public class PushNotificationMessageModel
     public Dictionary<string, object> data         { get; set; }
 }
 
-public class Notification
+internal class Notification
 {
     public string title { get; set; }
 

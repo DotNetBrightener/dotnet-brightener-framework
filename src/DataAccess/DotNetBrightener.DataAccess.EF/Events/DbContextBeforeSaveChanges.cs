@@ -9,10 +9,10 @@ namespace DotNetBrightener.DataAccess.EF.Events;
 ///     <see cref="DbContext.SaveChanges()"/> or
 ///     <see cref="DbContext.SaveChangesAsync(System.Threading.CancellationToken)"/> is executed
 /// </summary>
-public class DbContextBeforeSaveChanges: IEventMessage
+public class DbContextBeforeSaveChanges : IEventMessage
 {
-    public EntityEntry [ ] InsertedEntityEntries { get; set; }
-    public EntityEntry [ ] UpdatedEntityEntries  { get; set; }
-    public string          CurrentUserId         { get; set; }
-    public string          CurrentUserName       { get; set; }
+    public List<EntityEntry> InsertedEntityEntries { get; set; }
+    public List<EntityEntry> UpdatedEntityEntries  { get; set; }
+    public string            CurrentUserId         { get; set; }
+    public string            CurrentUserName       { get; set; }
 }
