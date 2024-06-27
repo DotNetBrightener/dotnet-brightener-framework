@@ -5,8 +5,8 @@ VisualStudioVersion = 17.1.32228.430
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".builds", ".builds", "{ECA8FAA6-A93B-4985-948B-7D8F0BFF9792}"
 	ProjectSection(SolutionItems) = preProject
-		azure-pipelines-alpha.yml = azure-pipelines-alpha.yml
 		azure-pipelines.yml = azure-pipelines.yml
+		azure-pipelines-preview.yml = azure-pipelines-preview.yml
 		Directory.Build.props = Directory.Build.props
 		..\LICENSE = ..\LICENSE
 	EndProjectSection
