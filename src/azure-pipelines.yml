@@ -3,12 +3,11 @@ variables:
   value: 'src/DotNetBrightenerFramework.sln'
 - name: BuildConfiguration
   value: Release
+
 name: 2024.0.14.$(Rev:r)
+
 trigger: none 
-pr:
-  branches:
-    include:
-    - master
+
 jobs:
 - job: Build_Packages
   displayName: Building on self-hosted agent
@@ -42,15 +41,6 @@ jobs:
     inputs:
       projects: $(BuildParameters.RestoreBuildProjects)
       arguments: --configuration $(BuildConfiguration) -p:Version=$(Build.BuildNumber)
-      
-  # - task: ArchiveFiles@2
-  #   displayName: Archive files
-  #   inputs:
-  #     rootFolderOrFile: 'src/nupkg_release'
-  #     includeRootFolder: true
-  #     archiveType: 'zip'
-  #     archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
-  #     replaceExistingArchive: true
   
   - task: PublishBuildArtifacts@1
     displayName: "Archiving Artifact"
