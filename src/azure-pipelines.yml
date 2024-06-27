@@ -5,7 +5,7 @@ variables:
   value: Release
 
 - name: ExtractedBuildNo
-  value: $[replace(replace(variables['System.PullRequest.SourceBranch'], 'releases/', ''), 'preview/', '')]
+  value: $[replace(replace(replace(variables['System.PullRequest.SourceBranch'], 'releases/', ''), 'preview/', ''), 'refs/heads/', '')]
 
 name: $(ExtractedBuildNo)
 
@@ -13,7 +13,7 @@ trigger: none
 
 jobs:
 - job: Build_Packages
-  displayName: Building version $(Build.BuildNumber) using self-hosted agent
+  displayName: Building with self-hosted agent
   pool:
     name: dotnetbrightener-selfhosted
     demands: 

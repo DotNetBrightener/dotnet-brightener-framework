@@ -15,14 +15,14 @@ trigger: none
 
 jobs:
 - job: Build_Packages
-  displayName: Building version $(Build.BuildNumber) using self-hosted agent
+  displayName: Building with self-hosted agent
   pool:
     name: dotnetbrightener-selfhosted
     demands: 
     - agent.name -equals self-hosted
   steps:
   - checkout: self
-    displayName: Checking out code
+    displayName: Checking out $(Build.BuildNumber)
     submodules: true
     persistCredentials: true
 
