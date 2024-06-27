@@ -77,11 +77,11 @@ public abstract class BaseDataService<TEntity>(IRepository repository) : IBaseDa
         return query;
     }
 
-    public virtual void Insert(TEntity entity) => InsertAsync(entity).Wait();
+    public void Insert(TEntity entity) => InsertAsync(entity).Wait();
 
-    public virtual void InsertMany(IEnumerable<TEntity> entities) => InsertManyAsync(entities).Wait();
+    public void InsertMany(IEnumerable<TEntity> entities) => InsertManyAsync(entities).Wait();
 
-    public virtual void BulkInsert(IEnumerable<TEntity> entities) => BulkInsertAsync(entities).Wait();
+    public void BulkInsert(IEnumerable<TEntity> entities) => BulkInsertAsync(entities).Wait();
 
     public virtual async Task InsertAsync(TEntity entity)
     {
@@ -118,10 +118,13 @@ public abstract class BaseDataService<TEntity>(IRepository repository) : IBaseDa
         await Repository.CommitChangesAsync();
     }
 
-    public virtual void UpdateMany(params TEntity[] entities)
+    public void UpdateMany(params TEntity[] entities) 
+        => UpdateManyAsync(entities).Wait();
+
+    public virtual async Task UpdateManyAsync(params TEntity[] entities)
     {
-        Repository.UpdateMany(entities);
-        Repository.CommitChanges();
+        await Repository.UpdateManyAsync(entities);
+        await Repository.CommitChangesAsync();
     }
 
     public virtual async Task UpdateOne(Expression<Func<TEntity, bool>>?   filterExpression,

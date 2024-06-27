@@ -189,6 +189,12 @@ public interface IBaseDataService<TEntity>: IDisposable
     void UpdateMany(params TEntity[] entities);
 
     /// <summary>
+    ///     Updates multiple records of the entity to the database
+    /// </summary>
+    /// <param name="entities">The records to update</param>
+    Task UpdateManyAsync(params TEntity[] entities);
+
+    /// <summary>
     ///     Update the matched record with the given filter expression, expected only one record affected
     /// </summary>
     /// <param name="filterExpression">The expression for selecting the record to update</param>
