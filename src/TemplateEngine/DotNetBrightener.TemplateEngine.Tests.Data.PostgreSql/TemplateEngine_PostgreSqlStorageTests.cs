@@ -1,6 +1,7 @@
 using DotNetBrightener.TemplateEngine.Data.PostgreSql.Data;
 using DotNetBrightener.TemplateEngine.Data.Services;
 using DotNetBrightener.TemplateEngine.Services;
+using DotNetBrightener.TestHelpers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
@@ -9,6 +10,7 @@ using NUnit.Framework;
 
 namespace DotNetBrightener.TemplateEngine.Tests.Data.PostgreSql;
 
+[IgnoreIfRunOnAzureVm]
 [TestFixture]
 public class TemplateEngine_PostgreSqlStorageTests
 {

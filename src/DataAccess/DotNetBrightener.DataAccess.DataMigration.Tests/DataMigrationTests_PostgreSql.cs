@@ -1,4 +1,5 @@
 ﻿using DotNetBrightener.DataAccess.DataMigration.Extensions;
+using DotNetBrightener.TestHelpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -6,6 +7,7 @@ using NUnit.Framework;
 
 namespace DotNetBrightener.DataAccess.DataMigration.Tests;
 
+[IgnoreIfRunOnAzureVm]
 internal class DataMigrationTests_PostgreSql
 {
     private string _connectionString;
