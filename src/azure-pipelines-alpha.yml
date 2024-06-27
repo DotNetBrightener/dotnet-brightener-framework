@@ -3,7 +3,7 @@ variables:
   value: 'src/DotNetBrightenerFramework.sln'
 - name: BuildConfiguration
   value: Release
-name: 2024.0.14.$(Rev:r)-preview
+name: 2024.0.14.$(Rev:r)-preview-$(Build.BuildId)
 trigger: none 
 pr:
   branches:
