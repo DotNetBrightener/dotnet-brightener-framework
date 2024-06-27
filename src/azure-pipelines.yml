@@ -62,4 +62,4 @@ jobs:
        git push --mirror https://$(GithubAccessToken)@github.com/DotNetBrightener/dotnet-brightener-framework
        cd ..
        rm -Recurse -Force dotnet-brightener-framework.git
-    displayName: 'Clone from Azure'
+    displayName: 'Mirror to Github'
