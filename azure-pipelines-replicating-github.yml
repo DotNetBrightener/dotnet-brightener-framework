@@ -1,0 +1,16 @@
+trigger: none 
+
+jobs:
+- job: Replicating_to_Github
+  displayName: Replicating Project to GitHub
+  pool:
+    name: dotnetbrightener-selfhosted
+    demands: 
+    - agent.name -equals self-hosted
+
+  steps:    
+  - task: mirror-git-repository-vsts-task@1
+    inputs:
+      sourceGitRepositoryUri: '$(Build.Repository.Uri)'
+      destinationGitRepositoryUri: 'https://github.com/DotNetBrightener/dotnet-brightener-framework'
+      destinationGitRepositoryPersonalAccessToken: '$(GithubAccessToken)'
