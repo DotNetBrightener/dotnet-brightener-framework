@@ -5,7 +5,7 @@ namespace DotNetBrightener.Infrastructure.Security;
 /// <summary>
 ///     The default claim keys for the user authorization
 /// </summary>
-public class CommonUserClaimKeys
+public static class CommonUserClaimKeys
 {
     /// <summary>
     ///     The identifier of the <see cref="Claim"/> that represents the username

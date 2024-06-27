@@ -15,6 +15,11 @@ public abstract class BaseDataService<TEntity>(IRepository repository) : IBaseDa
         return Repository.Get(expression);
     }
 
+    public virtual async Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> expression)
+    {
+        return await Repository.GetAsync(expression);
+    }
+
     public IQueryable<TEntity> FetchHistory(Expression<Func<TEntity, bool>>? expression = null,
                                             DateTimeOffset?                  from       = null,
                                             DateTimeOffset?                  to         = null)
@@ -29,44 +34,54 @@ public abstract class BaseDataService<TEntity>(IRepository repository) : IBaseDa
         return Repository.Fetch(expression);
     }
 
+    public virtual IQueryable<TResult> Fetch<TResult>(Expression<Func<TEntity, bool>>?   expression,
+                                                      Expression<Func<TEntity, TResult>> propertiesPickupExpression)
+    {
+        return Repository.Fetch(expression, propertiesPickupExpression);
+    }
+
+    public virtual async Task<int> CountAsync(Expression<Func<TEntity, bool>>? expression = null)
+    {
+        return await Repository.CountAsync(expression);
+    }
+
+    public virtual async Task<int> CountNonDeletedAsync(Expression<Func<TEntity, bool>>? expression = null)
+    {
+        return await Repository.CountNonDeletedAsync(expression);
+    }
+
     public IQueryable<TEntity> FetchDeletedRecords(Expression<Func<TEntity, bool>>? expression = null)
     {
-        IQueryable<TEntity> query = Repository.Fetch(expression);
-
-        if (typeof(TEntity).HasProperty<bool>(nameof(IAuditableEntity.IsDeleted)))
+        if (!typeof(TEntity).HasProperty<bool>(nameof(IAuditableEntity.IsDeleted)))
         {
-            query = query.Where("IsDeleted == True");
+            throw new
+                InvalidOperationException($"Entity of type {typeof(TEntity).Name} does not have soft-delete capability");
         }
-
-        return query;
+        
+        return Repository.Fetch(expression)
+                         .Where($"{nameof(IAuditableEntity.IsDeleted)} == True");
     }
 
     public IQueryable<TEntity> FetchActive(Expression<Func<TEntity, bool>>? expression = null)
+        => FetchNonDeleted(expression);
+
+    public IQueryable<TEntity> FetchNonDeleted(Expression<Func<TEntity, bool>>? expression = null)
     {
         IQueryable<TEntity> query = Repository.Fetch(expression);
 
         if (typeof(TEntity).HasProperty<bool>(nameof(IAuditableEntity.IsDeleted)))
         {
-            query = query.Where("IsDeleted != True");
+            query = query.Where($"{nameof(IAuditableEntity.IsDeleted)} != True");
         }
 
         return query;
     }
 
-    public virtual void Insert(TEntity entity)
-    {
-        InsertAsync(entity).Wait();
-    }
+    public void Insert(TEntity entity) => InsertAsync(entity).Wait();
 
-    public virtual void InsertMany(IEnumerable<TEntity> entities)
-    {
-        InsertManyAsync(entities).Wait();
-    }
+    public void InsertMany(IEnumerable<TEntity> entities) => InsertManyAsync(entities).Wait();
 
-    public virtual void BulkInsert(IEnumerable<TEntity> entities)
-    {
-        BulkInsertAsync(entities).Wait();
-    }
+    public void BulkInsert(IEnumerable<TEntity> entities) => BulkInsertAsync(entities).Wait();
 
     public virtual async Task InsertAsync(TEntity entity)
     {
@@ -80,42 +95,49 @@ public abstract class BaseDataService<TEntity>(IRepository repository) : IBaseDa
         await Repository.CommitChangesAsync();
     }
 
-
     public virtual async Task BulkInsertAsync(IEnumerable<TEntity> entities)
     {
         await Repository.BulkInsertAsync(entities);
         await Repository.CommitChangesAsync();
     }
 
-    public virtual void Update(TEntity entity)
+    public void Update(TEntity entity) => UpdateAsync(entity).Wait();
+
+    public virtual async Task UpdateAsync(TEntity entity)
     {
-        Repository.Update(entity);
-        Repository.CommitChanges();
+        await Repository.UpdateAsync(entity);
+        await Repository.CommitChangesAsync();
     }
 
-    public virtual void Update(TEntity entity, object dto)
+    public void Update(TEntity entity, object dto, params string[] propertiesToIgnoreUpdate)
+        => UpdateAsync(entity, dto, propertiesToIgnoreUpdate).Wait();
+
+    public virtual async Task UpdateAsync(TEntity entity, object dto, params string[] propertiesToIgnoreUpdate)
     {
-        Repository.Update(entity, dto);
-        Repository.CommitChanges();
+        await Repository.UpdateAsync(entity, dto, propertiesToIgnoreUpdate);
+        await Repository.CommitChangesAsync();
     }
 
-    public virtual void UpdateMany(params TEntity[] entities)
+    public void UpdateMany(params TEntity[] entities) 
+        => UpdateManyAsync(entities).Wait();
+
+    public virtual async Task UpdateManyAsync(params TEntity[] entities)
     {
-        Repository.UpdateMany(entities);
-        Repository.CommitChanges();
+        await Repository.UpdateManyAsync(entities);
+        await Repository.CommitChangesAsync();
     }
 
     public virtual async Task UpdateOne(Expression<Func<TEntity, bool>>?   filterExpression,
                                         Expression<Func<TEntity, TEntity>> updateExpression)
     {
-        Repository.Update(filterExpression, updateExpression, 1);
+        await Repository.UpdateAsync(filterExpression, updateExpression, 1);
         await Repository.CommitChangesAsync();
     }
 
     public virtual async Task<int> UpdateMany(Expression<Func<TEntity, bool>>?   filterExpression,
                                               Expression<Func<TEntity, TEntity>> updateExpression)
     {
-        var affectedRecords = Repository.Update(filterExpression, updateExpression);
+        var affectedRecords = await Repository.UpdateAsync(filterExpression, updateExpression);
         await Repository.CommitChangesAsync();
 
         return affectedRecords;
@@ -125,13 +147,13 @@ public abstract class BaseDataService<TEntity>(IRepository repository) : IBaseDa
                                         string?                          reason          = null,
                                         bool                             forceHardDelete = false)
     {
-        Repository.DeleteOne(filterExpression, reason, forceHardDelete);
+        await Repository.DeleteOneAsync(filterExpression, reason, forceHardDelete);
         await Repository.CommitChangesAsync();
     }
 
     public virtual async Task RestoreOne(Expression<Func<TEntity, bool>>? filterExpression)
     {
-        Repository.RestoreOne(filterExpression);
+        await Repository.RestoreOneAsync(filterExpression);
         await Repository.CommitChangesAsync();
     }
 
@@ -139,7 +161,7 @@ public abstract class BaseDataService<TEntity>(IRepository repository) : IBaseDa
                                               string?                          reason          = null,
                                               bool                             forceHardDelete = false)
     {
-        int updatedRecords = Repository.DeleteMany(filterExpression, reason, forceHardDelete);
+        int updatedRecords = await Repository.DeleteManyAsync(filterExpression, reason, forceHardDelete);
         await Repository.CommitChangesAsync();
 
         return updatedRecords;
@@ -147,7 +169,7 @@ public abstract class BaseDataService<TEntity>(IRepository repository) : IBaseDa
 
     public virtual async Task<int> RestoreMany(Expression<Func<TEntity, bool>>? filterExpression)
     {
-        var affectedRecords = Repository.RestoreMany(filterExpression);
+        var affectedRecords = await Repository.RestoreManyAsync(filterExpression);
         await Repository.CommitChangesAsync();
 
         return affectedRecords;

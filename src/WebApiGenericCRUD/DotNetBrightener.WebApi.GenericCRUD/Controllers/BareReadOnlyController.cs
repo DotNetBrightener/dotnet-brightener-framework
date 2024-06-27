@@ -135,7 +135,7 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
 
         var entitiesQuery = currentRequestQueryStrings.DeletedRecordsOnly
                                 ? DataService.FetchDeletedRecords(DefaultQuery)
-                                : DataService.FetchActive(DefaultQuery);
+                                : DataService.FetchNonDeleted(DefaultQuery);
 
         var result = await GetListResult(entitiesQuery,
                                          EntityIdColumnName,
@@ -182,7 +182,7 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
 
         var entityItemQuery = currentRequestQueryStrings.DeletedRecordsOnly
                                   ? DataService.FetchDeletedRecords(DefaultQuery)
-                                  : DataService.FetchActive(DefaultQuery);
+                                  : DataService.FetchNonDeleted(DefaultQuery);
 
         entityItemQuery = entityItemQuery.Where(expression);
 

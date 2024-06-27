@@ -3,13 +3,11 @@ variables:
   value: 'src/DotNetBrightenerFramework.sln'
 - name: BuildConfiguration
   value: Release
-name: 2024.0.14.$(Rev:r)-preview
+
+name: 2024.0.14.4-preview-$(Rev:r)
+
 trigger: none 
-pr:
-  branches:
-    include:
-    - release/alpha
-    - release/preview
+
 jobs:
 - job: Build_Packages
   displayName: Building on self-hosted agent
@@ -22,42 +20,47 @@ jobs:
     displayName: Checking out for building version $(Build.BuildNumber)
     submodules: true
     persistCredentials: true
+
   - task: UseDotNet@2
     displayName: Ensure .NET Core SDK Installed
     inputs:
       version: 8.x
       performMultiLevelLookup: true
+
   - task: DotNetCoreCLI@2
     displayName: Restore Packages
     inputs:
       command: restore
       projects: $(BuildParameters.RestoreBuildProjects)
+
   - task: DotNetCoreCLI@2
     displayName: Test
     inputs:
       command: test
       projects: $(BuildParameters.RestoreBuildProjects)
       arguments: -p:GeneratePackageOnBuild=false --configuration $(BuildConfiguration)
+
   - task: DotNetCoreCLI@2
     displayName: Building version $(Build.BuildNumber)
     inputs:
       projects: $(BuildParameters.RestoreBuildProjects)
       arguments: --configuration $(BuildConfiguration) -p:Version=$(Build.BuildNumber)
-  - task: ArchiveFiles@2
-    displayName: Archive files
+  
+  - task: PublishBuildArtifacts@1
+    displayName: "Archiving Artifact"
     inputs:
-      rootFolderOrFile: 'src/nupkg_release'
-      includeRootFolder: true
-      archiveType: 'zip'
-      archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
-      replaceExistingArchive: true
-  - task: NuGetCommand@2
-    displayName: Push to Nuget
-    inputs:
-      command: 'push'
-      packagesToPush: 'src/nupkg_release/*.nupkg'
-      nuGetFeedType: 'external'
-      publishFeedCredentials: 'DotNetBrightener Nuget'
+      PathtoPublish: 'src/nupkg_release'
+      ArtifactName: 'dnb-framework'
+      publishLocation: 'Container'
+
+  # - task: NuGetCommand@2
+  #   displayName: Push to Nuget
+  #   inputs:
+  #     command: 'push'
+  #     packagesToPush: 'src/nupkg_release/*.nupkg'
+  #     nuGetFeedType: 'external'
+  #     publishFeedCredentials: 'DotNetBrightener Nuget'
+
   - script: |
       git config --global user.name "Automation Build Service"
       git config --global user.email "autobuild@dotnetbrightener.com"

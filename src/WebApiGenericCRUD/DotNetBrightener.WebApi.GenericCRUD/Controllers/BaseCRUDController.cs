@@ -79,31 +79,27 @@ public abstract class BaseCRUDController<TEntityType>(IBaseDataService<TEntityTy
 
         var entityToUpdate = HttpContext.ObtainRequestBodyAsJObject();
 
-        DataService.Update(entity, entityToUpdate);
+        await DataService.UpdateAsync(entity, entityToUpdate);
 
         await PostUpdateEntity(entity);
 
-        if (entity is BaseEntity baseEntity)
+        if (entity is IAuditableEntity auditableEntity)
         {
-            if (entity is IAuditableEntity auditableEntity)
-            {
-                return StatusCode((int)HttpStatusCode.OK,
-                                  new
-                                  {
-                                      EntityId = baseEntity.Id,
-                                      auditableEntity.ModifiedDate,
-                                      auditableEntity.ModifiedBy
-                                  });
-            }
-
             return StatusCode((int)HttpStatusCode.OK,
                               new
                               {
-                                  EntityId = baseEntity.Id
+                                  EntityId = id,
+                                  auditableEntity.ModifiedDate,
+                                  auditableEntity.ModifiedBy
                               });
         }
 
-        return StatusCode((int)HttpStatusCode.OK);
+        return StatusCode((int)HttpStatusCode.OK,
+                          new
+                          {
+                              EntityId = id
+                          });
+
     }
 
     /// <summary>

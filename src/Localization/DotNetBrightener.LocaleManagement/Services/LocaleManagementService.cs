@@ -73,8 +73,8 @@ public class LocaleManagementService : ILocaleManagementService
     private Result<Dictionary<string, string>>
         InternalFetchDictionaryByAppIdAndLocaleId(string appId, CultureInfo culture)
     {
-        var query = _dictionaryEntryDataService.FetchActive(_ => _.AppLocaleDictionary.AppUniqueId == appId &&
-                                                                 _.AppLocaleDictionary.LocaleCode == culture.Name);
+        var query = _dictionaryEntryDataService.FetchNonDeleted(e => e.AppLocaleDictionary.AppUniqueId == appId &&
+                                                                     e.AppLocaleDictionary.LocaleCode == culture.Name);
 
         if (!query.Any())
         {
@@ -96,7 +96,7 @@ public class LocaleManagementService : ILocaleManagementService
             return new LocaleNotSupportedError();
         }
 
-        AppLocaleDictionary? sourceLocale = null;
+        AppLocaleDictionary sourceLocale = null;
 
         if (!string.IsNullOrEmpty(createRequest.SourceLocale))
         {
@@ -110,12 +110,11 @@ public class LocaleManagementService : ILocaleManagementService
             }
         }
 
-        Expression<Func<AppLocaleDictionary, bool>>? queryExpression;
-
-        queryExpression = ad =>
-            ad.AppUniqueId == createRequest.AppId &&
-            ad.LanguageCode == createRequest.LanguageCode &&
-            ad.CountryCode == createRequest.CountryCode;
+        Expression<Func<AppLocaleDictionary, bool>> queryExpression =
+            ad =>
+                ad.AppUniqueId == createRequest.AppId &&
+                ad.LanguageCode == createRequest.LanguageCode &&
+                ad.CountryCode == createRequest.CountryCode;
 
         var dictionaryEntries    = new Dictionary<string, string>();
         var newDictionaryEntries = new List<DictionaryEntry>();
@@ -137,7 +136,7 @@ public class LocaleManagementService : ILocaleManagementService
         }
 
         var existingLocalizationsForApp = _appLocaleDictionaryDataService
-                                         .FetchActive(ad => ad.AppUniqueId == createRequest.AppId)
+                                         .FetchNonDeleted(ad => ad.AppUniqueId == createRequest.AppId)
                                          .ToList();
 
         var isDefault =
@@ -183,7 +182,7 @@ public class LocaleManagementService : ILocaleManagementService
             sourceLocale is not null)
         {
             var sourceDictionaryEntries =
-                _dictionaryEntryDataService.FetchActive(de => de.DictionaryId == sourceLocale.Id)
+                _dictionaryEntryDataService.FetchNonDeleted(de => de.DictionaryId == sourceLocale.Id)
                                            .ToList();
 
             foreach (var sourceDictionaryEntry in sourceDictionaryEntries)
@@ -424,7 +423,7 @@ public class LocaleManagementService : ILocaleManagementService
             }
         }
 
-        var orderedResult = supportedLocales.OrderBy(_ => _.DisplayName)
+        var orderedResult = supportedLocales.OrderBy(l => l.DisplayName)
                                             .ToList();
 
         return orderedResult;
@@ -432,7 +431,7 @@ public class LocaleManagementService : ILocaleManagementService
 
     private List<SupportedLocale> InternalGetSupportedLocalesByAppId(string appId)
     {
-        var query = _appLocaleDictionaryDataService.FetchActive(_ => _.AppUniqueId == appId)
+        var query = _appLocaleDictionaryDataService.FetchNonDeleted(d => d.AppUniqueId == appId)
                                                    .ToList();
 
         var supportedLocales = new List<SupportedLocale>();
@@ -445,7 +444,7 @@ public class LocaleManagementService : ILocaleManagementService
                 regionInfo is null)
             {
                 // clean up the unsupported locales from database
-                _dictionaryEntryDataService.DeleteMany(_ => _.DictionaryId == appLocaleDictionary.Id,
+                _dictionaryEntryDataService.DeleteMany(e => e.DictionaryId == appLocaleDictionary.Id,
                                                        forceHardDelete: true);
 
                 _appLocaleDictionaryDataService.DeleteOne(ad => ad.Id == appLocaleDictionary.Id, forceHardDelete: true);

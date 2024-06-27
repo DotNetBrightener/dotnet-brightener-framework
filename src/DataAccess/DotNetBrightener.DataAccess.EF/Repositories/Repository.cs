@@ -1,23 +1,23 @@
 #nullable enable
 
+using System.Linq.Dynamic.Core;
 using DotNetBrightener.DataAccess.Attributes;
+using DotNetBrightener.DataAccess.Auditing;
 using DotNetBrightener.DataAccess.EF.Events;
 using DotNetBrightener.DataAccess.EF.Extensions;
+using DotNetBrightener.DataAccess.Events;
 using DotNetBrightener.DataAccess.Exceptions;
 using DotNetBrightener.DataAccess.Models;
+using DotNetBrightener.DataAccess.Models.Guards;
 using DotNetBrightener.DataAccess.Services;
 using DotNetBrightener.DataAccess.Utils;
 using DotNetBrightener.Plugins.EventPubSub;
-using LinqToDB;
 using LinqToDB.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
 using System.Reflection;
-using DotNetBrightener.DataAccess.Auditing;
-using DotNetBrightener.DataAccess.Events;
-using DotNetBrightener.DataAccess.Models.Guards;
 
 namespace DotNetBrightener.DataAccess.EF.Repositories;
 
@@ -41,14 +41,19 @@ public class Repository : IRepository
     }
 
     public virtual T? Get<T>(Expression<Func<T, bool>> expression)
-        where T : class
+        where T : class => GetAsync(expression).Result;
+
+    public virtual async Task<T?> GetAsync<T>(Expression<Func<T, bool>> expression) where T : class
     {
-        return Fetch(expression).SingleOrDefault();
+        return await Fetch(expression).SingleOrDefaultAsync();
     }
 
-    public virtual T? GetFirst<T>(Expression<Func<T, bool>> expression) where T : class
+    public virtual T? GetFirst<T>(Expression<Func<T, bool>> expression)
+        where T : class => GetFirstAsync(expression).Result;
+
+    public virtual async Task<T?> GetFirstAsync<T>(Expression<Func<T, bool>> expression) where T : class
     {
-        return Fetch(expression).FirstOrDefault();
+        return await Fetch(expression).FirstOrDefaultAsync();
     }
 
     public virtual TResult? Get<T, TResult>(Expression<Func<T, bool>>?   expression,
@@ -88,9 +93,13 @@ public class Repository : IRepository
 
         var temporalQuery = initialQuery.TemporalAll();
 
-        if (from is not null &&
+        if (from is not null ||
             to is not null)
         {
+            from ??= DateTimeOffset.UnixEpoch;
+
+            to ??= DateTimeOffset.UtcNow;
+
             temporalQuery = initialQuery.TemporalFromTo(from.Value.UtcDateTime, to.Value.UtcDateTime)
                                         .OrderBy(entry =>
                                                      Microsoft.EntityFrameworkCore.EF.Property<DateTime>(entry,
@@ -118,13 +127,43 @@ public class Repository : IRepository
     }
 
     public virtual int Count<T>(Expression<Func<T, bool>>? expression = null)
+        where T : class => CountAsync(expression).Result;
+
+    public virtual async Task<int> CountAsync<T>(Expression<Func<T, bool>>? expression = null)
         where T : class
     {
-        return Fetch(expression).Count();
+        return expression is null
+                   ? await DbContext.Set<T>().CountAsync()
+                   : await DbContext.Set<T>().CountAsync(expression);
+    }
+
+    public virtual async Task<int> CountNonDeletedAsync<T>(Expression<Func<T, bool>>? expression = null) where T : class
+    {
+        if (!typeof(T).HasProperty<bool>(nameof(IAuditableEntity.IsDeleted)))
+        {
+            throw new InvalidOperationException($"Entity of type {typeof(T).Name} does not have soft-delete capability");
+        }
+
+        var query = DbContext.Set<T>().Where($"{nameof(IAuditableEntity.IsDeleted)} != True");
+
+        return expression is null
+                   ? await query.CountAsync()
+                   : await query.CountAsync(expression);
+    }
+
+    public bool Any<T>(Expression<Func<T, bool>>? expression = null)
+        where T : class => AnyAsync(expression).Result;
+
+    public virtual async Task<bool> AnyAsync<T>(Expression<Func<T, bool>>? expression = null) 
+        where T : class
+    {
+        return expression is null
+                   ? await DbContext.Set<T>().AnyAsync()
+                   : await DbContext.Set<T>().AnyAsync(expression);
     }
 
     public virtual void Insert<T>(T entity)
-        where T : class => InsertAsync<T>(entity).Wait();
+        where T : class => InsertAsync(entity).Wait();
 
     public virtual async Task InsertAsync<T>(T entity)
         where T : class
@@ -152,43 +191,37 @@ public class Repository : IRepository
         if (entityEntry.State != EntityState.Detached)
         {
             entityEntry.State = EntityState.Added;
-            DbContext.Set<T>().Attach(entity);
+            DbContext.Set<T>()
+                     .Attach(entity);
         }
         else
         {
-            await DbContext.Set<T>().AddAsync(entity);
+            await DbContext.Set<T>()
+                           .AddAsync(entity);
         }
     }
 
     public virtual void InsertMany<T>(IEnumerable<T> entities)
         where T : class => InsertManyAsync(entities).Wait();
 
-    public virtual async Task InsertManyAsync<T>(IEnumerable<T> entities) where T : class
+    public virtual async Task InsertManyAsync<T>(IEnumerable<T> entities) 
+        where T : class
     {
-        var now = DateTimeProvider?.UtcNow ?? DateTime.UtcNow;
-
-        T TransformExpression(T entity)
-        {
-            if (entity is not IAuditableEntity auditableEntity) return entity;
-
-            auditableEntity.CreatedDate = now;
-
-            if (string.IsNullOrEmpty(auditableEntity.CreatedBy))
-                auditableEntity.CreatedBy = CurrentLoggedInUserResolver?.CurrentUserName;
-
-            EventPublisher?.Publish(new EntityCreating<T>
-                            {
-                                UserName = CurrentLoggedInUserResolver?.CurrentUserName,
-                                UserId   = CurrentLoggedInUserResolver?.CurrentUserId,
-                                Entity   = entity
-                            })
-                           .Wait();
-
-            return entity;
-        }
-
         var entitiesToInserts = entities.Select(TransformExpression)
                                         .ToList();
+
+        if (EventPublisher is not null)
+        {
+            await entitiesToInserts.ParallelForEachAsync(async entity =>
+            {
+                await EventPublisher.Publish(new EntityCreating<T>
+                {
+                    UserName = CurrentLoggedInUserResolver?.CurrentUserName,
+                    UserId   = CurrentLoggedInUserResolver?.CurrentUserId,
+                    Entity   = entity
+                });
+            });
+        }
 
         await DbContext.Set<T>()
                        .AddRangeAsync(entitiesToInserts);
@@ -200,30 +233,22 @@ public class Repository : IRepository
     public virtual async Task BulkInsertAsync<T>(IEnumerable<T> entities)
         where T : class
     {
-        var now = DateTimeProvider?.UtcNow ?? DateTime.UtcNow;
-
-        T TransformExpression(T entity)
-        {
-            if (entity is not IAuditableEntity auditableEntity) return entity;
-
-            auditableEntity.CreatedDate = now;
-
-            if (string.IsNullOrEmpty(auditableEntity.CreatedBy))
-                auditableEntity.CreatedBy = CurrentLoggedInUserResolver?.CurrentUserName;
-
-            EventPublisher?.Publish(new EntityCreating<T>
-                            {
-                                UserName = CurrentLoggedInUserResolver?.CurrentUserName,
-                                UserId   = CurrentLoggedInUserResolver?.CurrentUserId,
-                                Entity   = entity
-                            })
-                           .Wait();
-
-            return entity;
-        }
 
         var entitiesToInserts = entities.Select(TransformExpression)
                                         .ToList();
+
+        if (EventPublisher is not null)
+        {
+            await entitiesToInserts.ParallelForEachAsync(async entity =>
+            {
+                await EventPublisher.Publish(new EntityCreating<T>
+                {
+                    UserName = CurrentLoggedInUserResolver?.CurrentUserName,
+                    UserId   = CurrentLoggedInUserResolver?.CurrentUserId,
+                    Entity   = entity
+                });
+            });
+        }
 
         try
         {
@@ -245,6 +270,18 @@ public class Repository : IRepository
         }
     }
 
+    private T TransformExpression<T>(T entity)
+    {
+        if (entity is not IAuditableEntity auditableEntity) return entity;
+
+        auditableEntity.CreatedDate = DateTimeProvider?.UtcNow ?? DateTime.UtcNow;
+
+        if (string.IsNullOrEmpty(auditableEntity.CreatedBy))
+            auditableEntity.CreatedBy = CurrentLoggedInUserResolver?.CurrentUserName;
+
+        return entity;
+    }
+
     public virtual int CopyRecords<TSource, TTarget>(Expression<Func<TSource, bool>>?   conditionExpression,
                                                      Expression<Func<TSource, TTarget>> copyExpression)
         where TSource : class
@@ -258,35 +295,48 @@ public class Repository : IRepository
     {
         var query = Fetch(conditionExpression);
 
-        return await query.InsertAsync(DbContext.Set<TTarget>().ToLinqToDBTable(), copyExpression);
+        return await LinqToDB.LinqExtensions.InsertAsync(query, DbContext.Set<TTarget>().ToLinqToDBTable(), copyExpression);
     }
 
-    public virtual void Update<T>(T entity) where T : class
+    public virtual void Update<T>(T entity) where T : class => UpdateAsync(entity).Wait();
+
+    public async Task UpdateAsync<T>(T entity) where T : class
     {
-        UpdateWithAuditTrail(entity, auditTrail: null);
+        await UpdateWithAuditTrail(entity, auditTrail: null);
     }
 
-    public virtual void Update<T>(T entity, object dataToUpdate) where T : class
+    public virtual void Update<T>(T entity, object dataToUpdate, params string[] propertiesToIgnoreUpdate)
+        where T : class
+        => UpdateAsync(entity, dataToUpdate, propertiesToIgnoreUpdate).Wait();
+
+    public virtual async Task UpdateAsync<T>(T entity, object dataToUpdate, params string[] propertiesToIgnoreUpdate)
+        where T : class
     {
-        var ignoreProperties = typeof(T).GetPropertiesWithNoClientSideUpdate();
+        var definedIgnoreProperties = typeof(T).GetPropertiesWithNoClientSideUpdate();
+
+        var propertiesToIgnore = definedIgnoreProperties.Concat(propertiesToIgnoreUpdate)
+                                                        .Distinct()
+                                                        .ToArray();
 
         entity.UpdateFromDto(dataToUpdate,
                              out var auditTrail,
-                             ignoreProperties);
+                             propertiesToIgnore);
 
-        UpdateWithAuditTrail(entity, auditTrail);
+        await UpdateWithAuditTrail(entity, auditTrail);
     }
 
-    protected virtual void UpdateWithAuditTrail<T>(T entity, AuditTrail<T>? auditTrail) where T : class
+    protected virtual async Task UpdateWithAuditTrail<T>(T entity, AuditTrail<T>? auditTrail) where T : class
     {
-        EventPublisher?.Publish(new EntityUpdating<T>()
-                        {
-                            UserName   = CurrentLoggedInUserResolver?.CurrentUserName,
-                            UserId     = CurrentLoggedInUserResolver?.CurrentUserId,
-                            Entity     = entity,
-                            AuditTrail = auditTrail
-                        })
-                       .Wait();
+        if (EventPublisher is not null)
+        {
+            await EventPublisher.Publish(new EntityUpdating<T>()
+            {
+                UserName   = CurrentLoggedInUserResolver?.CurrentUserName,
+                UserId     = CurrentLoggedInUserResolver?.CurrentUserId,
+                Entity     = entity,
+                AuditTrail = auditTrail
+            });
+        }
 
         if (entity is BaseEntityWithAuditInfo auditableEntity)
         {
@@ -307,26 +357,36 @@ public class Repository : IRepository
     public virtual void UpdateMany<T>(IEnumerable<T> entities) where T : class => UpdateMany(entities.ToArray());
 
     public virtual void UpdateMany<T>(params T[] entities) where T : class
+        => UpdateManyAsync(entities).Wait();
+
+    public virtual async Task UpdateManyAsync<T>(params T[] entities) where T : class
     {
-        foreach (var entity in entities)
-        {
-            Update(entity);
-        }
+        await entities.ParallelForEachAsync(UpdateAsync);
     }
 
     public virtual int Update<T>(Expression<Func<T, bool>>? conditionExpression,
                                  object                     updateExpression,
                                  int?                       expectedAffectedRows = null)
+        where T : class => UpdateAsync(conditionExpression, updateExpression, expectedAffectedRows).Result;
+
+    public virtual async Task<int> UpdateAsync<T>(Expression<Func<T, bool>>? conditionExpression,
+                                                  object                     updateExpression,
+                                                  int?                       expectedAffectedRows = null)
         where T : class
     {
         var finalUpdateExpression = DataTransferObjectUtils.BuildMemberInitExpressionFromDto<T>(updateExpression);
 
-        return Update(conditionExpression, finalUpdateExpression, expectedAffectedRows);
+        return await UpdateAsync(conditionExpression, finalUpdateExpression, expectedAffectedRows);
     }
 
     public virtual int Update<T>(Expression<Func<T, bool>>? conditionExpression,
                                  Expression<Func<T, T>>     updateExpression,
                                  int?                       expectedAffectedRows = null)
+        where T : class => UpdateAsync(conditionExpression, updateExpression, expectedAffectedRows).Result;
+
+    public virtual async Task<int> UpdateAsync<T>(Expression<Func<T, bool>>? conditionExpression,
+                                                  Expression<Func<T, T>>     updateExpression,
+                                                  int?                       expectedAffectedRows = null)
         where T : class
     {
         var query = conditionExpression is not null
@@ -335,68 +395,119 @@ public class Repository : IRepository
 
         int updatedRecords;
 
-        int PerformUpdate()
-        {
-            var updateQueryBuilder = PrepareUpdatePropertiesBuilder(updateExpression);
-
-            return query.ExecutePatchUpdate(updateQueryBuilder);
-        }
-
         if (expectedAffectedRows.HasValue)
         {
-            using var dbTransaction = DbContext.Database.BeginTransaction();
+            await using var dbTransaction = await DbContext.Database.BeginTransactionAsync();
 
-            updatedRecords = PerformUpdate();
+            updatedRecords = await PerformUpdate(query, updateExpression);
 
             if (updatedRecords != expectedAffectedRows.Value)
             {
-                dbTransaction.Rollback();
+                await dbTransaction.RollbackAsync();
 
                 throw new ExpectedAffectedRecordMismatchException(expectedAffectedRows.Value, updatedRecords);
             }
 
-            dbTransaction.Commit();
+            await dbTransaction.CommitAsync();
         }
         else
         {
-            updatedRecords = PerformUpdate();
+            updatedRecords = await PerformUpdate(query, updateExpression);
         }
 
-        EventPublisher?.Publish(new EntityUpdatedByExpression<T>
+        if (EventPublisher != null)
         {
-            FilterExpression = conditionExpression,
-            UpdateExpression = updateExpression,
-            AffectedRecords  = updatedRecords,
-            UserName         = CurrentLoggedInUserResolver?.CurrentUserName,
-            UserId           = CurrentLoggedInUserResolver?.CurrentUserId
-        });
+            _ = EventPublisher.Publish(new EntityUpdatedByExpression<T>
+            {
+                FilterExpression = conditionExpression,
+                UpdateExpression = updateExpression,
+                AffectedRecords  = updatedRecords,
+                UserName         = CurrentLoggedInUserResolver?.CurrentUserName,
+                UserId           = CurrentLoggedInUserResolver?.CurrentUserId
+            });
+        }
 
         return updatedRecords;
+    }
+
+    private async Task<int> PerformUpdate<T>(IQueryable<T> query, Expression<Func<T, T>> updateExpression)
+        where T : class
+    {
+        var updateQueryBuilder = PrepareUpdatePropertiesBuilder(updateExpression);
+
+        return await query.ExecutePatchUpdateAsync(updateQueryBuilder);
     }
 
     public virtual void DeleteOne<T>(Expression<Func<T, bool>>? conditionExpression,
                                      string?                    reason          = null,
                                      bool                       forceHardDelete = false)
         where T : class
+        => DeleteOneAsync(conditionExpression, reason, forceHardDelete).Wait();
+
+    public virtual async Task DeleteOneAsync<T>(Expression<Func<T, bool>>? conditionExpression,
+                                                string?                    reason          = null,
+                                                bool                       forceHardDelete = false)
+        where T : class
     {
-        using (var dbTransaction = DbContext.Database.BeginTransaction())
+        const string isDeletedFieldName = nameof(IAuditableEntity.IsDeleted);
+
+        forceHardDelete =
+            forceHardDelete || !typeof(T).HasProperty<bool>(isDeletedFieldName);
+
+        if (forceHardDelete)
         {
-            var affectedRecords = DeleteMany(conditionExpression, reason, forceHardDelete);
+            await using var dbTransaction = await DbContext.Database.BeginTransactionAsync();
 
-            if (affectedRecords != 1)
+            var updatedRecords = await Fetch(conditionExpression).ExecuteDeleteAsync();
+
+            if (updatedRecords != 1)
             {
-                dbTransaction.Rollback();
+                await dbTransaction.RollbackAsync();
 
-                throw new ExpectedAffectedRecordMismatchException(1, affectedRecords);
+                throw new ExpectedAffectedRecordMismatchException(1, updatedRecords);
             }
 
-            dbTransaction.Commit();
+            await dbTransaction.CommitAsync();
+        }
+        else
+        {
+            // this will throw exception if no record or more than one record is affected
+            // so don't need to rethrow here
+
+            await UpdateAsync(conditionExpression,
+                              new
+                              {
+                                  IsDeleted   = true,
+                                  DeletedDate = DateTimeOffset.UtcNow,
+                                  DeletedBy = CurrentLoggedInUserResolver
+                                    ?.CurrentUserName,
+                                  DeletionReason = reason
+                              },
+                              expectedAffectedRows: 1);
+        }
+
+        // if no issue thus far, publish the event
+        if (EventPublisher is not null)
+        {
+            _ = EventPublisher.Publish(new EntityDeletedByExpression<T>
+            {
+                DeletionReason   = reason,
+                FilterExpression = conditionExpression,
+                UserName         = CurrentLoggedInUserResolver?.CurrentUserName,
+                UserId           = CurrentLoggedInUserResolver?.CurrentUserId,
+                IsHardDeleted    = forceHardDelete
+            });
         }
     }
 
     public virtual int DeleteMany<T>(Expression<Func<T, bool>>? conditionExpression,
                                      string?                    reason          = null,
                                      bool                       forceHardDelete = false)
+        where T : class => DeleteManyAsync(conditionExpression, reason, forceHardDelete).Result;
+
+    public virtual async Task<int> DeleteManyAsync<T>(Expression<Func<T, bool>>? conditionExpression,
+                                                      string?                    reason          = null,
+                                                      bool                       forceHardDelete = false)
         where T : class
     {
         const string isDeletedFieldName = nameof(IAuditableEntity.IsDeleted);
@@ -405,68 +516,73 @@ public class Repository : IRepository
             forceHardDelete || !typeof(T).HasProperty<bool>(isDeletedFieldName);
 
         var updatedRecords = forceHardDelete
-                                 ? Fetch(conditionExpression).ExecuteDelete()
-                                 : Update(conditionExpression,
-                                          new
-                                          {
-                                              IsDeleted      = true,
-                                              DeletedDate    = DateTimeOffset.UtcNow,
-                                              DeletedBy      = CurrentLoggedInUserResolver?.CurrentUserName,
-                                              DeletionReason = reason
-                                          },
-                                          expectedAffectedRows: null);
+                                 ? await Fetch(conditionExpression).ExecuteDeleteAsync()
+                                 : await UpdateAsync(conditionExpression,
+                                                     new
+                                                     {
+                                                         IsDeleted      = true,
+                                                         DeletedDate    = DateTimeOffset.UtcNow,
+                                                         DeletedBy      = CurrentLoggedInUserResolver?.CurrentUserName,
+                                                         DeletionReason = reason
+                                                     },
+                                                     expectedAffectedRows: null);
 
-
-        EventPublisher?.Publish(new EntityDeletedByExpression<T>
+        if (EventPublisher is not null)
         {
-            DeletionReason   = reason,
-            FilterExpression = conditionExpression,
-            AffectedRecords  = updatedRecords,
-            UserName         = CurrentLoggedInUserResolver?.CurrentUserName,
-            UserId           = CurrentLoggedInUserResolver?.CurrentUserId,
-            IsHardDeleted    = forceHardDelete
-        });
+            _ = EventPublisher.Publish(new EntityDeletedByExpression<T>
+            {
+                DeletionReason   = reason,
+                FilterExpression = conditionExpression,
+                AffectedRecords  = updatedRecords,
+                UserName         = CurrentLoggedInUserResolver?.CurrentUserName,
+                UserId           = CurrentLoggedInUserResolver?.CurrentUserId,
+                IsHardDeleted    = forceHardDelete
+            });
+        }
 
         return updatedRecords;
     }
 
     public void RestoreOne<T>(Expression<Func<T, bool>>? conditionExpression) where T : class
+        => RestoreOneAsync(conditionExpression).Wait();
+
+    public async Task RestoreOneAsync<T>(Expression<Func<T, bool>>? conditionExpression) where T : class
     {
         Guards.AssertEntityRecoverable<T>();
 
-        using var dbTransaction = DbContext.Database.BeginTransaction();
-
-        var affectedRecords = RestoreMany(conditionExpression);
-
-        if (affectedRecords != 1)
-        {
-            dbTransaction.Rollback();
-
-            throw new ExpectedAffectedRecordMismatchException(1, affectedRecords);
-        }
-
-        dbTransaction.Rollback();
+        await UpdateAsync(conditionExpression,
+                          new
+                          {
+                              IsDeleted      = false,
+                              DeletedDate    = default(DateTimeOffset?),
+                              DeletedBy      = default(string),
+                              DeletionReason = default(string)
+                          },
+                          expectedAffectedRows: 1);
     }
 
     public virtual int RestoreMany<T>(Expression<Func<T, bool>>? conditionExpression)
+        where T : class => RestoreManyAsync(conditionExpression).Result;
+
+    public virtual async Task<int> RestoreManyAsync<T>(Expression<Func<T, bool>>? conditionExpression)
         where T : class
     {
         Guards.AssertEntityRecoverable<T>();
 
-        var updatedRecords = Update(conditionExpression,
-                                    new
-                                    {
-                                        IsDeleted      = false,
-                                        DeletedDate    = default(DateTimeOffset?),
-                                        DeletedBy      = default(string),
-                                        DeletionReason = default(string)
-                                    },
-                                    expectedAffectedRows: null);
+        var updatedRecords = await UpdateAsync(conditionExpression,
+                                               new
+                                               {
+                                                   IsDeleted      = false,
+                                                   DeletedDate    = default(DateTimeOffset?),
+                                                   DeletedBy      = default(string),
+                                                   DeletionReason = default(string)
+                                               },
+                                               expectedAffectedRows: null);
 
         return updatedRecords;
     }
 
-    public       int       CommitChanges() => CommitChangesAsync().Result;
+    public int CommitChanges() => CommitChangesAsync().Result;
 
     public async Task<int> CommitChangesAsync()
     {
@@ -480,7 +596,7 @@ public class Repository : IRepository
                 return 0;
             }
 
-            await OnBeforeSaveChanges(insertedEntities,  updatedEntities);
+            await OnBeforeSaveChanges(insertedEntities, updatedEntities);
 
             return await DbContext.SaveChangesAsync();
         }

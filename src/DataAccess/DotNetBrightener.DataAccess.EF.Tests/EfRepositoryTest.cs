@@ -55,11 +55,11 @@ internal class EfRepositoryTest
             var serviceProvider = serviceScope.ServiceProvider;
             var repository      = serviceProvider.GetRequiredService<IRepository>();
 
-            repository.Insert(new TestEntity
+            await repository.InsertAsync(new TestEntity
             {
                 Name = "Name1"
             });
-            repository.CommitChanges();
+            await repository.CommitChangesAsync();
         }
 
         using (var serviceScope = host.Services.CreateScope())
@@ -85,8 +85,8 @@ internal class EfRepositoryTest
             var serviceProvider = serviceScope.ServiceProvider;
             var repository      = serviceProvider.GetRequiredService<IRepository>();
 
-            repository.Insert(new TestEntity { Name = "Name1" });
-            repository.CommitChanges();
+            await repository.InsertAsync(new TestEntity { Name = "Name1" });
+            await repository.CommitChangesAsync();
         }
 
         using (var serviceScope = host.Services.CreateScope())
@@ -96,8 +96,8 @@ internal class EfRepositoryTest
 
             var firstEntity = repository.GetFirst<TestEntity>(_ => true);
             firstEntity.Name = "Name1_Updated";
-            repository.Update(firstEntity);
-            repository.CommitChanges();
+            await repository.UpdateAsync(firstEntity);
+            await repository.CommitChangesAsync();
         }
         
         using (var serviceScope = host.Services.CreateScope())
@@ -123,8 +123,8 @@ internal class EfRepositoryTest
             var serviceProvider = serviceScope.ServiceProvider;
             var repository      = serviceProvider.GetRequiredService<IRepository>();
 
-            repository.Insert(new TestEntity { Name = "Name1" });
-            repository.CommitChanges();
+            await repository.InsertAsync(new TestEntity { Name = "Name1" });
+            await repository.CommitChangesAsync();
         }
 
         using (var serviceScope = host.Services.CreateScope())
@@ -134,11 +134,11 @@ internal class EfRepositoryTest
 
             var firstEntity = repository.GetFirst<TestEntity>(_ => true);
             
-            repository.Update(firstEntity, new
+            await repository.UpdateAsync(firstEntity, new
             {
                 Name = "Name1_Updated_From_Logic, "
             });
-            repository.CommitChanges();
+            await repository.CommitChangesAsync();
         }
         
         using (var serviceScope = host.Services.CreateScope())
@@ -148,6 +148,49 @@ internal class EfRepositoryTest
 
             var firstEntity = repository.GetFirst<TestEntity>(_ => true);
             Assert.That(firstEntity.Name, Is.EqualTo("Name1_Updated_From_Logic, _Updated by update event handler"));
+        }
+    }
+
+
+    [Test]
+    public async Task UpdateWithDto_UsingIgnore_ShouldExecuteSuccessfully()
+    {
+        var host = ConfigureServices((services) =>
+        {
+        });
+
+        using (var serviceScope = host.Services.CreateScope())
+        {
+            var serviceProvider = serviceScope.ServiceProvider;
+            var repository      = serviceProvider.GetRequiredService<IRepository>();
+
+            await repository.InsertAsync(new TestEntity { Name = "Name1", Description = "Original Description"});
+            await repository.CommitChangesAsync();
+        }
+
+        using (var serviceScope = host.Services.CreateScope())
+        {
+            var serviceProvider = serviceScope.ServiceProvider;
+            var repository      = serviceProvider.GetRequiredService<IRepository>();
+
+            var firstEntity = repository.GetFirst<TestEntity>(_ => true);
+            
+            await repository.UpdateAsync(firstEntity, new
+            {
+                Name        = "Name1_Updated_From_Logic, ",
+                Description = "Description_Updated_From_Logic"
+            }, nameof(firstEntity.Description));
+            await repository.CommitChangesAsync();
+        }
+        
+        using (var serviceScope = host.Services.CreateScope())
+        {
+            var serviceProvider = serviceScope.ServiceProvider;
+            var repository      = serviceProvider.GetRequiredService<IRepository>();
+
+            var firstEntity = repository.GetFirst<TestEntity>(_ => true);
+            Assert.That(firstEntity.Name, Is.EqualTo("Name1_Updated_From_Logic, _Updated by update event handler"));
+            Assert.That(firstEntity.Description, Is.EqualTo("Original Description"));
         }
     }
 
@@ -164,15 +207,15 @@ internal class EfRepositoryTest
             var serviceProvider = serviceScope.ServiceProvider;
             var repository      = serviceProvider.GetRequiredService<IRepository>();
 
-            repository.Insert(new TestEntity { Name = "Name 1" });
-            repository.Insert(new TestEntity { Name = "Name 2" });
-            repository.Insert(new TestEntity { Name = "Name 3" });
-            repository.Insert(new TestEntity { Name = "Name 4" });
-            repository.Insert(new TestEntity { Name = "Name 5" });
-            repository.Insert(new TestEntity { Name = "To update 1" });
-            repository.Insert(new TestEntity { Name = "To update 2" });
-            repository.Insert(new TestEntity { Name = "To update 3" });
-            repository.CommitChanges();
+            await repository.InsertAsync(new TestEntity { Name = "Name 1" });
+            await repository.InsertAsync(new TestEntity { Name = "Name 2" });
+            await repository.InsertAsync(new TestEntity { Name = "Name 3" });
+            await repository.InsertAsync(new TestEntity { Name = "Name 4" });
+            await repository.InsertAsync(new TestEntity { Name = "Name 5" });
+            await repository.InsertAsync(new TestEntity { Name = "To update 1" });
+            await repository.InsertAsync(new TestEntity { Name = "To update 2" });
+            await repository.InsertAsync(new TestEntity { Name = "To update 3" });
+            await repository.CommitChangesAsync();
         }
 
         using (var serviceScope = host.Services.CreateScope())
