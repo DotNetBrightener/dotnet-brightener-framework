@@ -4,38 +4,45 @@ variables:
 - name: BuildConfiguration
   value: Release
 
-name: 2024.0.14.$(Rev:r)
+- name: ExtractedBuildNo
+  value: $[replace(replace(variables['System.PullRequest.SourceBranch'], 'releases/', ''), 'preview/', '')]
+
+name: $(ExtractedBuildNo)
 
 trigger: none 
 
 jobs:
 - job: Build_Packages
-  displayName: Building on self-hosted agent
+  displayName: Building version $(Build.BuildNumber) using self-hosted agent
   pool:
     name: dotnetbrightener-selfhosted
     demands: 
     - agent.name -equals self-hosted
   steps:
   - checkout: self
-    displayName: Checking out for building version $(Build.BuildNumber)
+    displayName: Checking out code
     submodules: true
     persistCredentials: true
+
   - task: UseDotNet@2
     displayName: Ensure .NET Core SDK Installed
     inputs:
       version: 8.x
       performMultiLevelLookup: true
+
   - task: DotNetCoreCLI@2
     displayName: Restore Packages
     inputs:
       command: restore
       projects: $(BuildParameters.RestoreBuildProjects)
+
   - task: DotNetCoreCLI@2
     displayName: Test
     inputs:
       command: test
       projects: $(BuildParameters.RestoreBuildProjects)
       arguments: -p:GeneratePackageOnBuild=false --configuration $(BuildConfiguration)
+
   - task: DotNetCoreCLI@2
     displayName: Building version $(Build.BuildNumber)
     inputs:
@@ -48,19 +55,3 @@ jobs:
       PathtoPublish: 'src/nupkg_release'
       ArtifactName: 'dnb-framework'
       publishLocation: 'Container'
-
-  # - task: NuGetCommand@2
-  #   displayName: Push to Nuget
-  #   inputs:
-  #     command: 'push'
-  #     packagesToPush: 'src/nupkg_release/*.nupkg'
-  #     nuGetFeedType: 'external'
-  #     publishFeedCredentials: 'DotNetBrightener Nuget'
-
-  - script: |
-      git config --global user.name "Automation Build Service"
-      git config --global user.email "autobuild@dotnetbrightener.com"
-      git tag -a $(Build.BuildNumber) -m "Build Number $(Build.BuildNumber)"
-      git push origin $(Build.BuildNumber)
-    workingDirectory: $(Build.SourcesDirectory)
-    displayName: Setting Tag name $(Build.BuildNumber)

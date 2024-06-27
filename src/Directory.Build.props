@@ -26,22 +26,22 @@
 		<VerSuf></VerSuf>
 	</PropertyGroup>
 
+	<!-- Version settings for Debugging -->
+	<PropertyGroup Condition="'$(Configuration)' != 'Release'">
+		<VerSuf>preview.local</VerSuf>
+	</PropertyGroup>
+
 	<!-- Version settings -->
 	<PropertyGroup>
 		<FileVersionPotion>$([System.DateTime]::UtcNow.DayOfYear)$([System.DateTime]::UtcNow.ToString(HH))</FileVersionPotion>
-		<BuildNumber Condition="'$(BuildNumber)' == ''">$([System.DateTime]::UtcNow.ToString(yyMMddHH))</BuildNumber>
+		<BuildNumber Condition="'$(BuildNumber)' == ''">1</BuildNumber>
 
-		<VersionPrefix>2024.0.14.$(FileVersionPotion)</VersionPrefix>
+		<VersionPrefix>2024.0.14.5</VersionPrefix>
 
 		<AssemblyVersion>$(VersionPrefix)</AssemblyVersion>
 		<FileVersion>$(VersionPrefix)</FileVersion>
 
 		<VersionSuffix Condition="'$(VerSuf)' != '' AND '$(BuildNumber)' != ''">$(VerSuf)-$(BuildNumber)</VersionSuffix>
-	</PropertyGroup>
-
-	<!-- Version settings for Debugging -->
-	<PropertyGroup Condition="'$(Configuration)' != 'Release'">
-		<VerSuf>alpha</VerSuf>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)'=='Release'">
