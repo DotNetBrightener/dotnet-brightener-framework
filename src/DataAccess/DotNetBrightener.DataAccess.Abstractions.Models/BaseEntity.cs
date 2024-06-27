@@ -31,7 +31,7 @@ public abstract class BaseEntity: BaseEntity<long>
 /// </summary>
 public abstract class GuidBaseEntity: BaseEntity<Guid>
 {
-    public GuidBaseEntity()
+    protected GuidBaseEntity()
     {
         Id = Guid.NewGuid();
     }

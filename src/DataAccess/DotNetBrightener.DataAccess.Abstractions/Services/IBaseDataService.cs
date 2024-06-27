@@ -7,9 +7,16 @@ public interface IBaseDataService<TEntity>: IDisposable
     /// <summary>
     ///     Returns a specific record that matches the given expression
     /// </summary>
-    /// <param name="expression">The condition to fetch the record</param>
+    /// <param name="expression">The condition to retrieve the record</param>
     /// <returns>The entity record, if matched, otherwise, <c>null</c></returns>
     TEntity? Get(Expression<Func<TEntity, bool>> expression);
+
+    /// <summary>
+    ///     Returns a specific record that matches the given expression
+    /// </summary>
+    /// <param name="expression">The condition to retrieve the record</param>
+    /// <returns>The entity record, if matched, otherwise, <c>null</c></returns>
+    Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> expression);
 
     /// <summary>
     ///     Generates a fetch query to the given history table of the entity, optionally provides the condition for filtering
@@ -25,9 +32,51 @@ public interface IBaseDataService<TEntity>: IDisposable
     /// <summary>
     ///     Generates a fetch query to the given entity table, optionally provides the condition for filtering
     /// </summary>
-    /// <param name="expression">The condition for filtering records in the query</param>
+    /// <param name="expression">The condition for filtering records</param>
     /// <returns>An IQueryable of the collection of the requested entities</returns>
     IQueryable<TEntity> Fetch(Expression<Func<TEntity, bool>>? expression = null);
+
+    /// <summary>
+    ///     Generates a fetch query to the given entity table, and map it to a DTO using <see cref="propertiesPickupExpression"/>
+    /// </summary>
+    /// <typeparam name="T">
+    ///     The type of the entity
+    /// </typeparam>
+    /// <typeparam name="TResult">
+    ///     The type of the DTO
+    /// </typeparam>
+    /// <param name="expression">
+    ///     The condition for filtering records
+    /// </param>
+    /// <param name="propertiesPickupExpression">
+    ///     The expression describes how to map the entity to the DTO
+    /// </param>
+    /// <returns>
+    ///     An IQueryable of the collection of the mapped DTO records from the requested entities
+    /// </returns>
+    IQueryable<TResult> Fetch<TResult>(Expression<Func<TEntity, bool>>?   expression,
+                                       Expression<Func<TEntity, TResult>> propertiesPickupExpression);
+
+
+    /// <summary>
+    ///     Retrieves the number of records of <typeparamref name="T"/> that satisfies the <paramref name="expression"/>
+    /// </summary>
+    /// <typeparam name="T">The type of entity</typeparam>
+    /// <param name="expression">The expression describes how to pick/filter the records</param>
+    /// <returns>
+    /// The number of records that satisfies the <paramref name="expression"/>
+    /// </returns>
+    Task<int> CountAsync(Expression<Func<TEntity, bool>>? expression = null);
+
+    /// <summary>
+    ///     Retrieves the number of records of <typeparamref name="T"/> that satisfies the <paramref name="expression"/>
+    /// </summary>
+    /// <typeparam name="T">The type of entity</typeparam>
+    /// <param name="expression">The expression describes how to pick/filter the records</param>
+    /// <returns>
+    /// The number of records that satisfies the <paramref name="expression"/>
+    /// </returns>
+    Task<int> CountNonDeletedAsync(Expression<Func<TEntity, bool>>? expression = null);
 
 
     /// <summary>
@@ -41,9 +90,21 @@ public interface IBaseDataService<TEntity>: IDisposable
     /// <summary>
     ///     Generates a fetch query to the given entity table with the non-deleted records, optionally provides the condition for filtering
     /// </summary>
+    /// <remarks>
+    ///     This method is deprecated. Use <see cref="FetchNonDeleted"/> instead.
+    /// </remarks>
     /// <param name="expression">The condition for filtering records in the query</param>
     /// <returns>An IQueryable of the collection of the requested entities, which are not deleted</returns>
+    [Obsolete("Use FetchNonDeleted() method instead")]
     IQueryable<TEntity> FetchActive(Expression<Func<TEntity, bool>>? expression = null);
+
+
+    /// <summary>
+    ///     Generates a fetch query to the given entity table with the non-deleted records, optionally provides the condition for filtering
+    /// </summary>
+    /// <param name="expression">The condition for filtering records in the query</param>
+    /// <returns>An IQueryable of the collection of the requested entities, which are not deleted</returns>
+    IQueryable<TEntity> FetchNonDeleted(Expression<Func<TEntity, bool>>? expression = null);
 
     /// <summary>
     ///     Inserts a new record of the entity to the database
@@ -88,6 +149,12 @@ public interface IBaseDataService<TEntity>: IDisposable
     void Update(TEntity entity);
 
     /// <summary>
+    ///     Updates a record of the entity to the database
+    /// </summary>
+    /// <param name="entity">The record to update</param>
+    Task UpdateAsync(TEntity entity);
+
+    /// <summary>
     ///     Updates the given entity using the provided DTO
     /// </summary>
     /// <param name="entity">
@@ -96,7 +163,24 @@ public interface IBaseDataService<TEntity>: IDisposable
     /// <param name="dto">
     ///     The data-transfer-object to update the entity with
     /// </param>
-    void Update(TEntity entity, object dto);
+    /// <param name="propertiesToIgnoreUpdate">
+    ///     An array of property names to ignore while updating the entity
+    /// </param>
+    void Update(TEntity entity, object dto, params string[] propertiesToIgnoreUpdate);
+
+    /// <summary>
+    ///     Updates the given entity using the provided DTO
+    /// </summary>
+    /// <param name="entity">
+    ///     The record to update
+    /// </param>
+    /// <param name="dto">
+    ///     The data-transfer-object to update the entity with
+    /// </param>
+    /// <param name="propertiesToIgnoreUpdate">
+    ///     An array of property names to ignore while updating the entity
+    /// </param>
+    Task UpdateAsync(TEntity entity, object dto, params string[] propertiesToIgnoreUpdate);
     
     /// <summary>
     ///     Updates multiple records of the entity to the database
