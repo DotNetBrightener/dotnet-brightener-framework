@@ -57,3 +57,11 @@ jobs:
       PathtoPublish: 'src/nupkg_release'
       ArtifactName: 'dnb-framework'
       publishLocation: 'Container'
+      
+  - powershell: |
+       git clone --bare "https://justinchasez04121990:$(AzureAccessToken)@dev.azure.com/justinchasez/DotNet%20Brightener/_git/dotnet-brightener-framework"
+       cd dotnet-brightener-framework.git
+       git push --mirror https://$(GithubAccessToken)@github.com/DotNetBrightener/dotnet-brightener-framework
+       cd ..
+       rm -Recurse -Force dotnet-brightener-framework.git
+    displayName: 'Mirror to Github'
