@@ -387,9 +387,36 @@ public abstract class BareReadOnlyController<TEntityType> : Controller where TEn
     protected virtual async Task<IActionResult> GetListResult<TIn>(IQueryable<TIn>            entitiesQuery,
                                                                    string                     defaultSortColumnName,
                                                                    Dictionary<string, string> filterDictionary,
+                                                                   List<string>               columnsToPick )
+        where TIn : class
+    {
+        return await this.GeneratePagedListResult(entitiesQuery,
+                                                  defaultSortColumnName,
+                                                  filterDictionary,
+                                                  columnsToPick);
+    }
+
+    protected virtual async Task<IActionResult> GetListResult<TIn>(IQueryable<TIn>            entitiesQuery,
+                                                                   string                     defaultSortColumnName,
+                                                                   Dictionary<string, string> filterDictionary,
                                                                    List<string>               columnsToPick,
                                                                    Func<IQueryable<TIn>, IEnumerable<TIn>>
-                                                                       postProcessing = null)
+                                                                       postProcessing)
+        where TIn : class
+    {
+        return await this.GeneratePagedListResult(entitiesQuery,
+                                                  defaultSortColumnName,
+                                                  filterDictionary,
+                                                  columnsToPick,
+                                                  postProcessing);
+    }
+
+    protected virtual async Task<IActionResult> GetListResult<TIn>(IQueryable<TIn>            entitiesQuery,
+                                                                   string                     defaultSortColumnName,
+                                                                   Dictionary<string, string> filterDictionary,
+                                                                   List<string>               columnsToPick,
+                                                                   Func<IQueryable<TIn>, Task<IEnumerable<TIn>>>
+                                                                       postProcessing)
         where TIn : class
     {
         return await this.GeneratePagedListResult(entitiesQuery,

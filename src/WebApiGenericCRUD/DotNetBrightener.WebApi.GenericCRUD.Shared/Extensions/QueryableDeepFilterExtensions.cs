@@ -11,23 +11,18 @@ public static partial class QueryableDeepFilterExtensions
     ///     Add addition query into initial one to order the result, and optionally pagination
     /// </summary>
     /// <param name="entitiesQuery">The initial query</param>
+    /// <param name="filterDictionary"></param>
+    /// <param name="defaultSortPropName"></param>
     /// <returns>
-    ///     The new query with extra operations e.g ordering / pagination from <see cref="filterDictionary"/>
+    ///     The new query with extra operations e.g. ordering / pagination from <see cref="filterDictionary"/>
     /// </returns>
     public static IQueryable<TIn> AddOrderingAndPaginationQuery<TIn>(this IQueryable<TIn>       entitiesQuery,
                                                                      Dictionary<string, string> filterDictionary,
-                                                                     string                     defaultSortPropName,
-                                                                     out int                    pageSize,
-                                                                     out int                    pageIndex,
-                                                                     Func<IQueryable<TIn>, IEnumerable<TIn>>
-                                                                         postProcessing = null)
+                                                                     string                     defaultSortPropName)
         where TIn : class
     {
         var paginationQuery = filterDictionary.ToQueryModel<BaseQueryModel>();
-
-        pageSize  = paginationQuery.PageSize;
-        pageIndex = paginationQuery.PageIndex;
-
+        
         var orderedEntitiesQuery = entitiesQuery.OrderBy(defaultSortPropName.ToMemberAccessExpression<TIn>());
 
         if (paginationQuery.OrderedColumns.Count > 0)
@@ -65,16 +60,11 @@ public static partial class QueryableDeepFilterExtensions
             }
         }
 
-        var itemsToSkip = pageIndex * pageSize;
-        var itemsToTake = pageSize;
+        var itemsToSkip = paginationQuery.PageSize * paginationQuery.PageIndex;
+        var itemsToTake = paginationQuery.PageSize;
 
         var finalDataSetQuery = orderedEntitiesQuery.Skip(itemsToSkip)
                                                     .Take(itemsToTake);
-
-        if (postProcessing != null)
-        {
-            finalDataSetQuery = postProcessing(finalDataSetQuery).AsQueryable();
-        }
 
         return finalDataSetQuery;
     }

@@ -14,3 +14,10 @@ public class PagedCollection<T>
 }
 
 public class PagedCollection : PagedCollection<dynamic> { }
+
+public class Pagination
+{
+    public int PageIndex { get; set; }
+
+    public int PageSize { get; set; }
+}

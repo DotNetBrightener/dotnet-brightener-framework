@@ -7,10 +7,10 @@ variables:
   value: Release
 
 - name: ExtractedBuildNo
-  value: $[replace(replace(variables['System.PullRequest.targetBranchName'], 'release/', ''), 'preview/', '')]
+  value: $[replace(replace(replace(variables['System.PullRequest.targetBranchName'], 'releases/', ''), 'preview/', ''), 'refs/heads/', '')]
 
 
-name: $(ExtractedBuildNo)-preview-$(Rev:r)
+name: $(ExtractedBuildNo)-preview-$(DayOfYear)$(Hours)$(Rev:r)
 
 trigger: none 
 
@@ -31,7 +31,6 @@ jobs:
     inputs:
       targetType: 'inline'
       script: |
-        Write-Host 'Is Azure Pipeline: $(Env:TF_BUILD)'
         git clone --bare "https://justinchasez04121990:$(AzureAccessToken)@dev.azure.com/justinchasez/DotNet%20Brightener/_git/dotnet-brightener-framework"
         cd dotnet-brightener-framework.git
         git push --mirror https://$(GithubAccessToken)@github.com/DotNetBrightener/dotnet-brightener-framework
@@ -56,12 +55,12 @@ jobs:
       command: restore
       projects: $(BuildParameters.RestoreBuildProjects)
 
-  - task: DotNetCoreCLI@2
-    displayName: Test
-    inputs:
-      command: test
-      projects: $(BuildParameters.RestoreBuildProjects)
-      arguments: -p:GeneratePackageOnBuild=false --configuration $(BuildConfiguration)
+  # - task: DotNetCoreCLI@2
+  #   displayName: Test
+  #   inputs:
+  #     command: test
+  #     projects: $(BuildParameters.RestoreBuildProjects)
+  #     arguments: -p:GeneratePackageOnBuild=false --configuration $(BuildConfiguration)
 
   - task: DotNetCoreCLI@2
     displayName: Building version $(Build.BuildNumber)

@@ -7,7 +7,7 @@ variables:
   value: Release
 
 - name: ExtractedBuildNo
-  value: $[replace(replace(replace(variables['System.PullRequest.SourceBranch'], 'releases/', ''), 'preview/', ''), 'refs/heads/', '')]
+  value: $[replace(replace(replace(variables['System.PullRequest.targetBranchName'], 'releases/', ''), 'preview/', ''), 'refs/heads/', '')]
 
 name: $(ExtractedBuildNo)
 
