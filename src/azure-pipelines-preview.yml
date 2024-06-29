@@ -55,12 +55,12 @@ jobs:
       command: restore
       projects: $(BuildParameters.RestoreBuildProjects)
 
-  # - task: DotNetCoreCLI@2
-  #   displayName: Test
-  #   inputs:
-  #     command: test
-  #     projects: $(BuildParameters.RestoreBuildProjects)
-  #     arguments: -p:GeneratePackageOnBuild=false --configuration $(BuildConfiguration)
+  - task: DotNetCoreCLI@2
+    displayName: Test
+    inputs:
+      command: test
+      projects: $(BuildParameters.RestoreBuildProjects)
+      arguments: -p:GeneratePackageOnBuild=false --configuration $(BuildConfiguration)
 
   - task: DotNetCoreCLI@2
     displayName: Building version $(Build.BuildNumber)
