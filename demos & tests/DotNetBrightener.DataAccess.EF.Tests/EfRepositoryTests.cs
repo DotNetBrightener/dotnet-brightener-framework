@@ -54,7 +54,7 @@ public class EfRepositoryTests
         var serviceCollection = new ServiceCollection();
         var configuration = new ConfigurationBuilder().Build();
 
-        serviceCollection.AddEntityFrameworkDataServices<TestDbContext>(new DatabaseConfiguration
+        serviceCollection.AddEFCentralizedDataServices<TestDbContext>(new DatabaseConfiguration
                                                                         {
                                                                             ConnectionString = ConnectionString,
                                                                             DatabaseProvider = DatabaseProvider.Sqlite

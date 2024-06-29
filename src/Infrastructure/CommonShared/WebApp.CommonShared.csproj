@@ -6,15 +6,7 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.6" />
 		<PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.6" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
-		<PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="8.0.6" />
-		<PackageReference Include="NLog.Web.AspNetCore" Version="5.3.11" />
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 		<PackageReference Include="System.Linq.Dynamic.Core" Version="1.4.2" />
-		<PackageReference Include="TimeZoneConverter" Version="6.1.0" />
-		<PackageReference Include="System.Text.Encoding.CodePages" Version="8.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -25,7 +17,6 @@
 		<ProjectReference Include="..\..\Core\LanguageExts\LanguageExts.csproj" />
 		<ProjectReference Include="..\..\Cryptography\DotNetBrightener.CryptoEngine.DependencyInjection\DotNetBrightener.CryptoEngine.DependencyInjection.csproj" />
 		<ProjectReference Include="..\..\Cryptography\DotNetBrightener.CryptoEngine\DotNetBrightener.CryptoEngine.csproj" />
-		<ProjectReference Include="..\..\DataAccess\DotNetBrightener.DataAccess.EF\DotNetBrightener.DataAccess.EF.csproj" />
 		<ProjectReference Include="..\..\EventPubSub\DotNetBrightener.Plugins.EventPubSub.DependencyInjection\DotNetBrightener.Plugins.EventPubSub.DependencyInjection.csproj" />
 		<ProjectReference Include="..\..\EventPubSub\DotNetBrightener.Plugins.EventPubSub\DotNetBrightener.Plugins.EventPubSub.csproj" />
 		<ProjectReference Include="..\..\Security\DotNetBrightener.Infrastructure.Security\DotNetBrightener.Infrastructure.Security.csproj" />

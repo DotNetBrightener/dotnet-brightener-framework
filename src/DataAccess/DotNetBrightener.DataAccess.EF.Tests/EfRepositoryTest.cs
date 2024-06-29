@@ -85,7 +85,10 @@ internal class EfRepositoryTest
             var serviceProvider = serviceScope.ServiceProvider;
             var repository      = serviceProvider.GetRequiredService<IRepository>();
 
-            await repository.InsertAsync(new TestEntity { Name = "Name1" });
+            await repository.InsertAsync(new TestEntity
+            {
+                Name = "Name1"
+            });
             await repository.CommitChangesAsync();
         }
 
@@ -99,7 +102,7 @@ internal class EfRepositoryTest
             await repository.UpdateAsync(firstEntity);
             await repository.CommitChangesAsync();
         }
-        
+
         using (var serviceScope = host.Services.CreateScope())
         {
             var serviceProvider = serviceScope.ServiceProvider;
@@ -123,7 +126,10 @@ internal class EfRepositoryTest
             var serviceProvider = serviceScope.ServiceProvider;
             var repository      = serviceProvider.GetRequiredService<IRepository>();
 
-            await repository.InsertAsync(new TestEntity { Name = "Name1" });
+            await repository.InsertAsync(new TestEntity
+            {
+                Name = "Name1"
+            });
             await repository.CommitChangesAsync();
         }
 
@@ -133,14 +139,15 @@ internal class EfRepositoryTest
             var repository      = serviceProvider.GetRequiredService<IRepository>();
 
             var firstEntity = repository.GetFirst<TestEntity>(_ => true);
-            
-            await repository.UpdateAsync(firstEntity, new
-            {
-                Name = "Name1_Updated_From_Logic, "
-            });
+
+            await repository.UpdateAsync(firstEntity,
+                                         new
+                                         {
+                                             Name = "Name1_Updated_From_Logic, "
+                                         });
             await repository.CommitChangesAsync();
         }
-        
+
         using (var serviceScope = host.Services.CreateScope())
         {
             var serviceProvider = serviceScope.ServiceProvider;
@@ -164,7 +171,11 @@ internal class EfRepositoryTest
             var serviceProvider = serviceScope.ServiceProvider;
             var repository      = serviceProvider.GetRequiredService<IRepository>();
 
-            await repository.InsertAsync(new TestEntity { Name = "Name1", Description = "Original Description"});
+            await repository.InsertAsync(new TestEntity
+            {
+                Name        = "Name1",
+                Description = "Original Description"
+            });
             await repository.CommitChangesAsync();
         }
 
@@ -174,15 +185,17 @@ internal class EfRepositoryTest
             var repository      = serviceProvider.GetRequiredService<IRepository>();
 
             var firstEntity = repository.GetFirst<TestEntity>(_ => true);
-            
-            await repository.UpdateAsync(firstEntity, new
-            {
-                Name        = "Name1_Updated_From_Logic, ",
-                Description = "Description_Updated_From_Logic"
-            }, nameof(firstEntity.Description));
+
+            await repository.UpdateAsync(firstEntity,
+                                         new
+                                         {
+                                             Name        = "Name1_Updated_From_Logic, ",
+                                             Description = "Description_Updated_From_Logic"
+                                         },
+                                         nameof(firstEntity.Description));
             await repository.CommitChangesAsync();
         }
-        
+
         using (var serviceScope = host.Services.CreateScope())
         {
             var serviceProvider = serviceScope.ServiceProvider;
@@ -207,14 +220,38 @@ internal class EfRepositoryTest
             var serviceProvider = serviceScope.ServiceProvider;
             var repository      = serviceProvider.GetRequiredService<IRepository>();
 
-            await repository.InsertAsync(new TestEntity { Name = "Name 1" });
-            await repository.InsertAsync(new TestEntity { Name = "Name 2" });
-            await repository.InsertAsync(new TestEntity { Name = "Name 3" });
-            await repository.InsertAsync(new TestEntity { Name = "Name 4" });
-            await repository.InsertAsync(new TestEntity { Name = "Name 5" });
-            await repository.InsertAsync(new TestEntity { Name = "To update 1" });
-            await repository.InsertAsync(new TestEntity { Name = "To update 2" });
-            await repository.InsertAsync(new TestEntity { Name = "To update 3" });
+            await repository.InsertAsync(new TestEntity
+            {
+                Name = "Name 1"
+            });
+            await repository.InsertAsync(new TestEntity
+            {
+                Name = "Name 2"
+            });
+            await repository.InsertAsync(new TestEntity
+            {
+                Name = "Name 3"
+            });
+            await repository.InsertAsync(new TestEntity
+            {
+                Name = "Name 4"
+            });
+            await repository.InsertAsync(new TestEntity
+            {
+                Name = "Name 5"
+            });
+            await repository.InsertAsync(new TestEntity
+            {
+                Name = "To update 1"
+            });
+            await repository.InsertAsync(new TestEntity
+            {
+                Name = "To update 2"
+            });
+            await repository.InsertAsync(new TestEntity
+            {
+                Name = "To update 3"
+            });
             await repository.CommitChangesAsync();
         }
 
@@ -233,7 +270,7 @@ internal class EfRepositoryTest
 
             Assert.That(affectedRecords, Is.EqualTo(3));
         }
-        
+
         using (var serviceScope = host.Services.CreateScope())
         {
             var serviceProvider = serviceScope.ServiceProvider;
@@ -243,6 +280,7 @@ internal class EfRepositoryTest
                                             .ToArray();
 
             int index = 1;
+
             foreach (var record in updatedEntities)
             {
                 Assert.That(record, Is.Not.Null);
@@ -272,7 +310,7 @@ internal class EfRepositoryTest
             var repository      = serviceProvider.GetRequiredService<IRepository>();
 
             var record = repository.GetFirst<TestEntity>(x => x.Name == "Name1");
-            
+
             Assert.That(record, Is.Not.Null);
             Assert.That(record.IsDeleted, Is.EqualTo(true));
         }
@@ -318,16 +356,46 @@ internal class EfRepositoryTest
 
             var entities = new List<TestEntity>
             {
-                new TestEntity {Name = "Name1"},
-                new TestEntity {Name = "Name2"},
-                new TestEntity {Name = "Name3"},
-                new TestEntity {Name = "Name4"},
-                new TestEntity {Name = "Name5"},
-                new TestEntity {Name = "Name6"},
-                new TestEntity {Name = "Name7"},
-                new TestEntity {Name = "Name8"},
-                new TestEntity {Name = "Name9"},
-                new TestEntity {Name = "Name10"}
+                new TestEntity
+                {
+                    Name = "Name1"
+                },
+                new TestEntity
+                {
+                    Name = "Name2"
+                },
+                new TestEntity
+                {
+                    Name = "Name3"
+                },
+                new TestEntity
+                {
+                    Name = "Name4"
+                },
+                new TestEntity
+                {
+                    Name = "Name5"
+                },
+                new TestEntity
+                {
+                    Name = "Name6"
+                },
+                new TestEntity
+                {
+                    Name = "Name7"
+                },
+                new TestEntity
+                {
+                    Name = "Name8"
+                },
+                new TestEntity
+                {
+                    Name = "Name9"
+                },
+                new TestEntity
+                {
+                    Name = "Name10"
+                }
             };
 
             repository.BulkInsert(entities);
@@ -358,17 +426,17 @@ internal class EfRepositoryTest
         var builder = new HostBuilder()
            .ConfigureServices((hostContext, services) =>
             {
-                services.AddEntityFrameworkDataServices<TestDbContext>(new DatabaseConfiguration
-                                                                       {
-                                                                           ConnectionString = _connectionString,
-                                                                           DatabaseProvider = DatabaseProvider.MsSql
-                                                                       },
-                                                                       hostContext.Configuration,
-                                                                       optionsBuilder =>
-                                                                       {
-                                                                           optionsBuilder
-                                                                              .UseSqlServer(_connectionString);
-                                                                       });
+                services.AddEFCentralizedDataServices<TestDbContext>(new DatabaseConfiguration
+                                                                     {
+                                                                         ConnectionString = _connectionString,
+                                                                         DatabaseProvider = DatabaseProvider.MsSql
+                                                                     },
+                                                                     hostContext.Configuration,
+                                                                     optionsBuilder =>
+                                                                     {
+                                                                         optionsBuilder
+                                                                            .UseSqlServer(_connectionString);
+                                                                     });
 
                 configureServices?.Invoke(services);
             });

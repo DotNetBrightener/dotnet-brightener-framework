@@ -20,6 +20,8 @@ public class Result<TValue> : Result<TValue, Exception>
     public static implicit operator Result<TValue>(TValue value) => new(value);
 
     public static implicit operator Result<TValue>(Exception error) => new(error);
+
+    public static implicit operator TValue(Result<TValue> result) => result.IfFail(default);
 }
 
 /// <summary>
@@ -103,7 +105,8 @@ public class Result<TValue, TError>
     ///     The <typeparamref name="TResult"/> object
     /// </returns>
     public TResult Match<TResult>(Func<TValue, TResult> onSuccess,
-                                  Func<TError, TResult> onFailure) => IsSuccess ? onSuccess(_value!) : onFailure(_error!);
+                                  Func<TError, TResult> onFailure) =>
+        IsSuccess ? onSuccess(_value!) : onFailure(_error!);
 
     public TValue Value => IsSuccess ? _value : default;
 
