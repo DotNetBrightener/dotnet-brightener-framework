@@ -32,7 +32,8 @@ public static class RsaCryptoEngine
 
         if (xmlDoc.DocumentElement!.Name.Equals(nameof(RSAParameters)))
         {
-            parameters = (RSAParameters) new XmlSerializer(typeof(RSAParameters)).Deserialize(new StringReader(xmlContent));
+            parameters =
+                (RSAParameters)new XmlSerializer(typeof(RSAParameters)).Deserialize(new StringReader(xmlContent));
         }
 
         csp.ImportParameters(parameters);
@@ -69,7 +70,8 @@ public static class RsaCryptoEngine
     public static RSACryptoServiceProvider ImportPemPrivateKey(string pem)
     {
         string reformattedPem = pem;
-        if (!reformattedPem.StartsWith("-----BEGIN RSA PRIVATE KEY-----") && 
+
+        if (!reformattedPem.StartsWith("-----BEGIN RSA PRIVATE KEY-----") &&
             !reformattedPem.EndsWith("-----END RSA PRIVATE KEY-----"))
         {
             reformattedPem = "-----BEGIN RSA PRIVATE KEY-----\n";
@@ -84,8 +86,8 @@ public static class RsaCryptoEngine
         }
 
         PemReader pr = new PemReader(new StringReader(reformattedPem));
-        AsymmetricCipherKeyPair KeyPair = (AsymmetricCipherKeyPair) pr.ReadObject();
-        RSAParameters rsaParams = DotNetUtilities.ToRSAParameters((RsaPrivateCrtKeyParameters) KeyPair.Private);
+        AsymmetricCipherKeyPair KeyPair = (AsymmetricCipherKeyPair)pr.ReadObject();
+        RSAParameters rsaParams = DotNetUtilities.ToRSAParameters((RsaPrivateCrtKeyParameters)KeyPair.Private);
 
         RSACryptoServiceProvider csp = new RSACryptoServiceProvider(); // cspParams);
         csp.ImportParameters(rsaParams);
@@ -101,7 +103,9 @@ public static class RsaCryptoEngine
     public static RSACryptoServiceProvider ImportPemPublicKey(string pem)
     {
         string reformattedPem = pem;
-        if (!reformattedPem.StartsWith("-----BEGIN PUBLIC KEY-----") && !reformattedPem.EndsWith("-----END PUBLIC KEY-----"))
+
+        if (!reformattedPem.StartsWith("-----BEGIN PUBLIC KEY-----") &&
+            !reformattedPem.EndsWith("-----END PUBLIC KEY-----"))
         {
             reformattedPem = "-----BEGIN PUBLIC KEY-----\n";
 
@@ -115,8 +119,8 @@ public static class RsaCryptoEngine
         }
 
         PemReader              pr        = new PemReader(new StringReader(reformattedPem));
-        AsymmetricKeyParameter publicKey = (AsymmetricKeyParameter) pr.ReadObject();
-        RSAParameters          rsaParams = DotNetUtilities.ToRSAParameters((RsaKeyParameters) publicKey);
+        AsymmetricKeyParameter publicKey = (AsymmetricKeyParameter)pr.ReadObject();
+        RSAParameters          rsaParams = DotNetUtilities.ToRSAParameters((RsaKeyParameters)publicKey);
 
         RSACryptoServiceProvider csp = new RSACryptoServiceProvider(); // cspParams);
         csp.ImportParameters(rsaParams);
@@ -136,13 +140,13 @@ public static class RsaCryptoEngine
         using (var stream = new MemoryStream())
         {
             var writer = new BinaryWriter(stream);
-            writer.Write((byte) 0x30); // SEQUENCE
+            writer.Write((byte)0x30); // SEQUENCE
 
             using (var innerStream = new MemoryStream())
             {
                 var innerWriter = new BinaryWriter(innerStream);
                 EncodeIntegerBigEndian(innerWriter,
-                                       new byte [ ]
+                                       new byte[]
                                        {
                                            0x00
                                        }); // Version
@@ -154,12 +158,12 @@ public static class RsaCryptoEngine
                 EncodeIntegerBigEndian(innerWriter, parameters.DP);
                 EncodeIntegerBigEndian(innerWriter, parameters.DQ);
                 EncodeIntegerBigEndian(innerWriter, parameters.InverseQ);
-                var length = (int) innerStream.Length;
+                var length = (int)innerStream.Length;
                 EncodeLength(writer, length);
                 writer.Write(innerStream.GetBuffer(), 0, length);
             }
 
-            var base64 = Convert.ToBase64String(stream.GetBuffer(), 0, (int) stream.Length).ToCharArray();
+            var base64 = Convert.ToBase64String(stream.GetBuffer(), 0, (int)stream.Length).ToCharArray();
 
             if (inlineString)
             {
@@ -192,51 +196,51 @@ public static class RsaCryptoEngine
         using (var stream = new MemoryStream())
         {
             var writer = new BinaryWriter(stream);
-            writer.Write((byte) 0x30); // SEQUENCE
+            writer.Write((byte)0x30); // SEQUENCE
 
             using (var innerStream = new MemoryStream())
             {
                 var innerWriter = new BinaryWriter(innerStream);
-                innerWriter.Write((byte) 0x30); // SEQUENCE
+                innerWriter.Write((byte)0x30); // SEQUENCE
                 EncodeLength(innerWriter, 13);
-                innerWriter.Write((byte) 0x06); // OBJECT IDENTIFIER
-                var rsaEncryptionOid = new byte [ ]
+                innerWriter.Write((byte)0x06); // OBJECT IDENTIFIER
+                var rsaEncryptionOid = new byte[]
                 {
                     0x2a, 0x86, 0x48, 0x86, 0xf7, 0x0d, 0x01, 0x01, 0x01
                 };
                 EncodeLength(innerWriter, rsaEncryptionOid.Length);
                 innerWriter.Write(rsaEncryptionOid);
-                innerWriter.Write((byte) 0x05); // NULL
+                innerWriter.Write((byte)0x05); // NULL
                 EncodeLength(innerWriter, 0);
-                innerWriter.Write((byte) 0x03); // BIT STRING
+                innerWriter.Write((byte)0x03); // BIT STRING
 
                 using (var bitStringStream = new MemoryStream())
                 {
                     var bitStringWriter = new BinaryWriter(bitStringStream);
-                    bitStringWriter.Write((byte) 0x00); // # of unused bits
-                    bitStringWriter.Write((byte) 0x30); // SEQUENCE
+                    bitStringWriter.Write((byte)0x00); // # of unused bits
+                    bitStringWriter.Write((byte)0x30); // SEQUENCE
 
                     using (var paramsStream = new MemoryStream())
                     {
                         var paramsWriter = new BinaryWriter(paramsStream);
                         EncodeIntegerBigEndian(paramsWriter, parameters.Modulus);  // Modulus
                         EncodeIntegerBigEndian(paramsWriter, parameters.Exponent); // Exponent
-                        var paramsLength = (int) paramsStream.Length;
+                        var paramsLength = (int)paramsStream.Length;
                         EncodeLength(bitStringWriter, paramsLength);
                         bitStringWriter.Write(paramsStream.GetBuffer(), 0, paramsLength);
                     }
 
-                    var bitStringLength = (int) bitStringStream.Length;
+                    var bitStringLength = (int)bitStringStream.Length;
                     EncodeLength(innerWriter, bitStringLength);
                     innerWriter.Write(bitStringStream.GetBuffer(), 0, bitStringLength);
                 }
 
-                var length = (int) innerStream.Length;
+                var length = (int)innerStream.Length;
                 EncodeLength(writer, length);
                 writer.Write(innerStream.GetBuffer(), 0, length);
             }
 
-            var base64 = Convert.ToBase64String(stream.GetBuffer(), 0, (int) stream.Length).ToCharArray();
+            var base64 = Convert.ToBase64String(stream.GetBuffer(), 0, (int)stream.Length).ToCharArray();
 
             if (inlineString)
             {
@@ -273,7 +277,7 @@ public static class RsaCryptoEngine
         if (length < 0x80)
         {
             // Short form
-            stream.Write((byte) length);
+            stream.Write((byte)length);
         }
         else
         {
@@ -287,11 +291,11 @@ public static class RsaCryptoEngine
                 bytesRequired++;
             }
 
-            stream.Write((byte) (bytesRequired | 0x80));
+            stream.Write((byte)(bytesRequired | 0x80));
 
             for (var i = bytesRequired - 1; i >= 0; i--)
             {
-                stream.Write((byte) (length >> (8 * i) & 0xff));
+                stream.Write((byte)(length >> (8 * i) & 0xff));
             }
         }
     }
@@ -302,14 +306,14 @@ public static class RsaCryptoEngine
     /// <param name="stream"></param>
     /// <param name="value"></param>
     /// <param name="forceUnsigned"></param>
-    private static void EncodeIntegerBigEndian(BinaryWriter stream, byte [ ] value, bool forceUnsigned = true)
+    private static void EncodeIntegerBigEndian(BinaryWriter stream, byte[] value, bool forceUnsigned = true)
     {
-        stream.Write((byte) 0x02); // INTEGER
+        stream.Write((byte)0x02); // INTEGER
         var prefixZeros = 0;
 
         for (var i = 0; i < value.Length; i++)
         {
-            if (value [i] != 0)
+            if (value[i] != 0)
                 break;
 
             prefixZeros++;
@@ -318,15 +322,15 @@ public static class RsaCryptoEngine
         if (value.Length - prefixZeros == 0)
         {
             EncodeLength(stream, 1);
-            stream.Write((byte) 0);
+            stream.Write((byte)0);
         }
         else
         {
-            if (forceUnsigned && value [prefixZeros] > 0x7f)
+            if (forceUnsigned && value[prefixZeros] > 0x7f)
             {
                 // Add a prefix zero to force unsigned if the MSB is 1
                 EncodeLength(stream, value.Length - prefixZeros + 1);
-                stream.Write((byte) 0);
+                stream.Write((byte)0);
             }
             else
             {
@@ -335,7 +339,7 @@ public static class RsaCryptoEngine
 
             for (var i = prefixZeros; i < value.Length; i++)
             {
-                stream.Write(value [i]);
+                stream.Write(value[i]);
             }
         }
     }
@@ -498,12 +502,12 @@ public static class RsaCryptoEngine
 
     public static string SignData(string message, string privateKey)
     {
-        byte [ ] signedBytes;
+        byte[] signedBytes;
 
         using (var rsa = ImportPemPrivateKey(privateKey))
         {
-            var      encoder      = new UTF8Encoding();
-            byte [ ] originalData = encoder.GetBytes(message);
+            var    encoder      = new UTF8Encoding();
+            byte[] originalData = encoder.GetBytes(message);
 
             try
             {
@@ -527,11 +531,13 @@ public static class RsaCryptoEngine
     public static bool VerifyData(string message, string signature, string publicKey)
     {
         bool success = false;
+
         using (var rsa = ImportPemPublicKey(publicKey))
         {
             var    encoder       = new UTF8Encoding();
             byte[] bytesToVerify = encoder.GetBytes(message);
             byte[] signedBytes   = Convert.FromBase64String(signature);
+
             try
             {
                 using var hash = SHA512.Create();
@@ -549,6 +555,7 @@ public static class RsaCryptoEngine
                 rsa.PersistKeyInCsp = false;
             }
         }
+
         return success;
     }
 }

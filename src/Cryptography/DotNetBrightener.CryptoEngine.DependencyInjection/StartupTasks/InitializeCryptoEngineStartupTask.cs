@@ -4,23 +4,18 @@ using Microsoft.Extensions.Logging;
 
 namespace DotNetBrightener.CryptoEngine.DependencyInjection.StartupTasks;
 
-internal class InitializeCryptoEngineStartupTask : IHostedService
+internal class InitializeCryptoEngineStartupTask(
+    IServiceScopeFactory                       serviceScopeFactory,
+    ILogger<InitializeCryptoEngineStartupTask> logger)
+    : IHostedService
 {
-    private readonly IServiceScopeFactory _serviceScopeFactory;
-    private readonly ILogger              _logger;
-
-    public InitializeCryptoEngineStartupTask(IServiceScopeFactory                       serviceScopeFactory,
-                                             ILogger<InitializeCryptoEngineStartupTask> logger)
-    {
-        _serviceScopeFactory = serviceScopeFactory;
-        _logger              = logger;
-    }
+    private readonly ILogger              _logger              = logger;
 
     public int Order => 0;
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        using var scope        = _serviceScopeFactory.CreateScope();
+        using var scope        = serviceScopeFactory.CreateScope();
         var       cryptoEngine = scope.ServiceProvider.GetRequiredService<ICryptoEngine>();
 
         if (cryptoEngine is null)

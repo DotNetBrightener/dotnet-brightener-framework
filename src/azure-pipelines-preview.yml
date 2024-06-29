@@ -1,4 +1,5 @@
 variables:
+- group: dotnet-brightener
 - name: BuildParameters.RestoreBuildProjects
   value: 'src/DotNetBrightenerFramework.sln'
 
@@ -6,21 +7,37 @@ variables:
   value: Release
 
 - name: ExtractedBuildNo
-  value: $[replace(replace(variables['System.PullRequest.targetBranchName'], 'release/', ''), 'preview/', '')]
+  value: $[replace(replace(replace(variables['System.PullRequest.targetBranchName'], 'releases/', ''), 'preview/', ''), 'refs/heads/', '')]
 
 
-name: $(ExtractedBuildNo)-preview-$(Rev:r)
+name: $(ExtractedBuildNo)-preview-$(DayOfYear)$(Date:HH)$(Rev:rr)
 
 trigger: none 
 
 jobs:
 - job: Build_Packages
-  displayName: Building with self-hosted agent
+  displayName: Building agent
+
   pool:
-    name: dotnetbrightener-selfhosted
-    demands: 
-    - agent.name -equals self-hosted
+    vmImage: 'windows-latest'
+
+  # pool:
+  #   name: dotnetbrightener-selfhosted
+  #   demands: 
+  #   - agent.name -equals self-hosted
+
   steps:
+  - task: PowerShell@2
+    inputs:
+      targetType: 'inline'
+      script: |
+        git clone --bare "https://justinchasez04121990:$(AzureAccessToken)@dev.azure.com/justinchasez/DotNet%20Brightener/_git/dotnet-brightener-framework"
+        cd dotnet-brightener-framework.git
+        git push --mirror https://$(GithubAccessToken)@github.com/DotNetBrightener/dotnet-brightener-framework
+        cd ..
+        rm -Recurse -Force dotnet-brightener-framework.git
+    displayName: 'Mirror to Github'
+
   - checkout: self
     displayName: Checking out $(Build.BuildNumber)
     submodules: true

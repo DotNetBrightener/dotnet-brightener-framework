@@ -141,6 +141,7 @@ public abstract class BaseCRUDController<TEntityType>(IBaseDataService<TEntityTy
     /// <response code="401">Unauthorized request restore the <typeparamref name="TEntityType"/> record.</response> 
     /// <response code="500">Unknown internal server error.</response>
     [HttpPut("{id:long}/undelete")]
+    [HttpPut("{id:long}/restore")]
     public virtual async Task<IActionResult> RestoreDeletedItem(long id)
     {
         var (canRestore, entity, result) = await CanRestoreDeletedItem(id);
@@ -189,7 +190,7 @@ public abstract class BaseCRUDController<TEntityType>(IBaseDataService<TEntityTy
         Expression<Func<TEntityType, bool>> expression =
             ExpressionExtensions.BuildPredicate<TEntityType>(id, OperatorComparer.Equals, EntityIdColumnName);
 
-        var entity = DataService.Get(expression);
+        var entity = await DataService.GetAsync(expression);
 
         return (entity is not null, entity, entity is null ? NotFound() : null);
     }
@@ -206,7 +207,7 @@ public abstract class BaseCRUDController<TEntityType>(IBaseDataService<TEntityTy
         Expression<Func<TEntityType, bool>> expression =
             ExpressionExtensions.BuildPredicate<TEntityType>(id, OperatorComparer.Equals, EntityIdColumnName);
 
-        var entity = DataService.Get(expression);
+        var entity = await DataService.GetAsync(expression);
 
         return (entity is not null, entity, entity is null ? NotFound() : null);
     }
@@ -225,7 +226,7 @@ public abstract class BaseCRUDController<TEntityType>(IBaseDataService<TEntityTy
         Expression<Func<TEntityType, bool>> expression =
             ExpressionExtensions.BuildPredicate<TEntityType>(id, OperatorComparer.Equals, EntityIdColumnName);
 
-        var entity = DataService.Get(expression);
+        var entity = await DataService.GetAsync(expression);
 
         return (entity is not null, entity, entity is null ? NotFound() : null);
     }
@@ -280,6 +281,11 @@ public abstract class BaseCRUDController<TEntityType>(IBaseDataService<TEntityTy
         if (baseEntity is BaseEntity ett)
         {
             createdEntityResultModel.EntityId = ett.Id;
+        }
+
+        if (baseEntity is BaseEntityWithAuditInfo auditInfo)
+        {
+            createdEntityResultModel.EntityId = auditInfo.Id;
         }
 
         return createdEntityResultModel;

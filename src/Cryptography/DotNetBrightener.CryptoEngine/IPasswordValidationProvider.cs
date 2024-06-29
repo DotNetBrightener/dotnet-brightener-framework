@@ -24,16 +24,9 @@ public interface IPasswordValidationProvider
     bool ValidatePassword(string plainTextPassword, string passwordEncryptionKey, string hashedPassword);
 }
 
-public class DefaultPasswordValidationProvider : IPasswordValidationProvider
+public class DefaultPasswordValidationProvider(ICryptoEngine cryptoEngine) : IPasswordValidationProvider
 {
-    private readonly ICryptoEngine _cryptoEngine;
-
-    public DefaultPasswordValidationProvider(ICryptoEngine cryptoEngine)
-    {
-        _cryptoEngine = cryptoEngine;
-    }
-
-    public Tuple<string, string> GenerateEncryptedPassword(string plainTextPassword)
+    public virtual Tuple<string, string> GenerateEncryptedPassword(string plainTextPassword)
     {
         // create a key (salt) for hashing the password
         var passwordSalt = CryptoUtilities.CreateRandomToken();
@@ -42,15 +35,15 @@ public class DefaultPasswordValidationProvider : IPasswordValidationProvider
         var hashedPassword = SymmetricCryptoEngine.Encrypt(plainTextPassword, passwordSalt);
 
         // encrypt the salt
-        var encryptedPasswordSalt = _cryptoEngine.EncryptText(passwordSalt);
+        var encryptedPasswordSalt = cryptoEngine.EncryptText(passwordSalt);
 
         return new Tuple<string, string>(encryptedPasswordSalt, hashedPassword);
     }
 
-    public bool ValidatePassword(string plainTextPassword, string passwordEncryptionKey, string hashedPassword)
+    public virtual bool ValidatePassword(string plainTextPassword, string passwordEncryptionKey, string hashedPassword)
     {
         // decrypt the key to get the salt
-        var passwordSalt = _cryptoEngine.DecryptText(passwordEncryptionKey);
+        var passwordSalt = cryptoEngine.DecryptText(passwordEncryptionKey);
 
         // use the salt to create the hash from plain text password
         var encryptedPassword = SymmetricCryptoEngine.Encrypt(plainTextPassword, passwordSalt);

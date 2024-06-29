@@ -13,7 +13,6 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\DotNetBrightener.Core.Logging.OpenTelemetryEnabled\DotNetBrightener.Core.Logging.OpenTelemetryEnabled.csproj" />
-		<ProjectReference Include="..\DotNetBrightener.Core.Logging\DotNetBrightener.Core.Logging.csproj" />
 	</ItemGroup>
 
 </Project>

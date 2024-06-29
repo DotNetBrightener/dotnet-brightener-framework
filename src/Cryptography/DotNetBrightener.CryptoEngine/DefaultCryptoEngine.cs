@@ -4,27 +4,22 @@ using Microsoft.Extensions.Options;
 
 namespace DotNetBrightener.CryptoEngine;
 
-public class DefaultCryptoEngine : ICryptoEngine
+public class DefaultCryptoEngine(
+    IEnumerable<IRSAKeysLoader>         rsaKeysLoaders,
+    IOptions<CryptoEngineConfiguration> cryptoConfig)
+    : ICryptoEngine
 {
-    private          bool                        _isInitialized;
-    private          string                      _publicKey;
-    private          string                      _privateKey;
-    private readonly IEnumerable<IRSAKeysLoader> _rsaKeysLoaders;
-    private readonly CryptoEngineConfiguration   _cryptoConfig;
-
-    public DefaultCryptoEngine(IEnumerable<IRSAKeysLoader>         rsaKeysLoaders,
-                               IOptions<CryptoEngineConfiguration> cryptoConfig)
-    {
-        _rsaKeysLoaders = rsaKeysLoaders;
-        _cryptoConfig   = cryptoConfig.Value;
-    }
+    private          bool                      _isInitialized;
+    private          string                    _publicKey;
+    private          string                    _privateKey;
+    private readonly CryptoEngineConfiguration _cryptoConfig   = cryptoConfig.Value;
 
     public void Initialize()
     {
         if (_isInitialized)
             return;
 
-        var rsaKeyLoader = _rsaKeysLoaders.FirstOrDefault(_ => _.LoaderName == _cryptoConfig.RsaKeyLoader);
+        var rsaKeyLoader = rsaKeysLoaders.FirstOrDefault(_ => _.LoaderName == _cryptoConfig.RsaKeyLoader);
 
         if (rsaKeyLoader == null)
         {
