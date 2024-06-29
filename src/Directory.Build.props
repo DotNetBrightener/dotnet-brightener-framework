@@ -34,14 +34,14 @@
 	<!-- Version settings -->
 	<PropertyGroup>
 		<FileVersionPotion>$([System.DateTime]::UtcNow.DayOfYear)$([System.DateTime]::UtcNow.ToString(HH))</FileVersionPotion>
-		<BuildNumber Condition="'$(BuildNumber)' == ''">1</BuildNumber>
+		<BuildNumber Condition="'$(BuildNumber)' == ''">05</BuildNumber>
 
 		<VersionPrefix>2024.0.14.5</VersionPrefix>
 
 		<AssemblyVersion>$(VersionPrefix)</AssemblyVersion>
 		<FileVersion>$(VersionPrefix)</FileVersion>
 
-		<VersionSuffix Condition="'$(VerSuf)' != '' AND '$(BuildNumber)' != ''">$(VerSuf)-$(BuildNumber)</VersionSuffix>
+		<VersionSuffix Condition="'$(VerSuf)' != '' AND '$(BuildNumber)' != ''">$(VerSuf)-$([System.DateTime]::UtcNow.DayOfYear)$([System.DateTime]::UtcNow.ToString(HH))$(BuildNumber)</VersionSuffix>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)'=='Release'">

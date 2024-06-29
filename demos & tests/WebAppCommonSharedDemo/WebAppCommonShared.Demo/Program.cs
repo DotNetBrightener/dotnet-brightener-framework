@@ -82,7 +82,7 @@ appClientManagerBuilder.WithStorage()
 
 builder.Services.AddAppClientAudienceValidator();
 
-builder.Services.AddEntityFrameworkDataServices<MainAppDbContext>(dbConfiguration,
+builder.Services.AddEFCentralizedDataServices<MainAppDbContext>(dbConfiguration,
                                                                   builder.Configuration,
                                                                   configureDatabase);
 

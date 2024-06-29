@@ -11,22 +11,14 @@ using Microsoft.Extensions.Options;
 
 namespace DotNetBrightener.Infrastructure.ApiKeyAuthentication.Middlewares;
 
-public class ApiKeyAuthenticationHandler : AuthenticationHandler<ApiKeyAuthenticationOptions>
+public class ApiKeyAuthenticationHandler(
+    IOptionsMonitor<ApiKeyAuthenticationOptions> options,
+    ILoggerFactory                               logger,
+    UrlEncoder                                   encoder,
+    IApiKeyStoreService                          apiKeyStoreService,
+    IEventPublisher                              eventPublisher)
+    : AuthenticationHandler<ApiKeyAuthenticationOptions>(options, logger, encoder)
 {
-    private readonly IApiKeyStoreService _apiKeyStoreService;
-    private readonly IEventPublisher     _eventPublisher;
-
-    public ApiKeyAuthenticationHandler(IOptionsMonitor<ApiKeyAuthenticationOptions> options,
-                                       ILoggerFactory                               logger,
-                                       UrlEncoder                                   encoder,
-                                       IApiKeyStoreService                          apiKeyStoreService,
-                                       IEventPublisher                              eventPublisher)
-        : base(options, logger, encoder)
-    {
-        _apiKeyStoreService = apiKeyStoreService;
-        _eventPublisher     = eventPublisher;
-    }
-
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
     {
         if (!Request.Headers.TryGetValue(ApiKeyAuthenticationOptions.HeaderName, out var apiKeyValue) ||
@@ -37,7 +29,7 @@ public class ApiKeyAuthenticationHandler : AuthenticationHandler<ApiKeyAuthentic
             return AuthenticateResult.Fail("No API Key Provided");
         }
 
-        var apiKey = await _apiKeyStoreService.AuthorizeKey(apiKeyValue);
+        var apiKey = await apiKeyStoreService.AuthorizeKey(apiKeyValue);
 
         if (apiKey == null)
         {
@@ -56,7 +48,7 @@ public class ApiKeyAuthenticationHandler : AuthenticationHandler<ApiKeyAuthentic
             claims.Add(new Claim(Permission.ClaimType, apiKeyScope));
         }
 
-        await _eventPublisher.Publish(new ApiKeyClaimProcessingEvent
+        await eventPublisher.Publish(new ApiKeyClaimProcessingEvent
         {
             Claims = claims,
             ApiKey = apiKey

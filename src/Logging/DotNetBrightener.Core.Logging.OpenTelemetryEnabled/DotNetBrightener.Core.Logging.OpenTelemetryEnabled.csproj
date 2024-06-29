@@ -9,8 +9,4 @@
 		<PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.9.0" />
 	</ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\DotNetBrightener.Core.Logging\DotNetBrightener.Core.Logging.csproj" />
-	</ItemGroup>
-
 </Project>
