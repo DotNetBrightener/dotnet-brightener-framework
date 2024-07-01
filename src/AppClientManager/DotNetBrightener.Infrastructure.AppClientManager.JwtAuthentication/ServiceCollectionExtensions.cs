@@ -1,4 +1,5 @@
-﻿using DotNetBrightener.Infrastructure.AppClientManager.JwtAuthentication;
+﻿using DotNetBrightener.Infrastructure.AppClientManager;
+using DotNetBrightener.Infrastructure.AppClientManager.JwtAuthentication;
 using DotNetBrightener.Infrastructure.JwtAuthentication;
 
 // ReSharper disable CheckNamespace
@@ -19,5 +20,18 @@ public static class ServiceCollectionExtensions
         serviceCollection.RegisterAuthAudienceResolver<AuthClientsAuthAudienceResolver>();
 
         return serviceCollection;
+    }
+
+    /// <summary>
+    ///     Add audience validator for app client to allow validating JWT token audience
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <returns></returns>
+    public static AppClientManagerBuilder AddAppClientAudienceValidator(this AppClientManagerBuilder builder)
+    {
+        builder.Services.RegisterAuthAudienceValidator<AuthClientsAuthAudienceValidator>();
+        builder.Services.RegisterAuthAudienceResolver<AuthClientsAuthAudienceResolver>();
+
+        return builder;
     }
 }

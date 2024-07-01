@@ -33,7 +33,7 @@ Action<DbContextOptionsBuilder> configureDatabase = optionsBuilder =>
 };
 
 builder.Services
-       .AddEntityFrameworkDataServices<MainAppDbContext>(dbConfiguration,
+       .AddEFCentralizedDataServices<MainAppDbContext>(dbConfiguration,
                                                          builder.Configuration,
                                                          configureDatabase);
 

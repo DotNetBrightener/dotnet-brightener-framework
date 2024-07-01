@@ -18,6 +18,7 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
 using System.Reflection;
+using LinqToDB.DataProvider.PostgreSQL;
 
 namespace DotNetBrightener.DataAccess.EF.Repositories;
 
@@ -619,7 +620,7 @@ public class Repository : IRepository
             if (insertedEntities.Count != 0 ||
                 updatedEntities.Count != 0)
             {
-                OnAfterSaveChanges(insertedEntities, updatedEntities);
+                await OnAfterSaveChanges(insertedEntities, updatedEntities);
             }
         }
     }
@@ -652,7 +653,7 @@ public class Repository : IRepository
         });
     }
 
-    protected virtual void OnAfterSaveChanges(List<EntityEntry> insertedEntities, List<EntityEntry> updatedEntities)
+    protected virtual async Task OnAfterSaveChanges(List<EntityEntry> insertedEntities, List<EntityEntry> updatedEntities)
     {
         if (insertedEntities.Count == 0 &&
             updatedEntities.Count == 0)
@@ -660,13 +661,16 @@ public class Repository : IRepository
             return;
         }
 
-        EventPublisher?.Publish(new DbContextAfterSaveChanges
+        if (EventPublisher is not null)
         {
-            InsertedEntityEntries = insertedEntities,
-            UpdatedEntityEntries  = updatedEntities,
-            CurrentUserId         = CurrentLoggedInUserResolver?.CurrentUserId,
-            CurrentUserName       = CurrentLoggedInUserResolver?.CurrentUserName,
-        });
+            await EventPublisher.Publish(new DbContextAfterSaveChanges
+            {
+                InsertedEntityEntries = insertedEntities,
+                UpdatedEntityEntries  = updatedEntities,
+                CurrentUserId         = CurrentLoggedInUserResolver?.CurrentUserId,
+                CurrentUserName       = CurrentLoggedInUserResolver?.CurrentUserName,
+            });
+        }
     }
 
     private SetPropertyBuilder<T> PrepareUpdatePropertiesBuilder<T>(Expression<Func<T, T>> updateExpression)
