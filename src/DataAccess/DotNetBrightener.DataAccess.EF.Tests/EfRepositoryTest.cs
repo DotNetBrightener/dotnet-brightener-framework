@@ -1,4 +1,5 @@
-﻿using DotNetBrightener.DataAccess.Services;
+﻿using System.Reflection;
+using DotNetBrightener.DataAccess.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -31,7 +32,7 @@ internal class EfRepositoryTest
 
         await InsertFakeData(host);
 
-        await using (var serviceScope = host.Services.CreateAsyncScope())
+        using (var serviceScope = host.Services.CreateScope())
         {
             var serviceProvider = serviceScope.ServiceProvider;
             var repository      = serviceProvider.GetRequiredService<IRepository>();
@@ -50,7 +51,7 @@ internal class EfRepositoryTest
         {
         });
 
-        await using (var serviceScope = host.Services.CreateAsyncScope())
+        using (var serviceScope = host.Services.CreateScope())
         {
             var serviceProvider = serviceScope.ServiceProvider;
             var repository      = serviceProvider.GetRequiredService<IRepository>();
@@ -62,7 +63,7 @@ internal class EfRepositoryTest
             await repository.CommitChangesAsync();
         }
 
-        await using (var serviceScope = host.Services.CreateAsyncScope())
+        using (var serviceScope = host.Services.CreateScope())
         {
             var serviceProvider = serviceScope.ServiceProvider;
             var repository      = serviceProvider.GetRequiredService<IRepository>();
@@ -80,7 +81,7 @@ internal class EfRepositoryTest
         {
         });
 
-        await using (var serviceScope = host.Services.CreateAsyncScope())
+        using (var serviceScope = host.Services.CreateScope())
         {
             var serviceProvider = serviceScope.ServiceProvider;
             var repository      = serviceProvider.GetRequiredService<IRepository>();
@@ -92,7 +93,7 @@ internal class EfRepositoryTest
             await repository.CommitChangesAsync();
         }
 
-        await using (var serviceScope = host.Services.CreateAsyncScope())
+        using (var serviceScope = host.Services.CreateScope())
         {
             var serviceProvider = serviceScope.ServiceProvider;
             var repository      = serviceProvider.GetRequiredService<IRepository>();
@@ -103,7 +104,9 @@ internal class EfRepositoryTest
             await repository.CommitChangesAsync();
         }
 
-        await using (var serviceScope = host.Services.CreateAsyncScope())
+        Thread.Sleep(TimeSpan.FromSeconds(2));
+
+        using (var serviceScope = host.Services.CreateScope())
         {
             var serviceProvider = serviceScope.ServiceProvider;
             var repository      = serviceProvider.GetRequiredService<IRepository>();
@@ -121,7 +124,7 @@ internal class EfRepositoryTest
         {
         });
 
-        await using (var serviceScope = host.Services.CreateAsyncScope())
+        using (var serviceScope = host.Services.CreateScope())
         {
             var serviceProvider = serviceScope.ServiceProvider;
             var repository      = serviceProvider.GetRequiredService<IRepository>();
@@ -133,7 +136,7 @@ internal class EfRepositoryTest
             await repository.CommitChangesAsync();
         }
 
-        await using (var serviceScope = host.Services.CreateAsyncScope())
+        using (var serviceScope = host.Services.CreateScope())
         {
             var serviceProvider = serviceScope.ServiceProvider;
             var repository      = serviceProvider.GetRequiredService<IRepository>();
@@ -148,7 +151,9 @@ internal class EfRepositoryTest
             await repository.CommitChangesAsync();
         }
 
-        await using (var serviceScope = host.Services.CreateAsyncScope())
+        Thread.Sleep(TimeSpan.FromSeconds(2));
+
+        using (var serviceScope = host.Services.CreateScope())
         {
             var serviceProvider = serviceScope.ServiceProvider;
             var repository      = serviceProvider.GetRequiredService<IRepository>();
@@ -166,7 +171,7 @@ internal class EfRepositoryTest
         {
         });
 
-        await using (var serviceScope = host.Services.CreateAsyncScope())
+        using (var serviceScope = host.Services.CreateScope())
         {
             var serviceProvider = serviceScope.ServiceProvider;
             var repository      = serviceProvider.GetRequiredService<IRepository>();
@@ -179,7 +184,7 @@ internal class EfRepositoryTest
             await repository.CommitChangesAsync();
         }
 
-        await using (var serviceScope = host.Services.CreateAsyncScope())
+        using (var serviceScope = host.Services.CreateScope())
         {
             var serviceProvider = serviceScope.ServiceProvider;
             var repository      = serviceProvider.GetRequiredService<IRepository>();
@@ -196,7 +201,9 @@ internal class EfRepositoryTest
             await repository.CommitChangesAsync();
         }
 
-        await using (var serviceScope = host.Services.CreateAsyncScope())
+        Thread.Sleep(TimeSpan.FromSeconds(2));
+
+        using (var serviceScope = host.Services.CreateScope())
         {
             var serviceProvider = serviceScope.ServiceProvider;
             var repository      = serviceProvider.GetRequiredService<IRepository>();
@@ -215,7 +222,7 @@ internal class EfRepositoryTest
         {
         });
 
-        await using (var serviceScope = host.Services.CreateAsyncScope())
+        using (var serviceScope = host.Services.CreateScope())
         {
             var serviceProvider = serviceScope.ServiceProvider;
             var repository      = serviceProvider.GetRequiredService<IRepository>();
@@ -255,7 +262,7 @@ internal class EfRepositoryTest
             await repository.CommitChangesAsync();
         }
 
-        await using (var serviceScope = host.Services.CreateAsyncScope())
+        using (var serviceScope = host.Services.CreateScope())
         {
             var serviceProvider = serviceScope.ServiceProvider;
             var repository      = serviceProvider.GetRequiredService<IRepository>();
@@ -271,7 +278,7 @@ internal class EfRepositoryTest
             Assert.That(affectedRecords, Is.EqualTo(3));
         }
 
-        await using (var serviceScope = host.Services.CreateAsyncScope())
+        using (var serviceScope = host.Services.CreateScope())
         {
             var serviceProvider = serviceScope.ServiceProvider;
             var repository      = serviceProvider.GetRequiredService<IRepository>();
@@ -296,7 +303,7 @@ internal class EfRepositoryTest
 
         await InsertFakeData(host);
 
-        await using (var serviceScope = host.Services.CreateAsyncScope())
+        using (var serviceScope = host.Services.CreateScope())
         {
             var serviceProvider = serviceScope.ServiceProvider;
             var repository      = serviceProvider.GetRequiredService<IRepository>();
@@ -304,7 +311,7 @@ internal class EfRepositoryTest
             await repository.DeleteOneAsync<TestEntity>(x => x.Name == "Name1");
         }
 
-        await using (var serviceScope = host.Services.CreateAsyncScope())
+        using (var serviceScope = host.Services.CreateScope())
         {
             var serviceProvider = serviceScope.ServiceProvider;
             var repository      = serviceProvider.GetRequiredService<IRepository>();
@@ -323,7 +330,7 @@ internal class EfRepositoryTest
 
         await InsertFakeData(host);
 
-        await using (var serviceScope = host.Services.CreateAsyncScope())
+        using (var serviceScope = host.Services.CreateScope())
         {
             var serviceProvider = serviceScope.ServiceProvider;
             var repository      = serviceProvider.GetRequiredService<IRepository>();
@@ -332,7 +339,7 @@ internal class EfRepositoryTest
             Assert.That(affectedRecords, Is.EqualTo(9));
         }
 
-        await using (var serviceScope = host.Services.CreateAsyncScope())
+        using (var serviceScope = host.Services.CreateScope())
         {
             var serviceProvider = serviceScope.ServiceProvider;
             var repository      = serviceProvider.GetRequiredService<IRepository>();
@@ -349,7 +356,7 @@ internal class EfRepositoryTest
 
     private static async Task InsertFakeData(IHost host)
     {
-        await using (var serviceScope = host.Services.CreateAsyncScope())
+        using (var serviceScope = host.Services.CreateScope())
         {
             var serviceProvider = serviceScope.ServiceProvider;
             var repository      = serviceProvider.GetRequiredService<IRepository>();
