@@ -11,7 +11,10 @@ internal class DataMigrationTests_SqlServer
 {
     //private string _connectionString; 
 
-    private readonly MsSqlContainer _msSqlContainer = new MsSqlBuilder().Build();
+    private readonly MsSqlContainer _msSqlContainer = new MsSqlBuilder()
+                                                     .WithImage("mcr.microsoft.com/mssql/server:2022-latest")
+                                                     .WithPassword("Str0ng3stP@s5w0rd3ver!")
+                                                     .Build();
 
     [SetUp]
     public async Task Setup()
