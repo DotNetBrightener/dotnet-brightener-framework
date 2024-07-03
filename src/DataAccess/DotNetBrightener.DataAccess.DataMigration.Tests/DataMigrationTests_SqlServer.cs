@@ -3,18 +3,23 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NUnit.Framework;
+using Testcontainers.MsSql;
 
 namespace DotNetBrightener.DataAccess.DataMigration.Tests;
 
 internal class DataMigrationTests_SqlServer
 {
-    private string _connectionString;
+    //private string _connectionString; 
+
+    private readonly MsSqlContainer _msSqlContainer = new MsSqlBuilder().Build();
 
     [SetUp]
-    public void Setup()
+    public async Task Setup()
     {
-        _connectionString =
-            $"Server=(localdb)\\MSSQLLocalDB;Database=DataMigration_UnitTest{DateTime.Now:yyyyMMddHHmm};Trusted_Connection=True;MultipleActiveResultSets=true";
+        await _msSqlContainer.StartAsync();
+
+        //_connectionString =
+        //    $"Server=(localdb)\\MSSQLLocalDB;Database=DataMigration_UnitTest{DateTime.Now:yyyyMMddHHmm};Trusted_Connection=True;MultipleActiveResultSets=true";
         // _connectionString = $"Server=100.121.179.124;Database=DataMigration_UnitTest{DateTime.Now:yyyyMMddHHmm};User Id=sa;Password=sCpTXbW8jbSbbUpILfZVulTiwqcPyJWt;MultipleActiveResultSets=True;Encrypt=True;TrustServerCertificate=True;";
     }
 
@@ -22,6 +27,12 @@ internal class DataMigrationTests_SqlServer
     public void TearDown()
     {
         TearDownHost();
+    }
+
+    [OneTimeTearDown]
+    public async Task OneTimeTearDown()
+    {
+        await _msSqlContainer.DisposeAsync();
     }
 
     [Test]
@@ -74,7 +85,7 @@ internal class DataMigrationTests_SqlServer
            .ConfigureServices((hostContext, services) =>
             {
                 services.EnableDataMigrations()
-                        .UseSqlServer(_connectionString);
+                        .UseSqlServer(_msSqlContainer.GetConnectionString());
 
                 services.AddDataMigrator<GoodMigration>();
                 services.AddDataMigrator<GoodMigration2>();
@@ -110,7 +121,7 @@ internal class DataMigrationTests_SqlServer
            .ConfigureServices((hostContext, services) =>
             {
                 services.EnableDataMigrations()
-                        .UseSqlServer(_connectionString);
+                        .UseSqlServer(_msSqlContainer.GetConnectionString());
 
                 services.AddDataMigrator<GoodMigration>();
                 services.AddDataMigrator<MigrationWithThrowingException>();
@@ -158,7 +169,7 @@ internal class DataMigrationTests_SqlServer
             {
                 serviceCollection.AddDbContext<DataMigrationDbContext>(options =>
                 {
-                    options.UseSqlServer(_connectionString);
+                    options.UseSqlServer(_msSqlContainer.GetConnectionString());
                 });
             });
 
