@@ -1,24 +1,14 @@
-﻿using System.Reflection;
-using DotNetBrightener.DataAccess.Services;
+﻿using DotNetBrightener.DataAccess.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NUnit.Framework;
+using Testcontainers.MsSql;
 
 namespace DotNetBrightener.DataAccess.EF.Tests;
 
-internal class EfRepositoryTest
+internal class EfRepositoryTest : MsSqlServerBaseTest
 {
-    private string _connectionString;
-
-    [SetUp]
-    public void Setup()
-    {
-        _connectionString =
-            $"Server=(localdb)\\MSSQLLocalDB;Database=DataAccess_UnitTest{DateTime.Now:yyyyMMddHHmm};Trusted_Connection=True;MultipleActiveResultSets=true";
-        // _connectionString = $"Server=100.121.179.124;Database=DataMigration_UnitTest{DateTime.Now:yyyyMMddHHmm};User Id=sa;Password=sCpTXbW8jbSbbUpILfZVulTiwqcPyJWt;MultipleActiveResultSets=True;Encrypt=True;TrustServerCertificate=True;";
-    }
-
     [TearDown]
     public void TearDown()
     {
@@ -267,13 +257,14 @@ internal class EfRepositoryTest
             var serviceProvider = serviceScope.ServiceProvider;
             var repository      = serviceProvider.GetRequiredService<IRepository>();
 
-            var affectedRecords = await repository.UpdateAsync<TestEntity>(entity => entity.Name.StartsWith("To update"),
-                                                                           entity => new TestEntity
-                                                                           {
-                                                                               Name = entity
-                                                                                     .Name.Replace("_Updated by event handler", "")
-                                                                                     .Replace("To update", "Already Updated")
-                                                                           });
+            var affectedRecords =
+                await repository.UpdateAsync<TestEntity>(entity => entity.Name.StartsWith("To update"),
+                                                         entity => new TestEntity
+                                                         {
+                                                             Name = entity
+                                                                   .Name.Replace("_Updated by event handler", "")
+                                                                   .Replace("To update", "Already Updated")
+                                                         });
 
             Assert.That(affectedRecords, Is.EqualTo(3));
         }
@@ -435,14 +426,14 @@ internal class EfRepositoryTest
             {
                 services.AddEFCentralizedDataServices<TestDbContext>(new DatabaseConfiguration
                                                                      {
-                                                                         ConnectionString = _connectionString,
+                                                                         ConnectionString = ConnectionString,
                                                                          DatabaseProvider = DatabaseProvider.MsSql
                                                                      },
                                                                      hostContext.Configuration,
                                                                      optionsBuilder =>
                                                                      {
                                                                          optionsBuilder
-                                                                            .UseSqlServer(_connectionString);
+                                                                            .UseSqlServer(ConnectionString);
                                                                      });
 
                 configureServices?.Invoke(services);
@@ -473,7 +464,7 @@ internal class EfRepositoryTest
             {
                 serviceCollection.AddDbContext<TestDbContext>(options =>
                 {
-                    options.UseSqlServer(_connectionString);
+                    options.UseSqlServer(ConnectionString);
                 });
             });
 
