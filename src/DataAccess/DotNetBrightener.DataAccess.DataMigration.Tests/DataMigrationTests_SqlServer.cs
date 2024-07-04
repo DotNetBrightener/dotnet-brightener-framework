@@ -10,7 +10,6 @@ namespace DotNetBrightener.DataAccess.DataMigration.Tests;
 internal class DataMigrationTests_SqlServer
 {
     //private string _connectionString; 
-
     private readonly MsSqlContainer _msSqlContainer = new MsSqlBuilder()
                                                      .WithImage("mcr.microsoft.com/mssql/server:2022-latest")
                                                      .WithPassword("Str0ng3stP@s5w0rd3ver!")
@@ -88,7 +87,7 @@ internal class DataMigrationTests_SqlServer
            .ConfigureServices((hostContext, services) =>
             {
                 services.EnableDataMigrations()
-                        .UseSqlServer(_msSqlContainer.GetConnectionString());
+                        .UseSqlServer(GetConnectionString());
 
                 services.AddDataMigrator<GoodMigration>();
                 services.AddDataMigrator<GoodMigration2>();
@@ -116,6 +115,13 @@ internal class DataMigrationTests_SqlServer
         await host.StopAsync();
     }
 
+    private string GetConnectionString()
+    {
+        return _msSqlContainer.GetConnectionString()
+                              .Replace("Database=master",
+                                       $"Database=DataMigration_UnitTest{DateTime.Now:yyyyMMddHHmm}");
+    }
+
     [Test]
     public async Task AddDataMigrator_ShouldExecuteAtAppStart_WithoutWritingHistoryDueToException()
     {
@@ -124,7 +130,7 @@ internal class DataMigrationTests_SqlServer
            .ConfigureServices((hostContext, services) =>
             {
                 services.EnableDataMigrations()
-                        .UseSqlServer(_msSqlContainer.GetConnectionString());
+                        .UseSqlServer(GetConnectionString());
 
                 services.AddDataMigrator<GoodMigration>();
                 services.AddDataMigrator<MigrationWithThrowingException>();
@@ -172,7 +178,7 @@ internal class DataMigrationTests_SqlServer
             {
                 serviceCollection.AddDbContext<DataMigrationDbContext>(options =>
                 {
-                    options.UseSqlServer(_msSqlContainer.GetConnectionString());
+                    options.UseSqlServer(GetConnectionString());
                 });
             });
 
