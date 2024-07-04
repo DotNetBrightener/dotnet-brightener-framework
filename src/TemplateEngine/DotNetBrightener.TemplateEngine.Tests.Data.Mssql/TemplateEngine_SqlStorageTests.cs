@@ -6,23 +6,14 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Moq;
 using NUnit.Framework;
+using Testcontainers.MsSql;
 
 namespace DotNetBrightener.TemplateEngine.Tests.Data.Mssql;
 
 [TestFixture]
-public class TemplateEngine_SqlStorageTests
+public class TemplateEngine_SqlStorageTests : MsSqlServerBaseTest
 {
-    private readonly List<string> _pathsToCleanUp = new List<string>();
-
-    private IHost  _testHost;
-    private string _connectionString;
-
-    [SetUp]
-    public void Setup()
-    {
-        _connectionString =
-            $"Server=(localdb)\\MSSQLLocalDB;Database=TemplateEngine_UnitTest{DateTime.Now:yyyyMMddHHmm};Trusted_Connection=True;MultipleActiveResultSets=true";
-    }
+    private IHost _testHost;
 
     [TearDown]
     public async Task TearDown()
@@ -45,7 +36,7 @@ public class TemplateEngine_SqlStorageTests
 
         _testHost = HostTestingHelper.CreateTestHost(services =>
         {
-            services.Replace(ServiceDescriptor.Scoped<ITemplateHelperRegistration>((s) => mockTemplateHelper.Object));
+            services.Replace(ServiceDescriptor.Scoped(_ => mockTemplateHelper.Object));
         });
 
         await _testHost.StartAsync();
@@ -62,7 +53,7 @@ public class TemplateEngine_SqlStorageTests
         _testHost = HostTestingHelper.CreateTestHost(services =>
         {
             services.AddTemplateEngineStorage();
-            services.AddTemplateEngineSqlServerStorage(_connectionString);
+            services.AddTemplateEngineSqlServerStorage(ConnectionString);
             services.AddTemplateProvider<TestModelRegistration>();
         });
 

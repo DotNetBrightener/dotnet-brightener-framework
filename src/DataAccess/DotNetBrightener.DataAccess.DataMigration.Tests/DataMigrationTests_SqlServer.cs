@@ -7,34 +7,12 @@ using Testcontainers.MsSql;
 
 namespace DotNetBrightener.DataAccess.DataMigration.Tests;
 
-internal class DataMigrationTests_SqlServer
+internal class DataMigrationTests_SqlServer: MsSqlServerBaseTest
 {
-    //private string _connectionString; 
-    private readonly MsSqlContainer _msSqlContainer = new MsSqlBuilder()
-                                                     .WithImage("mcr.microsoft.com/mssql/server:2022-latest")
-                                                     .WithPassword("Str0ng3stP@s5w0rd3ver!")
-                                                     .Build();
-
-    [SetUp]
-    public async Task Setup()
-    {
-        await _msSqlContainer.StartAsync();
-
-        //_connectionString =
-        //    $"Server=(localdb)\\MSSQLLocalDB;Database=DataMigration_UnitTest{DateTime.Now:yyyyMMddHHmm};Trusted_Connection=True;MultipleActiveResultSets=true";
-        // _connectionString = $"Server=100.121.179.124;Database=DataMigration_UnitTest{DateTime.Now:yyyyMMddHHmm};User Id=sa;Password=sCpTXbW8jbSbbUpILfZVulTiwqcPyJWt;MultipleActiveResultSets=True;Encrypt=True;TrustServerCertificate=True;";
-    }
-
     [TearDown]
     public void TearDown()
     {
         TearDownHost();
-    }
-
-    [OneTimeTearDown]
-    public async Task OneTimeTearDown()
-    {
-        await _msSqlContainer.DisposeAsync();
     }
 
     [Test]
@@ -87,7 +65,7 @@ internal class DataMigrationTests_SqlServer
            .ConfigureServices((hostContext, services) =>
             {
                 services.EnableDataMigrations()
-                        .UseSqlServer(GetConnectionString());
+                        .UseSqlServer(ConnectionString);
 
                 services.AddDataMigrator<GoodMigration>();
                 services.AddDataMigrator<GoodMigration2>();
@@ -115,13 +93,6 @@ internal class DataMigrationTests_SqlServer
         await host.StopAsync();
     }
 
-    private string GetConnectionString()
-    {
-        return _msSqlContainer.GetConnectionString()
-                              .Replace("Database=master",
-                                       $"Database=DataMigration_UnitTest{DateTime.Now:yyyyMMddHHmm}");
-    }
-
     [Test]
     public async Task AddDataMigrator_ShouldExecuteAtAppStart_WithoutWritingHistoryDueToException()
     {
@@ -130,7 +101,7 @@ internal class DataMigrationTests_SqlServer
            .ConfigureServices((hostContext, services) =>
             {
                 services.EnableDataMigrations()
-                        .UseSqlServer(GetConnectionString());
+                        .UseSqlServer(ConnectionString);
 
                 services.AddDataMigrator<GoodMigration>();
                 services.AddDataMigrator<MigrationWithThrowingException>();
@@ -178,7 +149,7 @@ internal class DataMigrationTests_SqlServer
             {
                 serviceCollection.AddDbContext<DataMigrationDbContext>(options =>
                 {
-                    options.UseSqlServer(GetConnectionString());
+                    options.UseSqlServer(ConnectionString);
                 });
             });
 
