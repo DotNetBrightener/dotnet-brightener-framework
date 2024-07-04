@@ -19,7 +19,7 @@ jobs:
   displayName: Building agent
 
   pool:
-    vmImage: 'windows-latest'
+    vmImage: 'ubuntu-latest'
 
   # pool:
   #   name: dotnetbrightener-selfhosted
@@ -35,7 +35,8 @@ jobs:
         cd dotnet-brightener-framework.git
         git push --mirror https://$(GithubAccessToken)@github.com/DotNetBrightener/dotnet-brightener-framework
         cd ..
-        rm -Recurse -Force dotnet-brightener-framework.git
+        # rm -Recurse -Force dotnet-brightener-framework.git
+        rm -Rf dotnet-brightener-framework.git
     displayName: 'Mirror to Github'
 
   - checkout: self
