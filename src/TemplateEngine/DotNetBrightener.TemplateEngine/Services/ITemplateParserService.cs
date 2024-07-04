@@ -40,7 +40,8 @@ public class TemplateParserService(IMemoryCache memoryCache,
         }
 
         return parsedTemplate.Replace("’", "'")
-                             .Replace("&#8217;", "'");
+                             .Replace("&#8217;", "'")
+                             .Replace("&#65533;", "'");
     }
 
     private async Task<HandlebarsTemplate<object, object>> GetOrSet(string templateString)

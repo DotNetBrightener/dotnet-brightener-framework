@@ -1,173 +1,184 @@
-﻿//using DotNetBrightener.DataAccess.DataMigration.Extensions;
-//using Microsoft.EntityFrameworkCore;
-//using Microsoft.Extensions.DependencyInjection;
-//using Microsoft.Extensions.Hosting;
-//using NUnit.Framework;
+﻿using DotNetBrightener.DataAccess.DataMigration.Extensions;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using NUnit.Framework;
+using Testcontainers.PostgreSql;
 
-//namespace DotNetBrightener.DataAccess.DataMigration.Tests;
+namespace DotNetBrightener.DataAccess.DataMigration.Tests;
 
-//internal class DataMigrationTests_PostgreSql
-//{
-//    private string _connectionString;
+internal class DataMigrationTests_PostgreSql
+{
+    private readonly PostgreSqlContainer _postgreSqlContainer = new PostgreSqlBuilder()
+                                                               .WithImage("postgres:15")
+                                                               .WithDatabase($"DataMigration_UnitTest{DateTime.Now:yyyyMMddHHmm}")
+                                                               .WithUsername("test")
+                                                               .WithPassword("password")
+                                                               .Build();
 
-//    [SetUp]
-//    public void Setup()
-//    {
-//        _connectionString =
-//            $"Server=100.117.90.128;Port=5432;Database=DataMigration_UnitTest{DateTime.Now:yyyyMMddHHmm};User Id=postgres;Password=Sup3r5tr0ngP@ssw0rd!!;";
-//        // _connectionString = $"Server=100.121.179.124;Database=DataMigration_UnitTest{DateTime.Now:yyyyMMddHHmm};User Id=sa;Password=sCpTXbW8jbSbbUpILfZVulTiwqcPyJWt;MultipleActiveResultSets=True;Encrypt=True;TrustServerCertificate=True;";
-//    }
 
-//    [TearDown]
-//    public void TearDown()
-//    {
-//        TearDownHost();
-//    }
+    [SetUp]
+    public async Task Setup()
+    {
+        await _postgreSqlContainer.StartAsync();
+    }
 
-//    [Test]
-//    public async Task AddDataMigrator_ShouldThrowBecauseOfNotInitializeDataMigrationFirst()
-//    {
-//        Assert.Throws(Is.TypeOf<InvalidOperationException>()
-//                        .And.Message
-//                        .EqualTo("The data migrations must be enabled first using EnableDataMigrations method"),
-//                      () =>
-//                      {
-//                          var builder = new HostBuilder()
-//                             .ConfigureServices((hostContext, services) =>
-//                              {
-//                                  services.AddDataMigrator<GoodMigration>();
-//                              });
+    [TearDown]
+    public async Task TearDown()
+    {
+        TearDownHost();
+    }
 
-//                          var host = builder.Build();
-//                      });
-//    }
+    [OneTimeTearDown]
+    public async Task OneTimeTearDown()
+    {
+        await _postgreSqlContainer.DisposeAsync();
+    }
 
-//    [Test]
-//    public async Task AddDataMigrator_ShouldThrowBecauseOfNoAttribute()
-//    {
-//        Assert.Throws(Is.TypeOf<InvalidOperationException>()
-//                        .And.Message
-//                        .EqualTo($"The data migration {typeof(ShouldNotBeRegisteredMigration).FullName} must have [DataMigration] attribute defined with the migration id"),
-//                      () => ConfigureService<ShouldNotBeRegisteredMigration>());
-//    }
+    [Test]
+    public async Task AddDataMigrator_ShouldThrowBecauseOfNotInitializeDataMigrationFirst()
+    {
+        Assert.Throws(Is.TypeOf<InvalidOperationException>()
+                        .And.Message
+                        .EqualTo("The data migrations must be enabled first using EnableDataMigrations method"),
+                      () =>
+                      {
+                          var builder = new HostBuilder()
+                             .ConfigureServices((_, services) =>
+                              {
+                                  services.AddDataMigrator<GoodMigration>();
+                              });
 
-//    [Test]
-//    public async Task AddDataMigrator_ShouldRegisterWithoutIssue()
-//    {
-//        // Arrange
-//        var host = ConfigureService<GoodMigration>();
+                          _ = builder.Build();
+                      });
+    }
 
-//        // Act
-//        var serviceProvider = host.Services;
-//        var metadata        = serviceProvider.GetRequiredService<DataMigrationMetadata>();
+    [Test]
+    public async Task AddDataMigrator_ShouldThrowBecauseOfNoAttribute()
+    {
+        Assert.Throws(Is.TypeOf<InvalidOperationException>()
+                        .And.Message
+                        .EqualTo($"The data migration {typeof(ShouldNotBeRegisteredMigration).FullName} must have [DataMigration] attribute defined with the migration id"),
+                      () => ConfigureService<ShouldNotBeRegisteredMigration>());
+    }
 
-//        // Assert
-//        Assert.That(metadata.Values.Count, Is.EqualTo(1));
-//        Assert.That(metadata.Values.ElementAt(0), Is.EqualTo(typeof(GoodMigration)));
-//    }
+    [Test]
+    public async Task AddDataMigrator_ShouldRegisterWithoutIssue()
+    {
+        // Arrange
+        var host = ConfigureService<GoodMigration>();
 
-//    [Test]
-//    public async Task AddDataMigrator_ShouldExecuteAtAppStart()
-//    {
-//        // Arrange
-//        var builder = new HostBuilder()
-//           .ConfigureServices((hostContext, services) =>
-//            {
-//                services.EnableDataMigrations()
-//                        .UseNpgsql(_connectionString);
+        // Act
+        var serviceProvider = host.Services;
+        var metadata        = serviceProvider.GetRequiredService<DataMigrationMetadata>();
 
-//                services.AddDataMigrator<GoodMigration>();
-//                services.AddDataMigrator<GoodMigration2>();
-//            });
+        // Assert
+        Assert.That(metadata.Values.Count, Is.EqualTo(1));
+        Assert.That(metadata.Values.ElementAt(0), Is.EqualTo(typeof(GoodMigration)));
+    }
 
-//        var host = builder.Build();
+    [Test]
+    public async Task AddDataMigrator_ShouldExecuteAtAppStart()
+    {
+        // Arrange
+        var builder = new HostBuilder()
+           .ConfigureServices((_, services) =>
+            {
+                services.EnableDataMigrations()
+                        .UseNpgsql(_postgreSqlContainer.GetConnectionString());
 
-//        // Acts
-//        await host.StartAsync();
+                services.AddDataMigrator<GoodMigration>();
+                services.AddDataMigrator<GoodMigration2>();
+            });
 
-//        using var serviceScope = host.Services.CreateScope();
+        var host = builder.Build();
 
-//        var serviceProvider = serviceScope.ServiceProvider;
+        // Acts
+        await host.StartAsync();
 
-//        await using var dbContext = serviceProvider.GetRequiredService<DataMigrationDbContext>();
+        using var serviceScope = host.Services.CreateScope();
 
-//        var migrationHistory = dbContext.Set<DataMigrationHistory>()
-//                                        .ToList();
+        var serviceProvider = serviceScope.ServiceProvider;
 
-//        // Assert
-//        Assert.That(migrationHistory.Count, Is.EqualTo(2));
-//        Assert.That(migrationHistory[0].MigrationId, Is.EqualTo("20240502_160412_InitializeMigration"));
-//        Assert.That(migrationHistory[1].MigrationId, Is.EqualTo("20240502_160413_InitializeMigration3"));
+        await using var dbContext = serviceProvider.GetRequiredService<DataMigrationDbContext>();
 
-//        await host.StopAsync();
-//    }
+        var migrationHistory = dbContext.Set<DataMigrationHistory>()
+                                        .ToList();
 
-//    [Test]
-//    public async Task AddDataMigrator_ShouldExecuteAtAppStart_WithoutWritingHistoryDueToException()
-//    {
-//        // Arrange
-//        var builder = new HostBuilder()
-//           .ConfigureServices((hostContext, services) =>
-//            {
-//                services.EnableDataMigrations()
-//                        .UseNpgsql(_connectionString);
+        // Assert
+        Assert.That(migrationHistory.Count, Is.EqualTo(2));
+        Assert.That(migrationHistory[0].MigrationId, Is.EqualTo("20240502_160412_InitializeMigration"));
+        Assert.That(migrationHistory[1].MigrationId, Is.EqualTo("20240502_160413_InitializeMigration3"));
 
-//                services.AddDataMigrator<GoodMigration>();
-//                services.AddDataMigrator<MigrationWithThrowingException>();
-//            });
+        await host.StopAsync();
+    }
 
-//        var host = builder.Build();
+    [Test]
+    public async Task AddDataMigrator_ShouldExecuteAtAppStart_WithoutWritingHistoryDueToException()
+    {
+        // Arrange
+        var builder = new HostBuilder()
+           .ConfigureServices((_, services) =>
+            {
+                services.EnableDataMigrations()
+                        .UseNpgsql(_postgreSqlContainer.GetConnectionString());
 
-//        // Acts
-//        await host.StartAsync();
+                services.AddDataMigrator<GoodMigration>();
+                services.AddDataMigrator<MigrationWithThrowingException>();
+            });
 
-//        using var serviceScope = host.Services.CreateScope();
+        var host = builder.Build();
 
-//        var serviceProvider = serviceScope.ServiceProvider;
+        // Acts
+        await host.StartAsync();
 
-//        await using var dbContext = serviceProvider.GetRequiredService<DataMigrationDbContext>();
+        using var serviceScope = host.Services.CreateScope();
 
-//        var migrationHistory = dbContext.Set<DataMigrationHistory>()
-//                                        .ToList();
+        var serviceProvider = serviceScope.ServiceProvider;
 
-//        // Assert
-//        Assert.That(migrationHistory.Count, Is.EqualTo(0));
+        await using var dbContext = serviceProvider.GetRequiredService<DataMigrationDbContext>();
 
-//        await host.StopAsync();
-//    }
+        var migrationHistory = dbContext.Set<DataMigrationHistory>()
+                                        .ToList();
 
-//    private IHost ConfigureService<TMigration>() where TMigration : IDataMigration
-//    {
-//        var builder = new HostBuilder()
-//           .ConfigureServices((hostContext, services) =>
-//            {
-//                services.EnableDataMigrations();
+        // Assert
+        Assert.That(migrationHistory.Count, Is.EqualTo(0));
 
-//                services.AddDataMigrator<TMigration>();
-//            });
+        await host.StopAsync();
+    }
 
-//        var host = builder.Build();
+    private IHost ConfigureService<TMigration>() where TMigration : IDataMigration
+    {
+        var builder = new HostBuilder()
+           .ConfigureServices((_, services) =>
+            {
+                services.EnableDataMigrations();
 
-//        return host;
-//    }
+                services.AddDataMigrator<TMigration>();
+            });
 
-//    private void TearDownHost()
-//    {
-//        var builder = new HostBuilder()
-//           .ConfigureServices((hostContext, serviceCollection) =>
-//            {
-//                serviceCollection.AddDbContext<DataMigrationDbContext>(options =>
-//                {
-//                    options.UseNpgsql(_connectionString);
-//                });
-//            });
+        var host = builder.Build();
 
-//        var host = builder.Build();
+        return host;
+    }
 
-//        using var serviceScope    = host.Services.CreateScope();
-//        var       serviceProvider = serviceScope.ServiceProvider;
+    private void TearDownHost()
+    {
+        var builder = new HostBuilder()
+           .ConfigureServices((_, serviceCollection) =>
+            {
+                serviceCollection.AddDbContext<DataMigrationDbContext>(options =>
+                {
+                    options.UseNpgsql(_postgreSqlContainer.GetConnectionString());
+                });
+            });
 
-//        using var dbContext = serviceProvider.GetRequiredService<DataMigrationDbContext>();
-//        dbContext.Database.EnsureDeleted();
-//    }
-//}
+        var host = builder.Build();
+
+        using var serviceScope    = host.Services.CreateScope();
+        var       serviceProvider = serviceScope.ServiceProvider;
+
+        using var dbContext = serviceProvider.GetRequiredService<DataMigrationDbContext>();
+        dbContext.Database.EnsureDeleted();
+    }
+}

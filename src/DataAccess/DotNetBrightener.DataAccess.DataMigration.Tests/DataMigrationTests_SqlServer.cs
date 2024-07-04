@@ -3,21 +3,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NUnit.Framework;
+using Testcontainers.MsSql;
 
 namespace DotNetBrightener.DataAccess.DataMigration.Tests;
 
-internal class DataMigrationTests_SqlServer
+internal class DataMigrationTests_SqlServer: MsSqlServerBaseTest
 {
-    private string _connectionString;
-
-    [SetUp]
-    public void Setup()
-    {
-        _connectionString =
-            $"Server=(localdb)\\MSSQLLocalDB;Database=DataMigration_UnitTest{DateTime.Now:yyyyMMddHHmm};Trusted_Connection=True;MultipleActiveResultSets=true";
-        // _connectionString = $"Server=100.121.179.124;Database=DataMigration_UnitTest{DateTime.Now:yyyyMMddHHmm};User Id=sa;Password=sCpTXbW8jbSbbUpILfZVulTiwqcPyJWt;MultipleActiveResultSets=True;Encrypt=True;TrustServerCertificate=True;";
-    }
-
     [TearDown]
     public void TearDown()
     {
@@ -74,7 +65,7 @@ internal class DataMigrationTests_SqlServer
            .ConfigureServices((hostContext, services) =>
             {
                 services.EnableDataMigrations()
-                        .UseSqlServer(_connectionString);
+                        .UseSqlServer(ConnectionString);
 
                 services.AddDataMigrator<GoodMigration>();
                 services.AddDataMigrator<GoodMigration2>();
@@ -110,7 +101,7 @@ internal class DataMigrationTests_SqlServer
            .ConfigureServices((hostContext, services) =>
             {
                 services.EnableDataMigrations()
-                        .UseSqlServer(_connectionString);
+                        .UseSqlServer(ConnectionString);
 
                 services.AddDataMigrator<GoodMigration>();
                 services.AddDataMigrator<MigrationWithThrowingException>();
@@ -158,7 +149,7 @@ internal class DataMigrationTests_SqlServer
             {
                 serviceCollection.AddDbContext<DataMigrationDbContext>(options =>
                 {
-                    options.UseSqlServer(_connectionString);
+                    options.UseSqlServer(ConnectionString);
                 });
             });
 
