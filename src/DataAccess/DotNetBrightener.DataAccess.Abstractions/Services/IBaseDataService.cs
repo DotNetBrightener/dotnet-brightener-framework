@@ -211,6 +211,18 @@ public interface IBaseDataService<TEntity>: IDisposable
                          Expression<Func<TEntity, TEntity>> updateExpression);
 
     /// <summary>
+    ///     Deletes a record of the entity to the database
+    /// </summary>
+    /// <param name="entity">The record to update</param>
+    void Delete(TEntity entity, string reason, bool forceHardDelete = false);
+
+    /// <summary>
+    ///     Deletes a record of the entity to the database
+    /// </summary>
+    /// <param name="entity">The record to update</param>
+    Task DeleteAsync(TEntity entity, string reason, bool forceHardDelete = false);
+
+    /// <summary>
     ///     Delete the matched record with the given filter expression, expected only one record affected
     /// </summary>
     /// <param name="filterExpression">

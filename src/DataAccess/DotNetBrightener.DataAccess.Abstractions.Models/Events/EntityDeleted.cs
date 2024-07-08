@@ -20,3 +20,23 @@ public class EntityDeleted<TEntity> : EntityEventMessage<TEntity> where TEntity 
     {
     }
 }
+
+/// <summary>
+///     Event fired when an entity of type <typeparam name="TEntity" /> is being deleted
+/// </summary>
+/// <typeparam name="TEntity">
+///     The type of the entity specified in the event
+/// </typeparam>
+public class EntityDeleting<TEntity> : EntityEventMessage<TEntity> where TEntity : class
+{
+    public string? DeletionReason { get; set; }
+
+    public EntityDeleting()
+    {
+    }
+
+    public EntityDeleting(TEntity entity, string? userId, string? userName)
+        : base(entity, userId, userName)
+    {
+    }
+}

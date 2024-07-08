@@ -143,6 +143,15 @@ public abstract class BaseDataService<TEntity>(IRepository repository) : IBaseDa
         return affectedRecords;
     }
 
+    public void Delete(TEntity entity, string reason, bool forceHardDelete = false)
+        => DeleteAsync(entity, reason, forceHardDelete).Wait();
+
+    public virtual async Task DeleteAsync(TEntity entity, string reason, bool forceHardDelete = false)
+    {
+        await Repository.DeleteOneAsync(entity, reason, forceHardDelete);
+        await Repository.CommitChangesAsync();
+    }
+
     public virtual async Task DeleteOne(Expression<Func<TEntity, bool>>? filterExpression,
                                         string?                          reason          = null,
                                         bool                             forceHardDelete = false)

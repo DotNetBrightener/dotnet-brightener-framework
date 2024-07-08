@@ -539,6 +539,54 @@ public interface IRepository : IDisposable
     /// <remarks>
     ///     If the <typeparamref name="T"/> can be soft-deleted, the entity may be marked as deleted
     /// </remarks>
+    /// <param name="reason">
+    ///     The reason for deleting the record. It will be recorded only if the entity can be soft-deleted
+    /// </param>
+    /// <param name="forceHardDelete">
+    ///     Enforcing hard-deletion on the entity, default is <c>false</c> for soft-deletion
+    /// </param>
+    /// <exception cref="NotFoundException">
+    ///     Thrown if no entity got deleted.
+    /// </exception>
+    /// <exception cref="ExpectedAffectedRecordMismatch">
+    ///     Thrown if number of entities got deleted differs from the provided expectation.
+    /// </exception>
+    void DeleteOne<T>(T       entity,
+                      string? reason          = null,
+                      bool    forceHardDelete = false)
+        where T : class;
+
+
+    /// <summary>
+    ///     Deletes a record of type <typeparamref name="T"/> from the query, without retrieving the record.
+    /// </summary>
+    /// <remarks>
+    ///     If the <typeparamref name="T"/> can be soft-deleted, the entity may be marked as deleted
+    /// </remarks>
+    /// <param name="reason">
+    ///     The reason for deleting the record. It will be recorded only if the entity can be soft-deleted
+    /// </param>
+    /// <param name="forceHardDelete">
+    ///     Enforcing hard-deletion on the entity, default is <c>false</c> for soft-deletion
+    /// </param>
+    /// <exception cref="NotFoundException">
+    ///     Thrown if no entity got deleted.
+    /// </exception>
+    /// <exception cref="ExpectedAffectedRecordMismatch">
+    ///     Thrown if number of entities got deleted differs from the provided expectation.
+    /// </exception>
+    Task DeleteOneAsync<T>(T       entity,
+                           string? reason          = null,
+                           bool    forceHardDelete = false)
+        where T : class;
+
+
+    /// <summary>
+    ///     Deletes a record of type <typeparamref name="T"/> from the query, without retrieving the record.
+    /// </summary>
+    /// <remarks>
+    ///     If the <typeparamref name="T"/> can be soft-deleted, the entity may be marked as deleted
+    /// </remarks>
     /// <param name="conditionExpression">
     ///     The expression of how to identify which record to delete
     /// </param>

@@ -431,6 +431,54 @@ public class Repository : IRepository
         return updatedRecords;
     }
 
+    public void DeleteOne<T>(T entity, string? reason = null, bool forceHardDelete = false) where T : class
+        => DeleteOneAsync(entity, reason, forceHardDelete).Wait();
+
+    public virtual async Task DeleteOneAsync<T>(T entity, string? reason = null, bool forceHardDelete = false)
+        where T : class
+    {
+        var entityDeletingEvent = new EntityDeleting<T>()
+        {
+            UserName       = CurrentLoggedInUserResolver?.CurrentUserName,
+            UserId         = CurrentLoggedInUserResolver?.CurrentUserId,
+            Entity         = entity,
+            DeletionReason = reason
+        };
+
+        if (EventPublisher is not null)
+        {
+            await EventPublisher.Publish(entityDeletingEvent);
+        }
+
+        const string isDeletedFieldName = nameof(IAuditableEntity.IsDeleted);
+
+        forceHardDelete =
+            forceHardDelete || !typeof(T).HasProperty<bool>(isDeletedFieldName);
+
+
+        if (!forceHardDelete &&
+            entity is BaseEntityWithAuditInfo auditableEntity)
+        {
+            auditableEntity.IsDeleted      = true;
+            auditableEntity.DeletedDate    = DateTimeProvider?.UtcNow ?? DateTime.UtcNow;
+            auditableEntity.DeletedBy      = CurrentLoggedInUserResolver?.CurrentUserName;
+            auditableEntity.DeletionReason = entityDeletingEvent.DeletionReason;
+
+            var entityEntry = DbContext.Entry(entity);
+
+            if (entityEntry.State == EntityState.Detached)
+            {
+                DbContext.Set<T>().Attach(entity);
+            }
+
+            entityEntry.State = EntityState.Modified;
+        }
+        else
+        {
+            DbContext.Set<T>().Remove(entity);
+        }
+    }
+
     private async Task<int> PerformUpdate<T>(IQueryable<T> query, Expression<Func<T, T>> updateExpression)
         where T : class
     {
