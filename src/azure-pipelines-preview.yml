@@ -14,19 +14,19 @@ name: $(ExtractedBuildNo)-preview-$(DayOfYear)$(Date:HH)$(Rev:rr)
 
 trigger: none 
 
-stages:
-- stage: Test
-  jobs:
-  - job: Test
-    displayName: Test Packages
-
-    pool:
-      vmImage: 'ubuntu-latest'
+pool:
+  vmImage: 'ubuntu-latest'
 
     # pool:
     #   name: dotnetbrightener-selfhosted
     #   demands: 
     #   - agent.name -equals self-hosted
+
+stages:
+- stage: Test
+  jobs:
+  - job: Test
+    displayName: Test Packages
 
     steps:
     - checkout: self
@@ -58,14 +58,6 @@ stages:
   jobs:
   - job: Build_Packages
     displayName: Building packages
-
-    pool:
-      vmImage: 'ubuntu-latest'
-
-    # pool:
-    #   name: dotnetbrightener-selfhosted
-    #   demands: 
-    #   - agent.name -equals self-hosted
 
     steps:
     - checkout: self
@@ -100,9 +92,6 @@ stages:
 
   - job: Mirror_To_Github
     displayName: Mirror to Github
-
-    pool:
-      vmImage: 'ubuntu-latest'
 
     steps:
     - task: PowerShell@2
