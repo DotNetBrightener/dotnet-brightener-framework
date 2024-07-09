@@ -5,13 +5,13 @@ using CRUDWebApiWithGeneratorDemo.Core.Entities;
 
 namespace CRUDWebApiWithGeneratorDemo.Services.Data;
 
-public partial class ProductDataService
+public partial class GroupEntityDataService
 {
     private readonly ILogger _logger;
 
-    public ProductDataService(
+    public GroupEntityDataService(
             IRepository repository, 
-            ILogger<ProductDataService> logger)
+            ILogger<GroupEntityDataService> logger)
         : this(repository)
     {
         _logger = logger;

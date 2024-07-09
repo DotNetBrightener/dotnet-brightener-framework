@@ -1,17 +1,17 @@
 using DotNetBrightener.TemplateEngine.Data.Mssql.Data;
 using DotNetBrightener.TemplateEngine.Data.Services;
 using DotNetBrightener.TemplateEngine.Services;
+using DotNetBrightener.TestHelpers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Moq;
 using NUnit.Framework;
-using Testcontainers.MsSql;
 
 namespace DotNetBrightener.TemplateEngine.Tests.Data.Mssql;
 
 [TestFixture]
-public class TemplateEngine_SqlStorageTests : MsSqlServerBaseTest
+public class TemplateEngine_SqlStorageTests : MsSqlServerBaseNUnitTest
 {
     private IHost _testHost;
 

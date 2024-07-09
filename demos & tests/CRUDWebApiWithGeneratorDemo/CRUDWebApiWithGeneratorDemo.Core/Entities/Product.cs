@@ -13,4 +13,6 @@ public class Product: BaseEntityWithAuditInfo
 
     [ForeignKey(nameof(ProductCategoryId))]
     public virtual ProductCategory ProductCategory { get; set; }
+    
+    public virtual ICollection<ProductDocument> ProductDocuments { get; set; }
 }

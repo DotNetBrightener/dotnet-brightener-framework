@@ -1,26 +1,20 @@
 ﻿using DotNetBrightener.DataAccess.Models;
-using DotNetBrightener.Plugins.EventPubSub;
 using Microsoft.Extensions.Logging;
 
 // ReSharper disable InconsistentNaming
 
 namespace DotNetBrightener.DataAccess.EF.Events;
 
-public class DbOnBeforeSaveChanges_SetAuditInformation(
-    ILogger<DbOnBeforeSaveChanges_SetAuditInformation> logger,
-    IDateTimeProvider                                  dateTimeProvider)
-    : IEventHandler<DbContextBeforeSaveChanges>
+public static class DbOnBeforeSaveChanges_SetAuditInformation
 {
-    public int Priority => 0;
-
-    private readonly ILogger _logger = logger;
-
     private const string createdDatePropName   = nameof(BaseEntityWithAuditInfo.CreatedDate);
     private const string createdByPropName     = nameof(BaseEntityWithAuditInfo.CreatedBy);
     private const string lastUpdatedByPropName = nameof(BaseEntityWithAuditInfo.ModifiedBy);
     private const string lastUpdatedPropName   = nameof(BaseEntityWithAuditInfo.ModifiedDate);
 
-    public Task<bool> HandleEvent(DbContextBeforeSaveChanges eventMessage)
+    public static void HandleEvent(DbContextBeforeSaveChanges eventMessage,
+                                   IDateTimeProvider?         dateTimeProvider,
+                                   ILogger                    logger)
     {
         foreach (var entry in eventMessage.InsertedEntityEntries)
         {
@@ -37,12 +31,13 @@ public class DbOnBeforeSaveChanges_SetAuditInformation(
                 if (entry.Properties.Any(p => p.Metadata.Name == createdDatePropName) &&
                     entry.Property(createdDatePropName).CurrentValue == null)
                 {
-                    entry.Property(createdDatePropName).CurrentValue = dateTimeProvider.UtcNow;
+                    entry.Property(createdDatePropName).CurrentValue =
+                        dateTimeProvider?.UtcNowWithOffset ?? DateTimeOffset.Now;
                 }
             }
             catch (Exception error)
             {
-                _logger.LogWarning(error, "Error while trying to set Audit information");
+                logger.LogWarning(error, "Error while trying to set Audit information");
             }
         }
 
@@ -68,10 +63,8 @@ public class DbOnBeforeSaveChanges_SetAuditInformation(
             }
             catch (Exception error)
             {
-                _logger.LogWarning(error, "Error while trying to set Audit information");
+                logger.LogWarning(error, "Error while trying to set Audit information");
             }
         }
-
-        return Task.FromResult(true);
     }
 }

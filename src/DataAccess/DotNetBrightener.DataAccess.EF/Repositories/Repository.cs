@@ -1,6 +1,5 @@
 #nullable enable
 
-using System.Linq.Dynamic.Core;
 using DotNetBrightener.DataAccess.Attributes;
 using DotNetBrightener.DataAccess.Auditing;
 using DotNetBrightener.DataAccess.EF.Events;
@@ -16,9 +15,9 @@ using LinqToDB.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.Logging;
+using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using System.Reflection;
-using LinqToDB.DataProvider.PostgreSQL;
 
 namespace DotNetBrightener.DataAccess.EF.Repositories;
 
@@ -171,7 +170,8 @@ public class Repository : IRepository
     {
         if (entity is IAuditableEntity auditableEntity)
         {
-            auditableEntity.CreatedDate = DateTimeProvider?.UtcNow ?? DateTime.UtcNow;
+            if (auditableEntity.CreatedDate is null)
+                auditableEntity.CreatedDate = DateTimeProvider?.UtcNowWithOffset ?? DateTimeOffset.UtcNow;
 
             if (string.IsNullOrEmpty(auditableEntity.CreatedBy))
                 auditableEntity.CreatedBy = CurrentLoggedInUserResolver?.CurrentUserName;
@@ -275,7 +275,8 @@ public class Repository : IRepository
     {
         if (entity is not IAuditableEntity auditableEntity) return entity;
 
-        auditableEntity.CreatedDate = DateTimeProvider?.UtcNow ?? DateTime.UtcNow;
+        if (auditableEntity.CreatedDate is null)
+            auditableEntity.CreatedDate = DateTimeProvider?.UtcNowWithOffset ?? DateTimeOffset.UtcNow;
 
         if (string.IsNullOrEmpty(auditableEntity.CreatedBy))
             auditableEntity.CreatedBy = CurrentLoggedInUserResolver?.CurrentUserName;
@@ -341,7 +342,7 @@ public class Repository : IRepository
 
         if (entity is BaseEntityWithAuditInfo auditableEntity)
         {
-            auditableEntity.ModifiedDate = DateTimeProvider?.UtcNow ?? DateTime.UtcNow;
+            auditableEntity.ModifiedDate = DateTimeProvider?.UtcNowWithOffset ?? DateTimeOffset.UtcNow;
             auditableEntity.ModifiedBy   = CurrentLoggedInUserResolver?.CurrentUserName;
         }
 
@@ -460,7 +461,7 @@ public class Repository : IRepository
             entity is BaseEntityWithAuditInfo auditableEntity)
         {
             auditableEntity.IsDeleted      = true;
-            auditableEntity.DeletedDate    = DateTimeProvider?.UtcNow ?? DateTime.UtcNow;
+            auditableEntity.DeletedDate    = DateTimeProvider?.UtcNowWithOffset ?? DateTimeOffset.UtcNow;
             auditableEntity.DeletedBy      = CurrentLoggedInUserResolver?.CurrentUserName;
             auditableEntity.DeletionReason = entityDeletingEvent.DeletionReason;
 
@@ -526,10 +527,9 @@ public class Repository : IRepository
             await UpdateAsync(conditionExpression,
                               new
                               {
-                                  IsDeleted   = true,
-                                  DeletedDate = DateTimeOffset.UtcNow,
-                                  DeletedBy = CurrentLoggedInUserResolver
-                                    ?.CurrentUserName,
+                                  IsDeleted      = true,
+                                  DeletedDate    = DateTimeProvider?.UtcNowWithOffset ?? DateTimeOffset.UtcNow,
+                                  DeletedBy      = CurrentLoggedInUserResolver?.CurrentUserName,
                                   DeletionReason = reason
                               },
                               expectedAffectedRows: 1);
@@ -570,7 +570,7 @@ public class Repository : IRepository
                                                      new
                                                      {
                                                          IsDeleted      = true,
-                                                         DeletedDate    = DateTimeOffset.UtcNow,
+                                                         DeletedDate    = DateTimeProvider?.UtcNowWithOffset ?? DateTimeOffset.UtcNow,
                                                          DeletedBy      = CurrentLoggedInUserResolver?.CurrentUserName,
                                                          DeletionReason = reason
                                                      },
@@ -677,8 +677,7 @@ public class Repository : IRepository
     protected virtual async Task OnBeforeSaveChanges(List<EntityEntry> insertedEntities,
                                                      List<EntityEntry> updatedEntities)
     {
-        if (!DbContext.ChangeTracker.HasChanges() ||
-            EventPublisher is null)
+        if (!DbContext.ChangeTracker.HasChanges())
         {
             return;
         }
@@ -692,13 +691,19 @@ public class Repository : IRepository
         updatedEntities.AddRange(entityEntries.Where(e => e.State == EntityState.Modified ||
                                                           e.State == EntityState.Deleted));
 
-        await EventPublisher.Publish(new DbContextBeforeSaveChanges
+
+        var eventMessage = new DbContextBeforeSaveChanges
         {
             InsertedEntityEntries = insertedEntities,
             UpdatedEntityEntries  = updatedEntities,
             CurrentUserId         = CurrentLoggedInUserResolver?.CurrentUserId,
             CurrentUserName       = CurrentLoggedInUserResolver?.CurrentUserName,
-        });
+        };
+
+        DbOnBeforeSaveChanges_SetAuditInformation.HandleEvent(eventMessage, DateTimeProvider, Logger);
+
+        if (EventPublisher is not null)
+            await EventPublisher.Publish(eventMessage);
     }
 
     protected virtual async Task OnAfterSaveChanges(List<EntityEntry> insertedEntities, List<EntityEntry> updatedEntities)
@@ -764,7 +769,7 @@ public class Repository : IRepository
             typeof(T).IsAssignableTo(typeof(IAuditableEntity)))
         {
             setPropBuilder.SetPropertyByName<DateTimeOffset?>(nameof(IAuditableEntity.ModifiedDate),
-                                                              DateTimeProvider?.UtcNow ?? DateTime.UtcNow);
+                                                              DateTimeProvider?.UtcNowWithOffset ?? DateTimeOffset.UtcNow);
         }
 
         if (!hasModifiedBy &&

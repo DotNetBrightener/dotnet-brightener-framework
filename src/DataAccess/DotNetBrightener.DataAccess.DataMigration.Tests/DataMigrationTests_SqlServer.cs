@@ -1,4 +1,5 @@
 ﻿using DotNetBrightener.DataAccess.DataMigration.Extensions;
+using DotNetBrightener.TestHelpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -7,7 +8,7 @@ using Testcontainers.MsSql;
 
 namespace DotNetBrightener.DataAccess.DataMigration.Tests;
 
-internal class DataMigrationTests_SqlServer: MsSqlServerBaseTest
+internal class DataMigrationTests_SqlServer: MsSqlServerBaseNUnitTest
 {
     [TearDown]
     public void TearDown()

@@ -313,9 +313,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.PushNotifi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.PushNotification", "PushNotification\DotNetBrightener.PushNotification\DotNetBrightener.PushNotification.csproj", "{5E112CC1-FF93-43EA-9DC6-E3233D61E6EB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetBrightener.TestHelpers", "TestHelpers\DotNetBrightener.TestHelpers\DotNetBrightener.TestHelpers.csproj", "{2BF808D4-C815-494A-ADBD-CD32B3A27C70}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.TestHelpers", "TestHelpers\DotNetBrightener.TestHelpers\DotNetBrightener.TestHelpers.csproj", "{2BF808D4-C815-494A-ADBD-CD32B3A27C70}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LanguageExts.Tests", "Core\LanguageExts.Tests\LanguageExts.Tests.csproj", "{7D96BD33-3BB4-40F7-B3D4-84E7B3C1BD77}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GenericCRUD.WebAPIDemo.IntegrationTests", "..\demos & tests\CRUDWebApiWithGeneratorDemo\GenericCRUD.WebAPIDemo.IntegrationTests\GenericCRUD.WebAPIDemo.IntegrationTests.csproj", "{EC168071-71AB-404D-AF2A-EE93F97CFC94}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1117,6 +1119,14 @@ Global
 		{7D96BD33-3BB4-40F7-B3D4-84E7B3C1BD77}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7D96BD33-3BB4-40F7-B3D4-84E7B3C1BD77}.Release|ARM64.ActiveCfg = Release|Any CPU
 		{7D96BD33-3BB4-40F7-B3D4-84E7B3C1BD77}.Release|ARM64.Build.0 = Release|Any CPU
+		{EC168071-71AB-404D-AF2A-EE93F97CFC94}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC168071-71AB-404D-AF2A-EE93F97CFC94}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC168071-71AB-404D-AF2A-EE93F97CFC94}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{EC168071-71AB-404D-AF2A-EE93F97CFC94}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{EC168071-71AB-404D-AF2A-EE93F97CFC94}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC168071-71AB-404D-AF2A-EE93F97CFC94}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EC168071-71AB-404D-AF2A-EE93F97CFC94}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{EC168071-71AB-404D-AF2A-EE93F97CFC94}.Release|ARM64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1250,6 +1260,7 @@ Global
 		{5E112CC1-FF93-43EA-9DC6-E3233D61E6EB} = {85480262-4B08-4286-ABE9-5C7609ACA593}
 		{2BF808D4-C815-494A-ADBD-CD32B3A27C70} = {17CF6FFF-1966-4534-8B68-6AAE4AE440BD}
 		{7D96BD33-3BB4-40F7-B3D4-84E7B3C1BD77} = {17CF6FFF-1966-4534-8B68-6AAE4AE440BD}
+		{EC168071-71AB-404D-AF2A-EE93F97CFC94} = {A4FB8D69-16C6-4B0F-B6A5-282275DF4825}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CBA29A5C-A736-4EB9-8D61-8E76924706CD}
@@ -1387,6 +1398,7 @@ Global
 		Shared\SharedExtensions.Exception\SharedExtensions.Exception.projitems*{e7088f1b-434a-42f3-a025-5ee967a62214}*SharedItemsImports = 5
 		Shared\SharedExtensions.HttpContext\SharedExtensions.HttpContext.projitems*{e7088f1b-434a-42f3-a025-5ee967a62214}*SharedItemsImports = 5
 		Shared\SharedExtensions.HttpContext\SharedExtensions.HttpContext.projitems*{eb78590d-83be-404a-b554-1e436ecd64f7}*SharedItemsImports = 13
+		Shared\SharedExtensions.DbContext\SharedExtensions.DbContext.projitems*{ec168071-71ab-404d-af2a-ee93f97cfc94}*SharedItemsImports = 5
 		Shared\SharedExtensions.ObjectMethods\SharedExtensions.ObjectMethods.projitems*{eda17464-72bb-485e-b43b-a62af402559b}*SharedItemsImports = 13
 		Shared\SharedExtensions.Exception\SharedExtensions.Exception.projitems*{ef16f907-7da4-4816-b0e3-f3097a46d66b}*SharedItemsImports = 5
 		Shared\SharedExtensions.HttpContext\SharedExtensions.HttpContext.projitems*{ef16f907-7da4-4816-b0e3-f3097a46d66b}*SharedItemsImports = 5

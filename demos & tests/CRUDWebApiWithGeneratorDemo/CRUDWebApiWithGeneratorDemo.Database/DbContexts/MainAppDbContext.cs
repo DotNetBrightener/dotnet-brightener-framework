@@ -19,11 +19,16 @@ public class MainAppDbContext : SqlServerVersioningMigrationEnabledDbContext
 
     protected override void ConfigureModelBuilder(ModelBuilder modelBuilder)
     {
-        var productEntity         = modelBuilder.Entity<Product>();
-        var productCategoryEntity = modelBuilder.Entity<ProductCategory>();
-        var document              = modelBuilder.Entity<ProductDocument>();
+        modelBuilder.Entity<Product>();
+        
+        modelBuilder.Entity<ProductCategory>();
 
-        document.Property(_ => _.Price)
-                .HasColumnType("decimal");
+        modelBuilder.Entity<ProductDocument>(document =>
+        {
+            document.Property(_ => _.Price)
+                    .HasColumnType("decimal");
+        });
+
+        modelBuilder.Entity<GroupEntity>();
     }
 }

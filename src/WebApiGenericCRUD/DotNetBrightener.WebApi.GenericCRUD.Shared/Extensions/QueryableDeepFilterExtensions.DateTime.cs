@@ -27,6 +27,8 @@ public static partial class QueryableDeepFilterExtensions
                     throw new InvalidOperationException($"Date format cannot be recognized.");
                 }
 
+                // TODO: Add exception in case of using ON / NOT ON operators. DateTime cannot be used with these operators due to lack of tz info.
+
                 subPredicateQuery = ExpressionExtensions.BuildPredicate<TIn>(filterValue,
                                                                              operation!.Value,
                                                                              property.Path);
@@ -38,9 +40,51 @@ public static partial class QueryableDeepFilterExtensions
                     throw new InvalidOperationException($"Date format cannot be recognized.");
                 }
 
-                subPredicateQuery = ExpressionExtensions.BuildPredicate<TIn>(filterValue,
-                                                                             operation!.Value,
-                                                                             property.Path);
+                if (operation.Value == OperatorComparer.On)
+                {
+                    if (filterValue.Hour != 0 ||
+                        filterValue.Minute != 0 ||
+                        filterValue.Second != 0)
+                    {
+                        throw new
+                            InvalidOperationException($"For ON / NOT ON operators, the date value must be at 00:00:00");
+                    }
+
+                    subPredicateQuery = ExpressionExtensions.BuildPredicate<TIn>(filterValue,
+                                                                                 OperatorComparer.GreaterThanOrEqual,
+                                                                                 property.Path);
+
+                    subPredicateQuery =
+                        subPredicateQuery.And(ExpressionExtensions.BuildPredicate<TIn>(filterValue.AddDays(1),
+                                                                                       OperatorComparer.LessThan,
+                                                                                       property.Path));
+                }
+                else if (operation.Value == OperatorComparer.NotOn)
+                {
+                    if (filterValue.Hour != 0 ||
+                        filterValue.Minute != 0 ||
+                        filterValue.Second != 0)
+                    {
+                        throw new
+                            InvalidOperationException($"For ON / NOT ON operators, the date value must be at 00:00:00");
+                    }
+
+                    subPredicateQuery = ExpressionExtensions.BuildPredicate<TIn>(filterValue,
+                                                                                 OperatorComparer.LessThan,
+                                                                                 property.Path);
+
+                    subPredicateQuery =
+                        subPredicateQuery.Or(ExpressionExtensions.BuildPredicate<TIn>(filterValue.AddDays(1),
+                                                                                      OperatorComparer
+                                                                                         .GreaterThanOrEqual,
+                                                                                      property.Path));
+                }
+                else
+                {
+                    subPredicateQuery = ExpressionExtensions.BuildPredicate<TIn>(filterValue,
+                                                                                 operation!.Value,
+                                                                                 property.Path);
+                }
 
             }
 

@@ -1,4 +1,5 @@
 ﻿using DotNetBrightener.DataAccess.Services;
+using DotNetBrightener.TestHelpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -7,7 +8,7 @@ using Testcontainers.MsSql;
 
 namespace DotNetBrightener.DataAccess.EF.Tests;
 
-internal class EfRepositoryTest : MsSqlServerBaseTest
+internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
 {
     [TearDown]
     public void TearDown()
