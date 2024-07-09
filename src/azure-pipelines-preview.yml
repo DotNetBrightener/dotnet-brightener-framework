@@ -15,8 +15,8 @@ name: $(ExtractedBuildNo)-preview-$(DayOfYear)$(Date:HH)$(Rev:rr)
 trigger: none 
 
 jobs:
-- job: Build_Packages
-  displayName: Building agent
+- job: Test
+  displayName: Test Packages
 
   pool:
     vmImage: 'ubuntu-latest'
@@ -27,18 +27,6 @@ jobs:
   #   - agent.name -equals self-hosted
 
   steps:
-  - task: PowerShell@2
-    inputs:
-      targetType: 'inline'
-      script: |
-        git clone --bare "https://justinchasez04121990:$(AzureAccessToken)@dev.azure.com/justinchasez/DotNet%20Brightener/_git/dotnet-brightener-framework"
-        cd dotnet-brightener-framework.git
-        git push --mirror https://$(GithubAccessToken)@github.com/DotNetBrightener/dotnet-brightener-framework
-        cd ..
-        # rm -Recurse -Force dotnet-brightener-framework.git
-        rm -Rf dotnet-brightener-framework.git
-    displayName: 'Mirror to Github'
-
   - checkout: self
     displayName: Checking out $(Build.BuildNumber)
     submodules: true
@@ -63,6 +51,35 @@ jobs:
       projects: $(BuildParameters.RestoreBuildProjects)
       arguments: -p:GeneratePackageOnBuild=false --configuration $(BuildConfiguration)
 
+- job: Build_Packages
+  displayName: Building packages
+
+  pool:
+    vmImage: 'ubuntu-latest'
+
+  # pool:
+  #   name: dotnetbrightener-selfhosted
+  #   demands: 
+  #   - agent.name -equals self-hosted
+
+  steps:
+  - checkout: self
+    displayName: Checking out $(Build.BuildNumber)
+    submodules: true
+    persistCredentials: true
+
+  - task: UseDotNet@2
+    displayName: Ensure .NET Core SDK Installed
+    inputs:
+      version: 8.x
+      performMultiLevelLookup: true
+
+  - task: DotNetCoreCLI@2
+    displayName: Restore Packages
+    inputs:
+      command: restore
+      projects: $(BuildParameters.RestoreBuildProjects)
+
   - task: DotNetCoreCLI@2
     displayName: Building version $(Build.BuildNumber)
     inputs:
@@ -75,3 +92,21 @@ jobs:
       PathtoPublish: 'src/nupkg_release'
       ArtifactName: 'dnb-framework'
       publishLocation: 'Container'
+
+- job: Mirror_To_Github
+  displayName: Mirror to Github
+
+  pool:
+    vmImage: 'ubuntu-latest'
+
+  steps:
+  - task: PowerShell@2
+    inputs:
+      targetType: 'inline'
+      script: |
+        git clone --bare "https://justinchasez04121990:$(AzureAccessToken)@dev.azure.com/justinchasez/DotNet%20Brightener/_git/dotnet-brightener-framework"
+        cd dotnet-brightener-framework.git
+        git push --mirror https://$(GithubAccessToken)@github.com/DotNetBrightener/dotnet-brightener-framework
+        cd ..
+        rm -Rf dotnet-brightener-framework.git
+    displayName: 'Mirror to Github'
