@@ -4,6 +4,8 @@ namespace DotNetBrightener.DataAccess.EF.Tests;
 
 public class TestDbContext: DbContext
 {
+    public readonly Guid Id = Guid.NewGuid();
+
     public TestDbContext(DbContextOptions<TestDbContext> options) : base(options)
     {
     }

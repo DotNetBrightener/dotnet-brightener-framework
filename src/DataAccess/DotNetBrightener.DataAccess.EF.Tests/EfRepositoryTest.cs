@@ -28,7 +28,7 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
             var serviceProvider = serviceScope.ServiceProvider;
             var repository      = serviceProvider.GetRequiredService<IRepository>();
 
-            var deletableEntityCount = repository.Fetch<TestEntity>().Count();
+            var deletableEntityCount = await repository.CountAsync<TestEntity>();
 
             Assert.That(deletableEntityCount, Is.EqualTo(10));
         }
@@ -59,7 +59,7 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
             var serviceProvider = serviceScope.ServiceProvider;
             var repository      = serviceProvider.GetRequiredService<IRepository>();
 
-            var firstEntity = repository.GetFirst<TestEntity>(_ => true);
+            var firstEntity = await repository.GetFirstAsync<TestEntity>(_ => true);
             Assert.That(firstEntity.Name, Is.EqualTo("Name1_Updated by event handler"));
         }
     }
@@ -89,7 +89,7 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
             var serviceProvider = serviceScope.ServiceProvider;
             var repository      = serviceProvider.GetRequiredService<IRepository>();
 
-            var firstEntity = repository.GetFirst<TestEntity>(_ => true);
+            var firstEntity = await repository.GetFirstAsync<TestEntity>(_ => true);
             firstEntity.Name = "Name1_Updated";
             await repository.UpdateAsync(firstEntity);
             await repository.CommitChangesAsync();
@@ -102,7 +102,7 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
             var serviceProvider = serviceScope.ServiceProvider;
             var repository      = serviceProvider.GetRequiredService<IRepository>();
 
-            var firstEntity = repository.GetFirst<TestEntity>(_ => true);
+            var firstEntity = await repository.GetFirstAsync<TestEntity>(_ => true);
             Assert.That(firstEntity.Name, Is.EqualTo("Name1_Updated_Updated by update event handler"));
         }
     }
@@ -132,7 +132,7 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
             var serviceProvider = serviceScope.ServiceProvider;
             var repository      = serviceProvider.GetRequiredService<IRepository>();
 
-            var firstEntity = repository.GetFirst<TestEntity>(_ => true);
+            var firstEntity = await repository.GetFirstAsync<TestEntity>(_ => true);
 
             await repository.UpdateAsync(firstEntity,
                                          new
@@ -149,7 +149,7 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
             var serviceProvider = serviceScope.ServiceProvider;
             var repository      = serviceProvider.GetRequiredService<IRepository>();
 
-            var firstEntity = repository.GetFirst<TestEntity>(_ => true);
+            var firstEntity = await repository.GetFirstAsync<TestEntity>(_ => true);
             Assert.That(firstEntity.Name, Is.EqualTo("Name1_Updated_From_Logic, _Updated by update event handler"));
         }
     }
@@ -180,7 +180,7 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
             var serviceProvider = serviceScope.ServiceProvider;
             var repository      = serviceProvider.GetRequiredService<IRepository>();
 
-            var firstEntity = repository.GetFirst<TestEntity>(_ => true);
+            var firstEntity = await repository.GetFirstAsync<TestEntity>(_ => true);
 
             await repository.UpdateAsync(firstEntity,
                                          new
@@ -199,7 +199,7 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
             var serviceProvider = serviceScope.ServiceProvider;
             var repository      = serviceProvider.GetRequiredService<IRepository>();
 
-            var firstEntity = repository.GetFirst<TestEntity>(_ => true);
+            var firstEntity = await repository.GetFirstAsync<TestEntity>(_ => true);
             Assert.That(firstEntity.Name, Is.EqualTo("Name1_Updated_From_Logic, _Updated by update event handler"));
             Assert.That(firstEntity.Description, Is.EqualTo("Original Description"));
         }
@@ -308,7 +308,7 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
             var serviceProvider = serviceScope.ServiceProvider;
             var repository      = serviceProvider.GetRequiredService<IRepository>();
 
-            var record = repository.GetFirst<TestEntity>(x => x.Name == "Name1");
+            var record = await repository.GetFirstAsync<TestEntity>(x => x.Name == "Name1");
 
             Assert.That(record, Is.Not.Null);
             Assert.That(record.IsDeleted, Is.EqualTo(true));
@@ -397,8 +397,8 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
                 }
             };
 
-            repository.BulkInsert(entities);
-            repository.CommitChanges();
+            await repository.BulkInsertAsync(entities);
+            await repository.CommitChangesAsync();
         }
     }
 

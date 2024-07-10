@@ -12,7 +12,7 @@ variables:
 
 name: $(ExtractedBuildNo)-preview-$(DayOfYear)$(Date:HH)$(Rev:rr)
 
-trigger: none 
+trigger: none
 
 pool:
   vmImage: 'ubuntu-latest'
