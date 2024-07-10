@@ -89,8 +89,11 @@ stages:
         PathtoPublish: 'src/nupkg_release'
         ArtifactName: 'dnb-framework'
         publishLocation: 'Container'
-
-  - job: Mirror_To_Github
+        
+- stage: MirrorToGithub
+  dependsOn: Build
+  jobs:
+  - job: MirrorToGithub
     displayName: Mirror to Github
 
     steps:

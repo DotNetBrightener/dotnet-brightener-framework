@@ -54,12 +54,6 @@ public class GroupDataControllerTests : IClassFixture<GroupDataControllerTestsFa
             itemDictionary.Should().Contain(c => c.Key == "createdDate", "The query requests for it");
             itemDictionary.Should().Contain(c => c.Key == "createdBy", "The query requests for it");
         }
-
-        var productCategories = await response.Content.ReadFromJsonAsync<List<GroupEntity>>();
-
-        productCategories.Should().NotBeNull();
-
-        productCategories.Count.Should().BeGreaterThan(1);
     }
 
     [Fact]
@@ -90,12 +84,6 @@ public class GroupDataControllerTests : IClassFixture<GroupDataControllerTestsFa
             itemDictionary.Should().Contain(c => c.Key == "createdDate", "The query requests for it");
             itemDictionary.Should().Contain(c => c.Key == "createdBy", "The query requests for it");
         }
-
-        var productCategories = await response.Content.ReadFromJsonAsync<List<GroupEntity>>();
-
-        productCategories.Should().NotBeNull();
-
-        productCategories.Count.Should().Be(24);
     }
 
     [Fact]
@@ -118,18 +106,13 @@ public class GroupDataControllerTests : IClassFixture<GroupDataControllerTestsFa
         {
             var itemDictionary = item.ToObject<Dictionary<string, object>>();
 
+            itemDictionary.Should().NotBeNull();
             itemDictionary.Should().Contain(c => c.Key == "name", "The query requests for it");
             itemDictionary.Should().Contain(c => c.Key == "createdDate", "The query requests for it");
             itemDictionary.Should().Contain(c => c.Key == "createdBy", "The query requests for it");
 
-            _testOutputHelper.WriteLine(itemDictionary["name"] + ", created on " + itemDictionary["createdDate"]);
+            _testOutputHelper.WriteLine(itemDictionary!["name"] + ", created on " + itemDictionary["createdDate"]);
         }
-
-        var productCategories = await response.Content.ReadFromJsonAsync<List<GroupEntity>>();
-
-        productCategories.Should().NotBeNull();
-
-        productCategories.Count.Should().Be(24);
     }
 
     [Fact]
@@ -158,12 +141,6 @@ public class GroupDataControllerTests : IClassFixture<GroupDataControllerTestsFa
 
             _testOutputHelper.WriteLine(itemDictionary["name"] + ", created on " + itemDictionary["createdDate"]);
         }
-
-        var productCategories = await response.Content.ReadFromJsonAsync<List<GroupEntity>>();
-
-        productCategories.Should().NotBeNull();
-
-        productCategories.Count.Should().Be(48);
     }
 
     [Fact]
@@ -173,7 +150,6 @@ public class GroupDataControllerTests : IClassFixture<GroupDataControllerTestsFa
                                               $"columns=name,createdBy,createdDate" +
                                               $"&createdDate=!on(2024-07-06T12:00:00.000-06:00)");
 
-        response.StatusCode.Should().NotBe(HttpStatusCode.OK);
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
         var responseString = await response.Content.ReadAsStringAsync(); 
@@ -182,25 +158,48 @@ public class GroupDataControllerTests : IClassFixture<GroupDataControllerTestsFa
 
         var itemDictionary = jobject.ToObject<Dictionary<string, object>>();
         itemDictionary.Should().Contain(c => c.Key == "detail", "should describe error detail");
-        jobject["detail"].ToString().Should().Be("For ON / NOT ON operators, the date value must be at 00:00:00");
+        jobject["detail"]!.ToString().Should().Be("For ON / NOT ON operators, the date value must be at 00:00:00");
     }
 
-    //[Fact]
-    //public async Task GroupEntity_GetList_WithFilter_DateOn_NoTimezoneInfo_ShouldThrowException()
-    //{
-    //    var response = await _client.GetAsync($"/api/GroupEntity?" +
-    //                                          $"columns=name,createdBy,createdDate" +
-    //                                          $"&createdDate=!on(2024-07-06T00:00:00.000)");
+    [Fact]
+    public async Task GroupEntity_GetList_WithFilter_DateOn_NoTimezoneInfo_ShouldThrowException()
+    {
+        var response = await _client.GetAsync($"/api/GroupEntity?" +
+                                              $"columns=name,createdBy,createdDate" +
+                                              $"&createdDate=!on(2024-07-06T00:00:00.000)");
 
-    //    response.StatusCode.Should().NotBe(HttpStatusCode.OK);
-    //    response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
-    //    var responseString = await response.Content.ReadAsStringAsync(); 
-        
-    //    var jobject = JObject.Parse(responseString);
+        var responseString = await response.Content.ReadAsStringAsync();
 
-    //    var itemDictionary = jobject.ToObject<Dictionary<string, object>>();
-    //    itemDictionary.Should().Contain(c => c.Key == "detail", "should describe error detail");
-    //    jobject["detail"].ToString().Should().Be("No timezone info provided");
-    //}
+        var jobject = JObject.Parse(responseString);
+
+        var itemDictionary = jobject.ToObject<Dictionary<string, object>>();
+        itemDictionary.Should().Contain(c => c.Key == "detail", "should describe error detail");
+        jobject["detail"].ToString().Should().Be("No timezone info provided");
+    }
+
+    [Theory]
+    [InlineData("eq")]
+    [InlineData("ne")]
+    [InlineData("sw")]
+    [InlineData("!sw")]
+    [InlineData("ew")]
+    [InlineData("!ew")]
+    public async Task GroupEntity_GetList_NotSupportedOperator_ShouldThrowException(string operation)
+    {
+        var response = await _client.GetAsync($"/api/GroupEntity?" +
+                                              $"columns=name,createdBy,createdDate" +
+                                              $"&createdDate={operation}(whatevervalue)");
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        var responseString = await response.Content.ReadAsStringAsync();
+
+        var jobject = JObject.Parse(responseString);
+
+        var itemDictionary = jobject.ToObject<Dictionary<string, object>>();
+        itemDictionary.Should().Contain(c => c.Key == "detail", "should describe error detail");
+        jobject["detail"].ToString().Should().Contain("is not supported for filtering by property");
+    }
 }

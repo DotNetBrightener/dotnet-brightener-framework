@@ -55,7 +55,7 @@ public static partial class QueryableDeepFilterExtensions
                 }
                 catch (UnknownPropertyException)
                 {
-                    continue;
+                    // ignore issue
                 }
             }
         }
@@ -117,13 +117,17 @@ public static partial class QueryableDeepFilterExtensions
                        propertyUnderlingType == typeof(decimal) =>
                     BuildNumericPredicateQuery<TIn>(filter.Value, property),
 
-                _ when propertyUnderlingType == typeof(DateTime) ||
-                       propertyUnderlingType == typeof(DateTimeOffset) =>
+                _ when propertyUnderlingType == typeof(DateTime) =>
                     BuildDateTimePredicateQuery<TIn>(filter.Value.Split(",",
                                                                         StringSplitOptions.TrimEntries |
                                                                         StringSplitOptions.RemoveEmptyEntries),
-                                                     propertyUnderlingType,
                                                      property),
+
+                _ when propertyUnderlingType == typeof(DateTimeOffset) =>
+                    BuildDateTimeOffsetPredicateQuery<TIn>(filter.Value.Split(",",
+                                                                              StringSplitOptions.TrimEntries |
+                                                                              StringSplitOptions.RemoveEmptyEntries),
+                                                           property),
                 _ => null
             };
 
@@ -223,7 +227,7 @@ public static partial class QueryableDeepFilterExtensions
         {
             var s = fieldName;
             property = fromType.GetProperties()
-                               .FirstOrDefault(_ => _.Name.Equals(s, StringComparison.OrdinalIgnoreCase));
+                               .FirstOrDefault(i => i.Name.Equals(s, StringComparison.OrdinalIgnoreCase));
 
             if (property != null)
             {

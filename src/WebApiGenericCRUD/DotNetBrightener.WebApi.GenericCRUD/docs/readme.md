@@ -141,10 +141,18 @@ The following operators are supported for `int`, `float`, `double`, `decimal`, `
  
 | Operator | Symbol | Example Usage | Description|
 |---|---|---|---|
-|Greater Than<br />After (for `datetime` types)|`>`|`id=>(10)`<br />`displayIndex=>(200)`<br />`expirationDate=>(2023-12-01)`|-|
-|Greater Than or Equals<br />On or After (for `datetime` type)|`>=`|`id=>=(10)`<br />`displayIndex=>=(200)`<br />`expirationDate=>=(2023-12-01)`|-|
-|Less Than<br />Before (for `datetime` types)|`<`|`id=<(10)`<br />`displayIndex=<(200)`<br />`invoiceDate=<(2023-12-01)`|-|
-|Less Than or Equals<br />Before or On (for `datetime` types)|`<=`|`id=<=(10)`<br />`displayIndex=<=(200)`<br />`invoiceDate=<=(2023-12-01)`|-|
+|Greater Than<br />After (for `datetime` types)|`>` `gt`|`id=>(10)`<br />`displayIndex=>(200)`<br />`expirationDate=>(2023-12-01)`|-|
+|Greater Than or Equals<br />On or After (for `datetime` type)|`>=` `ge`|`id=>=(10)`<br />`displayIndex=>=(200)`<br />`expirationDate=>=(2023-12-01)`|-|
+|Less Than<br />Before (for `datetime` types)|`<` `lt`|`id=<(10)`<br />`displayIndex=<(200)`<br />`invoiceDate=<(2023-12-01)`<br />`invoiceDate=lt(2023-12-01)`|-|
+|Less Than or Equals<br />Before or On (for `datetime` types)|`<=` `le`|`id=<=(10)`<br />`displayIndex=<=(200)`<br />`invoiceDate=<=(2023-12-01)`<br />`invoiceDate=le(2023-12-01)`|-|
+ 
+ 
+The following operators are supported for `datetimeoffset` data type.
+ 
+| Operator | Symbol | Example Usage | Description|
+|---|---|---|---|
+| ON |`on`|`expiredDate=on(2024-06-05T00:00:00.000+07:00)`| Retrieve records that has `expiredDate` occurs on the 5th of June, 2024 at timezone `+07:00` |
+| NOT ON |`!on` `noton`|`expiredDate=noton(2024-06-05T00:00:00.000+07:00)`<br /><br />`expiredDate=!(2024-06-05T00:00:00.000+07:00)`| Retrieve records that has `expiredDate` occurs not on the 5th of June, 2024 at timezone `+07:00` |
  
 The response of the API also has the headers as followed that help you identify the total items available, the result count, requested page size and requested page index. See the below table for details.
 
