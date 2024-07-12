@@ -151,8 +151,10 @@ The following operators are supported for `datetimeoffset` data type.
  
 | Operator | Symbol | Example Usage | Description|
 |---|---|---|---|
-| ON |`on`|`expiredDate=on(2024-06-05T00:00:00.000+07:00)`| Retrieve records that has `expiredDate` occurs on the 5th of June, 2024 at timezone `+07:00` |
-| NOT ON |`!on` `noton`|`expiredDate=noton(2024-06-05T00:00:00.000+07:00)`<br /><br />`expiredDate=!(2024-06-05T00:00:00.000+07:00)`| Retrieve records that has `expiredDate` occurs not on the 5th of June, 2024 at timezone `+07:00` |
+| ON |`on`|`expiredDate=on(2024-06-05T00:00:00.000+07:00)`| Retrieve records that have `expiredDate` occurs between (inclusively) `00:00:00` and `23:59:59` on the `5th of June, 2024` at timezone `+07:00` |
+| NOT ON |`!on` `noton`|`expiredDate=noton(2024-06-05T00:00:00.000+07:00)`<br /><br />`expiredDate=!on(2024-06-05T00:00:00.000+07:00)`| Retrieve records that have `expiredDate` occurs not on the 5th of June, 2024 at timezone `+07:00`. It means the result includes records with `expiredDate` before `12:00AM June 5th`, and records with `expiredDate` after `11:59:59PM June 5th`.<br/>It results in same result as of the query `expiredDate=!in(2024-06-05T00:00:00.000+07:00,2024-06-05T23:59:59.000+07:00)` |
+| IN |`in`|`expiredDate=in(2024-06-05T00:00:00.000+07:00,2024-06-07T12:30:00.000+07:00)`| Retrieve records that have `expiredDate` occurs between the `5th of June, 2024` and `12:30 PM 7th of June, 2024` at timezone `+07:00` |
+| NOT IN |`!in` `notin`|`expiredDate=notin(2024-06-05T00:00:00.000+07:00,2024-06-07T00:00:00.000+07:00)`<br /><br />`expiredDate=!in(2024-06-05T00:00:00.000+07:00,2024-06-07T12:30:00.000+07:00)`| Retrieve records that have `expiredDate` occurs before the `5th of June, 2024` or after `12:30 PM 7th of June, 2024` at timezone `+07:00` |
  
 The response of the API also has the headers as followed that help you identify the total items available, the result count, requested page size and requested page index. See the below table for details.
 
