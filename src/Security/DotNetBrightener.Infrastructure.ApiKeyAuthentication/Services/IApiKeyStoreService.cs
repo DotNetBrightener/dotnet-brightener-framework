@@ -121,7 +121,7 @@ public abstract class BaseApiKeyStoreService : IApiKeyStoreService
     {
         var tokenSegment = new TokenSegment
         {
-            TokenId       = tokenId ?? Guid.NewGuid().ToString(),
+            TokenId       = tokenId ?? Ulid.NewUlid().ToGuid().ToString(),
             TokenPassword = CryptoUtilities.CreateRandomToken(32)
         };
 

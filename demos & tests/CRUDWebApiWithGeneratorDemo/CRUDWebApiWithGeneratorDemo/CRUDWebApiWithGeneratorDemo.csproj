@@ -7,9 +7,9 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Bogus" Version="35.5.1" />
-		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.6" />
-		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.6" />
+		<PackageReference Include="Bogus" Version="35.6.0" />
+		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.7" />
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.7" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
 	</ItemGroup>
@@ -19,9 +19,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\..\..\src\Logging\DotNetBrightener.Core.Logging.DbStorage\DotNetBrightener.Core.Logging.DbStorage.csproj" />
 		<ProjectReference Include="..\..\..\src\Logging\DotNetBrightener.Core.Logging\DotNetBrightener.Core.Logging.csproj" />
-		<ProjectReference Include="..\..\..\src\WebApiGenericCRUD\DotNetBrightener.WebApi.GenericCRUD.Generator\WebApi.GenericCRUD.Generator.csproj" 
-		                  OutputItemType="Analyzer" 
-		                  ReferenceOutputAssembly="false" />
+		<ProjectReference Include="..\..\..\src\WebApiGenericCRUD\DotNetBrightener.WebApi.GenericCRUD.Generator\WebApi.GenericCRUD.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 	</ItemGroup>
 
 

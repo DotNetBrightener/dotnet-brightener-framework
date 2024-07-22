@@ -33,6 +33,6 @@ public abstract class GuidBaseEntity: BaseEntity<Guid>
 {
     protected GuidBaseEntity()
     {
-        Id = Guid.NewGuid();
+        Id = Ulid.NewUlid().ToGuid();
     }
 }

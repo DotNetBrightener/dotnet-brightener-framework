@@ -16,7 +16,7 @@ public abstract class EventMessageWrapper
     /// <summary>
     ///     The unique identifier for the event message.
     /// </summary>
-    public Guid EventId { get; set; } = Guid.NewGuid();
+    public Guid EventId { get; set; } = Ulid.NewUlid().ToGuid();
 
     /// <summary>
     ///     Indicates when the event message was created.
