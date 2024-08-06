@@ -8,9 +8,9 @@
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Azure.Storage.Blobs" Version="12.21.0" />
+		<PackageReference Include="Azure.Storage.Blobs" Version="12.21.1" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-		<PackageReference Include="Ulid" Version="1.3.3" />
+		<PackageReference Include="Ulid" Version="1.3.4" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\..\BackgroundTasks\DotNetBrightener.Core.BackgroundTasks.DependencyInjection\DotNetBrightener.Core.BackgroundTasks.DependencyInjection.csproj" />

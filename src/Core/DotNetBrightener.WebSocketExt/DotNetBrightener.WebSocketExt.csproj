@@ -4,7 +4,7 @@
 	</ItemGroup>
 	<ItemGroup>
 	  <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.7" />
-	  <PackageReference Include="Ulid" Version="1.3.3" />
+	  <PackageReference Include="Ulid" Version="1.3.4" />
 	</ItemGroup>
 	<ItemGroup>
 	  <ProjectReference Include="..\..\Security\DotNetBrightener.Infrastructure.JwtAuthentication\DotNetBrightener.Infrastructure.JwtAuthentication.csproj" />

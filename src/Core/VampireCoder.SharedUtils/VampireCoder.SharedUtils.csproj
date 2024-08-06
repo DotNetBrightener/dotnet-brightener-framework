@@ -8,7 +8,7 @@
 	<Import Project="..\..\Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems" Label="Shared" />
 
 	<ItemGroup>
-	  <PackageReference Include="Ulid" Version="1.3.3" />
+	  <PackageReference Include="Ulid" Version="1.3.4" />
 	</ItemGroup>
 
 </Project>
