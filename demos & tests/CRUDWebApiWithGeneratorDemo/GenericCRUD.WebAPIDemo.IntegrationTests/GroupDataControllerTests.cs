@@ -1,13 +1,11 @@
-using System.Net;
-using System.Net.Http.Json;
 using CRUDWebApiWithGeneratorDemo;
-using CRUDWebApiWithGeneratorDemo.Core.Entities;
 using CRUDWebApiWithGeneratorDemo.Database.DbContexts;
 using DotNetBrightener.TestHelpers;
 using FluentAssertions;
 using GenericCRUD.WebAPIDemo.IntegrationTests.StartupTasks;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
+using System.Net;
 using Xunit.Abstractions;
 
 namespace GenericCRUD.WebAPIDemo.IntegrationTests;

@@ -6,11 +6,15 @@ public interface IBaseEntity
 {
 
 }
+public interface IBaseEntity<TIdentifier> : IBaseEntity
+{
+    TIdentifier Id { get; set; }
+}
 
 /// <summary>
 ///     Represents the base entity for all entities in the system
 /// </summary>
-public abstract class BaseEntity<TIdentifier> : IBaseEntity
+public abstract class BaseEntity<TIdentifier> : IBaseEntity<TIdentifier>
 {
     /// <summary>
     ///     Identifier of the record, is also the primary key

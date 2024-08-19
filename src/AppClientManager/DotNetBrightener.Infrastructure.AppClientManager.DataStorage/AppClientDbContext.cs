@@ -30,8 +30,8 @@ public class AppClientDbContext : MigrationEnabledDbContext
 
         modelBuilder.ApplyConfigurationsFromCurrentAssembly();
 
-        RegisterEnumLookupTable<AppClientStatus>(modelBuilder, schema: AppClientDataDefaults.AppClientSchemaName);
+        this.RegisterEnumLookupTable<AppClientStatus>(modelBuilder, schema: AppClientDataDefaults.AppClientSchemaName);
 
-        RegisterEnumLookupTable<AppClientType>(modelBuilder, schema: AppClientDataDefaults.AppClientSchemaName);
+        this.RegisterEnumLookupTable<AppClientType>(modelBuilder, schema: AppClientDataDefaults.AppClientSchemaName);
     }
 }

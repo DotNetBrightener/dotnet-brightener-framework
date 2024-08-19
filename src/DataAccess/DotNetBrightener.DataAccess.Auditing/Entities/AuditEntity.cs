@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace DotNetBrightener.DataAccess.Auditing.Auditing;
+namespace DotNetBrightener.DataAccess.Auditing.Entities;
 
 /// <summary>
 ///     Represents the entity for audit trail.
@@ -8,7 +8,7 @@ namespace DotNetBrightener.DataAccess.Auditing.Auditing;
 public class AuditEntity
 {
     [Key]
-    public Guid Id { get; set; }
+    public Guid Id { get; set; } = Ulid.NewUlid().ToGuid();
 
     [MaxLength(256)]
     public string EntityType { get; set; }
@@ -22,13 +22,15 @@ public class AuditEntity
     [MaxLength(64)]
     public string Action { get; set; }
 
+    public DateTimeOffset? StartTime { get; set; }
+
+    public DateTimeOffset? EndTime   { get; set; }
+
     public string Changes { get; set; }
 
     public string Exception { get; set; }
 
     public bool IsSuccess { get; set; }
-
-    public DateTimeOffset? Timestamp { get; set; }
 
     [MaxLength(255)]
     public string UserName { get; set; }

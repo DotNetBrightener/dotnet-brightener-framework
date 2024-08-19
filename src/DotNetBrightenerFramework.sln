@@ -319,6 +319,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LanguageExts.Tests", "Core\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GenericCRUD.WebAPIDemo.IntegrationTests", "..\demos & tests\CRUDWebApiWithGeneratorDemo\GenericCRUD.WebAPIDemo.IntegrationTests\GenericCRUD.WebAPIDemo.IntegrationTests.csproj", "{EC168071-71AB-404D-AF2A-EE93F97CFC94}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Identity", "Identity", "{613A898C-EF71-4A57-8E90-62133AF2CCFF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.IdentityAuth", "Identity\DotNetBrightener.IdentityAuth\DotNetBrightener.IdentityAuth.csproj", "{00C4996B-9BCF-40F1-8986-0D66D761C1C8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.CryptoEngine.Tests", "Cryptography\DotNetBrightener.CryptoEngine.Tests\DotNetBrightener.CryptoEngine.Tests.csproj", "{792FD445-FBA7-408C-9C3A-A9E997EF9654}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1127,6 +1133,22 @@ Global
 		{EC168071-71AB-404D-AF2A-EE93F97CFC94}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EC168071-71AB-404D-AF2A-EE93F97CFC94}.Release|ARM64.ActiveCfg = Release|Any CPU
 		{EC168071-71AB-404D-AF2A-EE93F97CFC94}.Release|ARM64.Build.0 = Release|Any CPU
+		{00C4996B-9BCF-40F1-8986-0D66D761C1C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00C4996B-9BCF-40F1-8986-0D66D761C1C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00C4996B-9BCF-40F1-8986-0D66D761C1C8}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{00C4996B-9BCF-40F1-8986-0D66D761C1C8}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{00C4996B-9BCF-40F1-8986-0D66D761C1C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00C4996B-9BCF-40F1-8986-0D66D761C1C8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00C4996B-9BCF-40F1-8986-0D66D761C1C8}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{00C4996B-9BCF-40F1-8986-0D66D761C1C8}.Release|ARM64.Build.0 = Release|Any CPU
+		{792FD445-FBA7-408C-9C3A-A9E997EF9654}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{792FD445-FBA7-408C-9C3A-A9E997EF9654}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{792FD445-FBA7-408C-9C3A-A9E997EF9654}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{792FD445-FBA7-408C-9C3A-A9E997EF9654}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{792FD445-FBA7-408C-9C3A-A9E997EF9654}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{792FD445-FBA7-408C-9C3A-A9E997EF9654}.Release|Any CPU.Build.0 = Release|Any CPU
+		{792FD445-FBA7-408C-9C3A-A9E997EF9654}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{792FD445-FBA7-408C-9C3A-A9E997EF9654}.Release|ARM64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1261,6 +1283,8 @@ Global
 		{2BF808D4-C815-494A-ADBD-CD32B3A27C70} = {17CF6FFF-1966-4534-8B68-6AAE4AE440BD}
 		{7D96BD33-3BB4-40F7-B3D4-84E7B3C1BD77} = {17CF6FFF-1966-4534-8B68-6AAE4AE440BD}
 		{EC168071-71AB-404D-AF2A-EE93F97CFC94} = {A4FB8D69-16C6-4B0F-B6A5-282275DF4825}
+		{00C4996B-9BCF-40F1-8986-0D66D761C1C8} = {613A898C-EF71-4A57-8E90-62133AF2CCFF}
+		{792FD445-FBA7-408C-9C3A-A9E997EF9654} = {5B5FD3D4-5CBA-4C04-AA53-FA09BE52BE54}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CBA29A5C-A736-4EB9-8D61-8E76924706CD}

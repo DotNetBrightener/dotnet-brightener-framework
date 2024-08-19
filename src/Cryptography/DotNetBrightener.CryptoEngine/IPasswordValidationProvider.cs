@@ -29,10 +29,10 @@ public class DefaultPasswordValidationProvider(ICryptoEngine cryptoEngine) : IPa
     public virtual Tuple<string, string> GenerateEncryptedPassword(string plainTextPassword)
     {
         // create a key (salt) for hashing the password
-        var passwordSalt = CryptoUtilities.CreateRandomToken();
+        var passwordSalt = CryptoUtilities.CreateRandomToken(32);
 
         // hash the password with the salt
-        var hashedPassword = SymmetricCryptoEngine.Encrypt(plainTextPassword, passwordSalt);
+        var hashedPassword = AesCryptoEngine.Encrypt(plainTextPassword, passwordSalt);
 
         // encrypt the salt
         var encryptedPasswordSalt = cryptoEngine.EncryptText(passwordSalt);
@@ -46,8 +46,17 @@ public class DefaultPasswordValidationProvider(ICryptoEngine cryptoEngine) : IPa
         var passwordSalt = cryptoEngine.DecryptText(passwordEncryptionKey);
 
         // use the salt to create the hash from plain text password
-        var encryptedPassword = SymmetricCryptoEngine.Encrypt(plainTextPassword, passwordSalt);
+        if (string.Equals(AesCryptoEngine.Encrypt(plainTextPassword, passwordSalt),
+                          hashedPassword,
+                          StringComparison.Ordinal))
+            return true;
 
-        return string.Equals(encryptedPassword, hashedPassword, StringComparison.Ordinal);
+        // fall back to the old implementation
+        if (string.Equals(SymmetricCryptoEngine.Encrypt(plainTextPassword, passwordSalt),
+                          hashedPassword,
+                          StringComparison.Ordinal))
+            return true;
+
+        return false;
     }
 }
