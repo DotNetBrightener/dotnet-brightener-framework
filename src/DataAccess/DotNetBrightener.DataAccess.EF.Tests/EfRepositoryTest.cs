@@ -1,5 +1,6 @@
 ﻿using DotNetBrightener.DataAccess.Services;
 using DotNetBrightener.TestHelpers;
+using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -59,7 +60,8 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
             var repository      = serviceProvider.GetRequiredService<IRepository>();
 
             var firstEntity = await repository.GetFirstAsync<TestEntity>(_ => true);
-            Assert.That(firstEntity.Name, Is.EqualTo("Name1_Updated by event handler"));
+            firstEntity.Should().NotBeNull();
+            firstEntity!.Name.Should().Be("Name1_Updated by event handler");
         }
     }
 
@@ -89,7 +91,7 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
             var repository      = serviceProvider.GetRequiredService<IRepository>();
 
             var firstEntity = await repository.GetFirstAsync<TestEntity>(_ => true);
-            firstEntity.Name = "Name1_Updated";
+            firstEntity!.Name = "Name1_Updated";
             await repository.UpdateAsync(firstEntity);
             await repository.CommitChangesAsync();
         }
@@ -102,7 +104,7 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
             var repository      = serviceProvider.GetRequiredService<IRepository>();
 
             var firstEntity = await repository.GetFirstAsync<TestEntity>(_ => true);
-            Assert.That(firstEntity.Name, Is.EqualTo("Name1_Updated_Updated by update event handler"));
+            Assert.That(firstEntity!.Name, Is.EqualTo("Name1_Updated_Updated by update event handler"));
         }
     }
 
@@ -133,7 +135,7 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
 
             var firstEntity = await repository.GetFirstAsync<TestEntity>(_ => true);
 
-            await repository.UpdateAsync(firstEntity,
+            await repository.UpdateAsync(firstEntity!,
                                          new
                                          {
                                              Name = "Name1_Updated_From_Logic, "
@@ -149,7 +151,8 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
             var repository      = serviceProvider.GetRequiredService<IRepository>();
 
             var firstEntity = await repository.GetFirstAsync<TestEntity>(_ => true);
-            Assert.That(firstEntity.Name, Is.EqualTo("Name1_Updated_From_Logic, _Updated by update event handler"));
+            
+            firstEntity!.Name.Should().Be("Name1_Updated_From_Logic, _Updated by update event handler");
         }
     }
 
@@ -181,7 +184,9 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
 
             var firstEntity = await repository.GetFirstAsync<TestEntity>(_ => true);
 
-            await repository.UpdateAsync(firstEntity,
+            firstEntity.Should().NotBeNull();
+
+            await repository.UpdateAsync(firstEntity!,
                                          new
                                          {
                                              Name        = "Name1_Updated_From_Logic, ",
@@ -199,8 +204,8 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
             var repository      = serviceProvider.GetRequiredService<IRepository>();
 
             var firstEntity = await repository.GetFirstAsync<TestEntity>(_ => true);
-            Assert.That(firstEntity.Name, Is.EqualTo("Name1_Updated_From_Logic, _Updated by update event handler"));
-            Assert.That(firstEntity.Description, Is.EqualTo("Original Description"));
+            firstEntity!.Name.Should().Be("Name1_Updated_From_Logic, _Updated by update event handler");
+            firstEntity.Description.Should().Be("Original Description");
         }
     }
 
@@ -274,7 +279,7 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
             var serviceProvider = serviceScope.ServiceProvider;
             var repository      = serviceProvider.GetRequiredService<IRepository>();
 
-            var updatedEntities = repository.Fetch<TestEntity>(_ => _.Name.StartsWith("Already Updated"))
+            var updatedEntities = repository.Fetch<TestEntity>(e => e.Name.StartsWith("Already Updated"))
                                             .ToArray();
 
             int index = 1;
