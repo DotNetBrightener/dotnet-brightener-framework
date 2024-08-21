@@ -46,10 +46,17 @@ public class DefaultPasswordValidationProvider(ICryptoEngine cryptoEngine) : IPa
         var passwordSalt = cryptoEngine.DecryptText(passwordEncryptionKey);
 
         // use the salt to create the hash from plain text password
-        if (string.Equals(AesCryptoEngine.Encrypt(plainTextPassword, passwordSalt),
-                          hashedPassword,
-                          StringComparison.Ordinal))
-            return true;
+        try
+        {
+            if (string.Equals(AesCryptoEngine.Encrypt(plainTextPassword, passwordSalt),
+                              hashedPassword,
+                              StringComparison.Ordinal))
+                return true;
+        }
+        catch (Exception)
+        {
+            // don't need to handle, try the next one as fall back
+        }
 
         // fall back to the old implementation
         if (string.Equals(SymmetricCryptoEngine.Encrypt(plainTextPassword, passwordSalt),
