@@ -171,11 +171,10 @@ public static class ServiceCollectionExtensions
         if (!eventHandlerTypeRegistrations.Any())
             return;
 
-
-        var responseRequestHandlerType = typeof(RequestResponder<>).MakeGenericType(type);
-
         if (isRequestType)
         {
+            var responseRequestHandlerType = typeof(RequestResponder<>).MakeGenericType(type);
+
             var implementations = eventHandlerTypeRegistrations
                                  .Where(descriptor => descriptor.ImplementationType != null &&
                                                       descriptor.ImplementationType!
