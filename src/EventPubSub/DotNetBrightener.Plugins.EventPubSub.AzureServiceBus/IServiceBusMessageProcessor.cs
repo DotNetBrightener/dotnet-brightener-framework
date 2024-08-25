@@ -22,7 +22,7 @@ public interface IServiceBusMessageProcessor
     /// </returns>
     Task<EventMessageWrapper> PrepareOutgoingMessage<T>(T                   message,
                                                         EventMessageWrapper originMessage = null)
-        where T : IDistributedEventMessage;
+        where T : DistributedEventMessage;
 
     /// <summary>
     ///     Parses the incoming message from the message broker

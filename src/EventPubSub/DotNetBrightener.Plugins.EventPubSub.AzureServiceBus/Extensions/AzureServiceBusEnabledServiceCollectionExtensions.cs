@@ -120,7 +120,7 @@ public static class AzureServiceBusEnabledServiceCollectionExtensions
                                                       .Where(evtMsgType => evtMsgType is not null &&
                                                                            evtMsgType
                                                                               .IsAssignableTo(typeof(
-                                                                                                  IDistributedEventMessage)));
+                                                                                                  DistributedEventMessage)));
 
             var errors = new List<string>();
 

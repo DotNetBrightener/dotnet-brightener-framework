@@ -7,7 +7,7 @@ namespace DotNetBrightener.Plugins.EventPubSub.AzureServiceBus.Internals;
 
 internal interface IServiceBusMessagePublisher
 {
-    Task Publish<T>(T eventMessage, EventMessageWrapper originMessage = null) where T : IDistributedEventMessage;
+    Task Publish<T>(T eventMessage, EventMessageWrapper originMessage = null) where T : DistributedEventMessage;
 }
 
 internal class ServiceBusMessagePublisher(
@@ -15,7 +15,7 @@ internal class ServiceBusMessagePublisher(
     IServiceBusMessageProcessor messageProcessor) : IServiceBusMessagePublisher
 {
     public async Task Publish<T>(T eventMessage, EventMessageWrapper originMessage = null)
-        where T : IDistributedEventMessage
+        where T : DistributedEventMessage
     {
         var messageToSend = await messageProcessor.PrepareOutgoingMessage(eventMessage, originMessage);
 

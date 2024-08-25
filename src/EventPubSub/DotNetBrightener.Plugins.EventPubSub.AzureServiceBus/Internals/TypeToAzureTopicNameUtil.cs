@@ -9,9 +9,9 @@ internal static class TypeToAzureTopicNameUtil
         if (string.IsNullOrEmpty(type.Namespace))
             throw new InvalidOperationException("EventMessage type must have a valid namespace");
 
-        if (!type.IsAssignableTo(typeof(IDistributedEventMessage)))
+        if (!type.IsAssignableTo(typeof(DistributedEventMessage)))
             throw new
-                InvalidOperationException($"EventMessage type must implement {nameof(IDistributedEventMessage)} interface");
+                InvalidOperationException($"EventMessage type must implement {nameof(DistributedEventMessage)} interface");
 
         if (ServiceBusConfiguration is not null && !ServiceBusConfiguration.IncludeNamespaceForTopicName)
             return type.Name;

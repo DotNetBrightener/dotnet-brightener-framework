@@ -11,17 +11,17 @@ public abstract class EventMessageWrapper
     /// <summary>
     ///     The correlation id for the event message.
     /// </summary>
-    public Guid CorrelationId { get; set; } = Ulid.NewUlid().ToGuid();
+    public Guid? CorrelationId { get; set; } = Ulid.NewUlid().ToGuid();
 
     /// <summary>
     ///     The unique identifier for the event message.
     /// </summary>
-    public Guid EventId { get; set; } = Ulid.NewUlid().ToGuid();
+    public Guid? EventId { get; set; } = Ulid.NewUlid().ToGuid();
 
     /// <summary>
     ///     Indicates when the event message was created.
     /// </summary>
-    public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
+    public DateTime? CreatedOn { get; set; } = DateTime.UtcNow;
 
     /// <summary>
     ///     The name of the application that initiates the event message.

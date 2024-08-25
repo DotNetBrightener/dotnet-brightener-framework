@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<ItemGroup>
+	  <PackageReference Include="MassTransit.RabbitMQ" Version="8.2.5" />
+	  <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
+	  <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0" />
+	  <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
+	  <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
+	</ItemGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\DotNetBrightener.Plugins.EventPubSub.MassTransit\DotNetBrightener.Plugins.EventPubSub.MassTransit.csproj" />
+	  <ProjectReference Include="..\DotNetBrightener.Plugins.EventPubSub\DotNetBrightener.Plugins.EventPubSub.csproj" />
+	</ItemGroup>
+	<Import Project="..\..\Shared\SharedExtensions.Tasks\SharedExtensions.Tasks.projitems" Label="Shared" />
+</Project>

@@ -7,7 +7,7 @@ namespace DotNetBrightener.Plugins.EventPubSub.AzureServiceBus.Extensions;
 public static class DistributedEventMessageWrapperExtensions
 {
     internal static void WithPayload<T>(this EventMessageWrapper msg, T eventMessage)
-        where T : IDistributedEventMessage
+        where T : DistributedEventMessage
     {
         var serializedMessage = JsonConvert.SerializeObject(eventMessage, JsonConfig.SerializeOptions);
 
@@ -16,7 +16,7 @@ public static class DistributedEventMessageWrapperExtensions
                                                                       JsonConfig.DeserializeOptions);
     }
 
-    internal static T GetPayload<T>(this EventMessageWrapper msg) where T : IDistributedEventMessage
+    internal static T GetPayload<T>(this EventMessageWrapper msg) where T : DistributedEventMessage
     {
         var jsonPayload = JsonConvert.SerializeObject(msg.Payload, JsonConfig.SerializeOptions);
 

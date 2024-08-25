@@ -14,7 +14,7 @@ internal class AzureServiceBusEnabledEventPublisher(
                                           bool runInBackground = false,
                                           EventMessageWrapper originMessage = null)
     {
-        if (eventMessage is IDistributedEventMessage message)
+        if (eventMessage is DistributedEventMessage message)
         {
             Task.Run(async () =>
             {

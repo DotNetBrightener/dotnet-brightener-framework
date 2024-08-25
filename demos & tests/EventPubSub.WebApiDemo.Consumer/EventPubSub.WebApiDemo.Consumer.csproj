@@ -7,8 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\EventPubSub\DotNetBrightener.Plugins.EventPubSub.AzureServiceBus\DotNetBrightener.Plugins.EventPubSub.AzureServiceBus.csproj" />
     <ProjectReference Include="..\..\src\EventPubSub\DotNetBrightener.Plugins.EventPubSub.DependencyInjection\DotNetBrightener.Plugins.EventPubSub.DependencyInjection.csproj" />
+    <ProjectReference Include="..\..\src\EventPubSub\DotNetBrightener.Plugins.EventPubSub.MassTransit.AzureServiceBus\DotNetBrightener.Plugins.EventPubSub.MassTransit.AzureServiceBus.csproj" />
+    <ProjectReference Include="..\..\src\EventPubSub\DotNetBrightener.Plugins.EventPubSub.MassTransit.RabbitMq\DotNetBrightener.Plugins.EventPubSub.MassTransit.RabbitMq.csproj" />
+    <ProjectReference Include="..\..\src\EventPubSub\DotNetBrightener.Plugins.EventPubSub.MassTransit\DotNetBrightener.Plugins.EventPubSub.MassTransit.csproj" />
     <ProjectReference Include="..\EventPubSub.WebApiDemo.Contracts\EventPubSub.WebApiDemo.Contracts.csproj" />
   </ItemGroup>
 

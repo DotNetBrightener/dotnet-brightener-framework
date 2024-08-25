@@ -20,4 +20,14 @@ public interface IEventPublisher
     /// </param>
     Task Publish<T>(T eventMessage, bool runInBackground = false, EventMessageWrapper originMessage = null)
         where T : class, IEventMessage;
+
+
+    Task<TResponse> GetResponse<TResponse, TRequest>(TRequest requestMessage)
+        where TRequest : class, IRequestMessage
+        where TResponse : class, IResponseMessage<TRequest>;
+
+    Task<(TResponse, TErrorResponse)> GetResponse<TResponse, TErrorResponse, TRequest>(TRequest requestMessage)
+        where TResponse : class, IResponseMessage<TRequest>
+        where TErrorResponse : class, IResponseMessage<TRequest>
+        where TRequest : class, IRequestMessage;
 }

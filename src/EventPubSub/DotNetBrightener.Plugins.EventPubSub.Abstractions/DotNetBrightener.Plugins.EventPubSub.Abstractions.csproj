@@ -6,6 +6,7 @@
 		<InternalsVisibleTo Include="DotNetBrightener.Plugins.EventPubSub" />
 		<InternalsVisibleTo Include="DotNetBrightener.Plugins.EventPubSub.DependencyInjection" />
 		<InternalsVisibleTo Include="DotNetBrightener.Plugins.EventPubSub.AzureServiceBus" />
+		<InternalsVisibleTo Include="DotNetBrightener.Plugins.EventPubSub.MassTransit" />
 	</ItemGroup>
 
 	<ItemGroup>

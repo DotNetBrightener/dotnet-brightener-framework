@@ -12,7 +12,7 @@ public abstract class ServiceBusMessageProcessor<TEventMessage>(IServiceProvider
     /// </remarks>
     public virtual async Task<EventMessageWrapper> PrepareOutgoingMessage<T>(T                   message,
                                                                              EventMessageWrapper originMessage = null)
-        where T : IDistributedEventMessage
+        where T : DistributedEventMessage
     {
         var eventMessage = serviceProvider.TryGet<TEventMessage>();
 

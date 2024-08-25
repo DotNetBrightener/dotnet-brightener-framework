@@ -12,7 +12,7 @@ internal class AzureServiceBusEventSubscription<T>(
     IEnumerable<IEventHandler<T>> eventHandlers,
     ILoggerFactory loggerFactory)
     : IAzureServiceBusEventSubscription
-    where T : IDistributedEventMessage
+    where T : DistributedEventMessage
 {
     private readonly ILogger _logger = loggerFactory.CreateLogger<AzureServiceBusEventSubscription<T>>();
 
@@ -38,7 +38,7 @@ internal class AzureServiceBusEventSubscription<T>(
 
         foreach (var handler in orderedEventHandlers)
         {
-            if (handler is DistributedEventEventHandler<T> distributedEventHandler)
+            if (handler is DistributedEventHandler<T> distributedEventHandler)
             {
                 distributedEventHandler.OriginPayload = messageWrapper;
             }
