@@ -7,8 +7,8 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-		<PackageReference Include="NLog.Web.AspNetCore" Version="5.3.11" />
-		<PackageReference Include="System.Linq.Dynamic.Core" Version="1.4.4" />
+		<PackageReference Include="NLog.Web.AspNetCore" Version="5.3.12" />
+		<PackageReference Include="System.Linq.Dynamic.Core" Version="1.4.5" />
 	</ItemGroup>
 
 	<Import Project="..\..\Shared\SharedExtensions.Exception\SharedExtensions.Exception.projitems" Label="Shared" />
