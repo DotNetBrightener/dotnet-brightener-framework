@@ -1,4 +1,6 @@
-﻿namespace DotNetBrightener.CryptoEngine;
+﻿using Microsoft.Extensions.Logging;
+
+namespace DotNetBrightener.CryptoEngine;
 
 /// <summary>
 ///     Represents the service for generating and validating password
@@ -24,8 +26,11 @@ public interface IPasswordValidationProvider
     bool ValidatePassword(string plainTextPassword, string passwordEncryptionKey, string hashedPassword);
 }
 
-public class DefaultPasswordValidationProvider(ICryptoEngine cryptoEngine) : IPasswordValidationProvider
+public class DefaultPasswordValidationProvider(ICryptoEngine cryptoEngine, 
+                                               ILoggerFactory loggerFactory) : IPasswordValidationProvider
 {
+    private ILogger Logger => loggerFactory.CreateLogger(GetType());
+
     public virtual Tuple<string, string> GenerateEncryptedPassword(string plainTextPassword)
     {
         // create a key (salt) for hashing the password
@@ -53,13 +58,14 @@ public class DefaultPasswordValidationProvider(ICryptoEngine cryptoEngine) : IPa
                               StringComparison.Ordinal))
                 return true;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             // don't need to handle, try the next one as fall back
+            Logger.LogInformation("Error while trying to compare using new encryption algorithm. Switching to old algorithm.");
         }
 
         // fall back to the old implementation
-        if (string.Equals(SymmetricCryptoEngine.Encrypt(plainTextPassword, passwordSalt),
+        if (string.Equals(TripleDesCryptoEngine.Encrypt(plainTextPassword, passwordSalt),
                           hashedPassword,
                           StringComparison.Ordinal))
             return true;

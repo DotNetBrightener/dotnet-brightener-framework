@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 namespace DotNetBrightener.DataAccess.Events;
 
 /// <summary>
-///     Event fired when entities of type <typeparam name="TEntity" /> are deleted using expression
+///     Event fired when entities of type <typeparamref name="TEntity" /> are deleted using expression
 /// </summary>
 /// <typeparam name="TEntity">
 ///     The type of the entities specified in the event

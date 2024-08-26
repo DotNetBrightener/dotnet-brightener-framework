@@ -4,7 +4,7 @@
 namespace DotNetBrightener.DataAccess.Events;
 
 /// <summary>
-///     Event fired when an entity of type <typeparam name="TEntity" /> is deleted
+///     Event fired when an entity of type <typeparamref name="TEntity" /> is deleted
 /// </summary>
 /// <typeparam name="TEntity">
 ///     The type of the entity specified in the event
@@ -22,7 +22,7 @@ public class EntityDeleted<TEntity> : EntityEventMessage<TEntity> where TEntity 
 }
 
 /// <summary>
-///     Event fired when an entity of type <typeparam name="TEntity" /> is being deleted
+///     Event fired when an entity of type <typeparamref name="TEntity" /> is being deleted
 /// </summary>
 /// <typeparam name="TEntity">
 ///     The type of the entity specified in the event

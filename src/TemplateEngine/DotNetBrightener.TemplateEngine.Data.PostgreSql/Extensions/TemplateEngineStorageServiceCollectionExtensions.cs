@@ -1,6 +1,4 @@
-﻿using DotNetBrightener.DataAccess;
-using DotNetBrightener.Plugins.EventPubSub;
-using DotNetBrightener.TemplateEngine.Data.PostgreSql.Data;
+﻿using DotNetBrightener.TemplateEngine.Data.PostgreSql.Data;
 using DotNetBrightener.TemplateEngine.Data.PostgreSql.Services;
 using DotNetBrightener.TemplateEngine.Data.Services;
 using LinqToDB.EntityFrameworkCore;

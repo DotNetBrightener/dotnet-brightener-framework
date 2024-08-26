@@ -1,5 +1,4 @@
-﻿using DotNetBrightener.DataAccess;
-using DotNetBrightener.DataAccess.EF.Repositories;
+﻿using DotNetBrightener.DataAccess.EF.Repositories;
 using Microsoft.Extensions.Logging;
 
 namespace DotNetBrightener.TemplateEngine.Data.Mssql.Data;

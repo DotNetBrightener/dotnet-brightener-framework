@@ -1,8 +1,6 @@
 using DotNetBrightener.DataAccess.Services;
 using Microsoft.Extensions.Logging;
 
-using CRUDWebApiWithGeneratorDemo.Core.Entities;
-
 namespace CRUDWebApiWithGeneratorDemo.Services.Data;
 
 public partial class ProductDataService

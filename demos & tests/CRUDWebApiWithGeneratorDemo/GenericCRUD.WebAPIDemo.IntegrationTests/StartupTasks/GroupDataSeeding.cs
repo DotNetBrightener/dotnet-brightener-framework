@@ -1,5 +1,4 @@
-﻿using Bogus;
-using CRUDWebApiWithGeneratorDemo.Core.Entities;
+﻿using CRUDWebApiWithGeneratorDemo.Core.Entities;
 using CRUDWebApiWithGeneratorDemo.Services.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
