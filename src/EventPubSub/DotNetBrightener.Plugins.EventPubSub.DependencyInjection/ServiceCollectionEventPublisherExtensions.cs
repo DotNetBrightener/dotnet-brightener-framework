@@ -36,7 +36,13 @@ public static class ServiceCollectionEventPublisherExtensions
 
         eventPubSubBuilder.EventMessageTypes.AddRange(eventMessageTypes);
 
+        serviceCollection.AddScoped(typeof(InMemoryEventProcessor<>));
+
         serviceCollection.AddSingleton(eventPubSubBuilder);
+        serviceCollection.AddSingleton<InMemoryEventMessageQueue>();
+        serviceCollection.AddSingleton<InMemoryEventProcessor>();
+
+        serviceCollection.AddHostedService<InMemoryEventProcessorBackgroundJob>();
 
         return eventPubSubBuilder;
     }
@@ -118,43 +124,6 @@ public static class ServiceCollectionEventPublisherExtensions
                                                                      true);
 
         return serviceBuilder;
-    }
-
-    /// <summary>
-    ///     Registers the provided implementation type <typeparamref name="TEventHandler"/> as <see cref="IEventHandler"/> to the <paramref name="serviceBuilder"/>
-    /// </summary>
-    /// <typeparam name="TEventHandler">The type of the implementation for <see cref="IEventHandler"/></typeparam>
-    /// <param name="serviceBuilder">
-    ///     The <see cref="EventPubSubServiceBuilder"/>
-    /// </param>
-    /// <returns>
-    ///     The <see cref="EventPubSubServiceBuilder"/> for chaining operations
-    /// </returns>
-    public static EventPubSubServiceBuilder AddEventHandler<TEventHandler>(
-        this EventPubSubServiceBuilder serviceBuilder)
-        where TEventHandler : class, IEventHandler
-    {
-        serviceBuilder.Services.AddScoped<IEventHandler, TEventHandler>();
-
-        return serviceBuilder;
-    }
-
-    /// <summary>
-    ///     Registers the provided implementation type <typeparamref name="TEventHandler"/> as <see cref="IEventHandler"/> to the <paramref name="serviceCollection"/>
-    /// </summary>
-    /// <typeparam name="TEventHandler">The type of the implementation for <see cref="IEventHandler"/></typeparam>
-    /// <param name="serviceCollection">
-    ///     The <see cref="IServiceCollection"/>
-    /// </param>
-    /// <returns>
-    ///     The <see cref="IServiceCollection"/> for chaining operations
-    /// </returns>
-    public static IServiceCollection AddEventHandler<TEventHandler>(this IServiceCollection serviceCollection)
-        where TEventHandler : class, IEventHandler
-    {
-        serviceCollection.AddScoped<IEventHandler, TEventHandler>();
-
-        return serviceCollection;
     }
 
     internal static Assembly[] GetAppOnlyAssemblies(this AppDomain appDomain)

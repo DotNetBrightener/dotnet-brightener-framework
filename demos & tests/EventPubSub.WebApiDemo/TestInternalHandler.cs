@@ -14,12 +14,14 @@ internal class TestInternalHandler : IEventHandler<TestMessage>
         _logger = logger;
     }
 
-    public Task<bool> HandleEvent(TestMessage eventMessage)
+    public async Task<bool> HandleEvent(TestMessage eventMessage)
     {
+        await Task.Delay(TimeSpan.FromSeconds(5));
+
         _logger.LogInformation($"Received message: {eventMessage.Name}");
 
         eventMessage.Name += " updated by handler";
 
-        return Task.FromResult<bool>(true);
+        return true;
     }
 }

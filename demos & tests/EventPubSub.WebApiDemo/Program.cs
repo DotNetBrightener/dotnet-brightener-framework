@@ -2,6 +2,7 @@ using DotNetBrightener.Plugins.EventPubSub;
 using DotNetBrightener.Plugins.EventPubSub.Distributed.Extensions;
 using EventPubSub.WebApiDemo.Contracts;
 using System.Reflection;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,36 +31,41 @@ var app = builder.Build();
 app.UseHttpsRedirection();
 
 
-app.MapGet("/", async (IEventPublisher eventPublisher) =>
-{
-    var eventMessage = new TestMessage
-    {
-        Name = "world"
-    };
+app.MapGet("/",
+           async (IEventPublisher eventPublisher,
+                  [FromQuery] bool runInBackground = false) =>
+           {
+               var eventMessage = new TestMessage
+               {
+                   Name = "world" + (runInBackground ? " (background)" : "")
+               };
 
-    await eventPublisher.Publish(eventMessage);
+               await eventPublisher.Publish(eventMessage, runInBackground);
 
-    var eventMessage2 = new DistributedTestMessage
-    {
-        Name = eventMessage.Name
-    };
+               var eventMessage2 = new DistributedTestMessage
+               {
+                   Name = eventMessage.Name
+               };
 
-    var response = await eventPublisher.GetResponse<DistributedTestMessageResponse, DistributedTestMessage>(eventMessage2);
-    
-    return response;
-});
+               var response =
+                   await eventPublisher
+                      .GetResponse<DistributedTestMessageResponse, DistributedTestMessage>(eventMessage2);
+
+               return response;
+           });
 
 
-app.MapGet("/test", async (IEventPublisher eventPublisher) =>
-{
-    var eventMessage = new SomeUpdateMessage
-    {
-        Name = "world"
-    };
+app.MapGet("/test",
+           async (IEventPublisher eventPublisher) =>
+           {
+               var eventMessage = new SomeUpdateMessage
+               {
+                   Name = "world"
+               };
 
-    await eventPublisher.Publish(eventMessage);
-    
-    return "Message sent";
-});
+               await eventPublisher.Publish(eventMessage);
+
+               return "Message sent";
+           });
 
 app.Run();

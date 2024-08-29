@@ -4,21 +4,24 @@ using Microsoft.Extensions.Logging;
 
 namespace DotNetBrightener.Plugins.EventPubSub.Distributed.Services;
 
-internal class DistributedEventPublisher : DefaultEventPublisher
+internal class DistributedEventPublisher
+    : DefaultEventPublisher
 {
     internal readonly IServiceScopeFactory                ServiceScopeFactory;
     internal readonly IDistributedEventPubSubConfigurator Configurator;
     private readonly  IPublishEndpoint                    _publishEndpoint;
+    private readonly  ILogger                             _logger;
 
     public DistributedEventPublisher(IServiceScopeFactory                serviceScopeFactory,
+                                     ILoggerFactory                      loggerFactory,
                                      IDistributedEventPubSubConfigurator configurator,
-                                     IPublishEndpoint                    publishEndpoint,
-                                     ILoggerFactory                      loggerFactory)
+                                     IPublishEndpoint                    publishEndpoint)
         : base(serviceScopeFactory, loggerFactory)
     {
         ServiceScopeFactory = serviceScopeFactory;
         Configurator        = configurator;
         _publishEndpoint    = publishEndpoint;
+        _logger             = loggerFactory.CreateLogger(GetType());
     }
 
     public override async Task Publish<T>(T                   eventMessage,
@@ -27,27 +30,28 @@ internal class DistributedEventPublisher : DefaultEventPublisher
     {
         if (eventMessage is DistributedEventMessage distributedEventMessage)
         {
+            distributedEventMessage.MachineName = Environment.MachineName;
+            distributedEventMessage.CurrentApp  = Configurator.AppName;
+
+            if (string.IsNullOrWhiteSpace(distributedEventMessage.OriginApp))
+            {
+                distributedEventMessage.OriginApp = Configurator.AppName;
+            }
+
             try
             {
-                distributedEventMessage.MachineName = Environment.MachineName;
-                distributedEventMessage.CurrentApp  = Configurator.AppName;
-
-                if (string.IsNullOrWhiteSpace(distributedEventMessage.OriginApp))
-                {
-                    distributedEventMessage.OriginApp = Configurator.AppName;
-                }
-
                 await _publishEndpoint.Publish(eventMessage);
             }
-            catch (Exception)
+            catch (Exception exception)
             {
+                _logger.LogError(exception, "Error while publishing event via distributed system");
 
                 throw;
             }
+
+            return;
         }
-        else
-        {
-            await base.Publish(eventMessage, runInBackground);
-        }
+
+        await base.Publish(eventMessage, runInBackground);
     }
 }

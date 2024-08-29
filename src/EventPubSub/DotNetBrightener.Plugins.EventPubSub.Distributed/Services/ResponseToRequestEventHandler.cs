@@ -33,9 +33,11 @@ internal class ResponseToRequestEventHandler<TEventMessage> : IConsumer<TEventMe
 
         _distributedEventEventResponder.OriginPayload = new DistributedEventMessageWrapper
         {
-            CorrelationId = context.CorrelationId ?? Guid.Empty,
-            CreatedOn     = context.SentTime ?? DateTime.UtcNow,
-            MachineName   = context.SourceAddress?.ToString()
+            CorrelationId = eventMessage.CorrelationId,
+            CreatedOn     = eventMessage.CreatedOn,
+            MachineName   = eventMessage.MachineName ?? context.SourceAddress?.Host,
+            OriginApp     = eventMessage.OriginApp,
+            EventId       = eventMessage.EventId
         };
 
         var serializedMessage = JsonConvert.SerializeObject(eventMessage, JsonConfig.SerializeOptions);
