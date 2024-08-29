@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json.Serialization;
 
-namespace DotNetBrightener.Plugins.EventPubSub.MassTransit.Extensions;
+namespace DotNetBrightener.Plugins.EventPubSub.Distributed.Extensions;
 
 internal class CamelCaseDictionaryKeysContractResolver : CamelCasePropertyNamesContractResolver
 {

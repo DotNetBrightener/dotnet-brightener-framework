@@ -1,4 +1,4 @@
-﻿namespace DotNetBrightener.Plugins.EventPubSub.MassTransit.AzureServiceBus;
+﻿namespace DotNetBrightener.Plugins.EventPubSub.AzureServiceBus;
 
 public class ServiceBusConfiguration
 {

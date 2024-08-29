@@ -1,4 +1,4 @@
-﻿using DotNetBrightener.Plugins.EventPubSub.MassTransit;
+﻿using DotNetBrightener.Plugins.EventPubSub.Distributed;
 using DotNetBrightener.Plugins.EventPubSub.MassTransit.RabbitMq;
 using MassTransit;
 using Microsoft.Extensions.Configuration;
@@ -11,10 +11,18 @@ namespace DotNetBrightener.Plugins.EventPubSub;
 
 public static class ServiceCollectionExtensions
 {
-    public static IMassTransitConfigurator UseRabbitMq(this IMassTransitConfigurator builder,
-                                                       IConfiguration                configuration)
+    public static IDistributedEventPubSubConfigurator UseRabbitMq(
+        this EventPubSubServiceBuilder builder,
+        IConfiguration                 configuration)
     {
-        if (builder is not MassTransitConfigurator configurator)
+        return builder.EnableDistributedIntegrations()
+                      .UseRabbitMq(configuration);
+    }
+
+    public static IDistributedEventPubSubConfigurator UseRabbitMq(this IDistributedEventPubSubConfigurator builder,
+                                                                  IConfiguration configuration)
+    {
+        if (builder is not DistributedIntegrationsConfigurator configurator)
         {
             throw new InvalidOperationException("Invalid configurator type");
         }
@@ -42,13 +50,13 @@ public static class ServiceCollectionExtensions
                                    rabbitMqConfiguration.VirtualHost);
     }
 
-    public static IMassTransitConfigurator UseRabbitMq(this IMassTransitConfigurator builder,
-                                                       string host,
-                                                       string username = "",
-                                                       string password = "",
-                                                       string virtualHost = "/")
+    public static IDistributedEventPubSubConfigurator UseRabbitMq(this IDistributedEventPubSubConfigurator builder,
+                                                                  string host,
+                                                                  string username = "",
+                                                                  string password = "",
+                                                                  string virtualHost = "/")
     {
-        if (builder is not MassTransitConfigurator configurator)
+        if (builder is not DistributedIntegrationsConfigurator configurator)
         {
             throw new InvalidOperationException("Invalid configurator type");
         }

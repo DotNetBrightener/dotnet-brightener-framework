@@ -1,7 +1,7 @@
 ﻿using MassTransit;
 using Microsoft.Extensions.Logging;
 
-namespace DotNetBrightener.Plugins.EventPubSub.MassTransit.Services;
+namespace DotNetBrightener.Plugins.EventPubSub.Distributed.Services;
 
 internal class ConsumerEventHandler<TEventMessage> : IConsumer<TEventMessage>
     where TEventMessage : DistributedEventMessage, new()
@@ -27,11 +27,13 @@ internal class ConsumerEventHandler<TEventMessage> : IConsumer<TEventMessage>
 
         await _distributedEventEventHandlers.ParallelForEachAsync(async handler =>
         {
-            handler.OriginPayload = new MassTransitEventMessageWrapper
+            handler.OriginPayload = new DistributedEventMessageWrapper
             {
                 CorrelationId = eventMessage.CorrelationId,
                 CreatedOn     = eventMessage.CreatedOn,
-                MachineName   = context.SourceAddress?.Host,
+                MachineName   = eventMessage.MachineName ?? context.SourceAddress?.Host,
+                OriginApp     = eventMessage.OriginApp,
+                EventId       = eventMessage.EventId
             };
 
             await handler.HandleEvent(eventMessage);

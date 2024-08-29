@@ -1,21 +1,24 @@
 ﻿using System.Reflection;
-using DotNetBrightener.Plugins.EventPubSub.MassTransit.Extensions;
+using DotNetBrightener.Plugins.EventPubSub.Distributed.Extensions;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
-namespace DotNetBrightener.Plugins.EventPubSub.MassTransit.Services;
+namespace DotNetBrightener.Plugins.EventPubSub.Distributed.Services;
 
 internal class ResponseToRequestEventHandler<TEventMessage> : IConsumer<TEventMessage>
-    where TEventMessage : class, IRequestMessage, new()
+    where TEventMessage : RequestMessage, new()
 {
-    private readonly RequestResponder<TEventMessage> _distributedEventEventResponder;
-    private readonly ILogger                         _logger;
+    private readonly RequestResponder<TEventMessage>     _distributedEventEventResponder;
+    private readonly IDistributedEventPubSubConfigurator _configurator;
+    private readonly ILogger                             _logger;
 
     public ResponseToRequestEventHandler(IEnumerable<IEventHandler<TEventMessage>> eventHandlers,
-                                         ILoggerFactory                            loggerFactory)
+                                         ILoggerFactory                            loggerFactory,
+                                         IDistributedEventPubSubConfigurator       configurator)
     {
-        _logger = loggerFactory.CreateLogger(GetType());
+        _configurator = configurator;
+        _logger       = loggerFactory.CreateLogger(GetType());
 
         _distributedEventEventResponder = eventHandlers.OfType<RequestResponder<TEventMessage>>()
                                                        .First(); // should never be null
@@ -28,10 +31,10 @@ internal class ResponseToRequestEventHandler<TEventMessage> : IConsumer<TEventMe
 
         var eventMessage = context.Message;
 
-        _distributedEventEventResponder.OriginPayload = new MassTransitEventMessageWrapper
+        _distributedEventEventResponder.OriginPayload = new DistributedEventMessageWrapper
         {
-            CorrelationId = context.CorrelationId,
-            CreatedOn     = context.SentTime,
+            CorrelationId = context.CorrelationId ?? Guid.Empty,
+            CreatedOn     = context.SentTime ?? DateTime.UtcNow,
             MachineName   = context.SourceAddress?.ToString()
         };
 
@@ -59,6 +62,12 @@ internal class ResponseToRequestEventHandler<TEventMessage> : IConsumer<TEventMe
             if (responseAsyncMethod is not null)
             {
                 var invokingMethod = responseAsyncMethod.MakeGenericMethod(responseMessage.GetType());
+
+                responseMessage.CorrelationId = eventMessage.CorrelationId;
+                responseMessage.OriginApp     = eventMessage.OriginApp;
+                responseMessage.FromApp       = eventMessage.CurrentApp;
+                responseMessage.CurrentApp    = _configurator.AppName;
+                responseMessage.CreatedOn     = DateTime.UtcNow;
 
                 if (invokingMethod.Invoke(context,
                     [

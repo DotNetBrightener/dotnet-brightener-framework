@@ -39,22 +39,6 @@ public class DefaultEventPublisher : IEventPublisher
         return Task.Run(async () => await PublishEvent(eventMessage));
     }
 
-    public virtual Task<TResponse> GetResponse<TResponse, TRequest>(TRequest requestMessage)
-        where TResponse : class, IResponseMessage<TRequest>
-        where TRequest : class, IRequestMessage
-    {
-        throw new NotImplementedException();
-    }
-
-    public virtual Task<(TResponse, TErrorResponse)>
-        GetResponse<TResponse, TErrorResponse, TRequest>(TRequest requestMessage)
-        where TResponse : class, IResponseMessage<TRequest>
-        where TErrorResponse : class, IResponseMessage<TRequest>
-        where TRequest : class, IRequestMessage
-    {
-        throw new NotImplementedException();
-    }
-
     private async Task PublishEvent<T>(T eventMessage) where T : class, IEventMessage
     {
         Type[] eventHandlersTypes;

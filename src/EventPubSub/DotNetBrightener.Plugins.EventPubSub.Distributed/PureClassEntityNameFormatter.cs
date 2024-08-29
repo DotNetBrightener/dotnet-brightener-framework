@@ -1,6 +1,6 @@
 ﻿using MassTransit;
 
-namespace DotNetBrightener.Plugins.EventPubSub.MassTransit;
+namespace DotNetBrightener.Plugins.EventPubSub.Distributed;
 
 internal class PureClassEntityNameFormatter : IEntityNameFormatter
 {

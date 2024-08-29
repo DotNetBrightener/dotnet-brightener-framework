@@ -1,4 +1,5 @@
 using DotNetBrightener.Plugins.EventPubSub;
+using DotNetBrightener.Plugins.EventPubSub.Distributed.Extensions;
 using EventPubSub.WebApiDemo.Contracts;
 using System.Reflection;
 
@@ -14,15 +15,13 @@ var eventPubSubConfig = builder.Services
                                // scan for event handlers in the given assembly
                                .AddEventHandlersFromAssemblies(Assembly.GetExecutingAssembly());
 
-var massTransitConfigurator = eventPubSubConfig.EnableMassTransit();
-
 // Add Azure Service Bus
-// massTransitConfigurator.UseAzureServiceBus(builder.Configuration);
+//eventPubSubConfig.UseAzureServiceBus(builder.Configuration)
+//                 .Finalize();
 
 // Add RabbitMq
-massTransitConfigurator.UseRabbitMq(builder.Configuration);
-
-massTransitConfigurator.Finalize();
+eventPubSubConfig.UseRabbitMq(builder.Configuration)
+                 .Finalize();
 
 var app = builder.Build();
 
@@ -48,6 +47,19 @@ app.MapGet("/", async (IEventPublisher eventPublisher) =>
     var response = await eventPublisher.GetResponse<DistributedTestMessageResponse, DistributedTestMessage>(eventMessage2);
     
     return response;
+});
+
+
+app.MapGet("/test", async (IEventPublisher eventPublisher) =>
+{
+    var eventMessage = new SomeUpdateMessage
+    {
+        Name = "world"
+    };
+
+    await eventPublisher.Publish(eventMessage);
+    
+    return "Message sent";
 });
 
 app.Run();

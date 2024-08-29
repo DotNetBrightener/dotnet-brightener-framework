@@ -24,8 +24,6 @@ public static class ServiceCollectionEventPublisherExtensions
                                 : assembliesContainMessages;
 
         var eventMessageTypes = appAssemblies.GetDerivedTypes<IEventMessage>()
-                                             .Concat(appAssemblies.GetDerivedTypes<IRequestMessage>())
-                                             .Concat(appAssemblies.GetDerivedTypes<IResponseMessage>())
                                              .Distinct();
 
         // Event Pub/Sub
@@ -48,8 +46,6 @@ public static class ServiceCollectionEventPublisherExtensions
         params Assembly[]                assemblies)
     {
         var eventMessageTypes = assemblies.GetDerivedTypes<IEventMessage>()
-                                          .Concat(assemblies.GetDerivedTypes<IRequestMessage>())
-                                          .Concat(assemblies.GetDerivedTypes<IResponseMessage>())
                                           .Except(eventPubSubBuilder.EventMessageTypes);
 
         eventPubSubBuilder.EventMessageTypes.AddRange(eventMessageTypes);

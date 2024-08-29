@@ -2,9 +2,9 @@
 using MassTransit;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace DotNetBrightener.Plugins.EventPubSub.MassTransit;
+namespace DotNetBrightener.Plugins.EventPubSub.Distributed;
 
-public interface IMassTransitConfigurator
+public interface IDistributedEventPubSubConfigurator
 {
     IServiceCollection Services { get; }
 
@@ -14,7 +14,7 @@ public interface IMassTransitConfigurator
 }
 
 
-internal class MassTransitConfigurator : IMassTransitConfigurator
+internal class DistributedIntegrationsConfigurator : IDistributedEventPubSubConfigurator
 {
     public IServiceCollection Services { get; init; }
 

@@ -1,6 +1,6 @@
 ﻿using MassTransit;
 
-namespace DotNetBrightener.Plugins.EventPubSub.MassTransit;
+namespace DotNetBrightener.Plugins.EventPubSub.Distributed;
 
 /// <summary>
 ///     Defines the formatter that will use subscription name as name of the consumer.

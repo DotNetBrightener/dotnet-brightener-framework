@@ -15,15 +15,13 @@ var eventPubSubConfig = builder.Services
                                 // scan for event handlers in the given assembly
                                .AddEventHandlersFromAssemblies(Assembly.GetExecutingAssembly());
 
-var massTransitConfigurator = eventPubSubConfig.EnableMassTransit();
-
 // Add Azure Service Bus
-// massTransitConfigurator.UseAzureServiceBus(builder.Configuration);
+//eventPubSubConfig.UseAzureServiceBus(builder.Configuration)
+//                 .Finalize();
 
 // Add RabbitMq
-massTransitConfigurator.UseRabbitMq(builder.Configuration);
-
-massTransitConfigurator.Finalize();
+eventPubSubConfig.UseRabbitMq(builder.Configuration)
+                 .Finalize();
 
 var app = builder.Build();
 

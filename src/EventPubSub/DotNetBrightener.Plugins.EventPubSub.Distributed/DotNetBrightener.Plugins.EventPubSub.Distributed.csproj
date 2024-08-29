@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<ItemGroup>
-		<InternalsVisibleTo Include="DotNetBrightener.Plugins.EventPubSub.MassTransit.AzureServiceBus" />
-		<InternalsVisibleTo Include="DotNetBrightener.Plugins.EventPubSub.MassTransit.RabbitMq" />
+		<InternalsVisibleTo Include="DotNetBrightener.Plugins.EventPubSub.AzureServiceBus" />
+		<InternalsVisibleTo Include="DotNetBrightener.Plugins.EventPubSub.RabbitMq" />
 	</ItemGroup>
 
 	<ItemGroup>

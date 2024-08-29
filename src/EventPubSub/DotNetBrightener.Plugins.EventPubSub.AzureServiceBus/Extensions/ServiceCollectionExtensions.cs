@@ -1,5 +1,5 @@
-﻿using DotNetBrightener.Plugins.EventPubSub.MassTransit;
-using DotNetBrightener.Plugins.EventPubSub.MassTransit.AzureServiceBus;
+﻿using DotNetBrightener.Plugins.EventPubSub.AzureServiceBus;
+using DotNetBrightener.Plugins.EventPubSub.Distributed;
 using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,10 +11,19 @@ namespace DotNetBrightener.Plugins.EventPubSub;
 
 public static class ServiceCollectionExtensions
 {
-    public static IMassTransitConfigurator UseAzureServiceBus(this IMassTransitConfigurator builder,
-                                                              IConfiguration                configuration)
+    public static IDistributedEventPubSubConfigurator UseAzureServiceBus(
+        this EventPubSubServiceBuilder builder,
+        IConfiguration                 configuration)
     {
-        if (builder is not MassTransitConfigurator configurator)
+        return builder.EnableDistributedIntegrations()
+                      .UseAzureServiceBus(configuration);
+    }
+
+    public static IDistributedEventPubSubConfigurator UseAzureServiceBus(
+        this IDistributedEventPubSubConfigurator builder,
+        IConfiguration                           configuration)
+    {
+        if (builder is not DistributedIntegrationsConfigurator configurator)
         {
             throw new InvalidOperationException("Invalid configurator type");
         }
@@ -39,10 +48,11 @@ public static class ServiceCollectionExtensions
         return builder.UseAzureServiceBus(serviceBusConfiguration.ConnectionString);
     }
 
-    public static IMassTransitConfigurator UseAzureServiceBus(this IMassTransitConfigurator builder,
-                                                              string connectionString)
+    public static IDistributedEventPubSubConfigurator UseAzureServiceBus(
+        this IDistributedEventPubSubConfigurator builder,
+        string                                   connectionString)
     {
-        if (builder is not MassTransitConfigurator configurator)
+        if (builder is not DistributedIntegrationsConfigurator configurator)
         {
             throw new InvalidOperationException("Invalid configurator type");
         }

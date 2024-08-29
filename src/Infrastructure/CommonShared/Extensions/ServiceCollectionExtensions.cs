@@ -56,7 +56,7 @@ public static class ServiceCollectionExtensions
 
         var commonAppBuilder = new CommonAppBuilder
         {
-            Services           = serviceCollection,
+            Services                  = serviceCollection,
             EventPubSubServiceBuilder = eventPubSubBuilder
         };
 

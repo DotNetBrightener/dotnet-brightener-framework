@@ -7,7 +7,7 @@
 ///     The type of the request message.
 /// </typeparam>
 public abstract class RequestResponder<TRequest> : IEventHandler<TRequest>
-    where TRequest : class, IRequestMessage, new()
+    where TRequest : RequestMessage, new()
 {
     public int Priority => 1000;
 

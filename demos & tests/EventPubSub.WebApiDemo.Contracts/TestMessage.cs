@@ -7,12 +7,17 @@ public class TestMessage : IEventMessage
     public string Name { get; set; }
 }
 
-public class DistributedTestMessage : IRequestMessage
+public class SomeUpdateMessage : DistributedEventMessage
 {
     public string Name { get; set; }
 }
 
-public class DistributedTestMessageResponse : IResponseMessage<DistributedTestMessage>
+public class DistributedTestMessage : RequestMessage
+{
+    public string Name { get; set; }
+}
+
+public class DistributedTestMessageResponse : ResponseMessage<DistributedTestMessage>
 {
     public string Name { get; set; }
 }

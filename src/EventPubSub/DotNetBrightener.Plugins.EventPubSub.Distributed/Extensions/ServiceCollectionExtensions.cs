@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
-using DotNetBrightener.Plugins.EventPubSub.MassTransit;
-using DotNetBrightener.Plugins.EventPubSub.MassTransit.Services;
+using DotNetBrightener.Plugins.EventPubSub.Distributed;
+using DotNetBrightener.Plugins.EventPubSub.Distributed.Services;
 using MassTransit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -13,25 +13,26 @@ namespace DotNetBrightener.Plugins.EventPubSub;
 public static class ServiceCollectionExtensions
 {
     /// <summary>
-    ///     Enables MassTransit as EventPubSub service for the application.
+    ///     Enables integration with distributed message brokers the application.
     /// </summary>
     /// <param name="builder"></param>
     /// <param name="appName"></param>
     /// <returns></returns>
-    public static IMassTransitConfigurator EnableMassTransit(this EventPubSubServiceBuilder builder,
-                                                             string                         appName = null)
+    public static IDistributedEventPubSubConfigurator EnableDistributedIntegrations(
+        this EventPubSubServiceBuilder builder,
+        string                         appName = null)
     {
-        var configurator = new MassTransitConfigurator
+        var configurator = new DistributedIntegrationsConfigurator
         {
             Services = builder.Services,
-            Builder = builder
+            Builder  = builder
         };
 
-        builder.Services.AddSingleton<IMassTransitConfigurator>(configurator);
+        builder.Services.AddSingleton<IDistributedEventPubSubConfigurator>(configurator);
 
         if (!string.IsNullOrWhiteSpace(appName))
         {
-            configurator.AppName = appName;
+            configurator.AppName       = appName;
             configurator.NameFormatter = new SubscriptionBasedEndpointNameFormatter(appName);
         }
 
@@ -45,10 +46,11 @@ public static class ServiceCollectionExtensions
     /// <param name="subscriptionName">The name of the application, to use as subscription name</param>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
-    public static IMassTransitConfigurator SetSubscriptionName(this IMassTransitConfigurator builder,
-                                                               string subscriptionName)
+    public static IDistributedEventPubSubConfigurator SetSubscriptionName(
+        this IDistributedEventPubSubConfigurator builder,
+        string                                   subscriptionName)
     {
-        if (builder is not MassTransitConfigurator configurator)
+        if (builder is not DistributedIntegrationsConfigurator configurator)
         {
             throw new InvalidOperationException("Invalid configurator type");
         }
@@ -67,9 +69,10 @@ public static class ServiceCollectionExtensions
     /// <param name="builder"></param>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
-    public static IMassTransitConfigurator ExcludeNamespaceInEntityName(this IMassTransitConfigurator builder)
+    public static IDistributedEventPubSubConfigurator ExcludeNamespaceInEntityName(
+        this IDistributedEventPubSubConfigurator builder)
     {
-        if (builder is not MassTransitConfigurator configurator)
+        if (builder is not DistributedIntegrationsConfigurator configurator)
         {
             throw new InvalidOperationException("Invalid configurator type");
         }
@@ -78,11 +81,12 @@ public static class ServiceCollectionExtensions
 
         return builder;
     }
-    
-    public static IMassTransitConfigurator AddConsumer<TConsumer>(this IMassTransitConfigurator builder)
+
+    public static IDistributedEventPubSubConfigurator AddConsumer<TConsumer>(
+        this IDistributedEventPubSubConfigurator builder)
         where TConsumer : class, IConsumer
     {
-        if (builder is not MassTransitConfigurator configurator)
+        if (builder is not DistributedIntegrationsConfigurator configurator)
         {
             throw new InvalidOperationException("Invalid configurator type");
         }
@@ -95,9 +99,10 @@ public static class ServiceCollectionExtensions
         return builder;
     }
 
-    public static IMassTransitConfigurator AddConsumers(this IMassTransitConfigurator builder, Assembly scannedAssembly)
+    public static IDistributedEventPubSubConfigurator AddConsumers(this IDistributedEventPubSubConfigurator builder,
+                                                                   Assembly scannedAssembly)
     {
-        if (builder is not MassTransitConfigurator configurator)
+        if (builder is not DistributedIntegrationsConfigurator configurator)
         {
             throw new InvalidOperationException("Invalid configurator type");
         }
@@ -119,22 +124,22 @@ public static class ServiceCollectionExtensions
     /// <param name="builder"></param>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
-    public static void Finalize(this IMassTransitConfigurator builder)
+    public static void Finalize(this IDistributedEventPubSubConfigurator builder)
     {
-        if (builder is not MassTransitConfigurator configurator)
+        if (builder is not DistributedIntegrationsConfigurator configurator)
         {
             throw new InvalidOperationException("Invalid configurator type");
         }
 
         var services = configurator.Services;
 
-        services.Replace(ServiceDescriptor.Scoped<IEventPublisher, MassTransitEventPublisher>());
+        services.Replace(ServiceDescriptor.Scoped<IEventPublisher, DistributedEventPublisher>());
 
         configurator.Builder
                     .EventMessageTypes
                     .Where(type => !type.IsInterface && (
                                                             type.IsAssignableTo(typeof(DistributedEventMessage)) ||
-                                                            type.IsAssignableTo(typeof(IRequestMessage))
+                                                            type.IsAssignableTo(typeof(RequestMessage))
                                                         ))
                     .ToList()
                     .ForEach(msgType => ConfigureConsumerForMessageType(msgType, services, configurator));
@@ -155,18 +160,19 @@ public static class ServiceCollectionExtensions
         });
     }
 
-    private static void ConfigureConsumerForMessageType(Type                    type,
-                                                        IServiceCollection      services,
-                                                        MassTransitConfigurator configurator)
+    private static void ConfigureConsumerForMessageType(Type                                type,
+                                                        IServiceCollection                  services,
+                                                        DistributedIntegrationsConfigurator configurator)
     {
         var eventHandlerType = typeof(IEventHandler<>).MakeGenericType(type);
 
         var eventHandlerTypeRegistrations = services
-                                           .Where(descriptor => descriptor.ServiceType == eventHandlerType || 
-                                                                descriptor.ImplementationType?.IsAssignableTo(eventHandlerType) == true)
+                                           .Where(descriptor => descriptor.ServiceType == eventHandlerType ||
+                                                                descriptor.ImplementationType
+                                                                         ?.IsAssignableTo(eventHandlerType) == true)
                                            .ToList();
 
-        var isRequestType = type.IsAssignableTo(typeof(IRequestMessage));
+        var isRequestType = type.IsAssignableTo(typeof(RequestMessage));
 
         if (!eventHandlerTypeRegistrations.Any())
             return;

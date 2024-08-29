@@ -1,47 +1,39 @@
 ﻿namespace DotNetBrightener.Plugins.EventPubSub;
 
-/// <summary>
-///     Represents the event message used in <see cref="IEventHandler{T}"/>
-/// </summary>
-/// <remarks>
-///     The event message can be modified by the event handlers if the event is published without `running in background` enabled
-/// </remarks>
-public interface IEventMessage;
-
-public interface IDistributedEventMessage: IEventMessage
+public abstract class BaseEventMessage : IEventMessage
 {
     /// <summary>
     ///     The correlation id for the event message.
     /// </summary>
-    Guid CorrelationId { get; set; }
+    public Guid CorrelationId { get; set; } = Ulid.NewUlid().ToGuid();
 
     /// <summary>
     ///     The unique identifier for the event message.
     /// </summary>
-    Guid EventId { get; set; }
+    public Guid EventId { get; set; } = Ulid.NewUlid().ToGuid();
 
     /// <summary>
     ///     Indicates when the event message was created.
     /// </summary>
-    DateTime CreatedOn { get; set; }
+    public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
 
     /// <summary>
     ///     The name of the application that initiates the event message.
     /// </summary>
-    string OriginApp { get; set; }
+    public string OriginApp { get; set; }
 
     /// <summary>
     ///     The name of the application that processes and forwards the event message, if applicable.
     /// </summary>
-    string FromApp { get; set; }
+    public string FromApp { get; set; }
 
     /// <summary>
     ///     The name of the application that processes and forwards the event message, if applicable.
     /// </summary>
-    string CurrentApp { get; set; }
+    public string CurrentApp { get; set; }
 
     /// <summary>
     ///     The name of the machine that initiates the event message.
     /// </summary>
-    string MachineName { get; set; }
+    public string MachineName { get; set; } = Environment.MachineName;
 }
