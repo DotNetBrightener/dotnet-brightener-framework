@@ -1,6 +1,6 @@
-﻿using System.Diagnostics;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System.Collections.Immutable;
 
 namespace DotNetBrightener.Plugins.EventPubSub;
 
@@ -35,36 +35,52 @@ internal class InMemoryEventProcessor(IServiceScopeFactory serviceScopeFactory)
 
 internal class InMemoryEventProcessor<T> where T : IEventMessage
 {
-    private readonly ILogger            _logger;
-    private readonly IEventHandler<T>[] _eventHandlers;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
+    private readonly ILogger              _logger;
 
     public InMemoryEventProcessor(ILoggerFactory                loggerFactory,
-                                  IEnumerable<IEventHandler<T>> eventHandlers)
+                                  IServiceScopeFactory          serviceScopeFactory)
     {
-        _logger = loggerFactory.CreateLogger(GetType());
-        _eventHandlers = eventHandlers.OrderByDescending(handler => handler.Priority)
-                                      .ToArray();
+        _serviceScopeFactory = serviceScopeFactory;
+        _logger              = loggerFactory.CreateLogger(GetType());
     }
 
     public async Task ProcessEventMessage(T eventMessage)
     {
-        if (eventMessage is INonStoppedEventMessage)
+        using (IServiceScope processingScope = _serviceScopeFactory.CreateScope())
         {
-            await _eventHandlers.ParallelForEachAsync(eventHandler => HandleEventMessage(eventHandler, eventMessage));
+            var expectingEventHandlerType = typeof(IEventHandler<>).MakeGenericType(eventMessage.GetType());
 
-            return;
-        }
+            var allEventHandlers = processingScope!.ServiceProvider
+                                                   .GetServices<IEventHandler>();
 
-        foreach (var eventHandler in _eventHandlers)
-        {
-            var shouldContinue = await HandleEventMessage(eventHandler, eventMessage);
+            ImmutableArray<IEventHandler> eventHandlers =
+            [
+                ..allEventHandlers
+                 .Where(instance => instance.GetType()
+                                            .IsAssignableTo(expectingEventHandlerType))
+                 .OrderByDescending(x => x.Priority)
+            ];
 
-            if (!shouldContinue)
-                break;
+            if (eventMessage is INonStoppedEventMessage)
+            {
+                await eventHandlers.ParallelForEachAsync(eventHandler =>
+                                                             HandleEventMessage(eventHandler, eventMessage));
+
+                return;
+            }
+
+            foreach (var eventHandler in eventHandlers)
+            {
+                var shouldContinue = await HandleEventMessage(eventHandler, eventMessage);
+
+                if (!shouldContinue)
+                    break;
+            }
         }
     }
 
-    private async Task<bool> HandleEventMessage(IEventHandler<T> x, T eventMessage)
+    private async Task<bool> HandleEventMessage(IEventHandler x, T eventMessage)
     {
         try
         {

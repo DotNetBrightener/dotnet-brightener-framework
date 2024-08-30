@@ -44,6 +44,8 @@ public static class ServiceCollectionEventPublisherExtensions
 
         serviceCollection.AddHostedService<InMemoryEventProcessorBackgroundJob>();
 
+        serviceCollection.EnableLazyResolver();
+
         return eventPubSubBuilder;
     }
 

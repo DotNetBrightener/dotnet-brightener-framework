@@ -1,5 +1,6 @@
 #nullable enable
 
+using System.Data;
 using DotNetBrightener.DataAccess.Attributes;
 using DotNetBrightener.DataAccess.Auditing;
 using DotNetBrightener.DataAccess.EF.Events;
@@ -15,9 +16,11 @@ using LinqToDB.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.Logging;
+using System.Diagnostics.Metrics;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Data.Common;
 
 namespace DotNetBrightener.DataAccess.EF.Repositories;
 
@@ -395,22 +398,38 @@ public class Repository : IRepository
                         ? DbContext.Set<T>().Where(conditionExpression)
                         : DbContext.Set<T>();
 
-        int updatedRecords;
+        int updatedRecords = 0;
 
         if (expectedAffectedRows.HasValue)
         {
-            await using var dbTransaction = await DbContext.Database.BeginTransactionAsync();
+            var executionStrategy = DbContext.Database.CreateExecutionStrategy();
 
-            updatedRecords = await PerformUpdate(query, updateExpression);
-
-            if (updatedRecords != expectedAffectedRows.Value)
+            async Task ExecuteUpdate()
             {
-                await dbTransaction.RollbackAsync();
+                updatedRecords = await PerformUpdate(query, updateExpression);
 
-                throw new ExpectedAffectedRecordMismatchException(expectedAffectedRows.Value, updatedRecords);
+                if (updatedRecords != expectedAffectedRows.Value)
+                {
+                    throw new ExpectedAffectedRecordMismatchException(expectedAffectedRows.Value,
+                                                                      updatedRecords);
+                }
             }
 
-            await dbTransaction.CommitAsync();
+            await executionStrategy.ExecuteInTransactionAsync(ExecuteUpdate,
+                                                              async () => updatedRecords == expectedAffectedRows.Value);
+
+            //await using var dbTransaction = await DbContext.Database.BeginTransactionAsync();
+
+            //updatedRecords = await PerformUpdate(query, updateExpression);
+
+            //if (updatedRecords != expectedAffectedRows.Value)
+            //{
+            //    await dbTransaction.RollbackAsync();
+
+            //    throw new ExpectedAffectedRecordMismatchException(expectedAffectedRows.Value, updatedRecords);
+            //}
+
+            //await dbTransaction.CommitAsync();
         }
         else
         {
@@ -506,18 +525,23 @@ public class Repository : IRepository
 
         if (forceHardDelete)
         {
-            await using var dbTransaction = await DbContext.Database.BeginTransactionAsync();
+            var executionStrategy = DbContext.Database.CreateExecutionStrategy();
 
-            var updatedRecords = await Fetch(conditionExpression).ExecuteDeleteAsync();
+            int updatedRecords = 0;
 
-            if (updatedRecords != 1)
+            async Task ExecuteDelete()
             {
-                await dbTransaction.RollbackAsync();
+                updatedRecords = await Fetch(conditionExpression).ExecuteDeleteAsync();
 
-                throw new ExpectedAffectedRecordMismatchException(1, updatedRecords);
+                if (updatedRecords != 1)
+                {
+                    throw new ExpectedAffectedRecordMismatchException(1,
+                                                                      updatedRecords);
+                }
             }
 
-            await dbTransaction.CommitAsync();
+            await executionStrategy.ExecuteInTransactionAsync(ExecuteDelete,
+                                                              async () => updatedRecords == 1);
         }
         else
         {

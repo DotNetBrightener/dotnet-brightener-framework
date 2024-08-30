@@ -1,4 +1,6 @@
-﻿using DotNetBrightener.DataAccess.Services;
+﻿using System.Reflection;
+using DotNetBrightener.DataAccess.Exceptions;
+using DotNetBrightener.DataAccess.Services;
 using DotNetBrightener.TestHelpers;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
@@ -54,6 +56,9 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
             await repository.CommitChangesAsync();
         }
 
+        // give the event handler some time to execute
+        await Task.Delay(TimeSpan.FromSeconds(3));
+
         using (var serviceScope = host.Services.CreateScope())
         {
             var serviceProvider = serviceScope.ServiceProvider;
@@ -96,7 +101,9 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
             await repository.CommitChangesAsync();
         }
 
-        Thread.Sleep(TimeSpan.FromSeconds(2));
+        // give the event handler some time to execute
+        await Task.Delay(TimeSpan.FromSeconds(3));
+
 
         using (var serviceScope = host.Services.CreateScope())
         {
@@ -320,6 +327,41 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
     }
 
     [Test]
+    public async Task DeleteOne_ShouldExecute_Not_Successfully()
+    {
+        var host = ConfigureServices();
+
+        await InsertFakeData(host);
+        await InsertFakeData(host);
+
+        Action act = () =>
+        {
+            using (var serviceScope = host.Services.CreateScope())
+            {
+                var serviceProvider = serviceScope.ServiceProvider;
+                var repository      = serviceProvider.GetRequiredService<IRepository>();
+
+                repository.DeleteOneAsync<TestEntity>(x => x.Name == "Name1").Wait();
+            }
+        };
+
+        act.Should()
+           .Throw<ExpectedAffectedRecordMismatchException>()
+           .Where(ex => ex.ExpectedAffectedRecords == 1 && ex.ActualAffectedRecords == 2);
+
+        using (var serviceScope = host.Services.CreateScope())
+        {
+            var serviceProvider = serviceScope.ServiceProvider;
+            var repository      = serviceProvider.GetRequiredService<IRepository>();
+
+            var record = await repository.Fetch<TestEntity>(x => x.Name == "Name1" && !x.IsDeleted)
+                                         .CountAsync();
+
+            record.Should().Be(2, "The transaction should roll back.");
+        }
+    }
+
+    [Test]
     public async Task DeleteMany_ShouldExecuteSuccessfully()
     {
         var host = ConfigureServices();
@@ -332,7 +374,8 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
             var repository      = serviceProvider.GetRequiredService<IRepository>();
 
             int affectedRecords = await repository.DeleteManyAsync<TestEntity>(x => x.Name != "Name1", "Test deletion");
-            Assert.That(affectedRecords, Is.EqualTo(9));
+
+            affectedRecords.Should().Be(9);
         }
 
         using (var serviceScope = host.Services.CreateScope())
@@ -344,8 +387,8 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
 
             foreach (var record in records)
             {
-                Assert.That(record.IsDeleted, Is.EqualTo(true));
-                Assert.That(record.DeletionReason, Is.EqualTo("Test deletion"));
+                record.IsDeleted.Should().BeTrue();
+                record.DeletionReason.Should().Be("Test deletion");
             }
         }
     }
@@ -438,7 +481,11 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
                                                                      optionsBuilder =>
                                                                      {
                                                                          optionsBuilder
-                                                                            .UseSqlServer(ConnectionString);
+                                                                            .UseSqlServer(ConnectionString,
+                                                                                          c =>
+                                                                                          {
+                                                                                              c.EnableRetryOnFailure(10);
+                                                                                          });
                                                                      });
 
                 configureServices?.Invoke(services);
