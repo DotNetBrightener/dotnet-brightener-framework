@@ -9,7 +9,7 @@ public abstract class MsSqlServerBaseNUnitTest
                                                       .WithPassword("Str0ng3stP@s5w0rd3ver!")
                                                       .Build();
 
-    protected string ConnectionString => MsSqlContainer.GetConnectionString($"Database=MsSqlServerBaseTest_{DateTime.Now:yyyyMMddHHmm}");
+    protected string ConnectionString => MsSqlContainer.GetConnectionString($"MsSqlServerBaseTest_{DateTime.Now:yyyyMMddHHmm}");
 
     [SetUp]
     public async Task Setup()

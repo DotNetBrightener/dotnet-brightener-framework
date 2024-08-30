@@ -6,7 +6,8 @@ public class DefaultCacheManager : ICacheManager
 
     public DefaultCacheManager(IEnumerable<ICacheProvider> cacheProviders)
     {
-        _cacheProvider = cacheProviders.FirstOrDefault(_ => _.CanUse);
+        _cacheProvider = cacheProviders.FirstOrDefault(_ => _.CanUse) ??
+                         new InternalCacheProvider();
     }
 
     public T Get<T>(CacheKey key, Func<T> acquire)

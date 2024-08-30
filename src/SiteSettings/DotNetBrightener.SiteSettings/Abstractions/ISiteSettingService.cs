@@ -16,5 +16,5 @@ public interface ISiteSettingService
 
     void SaveSetting(SiteSettingBase value, Type settingType);
 
-    void SaveSetting(Type settingType, IDictionary<string, object> value);
+    void SaveSetting(Type settingType, Dictionary<string, object> value);
 }
