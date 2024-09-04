@@ -2,6 +2,9 @@
 	<PropertyGroup>
 		<RootNamespace>DotNetBrightener.DataAccess.Models</RootNamespace>
 	</PropertyGroup>
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
 
 	<PropertyGroup>
 		<ImplicitUsings>enable</ImplicitUsings>

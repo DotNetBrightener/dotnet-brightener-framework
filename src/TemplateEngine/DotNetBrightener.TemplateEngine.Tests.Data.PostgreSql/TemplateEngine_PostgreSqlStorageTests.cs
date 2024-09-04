@@ -1,99 +1,127 @@
-//using DotNetBrightener.TemplateEngine.Data.PostgreSql.Data;
-//using DotNetBrightener.TemplateEngine.Data.Services;
-//using DotNetBrightener.TemplateEngine.Services;
-//using DotNetBrightener.TestHelpers;
-//using Microsoft.Extensions.DependencyInjection;
-//using Microsoft.Extensions.DependencyInjection.Extensions;
-//using Microsoft.Extensions.Hosting;
-//using Moq;
-//using NUnit.Framework;
+using DotNetBrightener.TemplateEngine.Data.PostgreSql.Data;
+using DotNetBrightener.TemplateEngine.Data.Services;
+using DotNetBrightener.TemplateEngine.Services;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
+using Moq;
+using NUnit.Framework;
+using Testcontainers.PostgreSql;
 
-//namespace DotNetBrightener.TemplateEngine.Tests.Data.PostgreSql;
+namespace DotNetBrightener.TemplateEngine.Tests.Data.PostgreSql;
 
-//public class TemplateEngine_PostgreSqlStorageTests
-//{
-//    private IHost  _testHost;
-//    private string _connectionString;
+public class TemplateEngine_PostgreSqlStorageTests
+{
+    private IHost _testHost;
+    private string _connectionString;
 
-//    [SetUp]
-//    public void Setup()
-//    {
-//        _connectionString =
-//            $"Server=100.117.90.128;Port=5432;Database=TemplateEngine_UnitTest{DateTime.Now:yyyyMMddHHmm};User Id=postgres;Password=Sup3r5tr0ngP@ssw0rd!!;";
-//    }
+    private readonly PostgreSqlContainer _postgreSqlContainer = new PostgreSqlBuilder()
+                                                               .WithImage("postgres:15")
+                                                               .WithDatabase($"DataMigration_UnitTest{DateTime.Now:yyyyMMddHHmm}")
+                                                               .WithUsername("test")
+                                                               .WithPassword("password")
+                                                               .Build();
 
-//    [TearDown]
-//    public async Task TearDown()
-//    {
-//        await using (var dbContext = _testHost.Services.GetService<TemplateEngineDbContext>())
-//        {
-//            if (dbContext is not null)
-//            {
-//                await dbContext.Database.EnsureDeletedAsync();
-//            }
-//        }
 
-//        _testHost?.Dispose();
-//    }
+    [SetUp]
+    public async Task Setup()
+    {
+        await _postgreSqlContainer.StartAsync();
+        _connectionString = _postgreSqlContainer.GetConnectionString();
+    }
 
-//    [Test]
-//    public async Task TemplateHelperProvider_ShouldBeCalledAtStartup()
-//    {
-//        var mockTemplateHelper = new Mock<ITemplateHelperRegistration>();
+    [TearDown]
+    public async Task TearDown()
+    {
+        TearDownHost();
+    }
 
-//        _testHost = HostTestingHelper.CreateTestHost(services =>
-//        {
-//            services.Replace(ServiceDescriptor.Scoped<ITemplateHelperRegistration>((s) => mockTemplateHelper.Object));
-//        });
+    [OneTimeTearDown]
+    public async Task OneTimeTearDown()
+    {
+        await _postgreSqlContainer.DisposeAsync();
+    }
 
-//        await _testHost.StartAsync();
+    private void TearDownHost()
+    {
+        var builder = new HostBuilder()
+           .ConfigureServices((_, serviceCollection) =>
+            {
+                serviceCollection.AddDbContext<TemplateEngineDbContext>(options =>
+                {
+                    options.UseNpgsql(_postgreSqlContainer.GetConnectionString());
+                });
+            });
 
-//        mockTemplateHelper.Verify(x => x.RegisterHelpers(),
-//                                  Times.Once);
+        var host = builder.Build();
 
-//        await _testHost.StopAsync();
-//    }
+        using var serviceScope    = host.Services.CreateScope();
+        var       serviceProvider = serviceScope.ServiceProvider;
 
-//    [Test]
-//    public async Task TemplateProvider_ShouldCreateANewTemplateRecord()
-//    {
-//        _testHost = HostTestingHelper.CreateTestHost(services =>
-//        {
-//            services.AddTemplateEngineStorage();
-//            services.AddTemplateEnginePostgreSqlStorage(_connectionString);
-//            services.AddTemplateProvider<TestModelRegistration>();
-//        });
+        using var dbContext = serviceProvider.GetRequiredService<TemplateEngineDbContext>();
+        dbContext.Database.EnsureDeleted();
+        _testHost?.Dispose();
+    }
 
-//        await _testHost.StartAsync();
+    [Test]
+    public async Task TemplateHelperProvider_ShouldBeCalledAtStartup()
+    {
+        var mockTemplateHelper = new Mock<ITemplateHelperRegistration>();
 
-//        using (var scope = _testHost.Services.CreateScope())
-//        {
-//            var templateService = scope.ServiceProvider.GetRequiredService<ITemplateService>();
+        _testHost = HostTestingHelper.CreateTestHost(services =>
+        {
+            services.Replace(ServiceDescriptor.Scoped<ITemplateHelperRegistration>((s) => mockTemplateHelper.Object));
+        });
 
-//            var template = templateService.LoadTemplate<TemplateTestModel>();
+        await _testHost.StartAsync();
 
-//            Assert.That(template, Is.Not.Null);
-//            Assert.That(template.TemplateTitle, Is.EqualTo("Hello {{Name}}"));
-//            Assert.That(template.TemplateContent, Is.EqualTo("Hey {{Name}},<br />This is {{Description}}."));
-//        }
+        mockTemplateHelper.Verify(x => x.RegisterHelpers(),
+                                  Times.Once);
 
-//        using (var scope = _testHost.Services.CreateScope())
-//        {
-//            var templateService = scope.ServiceProvider.GetRequiredService<ITemplateService>();
+        await _testHost.StopAsync();
+    }
 
-//            var model = new TemplateTestModel
-//            {
-//                Name        = "John",
-//                Description = "A test model"
-//            };
+    [Test]
+    public async Task TemplateProvider_ShouldCreateANewTemplateRecord()
+    {
+        _testHost = HostTestingHelper.CreateTestHost(services =>
+        {
+            services.AddTemplateEngineStorage();
+            services.AddTemplateEnginePostgreSqlStorage(_connectionString);
+            services.AddTemplateProvider<TestModelRegistration>();
+        });
 
-//            var template = await templateService.LoadAndParseTemplateAsync(model);
+        await _testHost.StartAsync();
 
-//            Assert.That(template, Is.Not.Null);
-//            Assert.That(template.TemplateTitle, Is.EqualTo("Hello John"));
-//            Assert.That(template.TemplateContent, Is.EqualTo("Hey John,<br />This is A test model."));
-//        }
+        using (var scope = _testHost.Services.CreateScope())
+        {
+            var templateService = scope.ServiceProvider.GetRequiredService<ITemplateService>();
 
-//        await _testHost.StopAsync();
-//    }
-//}
+            var template = templateService.LoadTemplate<TemplateTestModel>();
+
+            Assert.That(template, Is.Not.Null);
+            Assert.That(template.TemplateTitle, Is.EqualTo("Hello {{Name}}"));
+            Assert.That(template.TemplateContent, Is.EqualTo("Hey {{Name}},<br />This is {{Description}}."));
+        }
+
+        using (var scope = _testHost.Services.CreateScope())
+        {
+            var templateService = scope.ServiceProvider.GetRequiredService<ITemplateService>();
+
+            var model = new TemplateTestModel
+            {
+                Name = "John",
+                Description = "A test model"
+            };
+
+            var template = await templateService.LoadAndParseTemplateAsync(model);
+
+            Assert.That(template, Is.Not.Null);
+            Assert.That(template.TemplateTitle, Is.EqualTo("Hello John"));
+            Assert.That(template.TemplateContent, Is.EqualTo("Hey John,<br />This is A test model."));
+        }
+
+        await _testHost.StopAsync();
+    }
+}

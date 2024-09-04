@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using DotNetBrightener.DataAccess.Exceptions;
+﻿using DotNetBrightener.DataAccess.Exceptions;
 using DotNetBrightener.DataAccess.Services;
 using DotNetBrightener.TestHelpers;
 using FluentAssertions;
@@ -13,9 +12,9 @@ namespace DotNetBrightener.DataAccess.EF.Tests;
 internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
 {
     [TearDown]
-    public void TearDown()
+    public async Task TearDown()
     {
-        TearDownHost();
+        await TearDownHost();
     }
 
     [Test]
@@ -484,7 +483,7 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
                                                                             .UseSqlServer(ConnectionString,
                                                                                           c =>
                                                                                           {
-                                                                                              c.EnableRetryOnFailure(10);
+                                                                                              c.EnableRetryOnFailure(20);
                                                                                           });
                                                                      });
 
@@ -509,7 +508,7 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
         return host;
     }
 
-    private void TearDownHost()
+    private async Task TearDownHost()
     {
         var builder = new HostBuilder()
            .ConfigureServices((hostContext, serviceCollection) =>
@@ -525,7 +524,7 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
         using var serviceScope    = host.Services.CreateScope();
         var       serviceProvider = serviceScope.ServiceProvider;
 
-        using var dbContext = serviceProvider.GetRequiredService<TestDbContext>();
-        dbContext.Database.EnsureDeleted();
+        await using var dbContext = serviceProvider.GetRequiredService<TestDbContext>();
+        await dbContext.Database.EnsureDeletedAsync();
     }
 }

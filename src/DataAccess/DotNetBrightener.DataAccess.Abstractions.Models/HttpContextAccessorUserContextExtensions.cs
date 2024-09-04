@@ -1,7 +1,7 @@
 ﻿// ReSharper disable CheckNamespace
 namespace Microsoft.AspNetCore.Http;
 
-public static class HttpContextAccessorUserContextExtensions
+internal static class HttpContextAccessorUserContextExtensions
 {
     /// <summary>
     ///     Gets the Identifier of the current logged-in user from the request
@@ -83,7 +83,7 @@ public static class HttpContextAccessorUserContextExtensions
             return null;
         }
 
-        return userContext.FindFirst("email")?.Value ??
+        return userContext.FindFirst("email")?.Value ?? 
                userContext.FindFirst("USERNAME")?.Value;
     }
 }

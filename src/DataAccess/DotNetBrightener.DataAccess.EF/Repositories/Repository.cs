@@ -346,7 +346,8 @@ public class Repository : IRepository
         if (entity is BaseEntityWithAuditInfo auditableEntity)
         {
             auditableEntity.ModifiedDate = DateTimeProvider?.UtcNowWithOffset ?? DateTimeOffset.UtcNow;
-            auditableEntity.ModifiedBy   = CurrentLoggedInUserResolver?.CurrentUserName;
+            if (string.IsNullOrWhiteSpace(auditableEntity.ModifiedBy))
+                auditableEntity.ModifiedBy = CurrentLoggedInUserResolver?.CurrentUserName;
         }
 
         var entityEntry = DbContext.Entry(entity);
@@ -417,19 +418,6 @@ public class Repository : IRepository
 
             await executionStrategy.ExecuteInTransactionAsync(ExecuteUpdate,
                                                               async () => updatedRecords == expectedAffectedRows.Value);
-
-            //await using var dbTransaction = await DbContext.Database.BeginTransactionAsync();
-
-            //updatedRecords = await PerformUpdate(query, updateExpression);
-
-            //if (updatedRecords != expectedAffectedRows.Value)
-            //{
-            //    await dbTransaction.RollbackAsync();
-
-            //    throw new ExpectedAffectedRecordMismatchException(expectedAffectedRows.Value, updatedRecords);
-            //}
-
-            //await dbTransaction.CommitAsync();
         }
         else
         {

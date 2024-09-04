@@ -77,12 +77,14 @@ public static class ServiceCollectionExtensions
         IConfiguration          configuration)
     {
         serviceCollection.AddSingleton(dbConfiguration);
+        serviceCollection.AddHttpContextAccessor();
 
         serviceCollection.AddScoped<IRepository, Repository>();
 
         serviceCollection.AddSystemDateTimeProvider();
 
         serviceCollection.TryAddScoped<ITransactionWrapper, TransactionWrapper>();
+        serviceCollection.TryAddScoped<ScopedCurrentUserResolver>();
         serviceCollection.TryAddScoped<ICurrentLoggedInUserResolver, DefaultCurrentUserResolver>();
 
         serviceCollection.Configure<DataMigrationOptions>(configuration.GetSection(nameof(DataMigrationOptions)));
