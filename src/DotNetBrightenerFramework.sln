@@ -331,7 +331,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Plugins.Ev
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{C8FC4F8C-561F-4482-B792-90F0DB7CD871}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetBrightener.SiteSettings.WebApp", "SiteSettings\Tests\DotNetBrightener.SiteSettings.WebApp\DotNetBrightener.SiteSettings.WebApp.csproj", "{EBD1BF93-44B3-490D-A7E0-2A16FA6FC976}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.SiteSettings.WebApp", "SiteSettings\Tests\DotNetBrightener.SiteSettings.WebApp\DotNetBrightener.SiteSettings.WebApp.csproj", "{EBD1BF93-44B3-490D-A7E0-2A16FA6FC976}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.SiteSettings.WebApp.Tests", "SiteSettings\Tests\DotNetBrightener.SiteSettings.WebApp.Tests\DotNetBrightener.SiteSettings.WebApp.Tests.csproj", "{A3A2FE0F-14E1-4336-8A47-68F0F99CDA1D}"
 EndProject

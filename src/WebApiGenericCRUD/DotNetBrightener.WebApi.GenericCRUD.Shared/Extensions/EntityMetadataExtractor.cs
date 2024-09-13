@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using DotNetBrightener.WebApi.GenericCRUD;
 
 namespace DotNetBrightener.GenericCRUD.Extensions;
 

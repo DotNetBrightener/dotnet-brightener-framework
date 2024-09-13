@@ -15,15 +15,23 @@ public static class ConfigurationBuilderExtensions
                                                                      vaultSecretKeyIdentifierPrefix));
 
 
-    internal static async Task<string> GetSecretValueIfNeeded(this SecretClient secretClient,
+    internal static async Task<string?> GetSecretValueIfNeeded(this SecretClient secretClient,
                                                               string            secretIdentifierPrefix,
                                                               string            originalValue)
     {
         if (originalValue?.StartsWith(secretIdentifierPrefix, StringComparison.OrdinalIgnoreCase) == true)
         {
-            var secretAsync = await secretClient.GetSecretAsync(originalValue.Substring(secretIdentifierPrefix.Length));
+            try
+            {
 
-            return secretAsync.Value.Value;
+                var secretAsync = await secretClient.GetSecretAsync(originalValue.Substring(secretIdentifierPrefix.Length));
+
+                return secretAsync.Value.Value;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
 
         return originalValue;

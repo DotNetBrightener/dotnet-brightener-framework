@@ -4,6 +4,7 @@ using System.Collections;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq.Dynamic.Core;
 using System.Reflection;
+using DotNetBrightener.WebApi.GenericCRUD;
 
 namespace System.Linq.Expressions;
 

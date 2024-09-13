@@ -1,4 +1,5 @@
 ﻿using DotNetBrightener.DataAccess.EF.Converters;
+using EntityFramework.Exceptions.SqlServer;
 using Microsoft.EntityFrameworkCore;
 
 namespace DotNetBrightener.DataAccess.EF.Migrations;
@@ -14,21 +15,19 @@ public interface IExtendedConventionsDbContext
 /// <summary>
 ///     Represents the <see cref="DbContext"/> that can define the entities and should have migrations applied
 /// </summary>
-public abstract class MigrationEnabledDbContext : DbContext, IExtendedConventionsDbContext
+public abstract class MigrationEnabledDbContext(DbContextOptions options)
+    : DbContext(options), 
+      IExtendedConventionsDbContext
 {
     protected static Action<DbContextOptionsBuilder> OptionsBuilder { get; private set; }
 
     public List<Action<ModelConfigurationBuilder>> ConventionConfigureActions { get; } = new();
-    
-    protected MigrationEnabledDbContext(DbContextOptions options)
-        : base(options)
-    {
-
-    }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         OptionsBuilder?.Invoke(optionsBuilder);
+
+        optionsBuilder.UseExceptionProcessor();
     }
     
     protected override void ConfigureConventions(ModelConfigurationBuilder builder)

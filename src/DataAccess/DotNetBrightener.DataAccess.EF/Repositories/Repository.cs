@@ -1,6 +1,5 @@
 #nullable enable
 
-using System.Data;
 using DotNetBrightener.DataAccess.Attributes;
 using DotNetBrightener.DataAccess.Auditing;
 using DotNetBrightener.DataAccess.EF.Events;
@@ -16,11 +15,10 @@ using LinqToDB.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.Logging;
-using System.Diagnostics.Metrics;
+using System.Data;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Data.Common;
 
 namespace DotNetBrightener.DataAccess.EF.Repositories;
 

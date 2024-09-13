@@ -2,7 +2,7 @@
 
 namespace DotNetBrightener.DataAccess.EF.Migrations;
 
-public interface IMigrationDefinitionDbContext {}
+public interface IMigrationDefinitionDbContext;
 
 /// <summary>
 ///     Marks the implementation of this interface as the DbContext
@@ -12,6 +12,4 @@ public interface IMigrationDefinitionDbContext {}
 ///     The DbContext that defines all the models and entities
 /// </typeparam>
 public interface IMigrationDefinitionDbContext<TBaseDbContext> : IMigrationDefinitionDbContext
-    where TBaseDbContext : DbContext
-{
-}
+    where TBaseDbContext : DbContext;

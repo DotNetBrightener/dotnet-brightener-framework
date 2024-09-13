@@ -7,14 +7,9 @@ namespace DotNetBrightener.DataAccess.EF.Migrations;
 ///    Represents the <see cref="DbContext" /> that defines the entities,
 ///    has migrations applied and versioning enabled
 /// </summary>
-public abstract class SqlServerVersioningMigrationEnabledDbContext : MigrationEnabledDbContext
+public abstract class SqlServerVersioningMigrationEnabledDbContext(DbContextOptions options)
+    : MigrationEnabledDbContext(options)
 {
-    protected SqlServerVersioningMigrationEnabledDbContext(DbContextOptions options)
-        : base(options)
-    {
-
-    }
-
     protected sealed override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigureModelBuilder(modelBuilder);
