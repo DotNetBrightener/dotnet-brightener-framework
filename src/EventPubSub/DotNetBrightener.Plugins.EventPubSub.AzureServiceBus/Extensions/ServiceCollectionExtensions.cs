@@ -65,7 +65,11 @@ public static class ServiceCollectionExtensions
         {
             busConfigurator.UsingAzureServiceBus((context, cfg) =>
             {
+                cfg.ClearSerialization();
+
                 cfg.Host(connectionString);
+
+                cfg.UseNewtonsoftRawJsonSerializer(RawSerializerOptions.All);
 
                 if (configurator.EntityNameFormatter is not null)
                     cfg.MessageTopology.SetEntityNameFormatter(configurator.EntityNameFormatter);

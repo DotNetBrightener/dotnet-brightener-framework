@@ -3,14 +3,10 @@
 // ReSharper disable once CheckNamespace
 namespace Microsoft.AspNetCore.Builder;
 
-internal class ErrorDocTrackerUIConventionBuilder : IEndpointConventionBuilder
+internal class ErrorDocTrackerUIConventionBuilder(IEnumerable<IEndpointConventionBuilder> endpoints)
+    : IEndpointConventionBuilder
 {
-    private readonly IEnumerable<IEndpointConventionBuilder> _endpoints;
-
-    public ErrorDocTrackerUIConventionBuilder(IEnumerable<IEndpointConventionBuilder> endpoints)
-    {
-        _endpoints = Guard.ThrowIfNull(endpoints);
-    }
+    private readonly IEnumerable<IEndpointConventionBuilder> _endpoints = Guard.ThrowIfNull(endpoints);
 
     public void Add(Action<EndpointBuilder> convention)
     {

@@ -1,5 +1,3 @@
-using System.Net;
-using System.Net.Http.Json;
 using CRUDWebApiWithGeneratorDemo;
 using CRUDWebApiWithGeneratorDemo.Core.Entities;
 using CRUDWebApiWithGeneratorDemo.Database.DbContexts;
@@ -8,6 +6,8 @@ using FluentAssertions;
 using GenericCRUD.WebAPIDemo.IntegrationTests.StartupTasks;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
+using System.Net;
+using System.Net.Http.Json;
 
 namespace GenericCRUD.WebAPIDemo.IntegrationTests;
 
@@ -19,14 +19,10 @@ public class ProductCategoryControllerTestFactory : MsSqlWebApiTestFactory<CRUDW
     }
 }
 
-public class ProductCategoryControllerTests : IClassFixture<ProductCategoryControllerTestFactory>
+public class ProductCategoryControllerTests(ProductCategoryControllerTestFactory apiFactory)
+    : IClassFixture<ProductCategoryControllerTestFactory>
 {
-    private readonly HttpClient _client;
-
-    public ProductCategoryControllerTests(ProductCategoryControllerTestFactory apiFactory)
-    {
-        _client = apiFactory.CreateClient();
-    }
+    private readonly HttpClient _client = apiFactory.CreateClient();
 
     [Fact]
     public async Task ProductCategory_GetLists_ShouldReturnData_WithoutProducts()
@@ -39,7 +35,7 @@ public class ProductCategoryControllerTests : IClassFixture<ProductCategoryContr
 
         productCategories.Should().NotBeNull();
 
-        productCategories.Count
+        productCategories!.Count
                          .Should()
                          .Be(ProductDataSeeding.CategoryNames.Length);
 
@@ -61,7 +57,7 @@ public class ProductCategoryControllerTests : IClassFixture<ProductCategoryContr
 
         productCategories.Should().NotBeNull();
 
-        productCategories.Count.Should().Be(ProductDataSeeding.CategoryNames.Length);
+        productCategories!.Count.Should().Be(ProductDataSeeding.CategoryNames.Length);
 
         var products = productCategories.SelectMany(c => c.Products).ToList();
 
@@ -112,7 +108,7 @@ public class ProductCategoryControllerTests : IClassFixture<ProductCategoryContr
 
         productCategories.Should().NotBeNull();
 
-        productCategories.Count.Should().Be(1);
+        productCategories!.Count.Should().Be(1);
 
         var products = productCategories.SelectMany(c => c.Products).ToList();
 

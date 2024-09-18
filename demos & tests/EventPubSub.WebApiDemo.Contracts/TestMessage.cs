@@ -12,6 +12,11 @@ public class SomeUpdateMessage : DistributedEventMessage
     public string Name { get; set; }
 }
 
+public class SomeUpdateMessageFromNative : DistributedEventMessage
+{
+    public string Name { get; set; }
+}
+
 public class DistributedTestMessage : RequestMessage
 {
     public string Name { get; set; }

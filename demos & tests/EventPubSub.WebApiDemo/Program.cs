@@ -1,8 +1,7 @@
 using DotNetBrightener.Plugins.EventPubSub;
-using DotNetBrightener.Plugins.EventPubSub.Distributed.Extensions;
 using EventPubSub.WebApiDemo.Contracts;
-using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,11 +16,7 @@ var eventPubSubConfig = builder.Services
                                .AddEventHandlersFromAssemblies(Assembly.GetExecutingAssembly());
 
 // Add Azure Service Bus
-//eventPubSubConfig.UseAzureServiceBus(builder.Configuration)
-//                 .Finalize();
-
-// Add RabbitMq
-eventPubSubConfig.UseRabbitMq(builder.Configuration)
+eventPubSubConfig.UseAzureServiceBus(builder.Configuration)
                  .Finalize();
 
 var app = builder.Build();
@@ -30,8 +25,9 @@ var app = builder.Build();
 
 app.UseHttpsRedirection();
 
+app.MapGet("/", () => "Publisher launched. Watch the console for incoming messages.");
 
-app.MapGet("/",
+app.MapGet("/getresponse-test",
            async (IEventPublisher eventPublisher,
                   [FromQuery] bool runInBackground = false) =>
            {

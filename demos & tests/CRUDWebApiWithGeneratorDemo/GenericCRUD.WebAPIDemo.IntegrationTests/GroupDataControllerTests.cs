@@ -18,17 +18,12 @@ public class GroupDataControllerTestsFactory : MsSqlWebApiTestFactory<CRUDWebApi
     }
 }
 
-public class GroupDataControllerTests : IClassFixture<GroupDataControllerTestsFactory>
+public class GroupDataControllerTests(
+    GroupDataControllerTestsFactory apiFactory,
+    ITestOutputHelper               testOutputHelper)
+    : IClassFixture<GroupDataControllerTestsFactory>
 {
-    private readonly ITestOutputHelper _testOutputHelper;
-    private readonly HttpClient        _client;
-
-    public GroupDataControllerTests(GroupDataControllerTestsFactory apiFactory,
-                                    ITestOutputHelper               testOutputHelper)
-    {
-        _testOutputHelper = testOutputHelper;
-        _client           = apiFactory.CreateClient();
-    }
+    private readonly HttpClient _client = apiFactory.CreateClient();
 
     [Fact]
     public async Task GroupEntity_GetList_WithoutFilter_ShouldReturnData()
@@ -109,7 +104,7 @@ public class GroupDataControllerTests : IClassFixture<GroupDataControllerTestsFa
             itemDictionary.Should().Contain(c => c.Key == "createdDate", "The query requests for it");
             itemDictionary.Should().Contain(c => c.Key == "createdBy", "The query requests for it");
 
-            _testOutputHelper.WriteLine(itemDictionary!["name"] + ", created on " + itemDictionary["createdDate"]);
+            testOutputHelper.WriteLine(itemDictionary!["name"] + ", created on " + itemDictionary["createdDate"]);
         }
     }
 
@@ -137,7 +132,7 @@ public class GroupDataControllerTests : IClassFixture<GroupDataControllerTestsFa
             itemDictionary.Should().Contain(c => c.Key == "createdDate", "The query requests for it");
             itemDictionary.Should().Contain(c => c.Key == "createdBy", "The query requests for it");
 
-            _testOutputHelper.WriteLine(itemDictionary["name"] + ", created on " + itemDictionary["createdDate"]);
+            testOutputHelper.WriteLine(itemDictionary["name"] + ", created on " + itemDictionary["createdDate"]);
         }
     }
 
@@ -150,8 +145,8 @@ public class GroupDataControllerTests : IClassFixture<GroupDataControllerTestsFa
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
-        var responseString = await response.Content.ReadAsStringAsync(); 
-        
+        var responseString = await response.Content.ReadAsStringAsync();
+
         var jobject = JObject.Parse(responseString);
 
         var itemDictionary = jobject.ToObject<Dictionary<string, object>>();

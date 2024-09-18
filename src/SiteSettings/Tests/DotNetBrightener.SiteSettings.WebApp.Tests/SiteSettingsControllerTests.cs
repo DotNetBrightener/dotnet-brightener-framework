@@ -1,13 +1,11 @@
 using DotNetBrightener.SiteSettings.Data.Mssql.Data;
-using DotNetBrightener.SiteSettings.DbContexts;
 using DotNetBrightener.SiteSettings.Models;
 using DotNetBrightener.TestHelpers;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 using System.Net;
 using System.Net.Http.Json;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System.Text;
 
 namespace DotNetBrightener.SiteSettings.WebApp.Tests;
@@ -20,14 +18,10 @@ public class SiteSettingsControllerTestFactory : MsSqlWebApiTestFactory<ISiteSet
     }
 }
 
-public class SiteSettingsControllerTests : IClassFixture<SiteSettingsControllerTestFactory>
+public class SiteSettingsControllerTests(SiteSettingsControllerTestFactory apiFactory)
+    : IClassFixture<SiteSettingsControllerTestFactory>
 {
-    private readonly HttpClient _client;
-
-    public SiteSettingsControllerTests(SiteSettingsControllerTestFactory apiFactory)
-    {
-        _client = apiFactory.CreateClient();
-    }
+    private readonly HttpClient _client = apiFactory.CreateClient();
 
     [Fact]
     public async Task GetAllSettings_ShouldReturn_NoEmpty()

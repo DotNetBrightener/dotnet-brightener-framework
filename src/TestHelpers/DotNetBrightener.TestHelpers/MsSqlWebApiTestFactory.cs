@@ -52,6 +52,7 @@ public class MsSqlWebApiTestFactory<TEndpoint> : WebApplicationFactory<TEndpoint
         await MsSqlContainer.StopAsync();
     }
 }
+
 public class MsSqlWebApiTestFactory<TEndpoint, TDbContext> : WebApplicationFactory<TEndpoint>, IAsyncLifetime
     where TEndpoint : class
     where TDbContext : DbContext
