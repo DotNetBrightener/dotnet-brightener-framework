@@ -26,7 +26,8 @@ public static class EventPublisherExtensions
     /// </returns>
     /// <exception cref="NotImplementedException"></exception>
     public static async Task<TResponse> GetResponse<TResponse, TRequest>(this IEventPublisher eventPublisher,
-                                                                         TRequest requestMessage)
+                                                                         TRequest             requestMessage,
+                                                                         TimeSpan?            timeout = null)
 
         where TRequest : RequestMessage
         where TResponse : class, IResponseMessage<TRequest>, new()
@@ -48,7 +49,18 @@ public static class EventPublisherExtensions
                 requestMessage.OriginApp = massTransitEventPublisher.Configurator.AppName;
             }
 
-            var response = await client.GetResponse<TResponse>(requestMessage);
+            var requestTimeout = RequestTimeout.After(m: 1);
+
+            if (timeout.HasValue)
+            {
+                requestTimeout = RequestTimeout.After(timeout!.Value.Days,
+                                                      timeout!.Value.Hours,
+                                                      timeout!.Value.Minutes,
+                                                      timeout!.Value.Seconds,
+                                                      timeout!.Value.Milliseconds);
+            }
+
+            var response = await client.GetResponse<TResponse>(requestMessage, timeout: requestTimeout);
 
             return response.Message;
         }
@@ -56,7 +68,8 @@ public static class EventPublisherExtensions
 
     public static async Task<(TResponse, TErrorResponse)> GetResponse<TResponse, TErrorResponse, TRequest>(
         this IEventPublisher eventPublisher,
-        TRequest requestMessage)
+        TRequest             requestMessage,
+        TimeSpan?            timeout = null)
         where TResponse : class, IResponseMessage<TRequest>, new()
         where TErrorResponse : class, IResponseMessage<TRequest>, new()
         where TRequest : RequestMessage
@@ -78,7 +91,19 @@ public static class EventPublisherExtensions
                 requestMessage.OriginApp = massTransitEventPublisher.Configurator.AppName;
             }
 
-            var response = await client.GetResponse<TResponse, TErrorResponse>(requestMessage);
+
+            var requestTimeout = RequestTimeout.After(m: 1);
+
+            if (timeout.HasValue)
+            {
+                requestTimeout = RequestTimeout.After(timeout!.Value.Days,
+                                                      timeout!.Value.Hours,
+                                                      timeout!.Value.Minutes,
+                                                      timeout!.Value.Seconds,
+                                                      timeout!.Value.Milliseconds);
+            }
+
+            var response = await client.GetResponse<TResponse, TErrorResponse>(requestMessage, timeout: requestTimeout);
 
             if (response.Is(out Response<TResponse> successResponse))
             {
