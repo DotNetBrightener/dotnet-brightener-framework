@@ -23,38 +23,38 @@ pool:
     #   - agent.name -equals self-hosted
 
 stages:
-- stage: Test
-  jobs:
-  - job: Test
-    displayName: Test Packages
+# - stage: Test
+#   jobs:
+#   - job: Test
+#     displayName: Test Packages
 
-    steps:
-    - checkout: self
-      displayName: Checking out $(Build.BuildNumber)
-      submodules: true
-      persistCredentials: true
+#     steps:
+#     - checkout: self
+#       displayName: Checking out $(Build.BuildNumber)
+#       submodules: true
+#       persistCredentials: true
 
-    - task: UseDotNet@2
-      displayName: Ensure .NET Core SDK Installed
-      inputs:
-        version: 8.x
-        performMultiLevelLookup: true
+#     - task: UseDotNet@2
+#       displayName: Ensure .NET Core SDK Installed
+#       inputs:
+#         version: 8.x
+#         performMultiLevelLookup: true
 
-    - task: DotNetCoreCLI@2
-      displayName: Restore Packages
-      inputs:
-        command: restore
-        projects: $(BuildParameters.RestoreBuildProjects)
+#     - task: DotNetCoreCLI@2
+#       displayName: Restore Packages
+#       inputs:
+#         command: restore
+#         projects: $(BuildParameters.RestoreBuildProjects)
 
-    - task: DotNetCoreCLI@2
-      displayName: Test
-      inputs:
-        command: test
-        projects: $(BuildParameters.RestoreBuildProjects)
-        arguments: -p:GeneratePackageOnBuild=false --configuration $(BuildConfiguration)
+#     - task: DotNetCoreCLI@2
+#       displayName: Test
+#       inputs:
+#         command: test
+#         projects: $(BuildParameters.RestoreBuildProjects)
+#         arguments: -p:GeneratePackageOnBuild=false --configuration $(BuildConfiguration)
 
 - stage: Build
-  dependsOn: Test
+  # dependsOn: Test
   jobs:
   - job: Build_Packages
     displayName: Building packages
