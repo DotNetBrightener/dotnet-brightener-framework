@@ -1,6 +1,6 @@
-using DotNetBrightener.Plugins.EventPubSub;
 using EventPubSub.WebApiDemo.Contracts;
 using System.Reflection;
+using DotNetBrightener.Plugins.EventPubSub;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,12 +16,7 @@ var eventPubSubConfig = builder.Services
                                .AddEventHandlersFromAssemblies(Assembly.GetExecutingAssembly());
 
 // Add Azure Service Bus
-eventPubSubConfig.UseAzureServiceBus(builder.Configuration)
-                 .Finalize();
-
-// Add RabbitMq
-//eventPubSubConfig.UseRabbitMq(builder.Configuration)
-//                 .Finalize();
+eventPubSubConfig.AddAzureServiceBus(builder.Configuration);
 
 var app = builder.Build();
 
@@ -31,5 +26,17 @@ var app = builder.Build();
 app.UseHttpsRedirection();
 
 app.MapGet("/", () => "Consumer launched. Watch the console for incoming messages.");
+
+app.MapGet("/test", async (IEventPublisher eventPublisher) =>
+{
+    var message = new SomeUpdateMessageFromNative
+    {
+        Name = "From native consumer app"
+    };
+
+    await eventPublisher.Publish(message);
+
+    return "Message sent";
+});
 
 app.Run();

@@ -1,4 +1,6 @@
-﻿namespace DotNetBrightener.Plugins.EventPubSub;
+﻿using Newtonsoft.Json;
+
+namespace DotNetBrightener.Plugins.EventPubSub;
 
 public abstract class BaseEventMessage : IEventMessage
 {
@@ -36,4 +38,7 @@ public abstract class BaseEventMessage : IEventMessage
     ///     The name of the machine that initiates the event message.
     /// </summary>
     public string MachineName { get; set; } = Environment.MachineName;
+
+    [JsonExtensionData]
+    public Dictionary<string, object?> Payload { get; set; }
 }

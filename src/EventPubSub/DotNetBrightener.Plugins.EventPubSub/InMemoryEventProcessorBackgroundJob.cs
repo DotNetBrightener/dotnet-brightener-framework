@@ -14,7 +14,6 @@ internal class InMemoryEventProcessorBackgroundJob(
         await foreach (var eventMessage in eventMessageQueue.ReadAllAsync(stoppingToken))
         {
             logger.LogDebug("Processing event message {messageType}", eventMessage.GetType().Name);
-
             
             await eventProcessor.ProcessEventMessage(eventMessage);
 

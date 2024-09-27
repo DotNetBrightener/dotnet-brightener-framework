@@ -33,7 +33,8 @@ internal class ConsumerEventHandler<TEventMessage> : IConsumer<TEventMessage>
                 CreatedOn     = eventMessage.CreatedOn,
                 MachineName   = eventMessage.MachineName ?? context.SourceAddress?.Host,
                 OriginApp     = eventMessage.OriginApp,
-                EventId       = eventMessage.EventId
+                EventId       = eventMessage.EventId,
+                Payload       = eventMessage.Payload
             };
 
             await handler.HandleEvent(eventMessage);

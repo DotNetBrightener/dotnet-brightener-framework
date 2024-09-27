@@ -16,7 +16,8 @@ public class DefaultEventPublisher : IEventPublisher, IDisposable
         _logger              = loggerFactory.CreateLogger(GetType());
         _serviceScopeFactory = serviceScopeFactory;
         _serviceScope        = serviceScopeFactory.CreateScope();
-        _eventMessageQueue   = _serviceScope.ServiceProvider.GetRequiredService<InMemoryEventMessageQueue>();
+        _eventMessageQueue   = _serviceScope.ServiceProvider
+                                            .GetRequiredService<InMemoryEventMessageQueue>();
     }
 
     public virtual Task Publish<T>(T                   eventMessage,
