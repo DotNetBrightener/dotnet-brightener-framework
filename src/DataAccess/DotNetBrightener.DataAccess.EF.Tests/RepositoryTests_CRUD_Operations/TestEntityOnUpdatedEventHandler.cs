@@ -2,11 +2,11 @@
 using DotNetBrightener.Plugins.EventPubSub;
 using NUnit.Framework;
 
-namespace DotNetBrightener.DataAccess.EF.Tests;
+namespace DotNetBrightener.DataAccess.EF.Tests.RepositoryTests_CRUD_Operations;
 
 public class TestEntityOnUpdatedEventHandler(TestDbContext dbContext) : IEventHandler<EntityUpdated<TestEntity>>
 {
-    public           int           Priority => 100;
+    public int Priority => 100;
 
     public async Task<bool> HandleEvent(EntityUpdated<TestEntity> eventMessage)
     {
@@ -21,9 +21,10 @@ public class TestEntityOnUpdatedEventHandler(TestDbContext dbContext) : IEventHa
     }
 }
 
-public class TestEntityOnUpdatedByExpressionEventHandler(TestDbContext dbContext) : IEventHandler<EntityUpdatedByExpression<TestEntity>>
+public class TestEntityOnUpdatedByExpressionEventHandler(TestDbContext dbContext)
+    : IEventHandler<EntityUpdatedByExpression<TestEntity>>
 {
-    public           int           Priority => 100;
+    public int Priority => 100;
 
     public async Task<bool> HandleEvent(EntityUpdatedByExpression<TestEntity> eventMessage)
     {

@@ -78,7 +78,7 @@ public static class ServiceCollectionExtensions
             options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
         });
 
-        serviceCollection.AddSingleton(serviceCollection);
+        serviceCollection.AddSingleton<IServiceCollection>(serviceCollection);
         serviceCollection.AddSingleton(commonAppBuilder);
 
         return commonAppBuilder;
@@ -207,10 +207,11 @@ public static class ServiceCollectionExtensions
 
         foreach (var dependencyType in dependencyTypes)
         {
-            var interfaces = dependencyType.GetInterfaces().ToArray();
+            var interfaces = dependencyType.GetInterfaces()
+                                           .ToArray();
 
             // Get only direct parent interfaces
-            interfaces = interfaces.Except(interfaces.SelectMany(t => t.GetInterfaces()))
+            interfaces = interfaces.Except(interfaces.SelectMany(t => t.GetInterfaces().Where(t2 => !t2.IsGenericType)))
                                    .ToArray();
 
             foreach (var @interface in interfaces)

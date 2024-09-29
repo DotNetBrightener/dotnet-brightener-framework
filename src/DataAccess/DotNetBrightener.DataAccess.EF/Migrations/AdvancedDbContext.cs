@@ -1,0 +1,50 @@
+﻿#nullable enable
+using DotNetBrightener.DataAccess.EF.Internal;
+using EntityFramework.Exceptions.SqlServer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace DotNetBrightener.DataAccess.EF.Migrations;
+
+/// <summary>
+///     Represents the <see cref="DbContext"/> that can define the entities and should have migrations applied
+/// </summary>
+public abstract class AdvancedDbContext(DbContextOptions options) : DbContext(options)
+{
+    [Injectable]
+    protected IServiceProvider _serviceProvider;
+
+    protected List<IDbContextConfigurator>? Configurators => _serviceProvider?.GetServices<IDbContextConfigurator>()
+                                                                              .ToList();
+
+    protected List<IDbContextConventionConfigurator>? ConventionConfigurators => _serviceProvider
+                                                                               ?.GetServices<
+                                                                                     IDbContextConventionConfigurator>()
+                                                                                .ToList();
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.UseExceptionProcessor();
+
+        if (Configurators is { Count: > 0 })
+        {
+            foreach (var configurator in Configurators)
+            {
+                configurator.OnConfiguring(optionsBuilder);
+            }
+        }
+    }
+
+    protected override void ConfigureConventions(ModelConfigurationBuilder builder)
+    {
+        base.ConfigureConventions(builder);
+
+        if (ConventionConfigurators is { Count: > 0 })
+        {
+            foreach (var configurator in ConventionConfigurators)
+            {
+                configurator.ConfigureConventions(this, builder);
+            }
+        }
+    }
+}

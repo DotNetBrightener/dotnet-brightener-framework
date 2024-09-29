@@ -49,8 +49,8 @@ public class EfRepositoryTests
     [SetUp]
     public void Setup()
     {
-        var serviceCollection = new ServiceCollection();
-        var configuration = new ConfigurationBuilder().Build();
+        IServiceCollection serviceCollection = new ServiceCollection();
+        var                configuration     = new ConfigurationBuilder().Build();
 
         serviceCollection.AddEFCentralizedDataServices<TestDbContext>(new DatabaseConfiguration
                                                                         {
@@ -67,6 +67,8 @@ public class EfRepositoryTests
         serviceCollection.AddEventPubSubService();
         serviceCollection.AddEventHandlersFromAssemblies();
         serviceCollection.Replace(ServiceDescriptor.Scoped<ICurrentLoggedInUserResolver, UserResolver>());
+
+        serviceCollection.AddSingleton(serviceCollection);
 
         _serviceProvider = serviceCollection.BuildServiceProvider();
 

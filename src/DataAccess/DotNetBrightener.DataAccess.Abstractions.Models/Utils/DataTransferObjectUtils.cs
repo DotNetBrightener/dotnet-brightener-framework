@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using System.Reflection;
-using DotNetBrightener.DataAccess.Auditing;
+using DotNetBrightener.DataAccess.Models.Auditing;
 
 // ReSharper disable once CheckNamespace
 namespace DotNetBrightener.DataAccess.Utils;

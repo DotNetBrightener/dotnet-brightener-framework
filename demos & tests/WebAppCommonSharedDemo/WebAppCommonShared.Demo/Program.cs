@@ -13,6 +13,7 @@ using WebAppCommonShared.Demo.WebSocketCommandHandlers;
 
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Host.UseServiceProviderFactory(new ExtendedServiceFactory());
 
 builder.Configuration.AddInfisicalSecretsProvider();
 
@@ -27,8 +28,7 @@ if (string.IsNullOrEmpty(connectionString))
 }
 
 builder.Services
-       .ConfigureLogging(builder.Configuration)
-       .AddLogSqlServerStorage(connectionString);
+       .ConfigureLogging(builder.Configuration);
 
 builder.EnableOpenTelemetry("https://otlpendpoint.dotnetbrightener.com", "SfVxZSrjOELVVUIzxy63GhQbobFGg2ZZsA480IBQ7pPBzDs4k03RGgfkxgVhrTrK");
 
@@ -83,8 +83,8 @@ appClientManagerBuilder.WithStorage()
 builder.Services.AddAppClientAudienceValidator();
 
 builder.Services.AddEFCentralizedDataServices<MainAppDbContext>(dbConfiguration,
-                                                                  builder.Configuration,
-                                                                  configureDatabase);
+                                                                builder.Configuration,
+                                                                configureDatabase);
 
 var assemblies = AppDomain.CurrentDomain
                           .GetAppOnlyAssemblies();

@@ -22,6 +22,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\..\TestHelpers\DotNetBrightener.TestHelpers\DotNetBrightener.TestHelpers.csproj" />
 		<ProjectReference Include="..\VampireCoder.SharedUtils\VampireCoder.SharedUtils.csproj" />
 	</ItemGroup>
 

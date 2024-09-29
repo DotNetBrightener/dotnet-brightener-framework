@@ -2,11 +2,11 @@
 using DotNetBrightener.Plugins.EventPubSub;
 using NUnit.Framework;
 
-namespace DotNetBrightener.DataAccess.EF.Tests;
+namespace DotNetBrightener.DataAccess.EF.Tests.RepositoryTests_CRUD_Operations;
 
 public class TestEntityOnCreatedEventHandler(TestDbContext dbContext) : IEventHandler<EntityCreated<TestEntity>>
 {
-    public           int           Priority => 100;
+    public int Priority => 100;
 
     public async Task<bool> HandleEvent(EntityCreated<TestEntity> eventMessage)
     {

@@ -34,25 +34,25 @@ internal class AppClientManager : IAppClientManager
             ClientStatus        = appClient.ClientStatus
         };
 
-        _appClientRepository.Insert(appClientEntity);
-        _appClientRepository.CommitChanges();
+        await _appClientRepository.InsertAsync(appClientEntity);
+        await _appClientRepository.CommitChangesAsync();
     }
 
     public virtual async Task UpdateAppClient(AppClient appClient)
     {
         var (allowedOrigins, allowedAppBundleIds, origins, bundleIds) = EnsureOriginsAndBundleIds(appClient);
 
-        _appClientRepository.Update<AppClient>(_ => _.Id == appClient.Id,
-                                               _ => new AppClient
-                                               {
-                                                   ClientId            = appClient.ClientId,
-                                                   ClientName          = appClient.ClientName,
-                                                   AllowedOrigins      = allowedOrigins,
-                                                   AllowedAppBundleIds = allowedAppBundleIds,
-                                                   ClientType          = appClient.ClientType,
-                                                   ClientStatus        = appClient.ClientStatus
-                                               });
-        _appClientRepository.CommitChanges();
+        await _appClientRepository.UpdateAsync<AppClient>(_ => _.Id == appClient.Id,
+                                                          _ => new AppClient
+                                                          {
+                                                              ClientId            = appClient.ClientId,
+                                                              ClientName          = appClient.ClientName,
+                                                              AllowedOrigins      = allowedOrigins,
+                                                              AllowedAppBundleIds = allowedAppBundleIds,
+                                                              ClientType          = appClient.ClientType,
+                                                              ClientStatus        = appClient.ClientStatus
+                                                          });
+        await _appClientRepository.CommitChangesAsync();
     }
 
     public List<AppClient> GetAllAppClients()

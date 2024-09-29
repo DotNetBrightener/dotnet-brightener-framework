@@ -45,11 +45,10 @@ internal class DistributedEventPublisher
             catch (Exception exception)
             {
                 _logger.LogError(exception, "Error while publishing event via distributed system");
-
-                throw;
             }
 
-            return;
+            if (eventMessage is not ICombinationEventMessage)
+                return;
         }
 
         await base.Publish(eventMessage, runInBackground);

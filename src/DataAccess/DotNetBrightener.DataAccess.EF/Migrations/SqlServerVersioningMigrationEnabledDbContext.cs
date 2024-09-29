@@ -8,10 +8,12 @@ namespace DotNetBrightener.DataAccess.EF.Migrations;
 ///    has migrations applied and versioning enabled
 /// </summary>
 public abstract class SqlServerVersioningMigrationEnabledDbContext(DbContextOptions options)
-    : MigrationEnabledDbContext(options)
+    : AdvancedDbContext(options)
 {
     protected sealed override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
+
         ConfigureModelBuilder(modelBuilder);
 
         ConfigureHistoryTables(modelBuilder);

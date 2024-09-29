@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DotNetBrightener.Infrastructure.AppClientManager.DataStorage;
 
-public class AppClientDbContext : MigrationEnabledDbContext
+public class AppClientDbContext : AdvancedDbContext
 {
     protected AppClientDbContext(DbContextOptions options)
         : base(options)
@@ -16,7 +16,6 @@ public class AppClientDbContext : MigrationEnabledDbContext
                                  Action<DbContextOptionsBuilder> optionBuilder)
         : base(options)
     {
-        SetConfigureDbOptionsBuilder(optionBuilder);
     }
 
     public AppClientDbContext(DbContextOptions<AppClientDbContext> options)

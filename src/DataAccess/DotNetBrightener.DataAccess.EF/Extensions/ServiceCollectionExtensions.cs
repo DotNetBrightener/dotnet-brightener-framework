@@ -1,4 +1,7 @@
 ﻿using DotNetBrightener.DataAccess;
+using DotNetBrightener.DataAccess.EF.Conventions;
+using DotNetBrightener.DataAccess.EF.EnumLookup;
+using DotNetBrightener.DataAccess.EF.Internal;
 using DotNetBrightener.DataAccess.EF.Migrations;
 using DotNetBrightener.DataAccess.EF.Options;
 using DotNetBrightener.DataAccess.EF.Repositories;
@@ -10,13 +13,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.Extensions.DependencyInjection;
-
-public class EfDataServiceConfigurator
-{
-    internal IServiceCollection              ServiceCollection            { get; set; }
-    internal Action<DbContextOptionsBuilder> SharedDbContextOptionBuilder { get; set; }
-    internal DatabaseConfiguration           DbConfiguration              { get; set; }
-}
 
 public static class ServiceCollectionExtensions
 {
@@ -56,6 +52,31 @@ public static class ServiceCollectionExtensions
         return configurator;
     }
 
+    public static IServiceCollection AddDbContextConventionConfig<TConfig>(this IServiceCollection serviceCollection)
+        where TConfig : class, IDbContextConventionConfigurator
+    {
+        if (serviceCollection.All(x => x.ImplementationType != typeof(TConfig)))
+            serviceCollection.AddTransient<IDbContextConventionConfigurator, TConfig>();
+
+        return serviceCollection;
+    }
+
+    public static IServiceCollection AddDbContextConfigurator<TConfig>(this IServiceCollection serviceCollection)
+        where TConfig : class, IDbContextConfigurator
+    {
+        if (serviceCollection.All(x => x.ImplementationType != typeof(TConfig)))
+            serviceCollection.AddTransient<IDbContextConfigurator, TConfig>();
+
+        return serviceCollection;
+    }
+
+    public static EfDataServiceConfigurator AddEFCentralizedDataServices(this IServiceCollection serviceCollection)
+        => AddEFCentralizedDataServices(serviceCollection, null, null);
+
+    public static EfDataServiceConfigurator AddEFCentralizedDataServices(this IServiceCollection serviceCollection,
+                                                                         IConfiguration          configuration)
+        => AddEFCentralizedDataServices(serviceCollection, null, configuration);
+
     /// <summary>
     ///     Register services needed for enabling centralized data service using Entity Framework.
     /// </summary>
@@ -71,23 +92,36 @@ public static class ServiceCollectionExtensions
     /// <returns>
     ///     The <see cref="EfDataServiceConfigurator"/> for chaining operations
     /// </returns>
-    public static EfDataServiceConfigurator AddEFCentralizedDataServices(
-        this IServiceCollection serviceCollection,
-        DatabaseConfiguration   dbConfiguration,
-        IConfiguration          configuration)
+    public static EfDataServiceConfigurator AddEFCentralizedDataServices(this IServiceCollection serviceCollection,
+                                                                         DatabaseConfiguration   dbConfiguration,
+                                                                         IConfiguration          configuration)
     {
-        serviceCollection.AddSingleton(dbConfiguration);
+        serviceCollection.TryAddSingleton<EFCoreExtendedServiceFactory>();
         serviceCollection.AddHttpContextAccessor();
 
         serviceCollection.AddScoped<IRepository, Repository>();
 
         serviceCollection.AddSystemDateTimeProvider();
 
+        serviceCollection.AddSingleton<ILookupEnumContainer, LookupEnumContainer>();
+        serviceCollection.AddDbContextConventionConfig<DateOnlyConventionConfig>();
+        serviceCollection.AddDbContextConventionConfig<TimeOnlyConventionConfig>();
+
+        serviceCollection.AddDbContextConventionConfig<DynamicEnumConventionConfig>();
+
         serviceCollection.TryAddScoped<ITransactionWrapper, TransactionWrapper>();
         serviceCollection.TryAddScoped<ScopedCurrentUserResolver>();
         serviceCollection.TryAddScoped<ICurrentLoggedInUserResolver, DefaultCurrentUserResolver>();
 
-        serviceCollection.Configure<DataMigrationOptions>(configuration.GetSection(nameof(DataMigrationOptions)));
+        if (configuration is not null)
+        {
+            serviceCollection.Configure<DataMigrationOptions>(configuration.GetSection(nameof(DataMigrationOptions)));
+        }
+
+        if (dbConfiguration is not null)
+        {
+            serviceCollection.AddSingleton(dbConfiguration);
+        }
 
         LinqToDBForEFTools.Initialize();
 
@@ -151,7 +185,7 @@ public static class ServiceCollectionExtensions
     ///     The <see cref="EfDataServiceConfigurator" /> to add the migration <typeparamref name="TMigrationDbContext"/>
     /// </param>
     public static EfDataServiceConfigurator UseCentralizedMigrationDbContext<TMigrationDbContext>(
-        this EfDataServiceConfigurator  configurator)
+        this EfDataServiceConfigurator configurator)
         where TMigrationDbContext : DbContext, IMigrationDefinitionDbContext
     {
         var registeredDbContextType = configurator.ServiceCollection
@@ -165,11 +199,13 @@ public static class ServiceCollectionExtensions
         }
 
 
-        var expectingBaseMigrationType = typeof(IMigrationDefinitionDbContext<>).MakeGenericType(registeredDbContextType);
+        var expectingBaseMigrationType =
+            typeof(IMigrationDefinitionDbContext<>).MakeGenericType(registeredDbContextType);
 
         if (!typeof(TMigrationDbContext).IsAssignableTo(expectingBaseMigrationType))
-            throw new InvalidOperationException($"The migration DbContext type {typeof(TMigrationDbContext).Name} must be use to apply migrations " +
-                                                $"for the registered DbContext {registeredDbContextType.Name}.");
+            throw new
+                InvalidOperationException($"The migration DbContext type {typeof(TMigrationDbContext).Name} must be use to apply migrations " +
+                                          $"for the registered DbContext {registeredDbContextType.Name}.");
 
         configurator.ServiceCollection.AddDbContext<TMigrationDbContext>(configurator.SharedDbContextOptionBuilder);
 
@@ -193,7 +229,7 @@ public static class ServiceCollectionExtensions
     /// </param>
     public static IServiceCollection UseMigrationDbContext<TMigrationDbContext>(
         this IServiceCollection         serviceCollection,
-        Action<DbContextOptionsBuilder> configure)
+        Action<DbContextOptionsBuilder>? configure = null)
         where TMigrationDbContext : DbContext, IMigrationDefinitionDbContext
     {
         serviceCollection.AddDbContext<TMigrationDbContext>(configure);

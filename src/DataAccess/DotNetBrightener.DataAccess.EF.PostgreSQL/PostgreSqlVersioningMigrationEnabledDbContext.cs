@@ -1,6 +1,5 @@
 ﻿using DotNetBrightener.DataAccess.Attributes;
 using DotNetBrightener.DataAccess.EF.Migrations;
-using EntityFramework.Exceptions.SqlServer;
 using Microsoft.EntityFrameworkCore;
 
 namespace DotNetBrightener.DataAccess.EF.PostgreSQL;
@@ -8,8 +7,9 @@ namespace DotNetBrightener.DataAccess.EF.PostgreSQL;
 /// <summary>
 ///    Represents the <see cref="DbContext" /> that defines the entities, has migrations applied and versioning enabled
 /// </summary>
-public abstract class PostgreSqlVersioningMigrationEnabledDbContext(DbContextOptions options)
-    : MigrationEnabledDbContext(options)
+public abstract class PostgreSqlVersioningMigrationEnabledDbContext(
+    DbContextOptions options)
+    : AdvancedDbContext(options)
 {
     protected sealed override void OnModelCreating(ModelBuilder modelBuilder)
     {

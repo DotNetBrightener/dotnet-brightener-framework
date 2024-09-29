@@ -1,4 +1,3 @@
-using DotNetBrightener.Caching.Memory;
 using DotNetBrightener.SiteSettings;
 using DotNetBrightener.SiteSettings.Extensions;
 using DotNetBrightener.SiteSettings.WebApp;

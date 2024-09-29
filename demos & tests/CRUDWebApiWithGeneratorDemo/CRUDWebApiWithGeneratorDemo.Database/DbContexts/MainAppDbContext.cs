@@ -5,22 +5,15 @@ using Microsoft.EntityFrameworkCore.Design;
 
 namespace CRUDWebApiWithGeneratorDemo.Database.DbContexts;
 
-public class DesignTimeAppDbContext : SqlServerDbContextDesignTimeFactory<MainAppDbContext>
+public class DesignTimeAppDbContext : SqlServerDbContextDesignTimeFactory<MainAppDbContext>;
+
+public class MainAppDbContext(DbContextOptions<MainAppDbContext> options)
+    : SqlServerVersioningMigrationEnabledDbContext(options)
 {
-}
-
-public class MainAppDbContext : SqlServerVersioningMigrationEnabledDbContext
-{
-    public MainAppDbContext(DbContextOptions<MainAppDbContext> options)
-        : base(options)
-    {
-
-    }
-
     protected override void ConfigureModelBuilder(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Product>();
-        
+
         modelBuilder.Entity<ProductCategory>();
 
         modelBuilder.Entity<ProductDocument>(document =>

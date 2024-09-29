@@ -8,6 +8,11 @@
 /// </remarks>
 public interface IEventMessage;
 
+/// <summary>
+///     Represents the event message that could be used in both local and distributed event handlers
+/// </summary>
+public interface ICombinationEventMessage : IEventMessage;
+
 public interface IDistributedEventMessage: IEventMessage
 {
     /// <summary>

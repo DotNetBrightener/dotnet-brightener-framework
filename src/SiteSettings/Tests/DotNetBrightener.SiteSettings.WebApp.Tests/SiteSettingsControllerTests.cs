@@ -38,7 +38,7 @@ public class SiteSettingsControllerTests(SiteSettingsControllerTestFactory apiFa
     }
 
     [Fact]
-    public async Task GetSettings_ShouldReturn()
+    public async Task GetSettings_ShouldReturn_Without_Unneeded_Fields()
     {
         var response = await _client.GetAsync($"/api/siteSettings/{typeof(DemoSiteSetting).FullName}");
 
@@ -48,10 +48,11 @@ public class SiteSettingsControllerTests(SiteSettingsControllerTestFactory apiFa
 
         settings.Should().NotBeNull();
 
-        settings!.All(k => k.Key != "settingContent").Should().BeTrue();
-        settings!.All(k => k.Key != "settingType").Should().BeTrue();
-        settings!.All(k => k.Key != "SettingContent").Should().BeTrue();
-        settings!.All(k => k.Key != "SettingType").Should().BeTrue();
+        settings.Should()
+                .NotContainKeys("settingContent",
+                                "settingType",
+                                "SettingContent",
+                                "SettingType");
     }
 
     [Fact]

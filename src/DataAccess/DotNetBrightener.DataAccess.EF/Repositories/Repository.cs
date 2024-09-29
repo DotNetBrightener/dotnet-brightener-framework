@@ -1,12 +1,12 @@
 #nullable enable
 
 using DotNetBrightener.DataAccess.Attributes;
-using DotNetBrightener.DataAccess.Auditing;
 using DotNetBrightener.DataAccess.EF.Events;
 using DotNetBrightener.DataAccess.EF.Extensions;
 using DotNetBrightener.DataAccess.Events;
 using DotNetBrightener.DataAccess.Exceptions;
 using DotNetBrightener.DataAccess.Models;
+using DotNetBrightener.DataAccess.Models.Auditing;
 using DotNetBrightener.DataAccess.Models.Guards;
 using DotNetBrightener.DataAccess.Services;
 using DotNetBrightener.DataAccess.Utils;

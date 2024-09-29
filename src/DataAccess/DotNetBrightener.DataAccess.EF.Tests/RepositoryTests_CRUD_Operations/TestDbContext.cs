@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace DotNetBrightener.DataAccess.EF.Tests;
+namespace DotNetBrightener.DataAccess.EF.Tests.RepositoryTests_CRUD_Operations;
 
-public class TestDbContext: DbContext
+public class TestDbContext : DbContext
 {
     public readonly Guid Id = Guid.NewGuid();
 

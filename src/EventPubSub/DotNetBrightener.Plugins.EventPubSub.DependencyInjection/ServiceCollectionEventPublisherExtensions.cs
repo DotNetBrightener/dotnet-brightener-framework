@@ -39,6 +39,9 @@ public static class ServiceCollectionEventPublisherExtensions
         serviceCollection.AddScoped(typeof(InMemoryEventProcessor<>));
 
         serviceCollection.AddSingleton(eventPubSubBuilder);
+        serviceCollection.AddSingleton<GenericEventHandlersContainer>();
+        serviceCollection.AddScoped<IGenericEventHandler, GenericEventHandler>();
+
         serviceCollection.AddSingleton<InMemoryEventMessageQueue>();
         serviceCollection.AddSingleton<InMemoryEventProcessor>();
 

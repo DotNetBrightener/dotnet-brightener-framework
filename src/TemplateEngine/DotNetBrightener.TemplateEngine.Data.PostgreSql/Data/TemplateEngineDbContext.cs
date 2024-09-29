@@ -5,16 +5,12 @@ using Microsoft.EntityFrameworkCore.Design;
 
 namespace DotNetBrightener.TemplateEngine.Data.PostgreSql.Data;
 
-internal class PostgreSqlDbContextDesignTimeFactory : PostgreSqlDbContextDesignTimeFactory<TemplateEngineDbContext> { }
+internal class PostgreSqlDbContextDesignTimeFactory : PostgreSqlDbContextDesignTimeFactory<TemplateEngineDbContext>;
 
-public class TemplateEngineDbContext : MigrationEnabledDbContext
+public class TemplateEngineDbContext(DbContextOptions<TemplateEngineDbContext> options)
+    : AdvancedDbContext(options)
 {
     internal const string SchemaName = "TemplateEngine";
-
-    public TemplateEngineDbContext(DbContextOptions<TemplateEngineDbContext> options)
-        : base(options)
-    {
-    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

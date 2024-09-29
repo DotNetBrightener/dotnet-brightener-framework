@@ -5,16 +5,13 @@ using Microsoft.EntityFrameworkCore.Design;
 
 namespace DotNetBrightener.TemplateEngine.Data.Mssql.Data;
 
-internal class SqlServerDbContextDesignTimeFactory : SqlServerDbContextDesignTimeFactory<TemplateEngineDbContext> { }
+internal class SqlServerDbContextDesignTimeFactory : SqlServerDbContextDesignTimeFactory<TemplateEngineDbContext>;
 
-public class TemplateEngineDbContext : MigrationEnabledDbContext
+public class TemplateEngineDbContext(
+    DbContextOptions<TemplateEngineDbContext> options)
+    : AdvancedDbContext(options)
 {
     internal const string SchemaName = "TemplateEngine";
-
-    public TemplateEngineDbContext(DbContextOptions<TemplateEngineDbContext> options)
-        : base(options)
-    {
-    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

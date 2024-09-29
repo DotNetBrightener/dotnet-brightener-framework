@@ -21,7 +21,19 @@
 
 
 	<ItemGroup>
+		<InternalsVisibleTo Include="DotNetBrightener.DataAccess.Auditing" />
+		<InternalsVisibleTo Include="DotNetBrightener.DataAccess.Auditing.EF" />
+	</ItemGroup>
+
+
+	<ItemGroup>
 		<ProjectReference Include="..\DotNetBrightener.DataAccess.Abstractions\DotNetBrightener.DataAccess.Abstractions.csproj" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+	  <Folder Include="Configurators\" />
+	  <Folder Include="Interceptors\" />
 	</ItemGroup>
 
 	<Import Project="..\..\Shared\SharedExtensions.String\StringExtensions.projitems" Label="Shared" />

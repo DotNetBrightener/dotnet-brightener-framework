@@ -70,8 +70,6 @@ public abstract class AuthIdentityBasedDbContext : IdentityDbContext<User, Role,
 
         builder.Properties<TimeOnly>()
                .HaveConversion<TimeOnlyConverter>();
-
-        this.ExtendConfigureConventions(builder);
     }
 
     public List<Action<ModelConfigurationBuilder>> ConventionConfigureActions { get; } = new();

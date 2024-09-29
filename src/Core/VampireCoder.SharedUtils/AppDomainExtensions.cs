@@ -1,7 +1,5 @@
 ﻿// ReSharper disable CheckNamespace
 
-using VampireCoder.SharedUtils;
-
 namespace System.Reflection;
 
 public static class AppDomainExtensions
