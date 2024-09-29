@@ -10,7 +10,7 @@ variables:
   value: $[replace(replace(replace(variables['System.PullRequest.targetBranchName'], 'releases/', ''), 'preview/', ''), 'refs/heads/', '')]
 
 
-name: $(ExtractedBuildNo)-preview-$(DayOfYear)$(Date:HH)$(Rev:rr)
+name: $(ExtractedBuildNo)-rc-$(Year:YY)$(DayOfYear)$(Date:HH)$(Rev:rr)
 
 trigger: none
 
