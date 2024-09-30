@@ -24,6 +24,7 @@ public static class ServiceCollectionEventPublisherExtensions
                                 : assembliesContainMessages;
 
         var eventMessageTypes = appAssemblies.GetDerivedTypes<IEventMessage>()
+                                             .Where(t => !t.IsInterface && !t.IsAbstract)
                                              .Distinct();
 
         // Event Pub/Sub

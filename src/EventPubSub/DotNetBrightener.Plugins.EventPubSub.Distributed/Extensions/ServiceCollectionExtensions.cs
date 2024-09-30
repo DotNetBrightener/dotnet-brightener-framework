@@ -137,7 +137,7 @@ public static class ServiceCollectionExtensions
 
         configurator.Builder
                     .EventMessageTypes
-                    .Where(type => !type.IsInterface && (
+                    .Where(type => !type.IsInterface && !type.IsAbstract && (
                                                             type.IsAssignableTo(typeof(DistributedEventMessage)) ||
                                                             type.IsAssignableTo(typeof(RequestMessage))
                                                         ))

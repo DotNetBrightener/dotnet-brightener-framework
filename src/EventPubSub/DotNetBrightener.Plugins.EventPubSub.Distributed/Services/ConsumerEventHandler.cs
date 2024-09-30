@@ -25,6 +25,16 @@ internal class ConsumerEventHandler<TEventMessage> : IConsumer<TEventMessage>
 
         var eventMessage = context.Message;
 
+        _logger.LogInformation("CorrelationId: {CorrelationId}. " +
+                               "Context CorrelationId: {contextCorrelationId}. " +
+                               "Created on: {@CreatedOn}. " +
+                               "Event Type: {@eventType}. ",
+                               eventMessage.CorrelationId,
+                               context.CorrelationId,
+                               eventMessage.CreatedOn,
+                               context.Message.GetType().FullName);
+
+
         await _distributedEventEventHandlers.ParallelForEachAsync(async handler =>
         {
             handler.OriginPayload = new DistributedEventMessageWrapper
@@ -39,12 +49,5 @@ internal class ConsumerEventHandler<TEventMessage> : IConsumer<TEventMessage>
 
             await handler.HandleEvent(eventMessage);
         });
-
-        _logger.LogInformation("CorrelationId: {CorrelationId}. " +
-                               "Context CorrelationId: {contextCorrelationId}. " +
-                               "Created on: {@CreatedOn}",
-                               eventMessage.CorrelationId,
-                               context.CorrelationId,
-                               eventMessage.CreatedOn);
     }
 }
