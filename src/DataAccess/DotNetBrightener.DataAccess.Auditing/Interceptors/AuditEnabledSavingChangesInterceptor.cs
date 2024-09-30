@@ -39,8 +39,9 @@ public class AuditEnabledSavingChangesInterceptor : SaveChangesInterceptor
             return await base.SavingChangesAsync(eventData, result, cancellationToken);
         }
 
-        var startAction = DateTimeOffset.UtcNow;
-        var url         = _httpContextAccessor?.HttpContext?.Request.GetDisplayUrl();
+        var startAction   = DateTimeOffset.UtcNow;
+        var url           = _httpContextAccessor?.HttpContext?.Request.GetDisplayUrl();
+        var requestMethod = _httpContextAccessor?.HttpContext?.Request.Method;
 
         var auditEntries = eventData.Context.ChangeTracker
                                     .Entries()
@@ -49,14 +50,17 @@ public class AuditEnabledSavingChangesInterceptor : SaveChangesInterceptor
                                                     or EntityState.Deleted)
                                     .Select(x =>
                                      {
-                                         var primaryKey = x.Metadata.FindPrimaryKey()
-                                                          ?.Properties
-                                                           .Select(p => x.Property(p.Name).CurrentValue)
-                                                           .FirstOrDefault();
+                                         object? primaryKeyValue = x.State == EntityState.Added
+                                                                       ? "[Generated]"
+                                                                       : x.Metadata.FindPrimaryKey()
+                                                                         ?.Properties
+                                                                          .Select(p => x.Property(p.Name).CurrentValue)
+                                                                          .FirstOrDefault();
 
                                          var changeMetadata = x.Properties
                                                                .Where(p => x.State == EntityState.Added ||
-                                                                           p.OriginalValue != p.CurrentValue)
+                                                                           p.CurrentValue?.Equals(p.OriginalValue) !=
+                                                                           true)
                                                                .Select(p => new AuditProperty
                                                                 {
                                                                     PropertyName = p.Metadata.Name,
@@ -80,9 +84,9 @@ public class AuditEnabledSavingChangesInterceptor : SaveChangesInterceptor
                                              Action             = x.State.ToString(),
                                              EntityType         = recordType.Name,
                                              EntityTypeFullName = recordType.FullName,
-                                             EntityIdentifier   = primaryKey?.ToString(),
+                                             EntityIdentifier   = primaryKeyValue?.ToString(),
                                              Changes            = JsonConvert.SerializeObject(changeMetadata),
-                                             Url                = url,
+                                             Url                = $"{requestMethod} {url}",
                                              UserName           = _currentLoggedInUserResolver?.CurrentUserName ?? "Not Detected"
                                          };
                                      })

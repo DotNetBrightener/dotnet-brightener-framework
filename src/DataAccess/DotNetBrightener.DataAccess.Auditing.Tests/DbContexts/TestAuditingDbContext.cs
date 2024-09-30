@@ -10,6 +10,12 @@ public class TestEntity
     public long Id { get; set; }
 
     public string Name { get; set; }
+
+    public bool BooleanValue { get; set; }
+
+    public DateTimeOffset? DateTimeOffsetValue { get; set; }
+
+    public int IntValue { get; set; }
 }
 
 public class TestAuditingDbContext(DbContextOptions<TestAuditingDbContext> options) : AdvancedDbContext(options)

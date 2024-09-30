@@ -90,7 +90,8 @@ public class AuditingInitializationTests : MsSqlServerBaseXUnitTest
                          {
                              var entity = new TestEntity()
                              {
-                                 Name = "John Smith"
+                                 Name = "John Smith",
+                                 DateTimeOffsetValue = DateTimeOffset.UtcNow
                              };
                              
                              dbContext.Add(entity);
@@ -107,7 +108,8 @@ public class AuditingInitializationTests : MsSqlServerBaseXUnitTest
                              
                              entity.Should().NotBeNull();
 
-                             entity!.Name = "John Smith Updated";
+                             entity!.Name        =  "John Smith Updated";
+                             entity.IntValue     += 10;
 
                              dbContext.Update(entity);
 
