@@ -3,7 +3,6 @@ using DotNetBrightener.DataAccess.Auditing.WebTest.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 using System.Text.Json.Serialization;
-using DotNetBrightener.DataAccess.Auditing.Interceptors;
 
 
 var builder = WebApplication.CreateBuilder(args);

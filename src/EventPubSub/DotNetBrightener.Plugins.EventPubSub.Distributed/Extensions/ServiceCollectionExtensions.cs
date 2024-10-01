@@ -81,40 +81,7 @@ public static class ServiceCollectionExtensions
 
         return builder;
     }
-
-    public static IDistributedEventPubSubConfigurator AddConsumer<TConsumer>(
-        this IDistributedEventPubSubConfigurator builder)
-        where TConsumer : class, IConsumer
-    {
-        if (builder is not DistributedIntegrationsConfigurator configurator)
-        {
-            throw new InvalidOperationException("Invalid configurator type");
-        }
-
-        configurator.ConfigureConsumers.Add(busConfigurator =>
-        {
-            busConfigurator.AddConsumer<TConsumer>();
-        });
-
-        return builder;
-    }
-
-    public static IDistributedEventPubSubConfigurator AddConsumers(this IDistributedEventPubSubConfigurator builder,
-                                                                   Assembly scannedAssembly)
-    {
-        if (builder is not DistributedIntegrationsConfigurator configurator)
-        {
-            throw new InvalidOperationException("Invalid configurator type");
-        }
-
-        configurator.ConfigureConsumers.Add(busConfigurator =>
-        {
-            busConfigurator.AddConsumers(scannedAssembly);
-        });
-
-        return builder;
-    }
-
+    
     /// <summary>
     ///     Finalizes the MassTransit configuration and registers the required services.
     ///     <br />
@@ -135,79 +102,33 @@ public static class ServiceCollectionExtensions
 
         services.Replace(ServiceDescriptor.Scoped<IEventPublisher, DistributedEventPublisher>());
 
-        configurator.Builder
-                    .EventMessageTypes
-                    .Where(type => !type.IsInterface && !type.IsAbstract && (
-                                                            type.IsAssignableTo(typeof(DistributedEventMessage)) ||
-                                                            type.IsAssignableTo(typeof(RequestMessage))
-                                                        ))
-                    .ToList()
-                    .ForEach(msgType => ConfigureConsumerForMessageType(msgType, services, configurator));
+
+        var consumerHandlers = builder.Services
+                                      .Where(x => x.ImplementationType is { BaseType.IsGenericType: true } &&
+                                                  x.ImplementationType.IsAssignableTo(typeof(IEventHandler)) &&
+                                                  x.ImplementationType.GetInterfaces()
+                                                   .Any(@interface => @interface.IsGenericType &&
+                                                                      @interface.GetGenericTypeDefinition() ==
+                                                                      typeof(IConsumer<>)))
+                                      .Select(x => x.ImplementationType)
+                                      .Distinct()
+                                      .ToArray();
+
+        Console.WriteLine($"Found {consumerHandlers.Length} consumer types");
 
         builder.Services.AddMassTransit(busConfigurator =>
         {
             busConfigurator.SetEndpointNameFormatter(configurator.NameFormatter);
-
-            configurator.ConfigureConsumers.ForEach(configure =>
+            
+            foreach (var consumerHandler in consumerHandlers)
             {
-                configure.Invoke(busConfigurator);
-            });
+                busConfigurator.AddConsumer(consumerHandler);
+            }
 
             configurator.ConfigureTransports.ForEach(configure =>
             {
-                configure.Invoke(busConfigurator);
+                configure.Invoke(busConfigurator, consumerHandlers);
             });
-        });
-    }
-
-    private static void ConfigureConsumerForMessageType(Type                                type,
-                                                        IServiceCollection                  services,
-                                                        DistributedIntegrationsConfigurator configurator)
-    {
-        var eventHandlerType = typeof(IEventHandler<>).MakeGenericType(type);
-
-        var eventHandlerTypeRegistrations = services
-                                           .Where(descriptor => descriptor.ServiceType == eventHandlerType ||
-                                                                descriptor.ImplementationType
-                                                                         ?.IsAssignableTo(eventHandlerType) == true)
-                                           .ToList();
-
-        var isRequestType = type.IsAssignableTo(typeof(RequestMessage));
-
-        if (!eventHandlerTypeRegistrations.Any())
-            return;
-
-        if (isRequestType)
-        {
-            var responseRequestHandlerType = typeof(RequestResponder<>).MakeGenericType(type);
-
-            var implementations = eventHandlerTypeRegistrations
-                                 .Where(descriptor => descriptor.ImplementationType != null &&
-                                                      descriptor.ImplementationType!
-                                                                .IsAssignableTo(responseRequestHandlerType))
-                                 .Select(descriptor => descriptor.ImplementationType)
-                                 .Distinct()
-                                 .ToList();
-
-            if (implementations.Count == 0)
-            {
-                return;
-            }
-
-            if (implementations.Count > 1)
-            {
-                throw new
-                    InvalidOperationException($"Request type {type.Name} should only have one handler in one application.");
-            }
-        }
-
-        var consumerType = isRequestType
-                               ? typeof(ResponseToRequestEventHandler<>).MakeGenericType(type)
-                               : typeof(ConsumerEventHandler<>).MakeGenericType(type);
-
-        configurator.ConfigureConsumers.Add(busConfigurator =>
-        {
-            busConfigurator.AddConsumer(consumerType);
         });
     }
 }

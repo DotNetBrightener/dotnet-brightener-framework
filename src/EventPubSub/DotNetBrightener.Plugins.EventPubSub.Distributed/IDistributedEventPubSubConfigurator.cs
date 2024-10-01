@@ -26,7 +26,5 @@ internal class DistributedIntegrationsConfigurator : IDistributedEventPubSubConf
 
     public IEntityNameFormatter? EntityNameFormatter { get; internal set; } = null;
     
-    public List<Action<IBusRegistrationConfigurator>> ConfigureConsumers { get; init; } = new();
-
-    public List<Action<IBusRegistrationConfigurator>> ConfigureTransports { get; init; } = new();
+    public List<Action<IBusRegistrationConfigurator, Type[]>> ConfigureTransports { get; init; } = new();
 }

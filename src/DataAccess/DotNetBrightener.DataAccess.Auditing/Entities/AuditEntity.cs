@@ -1,4 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace DotNetBrightener.DataAccess.Auditing.Entities;
 
@@ -7,7 +9,6 @@ namespace DotNetBrightener.DataAccess.Auditing.Entities;
 /// </summary>
 public class AuditEntity
 {
-    [Key]
     public Guid Id { get; set; } = Ulid.NewUlid().ToGuid();
 
     [MaxLength(64)]
@@ -23,6 +24,8 @@ public class AuditEntity
 
     [MaxLength(2048)]
     public string EntityTypeFullName { get; set; }
+
+    public string DebugView { get; set; }
 
     public bool IsSuccess { get; set; }
 
@@ -41,4 +44,7 @@ public class AuditEntity
     public TimeSpan? Duration { get; set; }
 
     public Guid ScopeId { get; set; } = Ulid.NewUlid().ToGuid();
+
+    [NotMapped]
+    internal EntityEntry __AssociatedEntityEntry { get; set; }
 }

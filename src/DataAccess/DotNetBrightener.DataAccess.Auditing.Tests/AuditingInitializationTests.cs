@@ -1,5 +1,4 @@
 ﻿using DotNetBrightener.DataAccess.Auditing.EventMessages;
-using DotNetBrightener.DataAccess.Auditing.Interceptors;
 using DotNetBrightener.DataAccess.Auditing.Tests.DbContexts;
 using DotNetBrightener.DataAccess.EF.Internal;
 using DotNetBrightener.Plugins.EventPubSub;
@@ -105,11 +104,11 @@ public class AuditingInitializationTests : MsSqlServerBaseXUnitTest
                          {
                              var entity = dbContext.Set<TestEntity>()
                                                    .FirstOrDefault(x => x.Name == "John Smith");
-                             
+
                              entity.Should().NotBeNull();
 
-                             entity!.Name        =  "John Smith Updated";
-                             entity.IntValue     += 10;
+                             entity!.Name = "John Smith Updated";
+                             entity.IntValue += 10;
 
                              dbContext.Update(entity);
 
@@ -122,7 +121,7 @@ public class AuditingInitializationTests : MsSqlServerBaseXUnitTest
                          {
                              var entity = dbContext.Set<TestEntity>()
                                                    .FirstOrDefault(x => x.Name == "John Smith Updated");
-                             
+
                              entity.Should().NotBeNull();
 
                              dbContext.Remove(entity!);

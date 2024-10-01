@@ -20,8 +20,9 @@ public static class AuditingStorageServiceCollectionExtensions
                                            contextOptionsBuilder
                                               .MigrationsHistoryTable("__MigrationsHistory",
                                                                       MssqlStorageAuditingDbContext.SchemaName);
-                                       })
-                         .UseLazyLoadingProxies();
+
+                                           contextOptionsBuilder.EnableRetryOnFailure(20);
+                                       });
         });
 
         serviceCollection.AddAutoMigrationForDbContextAfterAppStarted<MssqlStorageAuditingDbContext>();

@@ -35,3 +35,24 @@ public class SomeUpdateMessageHandler: DistributedEventHandler<SomeUpdateMessage
         return Task.FromResult<bool>(true);
     }
 }
+
+
+
+public class EmailRequestedDomainEventHandler : DistributedEventHandler<EmailRequestedDomainEvent>
+{
+    private readonly ILogger<EmailRequestedDomainEventHandler> _logger;
+
+    public EmailRequestedDomainEventHandler(ILogger<EmailRequestedDomainEventHandler> logger)
+    {
+        _logger = logger;
+    }
+
+    public override Task<bool> HandleEvent(EmailRequestedDomainEvent eventMessage)
+    {
+        _logger.LogInformation("Received from {originalApp}",
+                               eventMessage.OriginApp);
+
+        return Task.FromResult<bool>(true);
+    }
+}
+

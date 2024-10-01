@@ -1,20 +1,11 @@
-﻿using DotNetBrightener.DataAccess.Auditing.Entities;
+﻿using DotNetBrightener.DataAccess.Auditing.Interceptors;
+using DotNetBrightener.DataAccess.Auditing.Internal;
 using DotNetBrightener.DataAccess.EF.Migrations;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace DotNetBrightener.DataAccess.Auditing.Interceptors;
-
-internal interface IAuditEntriesContainer
-{
-    List<AuditEntity> AuditEntries { get; }
-}
-
-internal class AuditEntriesContainer : IAuditEntriesContainer
-{
-    public List<AuditEntity> AuditEntries { get; } = new();
-}
+// ReSharper disable CheckNamespace
+namespace Microsoft.Extensions.DependencyInjection;
 
 public static class ServiceCollectionExtensions
 {

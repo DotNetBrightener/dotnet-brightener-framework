@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using DotNetBrightener.DataAccess.Auditing.Entities;
 using DotNetBrightener.DataAccess.Auditing.EventMessages;
+using DotNetBrightener.DataAccess.Auditing.Internal;
 using DotNetBrightener.DataAccess.Models.Auditing;
 using DotNetBrightener.Plugins.EventPubSub;
 using Microsoft.AspNetCore.Http;
@@ -14,15 +15,15 @@ namespace DotNetBrightener.DataAccess.Auditing.Interceptors;
 
 public class AuditEnabledSavingChangesInterceptor : SaveChangesInterceptor
 {
-    internal Guid ScopeId { get; } = Ulid.NewUlid().ToGuid();
-
     private readonly IAuditEntriesContainer        _auditEntriesContainer;
     private readonly IEventPublisher?              _eventPublisher;
     private readonly IHttpContextAccessor?         _httpContextAccessor;
     private readonly ICurrentLoggedInUserResolver? _currentLoggedInUserResolver;
+    private readonly Guid                          _scopeId;
 
     public AuditEnabledSavingChangesInterceptor(IServiceProvider serviceProvider)
     {
+        _scopeId                     = Ulid.NewUlid().ToGuid();
         _auditEntriesContainer       = serviceProvider.GetRequiredService<IAuditEntriesContainer>();
         _eventPublisher              = serviceProvider.TryGet<IEventPublisher>();
         _httpContextAccessor         = serviceProvider.TryGet<IHttpContextAccessor>();
@@ -45,7 +46,7 @@ public class AuditEnabledSavingChangesInterceptor : SaveChangesInterceptor
 
         var auditEntries = eventData.Context.ChangeTracker
                                     .Entries()
-                                    .Where(x => x.State is EntityState.Modified 
+                                    .Where(x => x.State is EntityState.Modified
                                                     or EntityState.Added
                                                     or EntityState.Deleted)
                                     .Select(x =>
@@ -58,9 +59,10 @@ public class AuditEnabledSavingChangesInterceptor : SaveChangesInterceptor
                                                                           .FirstOrDefault();
 
                                          var changeMetadata = x.Properties
-                                                               .Where(p => x.State == EntityState.Added ||
-                                                                           p.CurrentValue?.Equals(p.OriginalValue) !=
-                                                                           true)
+                                                               .Where(p => (x.State == EntityState.Added &&
+                                                                            p.CurrentValue is not null) ||
+                                                                           (p.IsModified &&
+                                                                            !Equals(p.OriginalValue, p.CurrentValue)))
                                                                .Select(p => new AuditProperty
                                                                 {
                                                                     PropertyName = p.Metadata.Name,
@@ -72,22 +74,27 @@ public class AuditEnabledSavingChangesInterceptor : SaveChangesInterceptor
 
                                          var recordType = x.Entity.GetType();
 
-                                         if (recordType.Namespace != null && recordType.Namespace.StartsWith("Castle.Proxies"))
+                                         if (recordType.Namespace is not null &&
+                                             recordType.Namespace.StartsWith("Castle.Proxies") &&
+                                             recordType.BaseType is not null)
                                          {
                                              recordType = recordType.BaseType;
                                          }
 
                                          return new AuditEntity
                                          {
-                                             ScopeId            = ScopeId,
-                                             StartTime          = startAction,
-                                             Action             = x.State.ToString(),
-                                             EntityType         = recordType.Name,
+                                             Id = Ulid.NewUlid().ToGuid(),
+                                             ScopeId = _scopeId,
+                                             StartTime = startAction,
+                                             Action = x.State.ToString(),
+                                             EntityType = recordType.Name,
                                              EntityTypeFullName = recordType.FullName,
-                                             EntityIdentifier   = primaryKeyValue?.ToString(),
-                                             Changes            = JsonConvert.SerializeObject(changeMetadata),
-                                             Url                = $"{requestMethod} {url}",
-                                             UserName           = _currentLoggedInUserResolver?.CurrentUserName ?? "Not Detected"
+                                             EntityIdentifier = primaryKeyValue?.ToString(),
+                                             Changes = JsonConvert.SerializeObject(changeMetadata),
+                                             Url = $"{requestMethod} {url}",
+                                             UserName = _currentLoggedInUserResolver?.CurrentUserName ?? "Not Detected",
+                                             DebugView = x.DebugView.ShortView,
+                                             __AssociatedEntityEntry = x
                                          };
                                      })
                                     .ToList();
@@ -113,6 +120,22 @@ public class AuditEnabledSavingChangesInterceptor : SaveChangesInterceptor
 
         foreach (var auditEntity in _auditEntriesContainer.AuditEntries)
         {
+            if (auditEntity.Action == EntityState.Added.ToString())
+            {
+                var primaryKeys = auditEntity.__AssociatedEntityEntry
+                                             .Metadata
+                                             .FindPrimaryKey()
+                                            ?.Properties;
+
+                if (primaryKeys?.Count == 1)
+                {
+                    auditEntity.EntityIdentifier = auditEntity.__AssociatedEntityEntry
+                                                              .Property(primaryKeys[0].Name)
+                                                              .CurrentValue?
+                                                              .ToString();
+                }
+            }
+
             auditEntity.EndTime   = endTime;
             auditEntity.Duration  = endTime.Subtract(auditEntity.StartTime!.Value);
             auditEntity.IsSuccess = true;

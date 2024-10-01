@@ -3,7 +3,7 @@ using DotNetBrightener.Plugins.EventPubSub;
 
 namespace DotNetBrightener.DataAccess.Auditing.EventMessages;
 
-public class AuditTrailMessage : DistributedEventMessage, ICombinationEventMessage
+public class AuditTrailMessage : DistributedEventMessage, ICombinationEventMessage, INonStoppedEventMessage
 {
     public List<AuditEntity> AuditEntities { get; set; } = new();
 }

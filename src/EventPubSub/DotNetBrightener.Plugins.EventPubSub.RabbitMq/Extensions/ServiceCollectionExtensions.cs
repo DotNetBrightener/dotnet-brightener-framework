@@ -65,7 +65,7 @@ public static class ServiceCollectionExtensions
             throw new
                 InvalidOperationException($"Only one transport can be used in an application. Remove all other transports and only enable one that you need to use.");
 
-        configurator.ConfigureTransports.Add(busConfigurator =>
+        configurator.ConfigureTransports.Add((busConfigurator, consumerHandlerTypes) =>
         {
             busConfigurator.UsingRabbitMq((context, cfg) =>
             {
@@ -83,7 +83,17 @@ public static class ServiceCollectionExtensions
                 if (configurator.EntityNameFormatter is not null)
                     cfg.MessageTopology.SetEntityNameFormatter(configurator.EntityNameFormatter);
 
-                cfg.ConfigureEndpoints(context);
+                foreach (var consumerType in consumerHandlerTypes)
+                {
+                    var queueName = $"{consumerType.Name.ToLower()}_queue";
+                    cfg.ReceiveEndpoint(queueName,
+                                        e =>
+                                        {
+                                            context.ConfigureConsumer(consumerType, e);
+                                        });
+                }
+
+                //cfg.ConfigureEndpoints(context);
             });
         });
 

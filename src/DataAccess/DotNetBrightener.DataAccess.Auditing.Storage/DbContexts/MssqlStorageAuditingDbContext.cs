@@ -1,4 +1,5 @@
 ﻿using DotNetBrightener.DataAccess.Auditing.Entities;
+using EntityFramework.Exceptions.SqlServer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
@@ -11,10 +12,28 @@ internal class MssqlStorageAuditingDbContext(DbContextOptions<MssqlStorageAuditi
 {
     internal const string SchemaName = "Auditing";
 
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.UseExceptionProcessor();
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        var templateRecordEntity = modelBuilder.Entity<AuditEntity>();
+        modelBuilder.Entity<AuditEntity>(auditEntity =>
+        {
+            auditEntity.ToTable(nameof(AuditEntity), schema: SchemaName);
 
-        templateRecordEntity.ToTable(nameof(AuditEntity), schema: SchemaName);
+            auditEntity.HasNoKey();
+
+            auditEntity.HasIndex(audit => audit.Id);
+
+            auditEntity.HasIndex(audit => new
+            {
+                audit.EntityType,
+                audit.EntityIdentifier
+            });
+
+            auditEntity.HasIndex(audit => audit.StartTime);
+        });
     }
 }

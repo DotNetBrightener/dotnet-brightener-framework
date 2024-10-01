@@ -26,3 +26,11 @@ public class DistributedTestMessageResponse : ResponseMessage<DistributedTestMes
 {
     public string Name { get; set; }
 }
+
+public class AccountUpdatedDomainEvent: DistributedEventMessage
+{
+}
+
+public class EmailRequestedDomainEvent : DistributedEventMessage
+{
+}

@@ -66,23 +66,20 @@ internal class InMemoryEventProcessor<T> where T : IEventMessage
                 return;
             }
 
-            ImmutableArray<IEventHandler> eventHandlers;
             var expectingEventHandlerType = typeof(IEventHandler<>).MakeGenericType(messageType);
                 
             var allEventHandlers = processingScope!.ServiceProvider.GetServices<IEventHandler>();
 
-            eventHandlers =
-                [
-                    ..allEventHandlers
-                     .Where(instance => instance.GetType()
-                                                .IsAssignableTo(expectingEventHandlerType))
-                     .OrderByDescending(x => x.Priority)
-                ];
+            ImmutableArray<IEventHandler> eventHandlers = [
+                ..allEventHandlers
+                 .Where(instance => instance.GetType()
+                                            .IsAssignableTo(expectingEventHandlerType))
+                 .OrderByDescending(x => x.Priority)
+            ];
 
             if (eventMessage is INonStoppedEventMessage)
             {
-                await eventHandlers.ParallelForEachAsync(eventHandler =>
-                                                             HandleEventMessage(eventHandler, eventMessage));
+                await eventHandlers.ParallelForEachAsync(async eventHandler => await HandleEventMessage(eventHandler, eventMessage));
 
                 return;
             }
@@ -124,6 +121,9 @@ internal class InMemoryEventProcessor<T> where T : IEventMessage
         {
             _logger.LogError(exception, "Error while executing event handler for {eventMessageType}", typeof(T).Name);
 
+            if (eventMessage is INonStoppedEventMessage)
+                return true;
+
             throw;
         }
     }
@@ -158,6 +158,9 @@ internal class InMemoryEventProcessor<T> where T : IEventMessage
         catch (Exception exception)
         {
             _logger.LogError(exception, "Error while executing event handler for {eventMessageType}", typeof(T).Name);
+
+            if (eventMessage is INonStoppedEventMessage)
+                return true;
 
             throw;
         }
