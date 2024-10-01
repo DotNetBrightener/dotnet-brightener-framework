@@ -15,7 +15,6 @@ using LinqToDB.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.Logging;
-using System.Data;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -348,17 +347,11 @@ public class Repository : IRepository
                 auditableEntity.ModifiedBy = CurrentLoggedInUserResolver?.CurrentUserName;
         }
 
-        var entityEntry = DbContext.Entry(entity);
-
-        if (entityEntry.State == EntityState.Detached)
-        {
-            DbContext.Set<T>().Attach(entity);
-        }
-
-        entityEntry.State = EntityState.Modified;
+        DbContext.Update(entity);
     }
 
-    public virtual void UpdateMany<T>(IEnumerable<T> entities) where T : class => UpdateMany(entities.ToArray());
+    public virtual void UpdateMany<T>(IEnumerable<T> entities) where T : class => 
+        UpdateMany(entities.ToArray());
 
     public virtual void UpdateMany<T>(params T[] entities) where T : class
         => UpdateManyAsync(entities).Wait();
@@ -470,14 +463,7 @@ public class Repository : IRepository
             auditableEntity.DeletedBy      = CurrentLoggedInUserResolver?.CurrentUserName;
             auditableEntity.DeletionReason = entityDeletingEvent.DeletionReason;
 
-            var entityEntry = DbContext.Entry(entity);
-
-            if (entityEntry.State == EntityState.Detached)
-            {
-                DbContext.Set<T>().Attach(entity);
-            }
-
-            entityEntry.State = EntityState.Modified;
+            DbContext.Update(entity);
         }
         else
         {

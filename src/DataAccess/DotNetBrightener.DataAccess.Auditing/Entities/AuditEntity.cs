@@ -1,6 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using DotNetBrightener.DataAccess.Models.Auditing;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using System.Collections.Immutable;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DotNetBrightener.DataAccess.Auditing.Entities;
 
@@ -46,5 +49,16 @@ public class AuditEntity
     public Guid ScopeId { get; set; } = Ulid.NewUlid().ToGuid();
 
     [NotMapped]
-    internal EntityEntry __AssociatedEntityEntry { get; set; }
+    public EntityEntry AssociatedEntityEntry { get; internal init; }
+
+    [NotMapped]
+    public ImmutableList<AuditProperty> AuditProperties { get; internal init; } = ImmutableList<AuditProperty>.Empty;
+
+    [NotMapped]
+    public ImmutableList<AuditProperty> ChangedAuditProperties => Action == EntityState.Added.ToString() ||
+                                                                  Action == EntityState.Deleted.ToString()
+                                                                      ? AuditProperties
+                                                                      : AuditProperties
+                                                                       .Where(x => !x.OldValue.Equals(x.NewValue))
+                                                                       .ToImmutableList();
 }

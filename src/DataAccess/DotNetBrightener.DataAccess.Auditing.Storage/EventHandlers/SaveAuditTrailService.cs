@@ -1,8 +1,12 @@
-﻿using DotNetBrightener.DataAccess.Auditing.EventMessages;
+﻿using System.Diagnostics.Eventing.Reader;
+using DotNetBrightener.DataAccess.Auditing.Entities;
+using DotNetBrightener.DataAccess.Auditing.EventMessages;
 using DotNetBrightener.DataAccess.Auditing.Storage.DbContexts;
 using DotNetBrightener.Plugins.EventPubSub;
 using LinqToDB.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace DotNetBrightener.DataAccess.Auditing.Storage.EventHandlers;
 
@@ -21,6 +25,11 @@ internal class SaveAuditTrailService : IEventHandler<AuditTrailMessage>
 
     public async Task<bool> HandleEvent(AuditTrailMessage eventMessage)
     {
+        foreach (var auditEntry in eventMessage.AuditEntities)
+        {
+            auditEntry.Changes = JsonConvert.SerializeObject(auditEntry.ChangedAuditProperties);
+        }
+
         try
         {
             await _dbContext.BulkCopyAsync(eventMessage.AuditEntities);
