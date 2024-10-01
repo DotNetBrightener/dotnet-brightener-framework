@@ -89,7 +89,7 @@ internal class WebSocketBasedServiceMiddleware
 
         if (string.IsNullOrEmpty(connectionId))
         {
-            connectionId               = Ulid.NewUlid().ToGuid().ToString();
+            connectionId               = Guid.NewGuid().ToString();
             connectionInfo             = await connectionManager.AddConnection(connectionId, webSocket);
             connectionInfo.IsDebugMode = debugMode;
         }
@@ -169,9 +169,7 @@ internal class WebSocketBasedServiceMiddleware
                     default:
                         _logger.LogWarning("Unexpected message type {messageType}", webSocketMsg.MessageType);
                         var responseMessage = ResponseMessage.FromPayload<CommonResponsePayload>(connectionId,
-                                                                                                 Ulid.NewUlid()
-                                                                                                     .ToGuid()
-                                                                                                     .ToString(),
+                                                                                                 Guid.NewGuid().ToString(),
                                                                                                  new("Error"),
                                                                                                  $"Unsupported message type {webSocketMsg.MessageType}");
                         webSocket.DeliverMessage(responseMessage,
@@ -307,9 +305,7 @@ internal class WebSocketBasedServiceMiddleware
                                              CancellationToken cancellationToken = default)
     {
         var connectedResponse = ResponseMessage.FromPayload<ConnectedNotificationPayload>(connectionId,
-                                                                                          Ulid.NewUlid()
-                                                                                              .ToGuid()
-                                                                                              .ToString(),
+                                                                                          Guid.NewGuid().ToString(),
                                                                                           new());
         await webSocket.DeliverMessage(connectedResponse, bufferSize, !debugMode, cancellationToken);
     }

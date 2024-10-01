@@ -6,24 +6,31 @@ using DotNetBrightener.DataAccess.Models.Auditing;
 using DotNetBrightener.Plugins.EventPubSub;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using System.Collections.Immutable;
 using System.Diagnostics;
-using Microsoft.EntityFrameworkCore;
+using Uuid7 = DotNetBrightener.DataAccess.Models.Utils.Internal.Uuid7;
 
 namespace DotNetBrightener.DataAccess.Auditing.Interceptors;
 
 internal class AuditEnabledSavingChangesInterceptor(IServiceProvider serviceProvider) : SaveChangesInterceptor
 {
-    private readonly IAuditEntriesContainer          _auditEntriesContainer           = serviceProvider.GetRequiredService<IAuditEntriesContainer>();
-    private readonly IEventPublisher?                _eventPublisher                  = serviceProvider.TryGet<IEventPublisher>();
-    private readonly IHttpContextAccessor?           _httpContextAccessor             = serviceProvider.TryGet<IHttpContextAccessor>();
-    private readonly ICurrentLoggedInUserResolver?   _currentLoggedInUserResolver     = serviceProvider.TryGet<ICurrentLoggedInUserResolver>();
-    private readonly IgnoreAuditingEntitiesContainer _ignoreAuditingEntitiesContainer = serviceProvider.GetRequiredService<IgnoreAuditingEntitiesContainer>();
-    
-    private readonly Guid _scopeId = Ulid.NewUlid().ToGuid();
+    private readonly IAuditEntriesContainer _auditEntriesContainer =
+        serviceProvider.GetRequiredService<IAuditEntriesContainer>();
+
+    private readonly IEventPublisher?      _eventPublisher      = serviceProvider.TryGet<IEventPublisher>();
+    private readonly IHttpContextAccessor? _httpContextAccessor = serviceProvider.TryGet<IHttpContextAccessor>();
+
+    private readonly ICurrentLoggedInUserResolver? _currentLoggedInUserResolver =
+        serviceProvider.TryGet<ICurrentLoggedInUserResolver>();
+
+    private readonly IgnoreAuditingEntitiesContainer _ignoreAuditingEntitiesContainer =
+        serviceProvider.GetRequiredService<IgnoreAuditingEntitiesContainer>();
+
+    private readonly Guid _scopeId = Uuid7.Guid();
 
     public override async ValueTask<InterceptionResult<int>> SavingChangesAsync(DbContextEventData      eventData,
                                                                                 InterceptionResult<int> result,
@@ -69,7 +76,7 @@ internal class AuditEnabledSavingChangesInterceptor(IServiceProvider serviceProv
                                                   .Select(x => x.Name)
                                                   .ToList() ?? new();
 
-            var isAdded = entityEntry.State == EntityState.Added;
+            var isAdded   = entityEntry.State == EntityState.Added;
             var isDeleted = entityEntry.State == EntityState.Deleted;
 
             var auditProperties = entityEntry.Properties
@@ -85,7 +92,6 @@ internal class AuditEnabledSavingChangesInterceptor(IServiceProvider serviceProv
 
             var auditEntity = new AuditEntity
             {
-                Id                    = Ulid.NewUlid().ToGuid(),
                 ScopeId               = _scopeId,
                 StartTime             = startAction,
                 Action                = entityEntry.State.ToString(),

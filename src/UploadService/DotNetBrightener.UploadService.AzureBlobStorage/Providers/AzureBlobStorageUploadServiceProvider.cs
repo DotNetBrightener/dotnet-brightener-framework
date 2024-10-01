@@ -41,7 +41,7 @@ public class AzureBlobStorageUploadServiceProvider(
         {
             var fileExtension = Path.GetExtension(fileName);
 
-            uploadFileName = $"{Ulid.NewUlid().ToGuid()}{fileExtension}";
+            uploadFileName = $"{Uuid7.Guid()}{fileExtension}";
         }
 
         return await base.ProcessUpload(fileUploadStream, uploadRequestModel, uploadFileName, baseUrl);

@@ -1,3 +1,5 @@
+
+using DotNetBrightener.IdentityAuth.Internal;
 using Microsoft.AspNetCore.Identity;
 
 namespace DotNetBrightener.IdentityAuth.Models;
@@ -6,10 +8,11 @@ public class Role : IdentityRole<Guid>
 {
     public Role()
     {
-        Id = Ulid.NewUlid().ToGuid();
+        Id = Uuid7.Guid();
     }
 
-    public Role(string roleName) : this()
+    public Role(string roleName)
+        : this()
     {
         Name = roleName;
     }

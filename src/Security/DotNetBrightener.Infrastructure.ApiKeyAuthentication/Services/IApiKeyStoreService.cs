@@ -1,5 +1,6 @@
 ﻿using DotNetBrightener.Caching;
 using DotNetBrightener.CryptoEngine;
+using DotNetBrightener.Infrastructure.ApiKeyAuthentication.Internal;
 using DotNetBrightener.Infrastructure.ApiKeyAuthentication.Models;
 using DotNetBrightener.Infrastructure.ApiKeyAuthentication.Permissions;
 
@@ -121,7 +122,7 @@ public abstract class BaseApiKeyStoreService : IApiKeyStoreService
     {
         var tokenSegment = new TokenSegment
         {
-            TokenId       = tokenId ?? Ulid.NewUlid().ToGuid().ToString(),
+            TokenId       = tokenId ?? Uuid7.Guid().ToString(),
             TokenPassword = CryptoUtilities.CreateRandomToken(32)
         };
 

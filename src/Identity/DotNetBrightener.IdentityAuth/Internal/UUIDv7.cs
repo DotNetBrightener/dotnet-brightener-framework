@@ -1,6 +1,6 @@
 ﻿using System.Security.Cryptography;
 
-namespace VampireCoder.SharedUtils;
+namespace DotNetBrightener.IdentityAuth.Internal;
 
 public class Uuid7
 {

@@ -7,12 +7,12 @@ public abstract class BaseEventMessage : IEventMessage
     /// <summary>
     ///     The correlation id for the event message.
     /// </summary>
-    public Guid CorrelationId { get; set; } = Ulid.NewUlid().ToGuid();
+    public Guid CorrelationId { get; set; } = Uuid7.Guid();
 
     /// <summary>
     ///     The unique identifier for the event message.
     /// </summary>
-    public Guid EventId { get; set; } = Ulid.NewUlid().ToGuid();
+    public Guid EventId { get; set; } = Uuid7.Guid();
 
     /// <summary>
     ///     Indicates when the event message was created.

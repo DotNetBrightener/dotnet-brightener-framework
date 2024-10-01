@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using DotNetBrightener.DataAccess.Models.Utils.Internal;
+using System.ComponentModel.DataAnnotations;
 
 namespace DotNetBrightener.DataAccess.Models;
 
@@ -37,6 +38,6 @@ public abstract class GuidBaseEntity: BaseEntity<Guid>
 {
     protected GuidBaseEntity()
     {
-        Id = Ulid.NewUlid().ToGuid();
+        Id = Uuid7.Guid();
     }
 }

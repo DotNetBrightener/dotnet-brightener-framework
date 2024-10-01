@@ -1,8 +1,8 @@
 ﻿using System.Security.Cryptography;
 
-namespace VampireCoder.SharedUtils;
+namespace DotNetBrightener.UploadService.AzureBlobStorage.Internal;
 
-public class Uuid7
+internal class Uuid7
 {
     private static long TimeNs()
     {
