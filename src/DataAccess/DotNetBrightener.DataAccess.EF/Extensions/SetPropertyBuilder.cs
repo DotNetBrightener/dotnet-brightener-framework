@@ -1,4 +1,6 @@
+using System.Collections.Immutable;
 using System.Linq.Expressions;
+using DotNetBrightener.DataAccess.Models.Auditing;
 using Microsoft.EntityFrameworkCore.Query;
 
 namespace DotNetBrightener.DataAccess.EF.Extensions;
@@ -57,7 +59,33 @@ public class SetPropertyBuilder<TSource>
 
     private SetPropertyBuilder<TSource> SetProperty<TProperty>(Expression<Func<TSource, TProperty>> propertyExpression,
                                                                Expression<Func<TSource, TProperty>> valueExpression)
-    {
+    { 
+        var memberExpression = propertyExpression.Body as MemberExpression;
+        if (propertyExpression.Body is UnaryExpression unaryExpression)
+        {
+            memberExpression = unaryExpression.Operand as MemberExpression;
+        }
+
+        if (memberExpression != null)
+        {
+            var compiledValueExpression = valueExpression.Compile();
+            var newValue = compiledValueExpression.DynamicInvoke(Activator.CreateInstance(typeof(TSource)));
+
+            string changeDescription = GetChangeDescription(valueExpression.Body);
+
+            if (!string.IsNullOrEmpty(changeDescription) && !changeDescription.Equals("value"))
+            {
+                newValue = changeDescription;
+            }
+
+            AuditProperties.Add(new AuditProperty
+            {
+                PropertyName = memberExpression.Member.Name,
+                OldValue     = "Not Tracked", // OldValue isn't available with this method
+                NewValue     = newValue
+            });
+        }
+
         SetPropertyCalls = SetPropertyCalls.Update(
                                                    body: Expression.Call(
                                                                          instance: SetPropertyCalls.Body,
@@ -87,5 +115,35 @@ public class SetPropertyBuilder<TSource>
         var propertyLambda = Expression.Lambda<Func<TSource, TProperty>>(propertyConversion, parameter);
 
         return propertyLambda;
+    }
+
+    public List<AuditProperty> AuditProperties { get; } = new List<AuditProperty>();
+
+    public ImmutableList<AuditProperty> ExtractAuditProperties()
+    {
+        return AuditProperties.ToImmutableList();
+    }
+
+    private string GetChangeDescription(Expression expression)
+    {
+        switch (expression)
+        {
+            case BinaryExpression binaryExpression:
+                var left  = GetChangeDescription(binaryExpression.Left);
+                var right = GetChangeDescription(binaryExpression.Right);
+
+                return $"origin.{left} {binaryExpression.NodeType.ToString()} {right}";
+
+            case MemberExpression memberExpression:
+                // Check if the expression is accessing a property of the original entity
+                return memberExpression.Member.Name;
+
+            case ConstantExpression constantExpression:
+                // Return the constant value as a string
+                return constantExpression.Value?.ToString();
+
+            default:
+                return string.Empty;
+        }
     }
 }

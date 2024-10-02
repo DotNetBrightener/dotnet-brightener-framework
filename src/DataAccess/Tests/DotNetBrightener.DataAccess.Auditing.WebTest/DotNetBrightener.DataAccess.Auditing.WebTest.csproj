@@ -29,7 +29,6 @@
 	  <ProjectReference Include="..\..\..\EventPubSub\DotNetBrightener.Plugins.EventPubSub.DependencyInjection\DotNetBrightener.Plugins.EventPubSub.DependencyInjection.csproj" />
 	  <ProjectReference Include="..\..\DotNetBrightener.DataAccess.Abstractions\DotNetBrightener.DataAccess.Abstractions.csproj" />
 	  <ProjectReference Include="..\..\DotNetBrightener.DataAccess.Auditing.Storage\DotNetBrightener.DataAccess.Auditing.Storage.csproj" />
-	  <ProjectReference Include="..\..\DotNetBrightener.DataAccess.Auditing\DotNetBrightener.DataAccess.Auditing.csproj" />
 	  <ProjectReference Include="..\..\DotNetBrightener.DataAccess.EF\DotNetBrightener.DataAccess.EF.csproj" />
 	</ItemGroup>
 

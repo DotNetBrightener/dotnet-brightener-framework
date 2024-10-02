@@ -1,14 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
-using DotNetBrightener.DataAccess.EF.Migrations;
+﻿using DotNetBrightener.DataAccess.EF.Migrations;
+using DotNetBrightener.DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace DotNetBrightener.DataAccess.Auditing.Tests.DbContexts;
 
-public class TestEntity
+public class TestEntity : BaseEntityWithAuditInfo
 {
-    [Key]
-    public long Id { get; set; }
-
     public string Name { get; set; }
 
     public bool BooleanValue { get; set; }
@@ -16,6 +13,8 @@ public class TestEntity
     public DateTimeOffset? DateTimeOffsetValue { get; set; }
 
     public int IntValue { get; set; }
+
+    public int AnotherIntValue { get; set; }
 }
 
 public class TestAuditingDbContext(DbContextOptions<TestAuditingDbContext> options) : AdvancedDbContext(options)

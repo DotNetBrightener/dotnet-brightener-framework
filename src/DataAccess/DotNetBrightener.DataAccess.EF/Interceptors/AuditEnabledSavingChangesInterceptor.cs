@@ -1,7 +1,7 @@
 ﻿#nullable enable
 using DotNetBrightener.DataAccess.Auditing.Entities;
-using DotNetBrightener.DataAccess.Auditing.EventMessages;
 using DotNetBrightener.DataAccess.Auditing.Internal;
+using DotNetBrightener.DataAccess.EF.Internal;
 using DotNetBrightener.DataAccess.Models.Auditing;
 using DotNetBrightener.Plugins.EventPubSub;
 using Microsoft.AspNetCore.Http;
@@ -11,10 +11,10 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using System.Collections.Immutable;
-using System.Diagnostics;
+using DotNetBrightener.DataAccess.EF.Auditing;
 using Uuid7 = DotNetBrightener.DataAccess.Models.Utils.Internal.Uuid7;
 
-namespace DotNetBrightener.DataAccess.Auditing.Interceptors;
+namespace DotNetBrightener.DataAccess.EF.Interceptors;
 
 internal class AuditEnabledSavingChangesInterceptor(IServiceProvider serviceProvider) : SaveChangesInterceptor
 {
@@ -57,6 +57,13 @@ internal class AuditEnabledSavingChangesInterceptor(IServiceProvider serviceProv
 
         foreach (var entityEntry in entityEntries)
         {
+            if (entityEntry.State is not EntityState.Added
+                and not EntityState.Modified
+                and not EntityState.Deleted)
+            {
+                continue;
+            }
+
             var recordType = entityEntry.Entity.GetType();
 
             if (recordType.Namespace?.StartsWith("Castle.Proxies") == true &&
@@ -70,25 +77,35 @@ internal class AuditEnabledSavingChangesInterceptor(IServiceProvider serviceProv
                 continue;
             }
 
-            List<string> primaryKeys = entityEntry.Metadata
-                                                  .FindPrimaryKey()
-                                                 ?.Properties
-                                                  .Select(x => x.Name)
-                                                  .ToList() ?? new();
+            var primaryKeys = entityEntry.Metadata
+                                         .FindPrimaryKey()
+                                        ?.Properties
+                                         .Select(x => x.Name)
+                                         .ToList() ?? new();
 
             var isAdded   = entityEntry.State == EntityState.Added;
             var isDeleted = entityEntry.State == EntityState.Deleted;
 
-            var auditProperties = entityEntry.Properties
-                                             .Where(p => !primaryKeys.Contains(p.Metadata.Name))
-                                             .Select(p => new AuditProperty
-                                              {
-                                                  PropertyName = p.Metadata.Name,
-                                                  OldValue     = isAdded ? null : p.OriginalValue,
-                                                  NewValue     = isDeleted ? null : p.CurrentValue
-                                              })
-                                             .OrderBy(p => p.PropertyName)
-                                             .ToList();
+            var changedProperties = entityEntry.Properties
+                                               .Where(p => !primaryKeys.Contains(p.Metadata.Name))
+                                               .Select(p => new AuditProperty
+                                                {
+                                                    PropertyName = p.Metadata.Name,
+                                                    OldValue     = isAdded ? null : p.OriginalValue,
+                                                    NewValue     = isDeleted ? null : p.CurrentValue
+                                                })
+                                               .OrderBy(p => p.PropertyName)
+                                               .ToArray();
+
+            var auditProperties = entityEntry.State switch
+            {
+                EntityState.Added => changedProperties.Where(x => x.NewValue is not null)
+                                                      .ToImmutableList(),
+                EntityState.Modified => changedProperties.Where(x => !Equals(x.OldValue, x.NewValue))
+                                                         .ToImmutableList(),
+                EntityState.Deleted => changedProperties.ToImmutableList(),
+                _                   => ImmutableList<AuditProperty>.Empty
+            };
 
             var auditEntity = new AuditEntity
             {
@@ -98,12 +115,12 @@ internal class AuditEnabledSavingChangesInterceptor(IServiceProvider serviceProv
                 EntityType            = recordType.Name,
                 EntityTypeFullName    = recordType.FullName,
                 Url                   = $"{requestMethod} {url}".Trim(),
-                UserName              = _currentLoggedInUserResolver?.CurrentUserName ?? "Not Detected",
+                UserName              = _currentLoggedInUserResolver?.CurrentUserName ?? "[Not Detected]",
                 AssociatedEntityEntry = entityEntry,
-                AuditProperties       = auditProperties.ToImmutableList()
+                AuditProperties       = auditProperties
             };
 
-            PrepareDebugView(auditEntity);
+            auditEntity.PrepareDebugView();
 
             _auditEntriesContainer.AuditEntries.Add(auditEntity);
         }
@@ -204,46 +221,10 @@ internal class AuditEnabledSavingChangesInterceptor(IServiceProvider serviceProv
         if (_eventPublisher is not null)
             await _eventPublisher.Publish(new AuditTrailMessage
                                           {
-                                              AuditEntities = [.._auditEntriesContainer.AuditEntries]
+                                              AuditEntities = [.. _auditEntriesContainer.AuditEntries]
                                           },
                                           runInBackground: true);
 
         _auditEntriesContainer.AuditEntries.Clear();
-    }
-
-    private void PrepareDebugView(AuditEntity auditEntity)
-    {
-        // Create a stack trace with file info enabled
-        var stackTrace = new StackTrace(0, true);
-
-        // Filter out frames that belong to EF Core and System namespaces
-        var frames = stackTrace.GetFrames()
-                               .Where(frame =>
-                                {
-                                    var method        = frame.GetMethod();
-                                    var declaringType = method?.DeclaringType;
-                                    var namespaceName = declaringType?.Namespace;
-
-                                    return !declaringType!.FullName
-                                                          .StartsWith(typeof(AuditEnabledSavingChangesInterceptor)
-                                                                         .FullName) &&
-                                           namespaceName != null &&
-                                           !namespaceName.StartsWith("Microsoft.EntityFrameworkCore") &&
-                                           !namespaceName.StartsWith("System");
-                                })
-                               .Take(10) // Take the first 10 frames outside of EF Core and System
-                               .ToList();
-
-        foreach (var frame in frames)
-        {
-            var method        = frame.GetMethod();
-            var declaringType = method?.DeclaringType;
-            var className     = declaringType?.FullName;
-            var methodName    = method?.Name;
-            var lineNumber    = frame.GetFileLineNumber();
-
-            auditEntity.DebugView +=
-                $"{className}->{methodName}@{lineNumber} {Environment.NewLine}";
-        }
     }
 }

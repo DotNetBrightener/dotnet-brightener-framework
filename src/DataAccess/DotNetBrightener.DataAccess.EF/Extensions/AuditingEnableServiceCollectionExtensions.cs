@@ -1,5 +1,6 @@
-﻿using DotNetBrightener.DataAccess.Auditing.Interceptors;
-using DotNetBrightener.DataAccess.Auditing.Internal;
+﻿using DotNetBrightener.DataAccess.Auditing.Internal;
+using DotNetBrightener.DataAccess.EF.Auditing;
+using DotNetBrightener.DataAccess.EF.Interceptors;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 // ReSharper disable CheckNamespace
@@ -7,12 +8,8 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 internal class IgnoreAuditingEntitiesContainer : List<Type>;
 
-public static class ServiceCollectionExtensions
+public static class AuditingEnableServiceCollectionExtensions
 {
-    [Obsolete("Call AddAuditingService() method instead")]
-    public static IServiceCollection AddAuditContext(this IServiceCollection services)
-        => services.AddAuditingService();
-
     /// <summary>
     ///     Enables auditing for the application
     /// </summary>

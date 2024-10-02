@@ -8,7 +8,7 @@ public abstract class MsSqlServerBaseXUnitTest : IAsyncDisposable
                                                       .WithPassword("Str0ng3stP@s5w0rd3ver!")
                                                       .Build();
 
-    protected string ConnectionString => MsSqlContainer.GetConnectionString($"MsSqlServerBaseTest_{DateTime.Now:yyyyMMddHHmm}");
+    protected string ConnectionString => MsSqlContainer.GetConnectionString($"MsSqlServerBaseTest");
 
     protected MsSqlServerBaseXUnitTest()
     {

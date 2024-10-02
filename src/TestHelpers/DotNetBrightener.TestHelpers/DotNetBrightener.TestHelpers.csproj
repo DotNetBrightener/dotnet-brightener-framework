@@ -28,4 +28,8 @@
 		<PackageReference Include="xunit" Version="2.9.2" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <ProjectReference Include="..\..\Core\VampireCoder.SharedUtils\VampireCoder.SharedUtils.csproj" />
+	</ItemGroup>
+
 </Project>

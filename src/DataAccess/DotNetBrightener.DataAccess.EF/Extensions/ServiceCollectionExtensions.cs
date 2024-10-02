@@ -1,6 +1,7 @@
 ﻿using DotNetBrightener.DataAccess;
 using DotNetBrightener.DataAccess.EF.Conventions;
 using DotNetBrightener.DataAccess.EF.EnumLookup;
+using DotNetBrightener.DataAccess.EF.Interceptors;
 using DotNetBrightener.DataAccess.EF.Internal;
 using DotNetBrightener.DataAccess.EF.Migrations;
 using DotNetBrightener.DataAccess.EF.Options;
@@ -112,6 +113,9 @@ public static class ServiceCollectionExtensions
         serviceCollection.TryAddScoped<ITransactionWrapper, TransactionWrapper>();
         serviceCollection.TryAddScoped<ScopedCurrentUserResolver>();
         serviceCollection.TryAddScoped<ICurrentLoggedInUserResolver, DefaultCurrentUserResolver>();
+
+        serviceCollection.AddDbContextConfigurator<AuditInformationFillerDbContextConfigurator>();
+        serviceCollection.AddScoped<AuditInformationFillerInterceptor>();
 
         if (configuration is not null)
         {

@@ -53,13 +53,5 @@ public class AuditEntity
     public EntityEntry AssociatedEntityEntry { get; internal init; }
 
     [NotMapped]
-    public ImmutableList<AuditProperty> AuditProperties { get; internal init; } = ImmutableList<AuditProperty>.Empty;
-
-    [NotMapped]
-    public ImmutableList<AuditProperty> ChangedAuditProperties => Action == EntityState.Added.ToString() ||
-                                                                  Action == EntityState.Deleted.ToString()
-                                                                      ? AuditProperties
-                                                                      : AuditProperties
-                                                                       .Where(x => !x.OldValue.Equals(x.NewValue))
-                                                                       .ToImmutableList();
+    public ImmutableList<AuditProperty> AuditProperties { get; internal set; } = ImmutableList<AuditProperty>.Empty;
 }

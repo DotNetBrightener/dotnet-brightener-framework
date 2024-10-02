@@ -2,7 +2,7 @@
 
 namespace DotNetBrightener.DataAccess.Services;
 
-public interface IBaseDataService<TEntity>: IDisposable
+public interface IBaseDataService<TEntity>: IDisposable, IAsyncDisposable
 {
     /// <summary>
     ///     Returns a specific record that matches the given expression

@@ -1,8 +1,8 @@
-﻿using System.Collections.Concurrent;
-using System.Reflection;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using System.Collections.Concurrent;
+using System.Reflection;
 
 namespace DotNetBrightener.DataAccess.EF.Internal;
 

@@ -1,8 +1,10 @@
 #nullable enable
 
 using DotNetBrightener.DataAccess.Attributes;
+using DotNetBrightener.DataAccess.Auditing.Entities;
 using DotNetBrightener.DataAccess.EF.Events;
 using DotNetBrightener.DataAccess.EF.Extensions;
+using DotNetBrightener.DataAccess.EF.Internal;
 using DotNetBrightener.DataAccess.Events;
 using DotNetBrightener.DataAccess.Exceptions;
 using DotNetBrightener.DataAccess.Models;
@@ -12,12 +14,18 @@ using DotNetBrightener.DataAccess.Services;
 using DotNetBrightener.DataAccess.Utils;
 using DotNetBrightener.Plugins.EventPubSub;
 using LinqToDB.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using System.Reflection;
+using DotNetBrightener.DataAccess.EF.Auditing;
+using Uuid7 = DotNetBrightener.DataAccess.Models.Utils.Internal.Uuid7;
 
 namespace DotNetBrightener.DataAccess.EF.Repositories;
 
@@ -27,17 +35,23 @@ public class Repository : IRepository
     protected readonly ICurrentLoggedInUserResolver? CurrentLoggedInUserResolver;
     protected readonly IEventPublisher?              EventPublisher;
     protected readonly IDateTimeProvider?            DateTimeProvider;
+    protected readonly IHttpContextAccessor?         HttpContextAccessor;
     protected          ILogger                       Logger { get; init; }
+    private readonly   Guid                          _scopeId = Uuid7.Guid();
+
+    private readonly IgnoreAuditingEntitiesContainer? _ignoreAuditingEntitiesContainer;
 
     public Repository(DbContext        dbContext,
                       IServiceProvider serviceProvider,
                       ILoggerFactory   loggerFactory)
     {
-        DbContext                   = dbContext;
-        CurrentLoggedInUserResolver = serviceProvider.TryGet<ICurrentLoggedInUserResolver>();
-        EventPublisher              = serviceProvider.TryGet<IEventPublisher>();
-        DateTimeProvider            = serviceProvider.TryGet<IDateTimeProvider>();
-        Logger                      = loggerFactory.CreateLogger(GetType());
+        DbContext                        = dbContext;
+        CurrentLoggedInUserResolver      = serviceProvider.TryGet<ICurrentLoggedInUserResolver>();
+        EventPublisher                   = serviceProvider.TryGet<IEventPublisher>();
+        DateTimeProvider                 = serviceProvider.TryGet<IDateTimeProvider>();
+        HttpContextAccessor              = serviceProvider.TryGet<HttpContextAccessor>();
+        _ignoreAuditingEntitiesContainer = serviceProvider.TryGet<IgnoreAuditingEntitiesContainer>();
+        Logger                           = loggerFactory.CreateLogger(GetType());
     }
 
     public virtual T? Get<T>(Expression<Func<T, bool>> expression)
@@ -168,15 +182,6 @@ public class Repository : IRepository
     public virtual async Task InsertAsync<T>(T entity)
         where T : class
     {
-        if (entity is IAuditableEntity auditableEntity)
-        {
-            if (auditableEntity.CreatedDate is null)
-                auditableEntity.CreatedDate = DateTimeProvider?.UtcNowWithOffset ?? DateTimeOffset.UtcNow;
-
-            if (string.IsNullOrEmpty(auditableEntity.CreatedBy))
-                auditableEntity.CreatedBy = CurrentLoggedInUserResolver?.CurrentUserName;
-        }
-
         if (EventPublisher is not null)
         {
             await EventPublisher.Publish(new EntityCreating<T>
@@ -187,19 +192,7 @@ public class Repository : IRepository
             });
         }
 
-        var entityEntry = DbContext.Entry(entity);
-
-        if (entityEntry.State != EntityState.Detached)
-        {
-            entityEntry.State = EntityState.Added;
-            DbContext.Set<T>()
-                     .Attach(entity);
-        }
-        else
-        {
-            await DbContext.Set<T>()
-                           .AddAsync(entity);
-        }
+        await DbContext.AddAsync(entity);
     }
 
     public virtual void InsertMany<T>(IEnumerable<T> entities)
@@ -224,8 +217,7 @@ public class Repository : IRepository
             });
         }
 
-        await DbContext.Set<T>()
-                       .AddRangeAsync(entitiesToInserts);
+        await DbContext.AddRangeAsync(entitiesToInserts);
     }
 
     public virtual void BulkInsert<T>(IEnumerable<T> entities)
@@ -340,13 +332,6 @@ public class Repository : IRepository
             });
         }
 
-        if (entity is BaseEntityWithAuditInfo auditableEntity)
-        {
-            auditableEntity.ModifiedDate = DateTimeProvider?.UtcNowWithOffset ?? DateTimeOffset.UtcNow;
-            if (string.IsNullOrWhiteSpace(auditableEntity.ModifiedBy))
-                auditableEntity.ModifiedBy = CurrentLoggedInUserResolver?.CurrentUserName;
-        }
-
         DbContext.Update(entity);
     }
 
@@ -380,6 +365,10 @@ public class Repository : IRepository
                                  Expression<Func<T, T>>     updateExpression,
                                  int?                       expectedAffectedRows = null)
         where T : class => UpdateAsync(conditionExpression, updateExpression, expectedAffectedRows).Result;
+
+    public Task<int> UpdateOneAsync<T>(Expression<Func<T, bool>>? conditionExpression,
+                                       Expression<Func<T, T>>     updateExpression)
+        where T : class => UpdateAsync(conditionExpression, updateExpression, expectedAffectedRows: 1);
 
     public virtual async Task<int> UpdateAsync<T>(Expression<Func<T, bool>>? conditionExpression,
                                                   Expression<Func<T, T>>     updateExpression,
@@ -467,16 +456,62 @@ public class Repository : IRepository
         }
         else
         {
-            DbContext.Set<T>().Remove(entity);
+            DbContext.Remove(entity);
         }
     }
 
     private async Task<int> PerformUpdate<T>(IQueryable<T> query, Expression<Func<T, T>> updateExpression)
         where T : class
     {
-        var updateQueryBuilder = PrepareUpdatePropertiesBuilder(updateExpression);
+        SetPropertyBuilder<T> updateQueryBuilder = PrepareUpdatePropertiesBuilder(updateExpression);
+        
+        var url           = HttpContextAccessor?.HttpContext?.Request.GetDisplayUrl();
+        var requestMethod = HttpContextAccessor?.HttpContext?.Request.Method;
 
-        return await query.ExecutePatchUpdateAsync(updateQueryBuilder);
+        AuditEntity? auditEntity = null;
+
+        if (_ignoreAuditingEntitiesContainer?.Contains(typeof(T)) != true)
+        {
+            Logger.LogDebug("Initializing Audit Entity");
+
+            auditEntity = new AuditEntity
+            {
+                ScopeId            = _scopeId,
+                StartTime          = DateTimeOffset.Now,
+                Action             = "Modified using Expression",
+                EntityType         = typeof(T).Name,
+                EntityTypeFullName = typeof(T).FullName,
+                Url                = $"{requestMethod} {url}".Trim(),
+                UserName           = CurrentLoggedInUserResolver?.CurrentUserName ?? "Not Detected"
+            };
+        }
+
+        int result = await query.ExecutePatchUpdateAsync(updateQueryBuilder);
+
+        if (auditEntity is not null && EventPublisher is not null)
+        {
+            var auditProperties  = updateQueryBuilder.ExtractAuditProperties();
+            var entityIdentifier = query.ExtractFilters();
+
+            auditEntity.EntityIdentifier = JsonConvert.SerializeObject(entityIdentifier);
+            auditEntity.AuditProperties  = auditProperties;
+
+            auditEntity.EndTime   = DateTimeOffset.Now;
+            auditEntity.Duration  = auditEntity.EndTime - auditEntity.StartTime;
+            auditEntity.IsSuccess = true;
+
+            auditEntity.PrepareDebugView();
+
+            Logger.LogDebug("Sending out Audit Entity");
+
+            _ = EventPublisher.Publish(new AuditTrailMessage
+                                       {
+                                           AuditEntities = [auditEntity]
+                                       },
+                                       runInBackground: true);
+        }
+
+        return result;
     }
 
     public virtual void DeleteOne<T>(Expression<Func<T, bool>>? conditionExpression,
@@ -641,8 +676,6 @@ public class Repository : IRepository
                 return 0;
             }
 
-            await OnBeforeSaveChanges(insertedEntities, updatedEntities);
-
             return await DbContext.SaveChangesAsync();
         }
         catch (ObjectDisposedException ex)
@@ -669,57 +702,23 @@ public class Repository : IRepository
         }
     }
 
-
-    protected virtual async Task OnBeforeSaveChanges(List<EntityEntry> insertedEntities,
-                                                     List<EntityEntry> updatedEntities)
+    protected virtual async Task OnAfterSaveChanges(List<EntityEntry> insertedEntities,
+                                                    List<EntityEntry> updatedEntities)
     {
-        if (!DbContext.ChangeTracker.HasChanges())
+        if (EventPublisher is null ||
+            (insertedEntities.Count == 0 &&
+             updatedEntities.Count == 0))
         {
             return;
         }
 
-        var entityEntries = DbContext.ChangeTracker
-                                     .Entries()
-                                     .ToArray();
-
-        insertedEntities.AddRange(entityEntries.Where(e => e.State == EntityState.Added));
-
-        updatedEntities.AddRange(entityEntries.Where(e => e.State == EntityState.Modified ||
-                                                          e.State == EntityState.Deleted));
-
-
-        var eventMessage = new DbContextBeforeSaveChanges
+        await EventPublisher.Publish(new DbContextAfterSaveChanges
         {
             InsertedEntityEntries = insertedEntities,
             UpdatedEntityEntries  = updatedEntities,
             CurrentUserId         = CurrentLoggedInUserResolver?.CurrentUserId,
             CurrentUserName       = CurrentLoggedInUserResolver?.CurrentUserName,
-        };
-
-        DbOnBeforeSaveChanges_SetAuditInformation.HandleEvent(eventMessage, DateTimeProvider, Logger);
-
-        if (EventPublisher is not null)
-            await EventPublisher.Publish(eventMessage);
-    }
-
-    protected virtual async Task OnAfterSaveChanges(List<EntityEntry> insertedEntities, List<EntityEntry> updatedEntities)
-    {
-        if (insertedEntities.Count == 0 &&
-            updatedEntities.Count == 0)
-        {
-            return;
-        }
-
-        if (EventPublisher is not null)
-        {
-            await EventPublisher.Publish(new DbContextAfterSaveChanges
-            {
-                InsertedEntityEntries = insertedEntities,
-                UpdatedEntityEntries  = updatedEntities,
-                CurrentUserId         = CurrentLoggedInUserResolver?.CurrentUserId,
-                CurrentUserName       = CurrentLoggedInUserResolver?.CurrentUserName,
-            });
-        }
+        });
     }
 
     private SetPropertyBuilder<T> PrepareUpdatePropertiesBuilder<T>(Expression<Func<T, T>> updateExpression)
@@ -762,7 +761,7 @@ public class Repository : IRepository
         }
 
         if (!hasModifiedDate &&
-            typeof(T).IsAssignableTo(typeof(IAuditableEntity)))
+            typeof(T).HasProperty<DateTimeOffset?>(nameof(IAuditableEntity.ModifiedDate)))
         {
             setPropBuilder.SetPropertyByName<DateTimeOffset?>(nameof(IAuditableEntity.ModifiedDate),
                                                               DateTimeProvider?.UtcNowWithOffset ?? DateTimeOffset.UtcNow);
@@ -772,7 +771,7 @@ public class Repository : IRepository
             typeof(T).HasProperty<string>(nameof(IAuditableEntity.ModifiedBy)))
         {
             setPropBuilder.SetPropertyByName(nameof(IAuditableEntity.ModifiedBy),
-                                             CurrentLoggedInUserResolver?.CurrentUserName);
+                                             CurrentLoggedInUserResolver?.CurrentUserName ?? "[Not Detected]");
         }
 
         return setPropBuilder;

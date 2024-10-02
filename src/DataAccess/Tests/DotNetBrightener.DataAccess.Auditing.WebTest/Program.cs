@@ -52,7 +52,7 @@ builder.Services
 builder.Services
        .UseMigrationDbContext<MainAppDbContext>(configureDatabase);
 
-builder.Services.AddAuditContext();
+builder.Services.AddAuditingService();
 builder.Services.AddAuditingSqlServerStorage(dbConfiguration.ConnectionString);
 
 var assemblies = AppDomain.CurrentDomain

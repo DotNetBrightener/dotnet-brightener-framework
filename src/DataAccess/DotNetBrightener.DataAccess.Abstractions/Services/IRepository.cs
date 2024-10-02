@@ -508,6 +508,26 @@ public interface IRepository : IDisposable
         where T : class;
 
     ///  <summary>
+    ///      Updates 1 record of type <typeparamref name="T"/> from the query using an expression without retrieving record, expecting only 1 record being updated
+    ///  </summary>
+    ///  <typeparam name="T">The entities' type of the query</typeparam>
+    ///  <param name="conditionExpression">
+    ///      The query to filter which entities to be updated with <seealso cref="updateExpression"/>, without retrieving them
+    ///  </param>
+    ///  <param name="updateExpression">
+    ///      The expression describes how to update the entities
+    ///  </param>
+    ///  <exception cref="NotFoundException">
+    ///     Thrown if no entity found for updating.
+    /// </exception>
+    ///  <exception cref="ExpectedAffectedRecordMismatch">
+    ///     Thrown if number of entities got updated differs from the provided expectation.
+    /// </exception>
+    Task<int> UpdateOneAsync<T>(Expression<Func<T, bool>>? conditionExpression,
+                                Expression<Func<T, T>>     updateExpression)
+        where T : class;
+
+    ///  <summary>
     ///      Updates records of type <typeparamref name="T"/> from the query using an expression without retrieving records
     ///  </summary>
     ///  <typeparam name="T">The entities' type of the query</typeparam>
