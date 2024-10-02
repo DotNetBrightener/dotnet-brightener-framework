@@ -1,7 +1,6 @@
 #nullable enable
 
 using DotNetBrightener.DataAccess.Attributes;
-using DotNetBrightener.DataAccess.Auditing.Entities;
 using DotNetBrightener.DataAccess.EF.Events;
 using DotNetBrightener.DataAccess.EF.Extensions;
 using DotNetBrightener.DataAccess.EF.Internal;

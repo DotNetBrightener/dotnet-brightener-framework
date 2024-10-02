@@ -1,10 +1,8 @@
-﻿using System.Diagnostics.Eventing.Reader;
-using DotNetBrightener.DataAccess.Auditing.Entities;
+﻿using System.Collections.Immutable;
 using DotNetBrightener.DataAccess.Auditing.Storage.DbContexts;
 using DotNetBrightener.DataAccess.EF.Auditing;
 using DotNetBrightener.Plugins.EventPubSub;
 using LinqToDB.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
@@ -25,38 +23,42 @@ internal class SaveAuditTrailService : IEventHandler<AuditTrailMessage>
 
     public async Task<bool> HandleEvent(AuditTrailMessage eventMessage)
     {
-        foreach (var auditEntry in eventMessage.AuditEntities)
+        var entriesToSave = eventMessage.AuditEntities
+                                        .DistinctBy(x => x.Id)
+                                        .ToImmutableList();
+
+        foreach (var auditEntry in entriesToSave)
         {
             auditEntry.Changes = JsonConvert.SerializeObject(auditEntry.AuditProperties);
         }
 
         try
         {
-            await _dbContext.BulkCopyAsync(eventMessage.AuditEntities);
+            await _dbContext.BulkCopyAsync(entriesToSave);
             
             _logger.LogInformation("Save {records} audit entries using bulk copy.\r\n" +
                                    "Audit entries: [@{auditEntries}].",
-                                   eventMessage.AuditEntities.Count,
-                                   eventMessage.AuditEntities);
+                                   entriesToSave.Count,
+                                   entriesToSave);
         }
         catch (Exception ex)
         {
             try
             {
-                await _dbContext.AddRangeAsync(eventMessage.AuditEntities);
+                await _dbContext.AddRangeAsync(entriesToSave);
                 await _dbContext.SaveChangesAsync();
                 
                 _logger.LogInformation("Save {records} audit entries using AddRange.\r\n" +
                                        "Audit entries: [@{auditEntries}].",
-                                       eventMessage.AuditEntities.Count,
-                                       eventMessage.AuditEntities);
+                                       entriesToSave.Count,
+                                       entriesToSave);
             }
             catch (Exception ex2)
             {
                 _logger.LogError(ex2,
                                  "Error while trying to save audit entries.\r\n" +
                                  "Audit entries: [@{auditEntries}]",
-                                 eventMessage.AuditEntities);
+                                 entriesToSave);
                 return false;
             }
         }

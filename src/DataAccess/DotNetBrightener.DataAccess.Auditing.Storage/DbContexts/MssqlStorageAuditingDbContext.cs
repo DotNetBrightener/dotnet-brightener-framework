@@ -1,5 +1,6 @@
-﻿using DotNetBrightener.DataAccess.Auditing.Entities;
+﻿using DotNetBrightener.DataAccess.EF.Auditing;
 using EntityFramework.Exceptions.SqlServer;
+using LinqToDB.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
@@ -15,6 +16,7 @@ internal class MssqlStorageAuditingDbContext(DbContextOptions<MssqlStorageAuditi
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.UseExceptionProcessor();
+        LinqToDBForEFTools.Initialize();
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -23,10 +25,8 @@ internal class MssqlStorageAuditingDbContext(DbContextOptions<MssqlStorageAuditi
         {
             auditEntity.ToTable(nameof(AuditEntity), schema: SchemaName);
 
-            auditEntity.HasNoKey();
-
-            auditEntity.HasIndex(audit => audit.Id);
-
+            auditEntity.HasKey(x => x.Id);
+            
             auditEntity.HasIndex(audit => new
             {
                 audit.EntityType,

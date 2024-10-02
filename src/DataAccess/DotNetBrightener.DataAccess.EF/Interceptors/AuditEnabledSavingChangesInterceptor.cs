@@ -1,5 +1,4 @@
 ﻿#nullable enable
-using DotNetBrightener.DataAccess.Auditing.Entities;
 using DotNetBrightener.DataAccess.Auditing.Internal;
 using DotNetBrightener.DataAccess.EF.Internal;
 using DotNetBrightener.DataAccess.Models.Auditing;

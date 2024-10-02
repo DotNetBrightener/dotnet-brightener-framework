@@ -1,5 +1,5 @@
 ﻿using System.Diagnostics;
-using DotNetBrightener.DataAccess.Auditing.Entities;
+using DotNetBrightener.DataAccess.EF.Auditing;
 using DotNetBrightener.DataAccess.EF.Interceptors;
 
 namespace DotNetBrightener.DataAccess.EF.Internal;

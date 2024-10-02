@@ -1,5 +1,4 @@
-﻿using DotNetBrightener.DataAccess.Auditing.Entities;
-using DotNetBrightener.Plugins.EventPubSub;
+﻿using DotNetBrightener.Plugins.EventPubSub;
 
 namespace DotNetBrightener.DataAccess.EF.Auditing;
 

@@ -1,12 +1,11 @@
-﻿using DotNetBrightener.DataAccess.Models.Auditing;
-using DotNetBrightener.DataAccess.Models.Utils.Internal;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using DotNetBrightener.DataAccess.Models.Auditing;
+using DotNetBrightener.DataAccess.Models.Utils.Internal;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
-namespace DotNetBrightener.DataAccess.Auditing.Entities;
+namespace DotNetBrightener.DataAccess.EF.Auditing;
 
 /// <summary>
 ///     Represents the entity for audit trail.
