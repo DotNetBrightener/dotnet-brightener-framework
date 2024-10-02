@@ -68,9 +68,7 @@ public class SetPropertyBuilder<TSource>
 
         if (memberExpression != null)
         {
-            var compiledValueExpression = valueExpression.Compile();
-            var newValue = compiledValueExpression.DynamicInvoke(Activator.CreateInstance(typeof(TSource)));
-
+            object newValue          = ExtractActualValue(valueExpression.Body);
             string changeDescription = GetChangeDescription(valueExpression.Body);
 
             if (!string.IsNullOrEmpty(changeDescription) && !changeDescription.Equals("value"))
@@ -122,6 +120,28 @@ public class SetPropertyBuilder<TSource>
     public ImmutableList<AuditProperty> ExtractAuditProperties()
     {
         return AuditProperties.ToImmutableList();
+    }
+
+
+    private object ExtractActualValue(Expression expression)
+    {
+        try
+        {
+            if (expression is ConstantExpression constantExpression)
+            {
+                return constantExpression.Value;
+            }
+
+            // Compile and execute the expression to get the value
+            var lambda   = Expression.Lambda(expression);
+            var compiled = lambda.Compile();
+
+            return compiled.DynamicInvoke();
+        }
+        catch (Exception)
+        {
+            return null;
+        }
     }
 
     private string GetChangeDescription(Expression expression)

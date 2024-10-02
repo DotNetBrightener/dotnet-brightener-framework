@@ -375,10 +375,6 @@ public class Repository : IRepository
                                                   int?                       expectedAffectedRows = null)
         where T : class
     {
-        var query = conditionExpression is not null
-                        ? DbContext.Set<T>().Where(conditionExpression)
-                        : DbContext.Set<T>();
-
         int updatedRecords = 0;
 
         if (expectedAffectedRows.HasValue)
@@ -387,7 +383,7 @@ public class Repository : IRepository
 
             async Task ExecuteUpdate()
             {
-                updatedRecords = await PerformUpdate(query, updateExpression);
+                updatedRecords = await PerformUpdate(conditionExpression, updateExpression);
 
                 if (updatedRecords != expectedAffectedRows.Value)
                 {
@@ -401,7 +397,7 @@ public class Repository : IRepository
         }
         else
         {
-            updatedRecords = await PerformUpdate(query, updateExpression);
+            updatedRecords = await PerformUpdate(conditionExpression, updateExpression);
         }
 
         if (EventPublisher != null)
@@ -460,7 +456,7 @@ public class Repository : IRepository
         }
     }
 
-    private async Task<int> PerformUpdate<T>(IQueryable<T> query, Expression<Func<T, T>> updateExpression)
+    private async Task<int> PerformUpdate<T>(Expression<Func<T, bool>>? conditionExpression, Expression<Func<T, T>> updateExpression)
         where T : class
     {
         SetPropertyBuilder<T> updateQueryBuilder = PrepareUpdatePropertiesBuilder(updateExpression);
@@ -486,12 +482,23 @@ public class Repository : IRepository
             };
         }
 
+        var query = conditionExpression is not null
+                        ? DbContext.Set<T>().Where(conditionExpression)
+                        : DbContext.Set<T>();
+
         int result = await query.ExecutePatchUpdateAsync(updateQueryBuilder);
 
         if (auditEntity is not null && EventPublisher is not null)
         {
             var auditProperties  = updateQueryBuilder.ExtractAuditProperties();
-            var entityIdentifier = query.ExtractFilters();
+            var entityIdentifier = conditionExpression is null
+                                       ? new Dictionary<string, object>
+                                       {
+                                           {
+                                               "Id", "[All]"
+                                           }
+                                       }
+                                       : conditionExpression.ExtractFilters();
 
             auditEntity.EntityIdentifier = JsonConvert.SerializeObject(entityIdentifier);
             auditEntity.AuditProperties  = auditProperties;
@@ -547,8 +554,52 @@ public class Repository : IRepository
                 }
             }
 
+            DateTimeOffset start = DateTimeOffset.UtcNow;
+
             await executionStrategy.ExecuteInTransactionAsync(ExecuteDelete,
                                                               async () => updatedRecords == 1);
+
+            if (_ignoreAuditingEntitiesContainer?.Contains(typeof(T)) != true &&
+                EventPublisher is not null &&
+                updatedRecords == 1)
+            {
+                var url           = HttpContextAccessor?.HttpContext?.Request.GetDisplayUrl();
+                var requestMethod = HttpContextAccessor?.HttpContext?.Request.Method;
+
+                Logger.LogDebug("Initializing Audit Entity");
+
+                var entityIdentifier = conditionExpression is null
+                                           ? new Dictionary<string, object>
+                                           {
+                                               {
+                                                   "Id", "[All]"
+                                               }
+                                           }
+                                           : conditionExpression.ExtractFilters();
+
+                var now = DateTimeOffset.UtcNow;
+                var auditEntity = new AuditEntity
+                {
+                    ScopeId            = _scopeId,
+                    StartTime          = start,
+                    EndTime            = now,
+                    Duration           = now.Subtract(start),
+                    Action             = "Hard-Deleted using Expression",
+                    EntityIdentifier   = JsonConvert.SerializeObject(entityIdentifier),
+                    EntityType         = typeof(T).Name,
+                    EntityTypeFullName = typeof(T).FullName,
+                    Url                = $"{requestMethod} {url}".Trim(),
+                    UserName           = CurrentLoggedInUserResolver?.CurrentUserName ?? "Not Detected",
+                    IsSuccess          = true,
+                };
+
+
+                _ = EventPublisher.Publish(new AuditTrailMessage
+                                           {
+                                               AuditEntities = [auditEntity]
+                                           },
+                                           runInBackground: true);
+            }
         }
         else
         {
@@ -564,19 +615,6 @@ public class Repository : IRepository
                                   DeletionReason = reason
                               },
                               expectedAffectedRows: 1);
-        }
-
-        // if no issue thus far, publish the event
-        if (EventPublisher is not null)
-        {
-            _ = EventPublisher.Publish(new EntityDeletedByExpression<T>
-            {
-                DeletionReason   = reason,
-                FilterExpression = conditionExpression,
-                UserName         = CurrentLoggedInUserResolver?.CurrentUserName,
-                UserId           = CurrentLoggedInUserResolver?.CurrentUserId,
-                IsHardDeleted    = forceHardDelete
-            });
         }
     }
 
@@ -595,30 +633,66 @@ public class Repository : IRepository
         forceHardDelete =
             forceHardDelete || !typeof(T).HasProperty<bool>(isDeletedFieldName);
 
-        var updatedRecords = forceHardDelete
-                                 ? await Fetch(conditionExpression).ExecuteDeleteAsync()
-                                 : await UpdateAsync(conditionExpression,
-                                                     new
-                                                     {
-                                                         IsDeleted      = true,
-                                                         DeletedDate    = DateTimeProvider?.UtcNowWithOffset ?? DateTimeOffset.UtcNow,
-                                                         DeletedBy      = CurrentLoggedInUserResolver?.CurrentUserName,
-                                                         DeletionReason = reason
-                                                     },
-                                                     expectedAffectedRows: null);
+        int updatedRecords = 0;
 
-        if (EventPublisher is not null)
+        if (forceHardDelete)
         {
-            _ = EventPublisher.Publish(new EntityDeletedByExpression<T>
+            DateTimeOffset start = DateTimeOffset.UtcNow;
+            updatedRecords = await Fetch(conditionExpression).ExecuteDeleteAsync();
+
+            if (_ignoreAuditingEntitiesContainer?.Contains(typeof(T)) != true &&
+                EventPublisher is not null)
             {
-                DeletionReason   = reason,
-                FilterExpression = conditionExpression,
-                AffectedRecords  = updatedRecords,
-                UserName         = CurrentLoggedInUserResolver?.CurrentUserName,
-                UserId           = CurrentLoggedInUserResolver?.CurrentUserId,
-                IsHardDeleted    = forceHardDelete
-            });
+                var url           = HttpContextAccessor?.HttpContext?.Request.GetDisplayUrl();
+                var requestMethod = HttpContextAccessor?.HttpContext?.Request.Method;
+
+                Logger.LogDebug("Initializing Audit Entity");
+
+                var entityIdentifier = conditionExpression is null
+                                           ? new Dictionary<string, object>
+                                           {
+                                               {
+                                                   "Id", "[All]"
+                                               }
+                                           }
+                                           : conditionExpression.ExtractFilters();
+
+                var now = DateTimeOffset.UtcNow;
+                var auditEntity = new AuditEntity
+                {
+                    ScopeId            = _scopeId,
+                    StartTime          = start,
+                    EndTime            = now,
+                    Duration           = now.Subtract(start),
+                    Action             = "Hard-Deleted using Expression",
+                    EntityIdentifier   = JsonConvert.SerializeObject(entityIdentifier),
+                    EntityType         = typeof(T).Name,
+                    EntityTypeFullName = typeof(T).FullName,
+                    Url                = $"{requestMethod} {url}".Trim(),
+                    UserName           = CurrentLoggedInUserResolver?.CurrentUserName ?? "Not Detected",
+                    IsSuccess          = true,
+                };
+                
+                _ = EventPublisher.Publish(new AuditTrailMessage
+                                           {
+                                               AuditEntities = [auditEntity]
+                                           },
+                                           runInBackground: true);
+            }
+
+            return updatedRecords;
         }
+
+        updatedRecords = await UpdateAsync(conditionExpression,
+                                           new
+                                           {
+                                               IsDeleted = true,
+                                               DeletedDate =
+                                                   DateTimeProvider?.UtcNowWithOffset ?? DateTimeOffset.UtcNow,
+                                               DeletedBy      = CurrentLoggedInUserResolver?.CurrentUserName,
+                                               DeletionReason = reason
+                                           },
+                                           expectedAffectedRows: null);
 
         return updatedRecords;
     }

@@ -1,72 +1,15 @@
-﻿using System.Diagnostics;
-using System.Linq.Expressions;
-using System.Text;
-using DotNetBrightener.DataAccess.Auditing.Entities;
-using DotNetBrightener.DataAccess.EF.Interceptors;
+﻿using System.Linq.Expressions;
 
 namespace DotNetBrightener.DataAccess.EF.Internal;
 
-internal static class AuditEntityDebugViewBuilder
-{
-    public static void PrepareDebugView(this AuditEntity auditEntity)
-    {
-        var stackTrace = new StackTrace(0, true);
-
-        var stackFrames = stackTrace.GetFrames();
-
-        var stringBuilder = new List<string>();
-
-        foreach (var frame in stackFrames)
-        {
-            var method        = frame.GetMethod();
-            var declaringType = method?.DeclaringType;
-            
-            if (declaringType is null)
-                continue;
-            
-            var namespaceName = declaringType.Namespace;
-
-            if (namespaceName is null ||
-                namespaceName.StartsWith("Microsoft.EntityFrameworkCore") ||
-                namespaceName.StartsWith("System"))
-                continue;
-
-            var className     = declaringType.FullName;
-            var methodName    = method.Name;
-            var lineNumber    = frame.GetFileLineNumber();
-
-            if (className is null || 
-                className.Contains(nameof(AuditEnabledSavingChangesInterceptor)) ||
-                className.Contains(nameof(AuditEntityDebugViewBuilder)))
-                continue;
-
-            stringBuilder.Add($"{className}->{methodName}@{lineNumber}");
-
-            if (stringBuilder.Count == 15)
-            {
-                break; // Stop once 15 frames have been added
-            }
-        }
-
-        auditEntity.DebugView = string.Join(Environment.NewLine, stringBuilder);
-    }
-}
-
 public static class QueryableExtensions
 {
-    public static Dictionary<string, object> ExtractFilters<T>(this IQueryable<T> query)
-    {
-        var whereCallExpression = query.Expression as MethodCallExpression;
-        if (whereCallExpression == null || whereCallExpression.Method.Name != "Where")
-            throw new InvalidOperationException("The query does not contain a Where clause.");
-
-        var lambdaExpression = (LambdaExpression)((UnaryExpression)whereCallExpression.Arguments[1]).Operand;
-        return ParseExpression(lambdaExpression.Body);
-    }
-
-    private static Dictionary<string, object> ParseExpression(Expression expression)
+    public static Dictionary<string, object> ExtractFilters<T>(this Expression<Func<T, bool>> conditionExpression)
     {
         var result = new Dictionary<string, object>();
+
+        // The main expression is the body of the conditionExpression
+        Expression expression = conditionExpression.Body;
 
         if (expression is BinaryExpression binaryExpression)
         {
@@ -76,14 +19,22 @@ public static class QueryableExtensions
 
             if (member != null)
             {
-                result.Add(member.Member.Name, $"{binaryExpression.NodeType.ToString()}({constantValue})");
+                object value = binaryExpression.NodeType == ExpressionType.Equal
+                                   ? constantValue
+                                   : $"{binaryExpression.NodeType.ToString()}({constantValue})";
+                result.Add(member.Member.Name, value);
             }
 
             // Handle logical expressions with AndAlso/OrElse
-            if (binaryExpression.NodeType == ExpressionType.AndAlso || binaryExpression.NodeType == ExpressionType.OrElse)
+            if (binaryExpression.NodeType == ExpressionType.AndAlso ||
+                binaryExpression.NodeType == ExpressionType.OrElse)
             {
-                var leftResult  = ParseExpression(binaryExpression.Left);
-                var rightResult = ParseExpression(binaryExpression.Right);
+                var leftResult =
+                    ExtractFilters<T>(Expression.Lambda<Func<T, bool>>(binaryExpression.Left,
+                                                                       conditionExpression.Parameters));
+                var rightResult =
+                    ExtractFilters<T>(Expression.Lambda<Func<T, bool>>(binaryExpression.Right,
+                                                                       conditionExpression.Parameters));
 
                 foreach (var kv in leftResult)
                 {
@@ -98,34 +49,54 @@ public static class QueryableExtensions
         }
         else if (expression is MethodCallExpression methodCallExpression)
         {
-            // Handle StartsWith, EndsWith, Contains, etc.
-            var member   = methodCallExpression.Object as MemberExpression;
-            var argument = (methodCallExpression.Arguments.First() as ConstantExpression)?.Value;
-
-            if (member != null)
+            if (methodCallExpression.Method.Name == "Contains" &&
+                methodCallExpression.Arguments.Count == 2)
             {
-                switch (methodCallExpression.Method.Name)
+                // Handle cases like someArray.Contains(x.Id)
+                var collection = GetValueFromExpression(methodCallExpression.Arguments[0]);
+                var member     = methodCallExpression.Arguments[1] as MemberExpression;
+
+                if (member != null)
                 {
-                    case "StartsWith":
-                        result.Add(member.Member.Name, $"startsWith({argument})");
-                        break;
-                    case "EndsWith":
-                        result.Add(member.Member.Name, $"endsWith({argument})");
-                        break;
-                    case "Contains":
-                        result.Add(member.Member.Name, $"contains({argument})");
-                        break;
-                    default:
-                        break;
+                    result.Add(member.Member.Name, $"in({string.Join(",", ((IEnumerable<object>)collection))})");
+                }
+            }
+            else
+            {
+                // Handle StartsWith, EndsWith, Contains (on string)
+                var member   = methodCallExpression.Object as MemberExpression;
+                var argument = (methodCallExpression.Arguments.First() as ConstantExpression)?.Value;
+
+                if (member != null)
+                {
+                    switch (methodCallExpression.Method.Name)
+                    {
+                        case "StartsWith":
+                            result.Add(member.Member.Name, $"startsWith({argument})");
+
+                            break;
+                        case "EndsWith":
+                            result.Add(member.Member.Name, $"endsWith({argument})");
+
+                            break;
+                        case "Contains":
+                            result.Add(member.Member.Name, $"contains({argument})");
+
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
         }
         else if (expression is UnaryExpression unaryExpression)
         {
             // Handle cases like conversions or not expressions
-            return ParseExpression(unaryExpression.Operand);
+            return ExtractFilters<T>(Expression.Lambda<Func<T, bool>>(unaryExpression.Operand,
+                                                                      conditionExpression.Parameters));
         }
-        else if (expression is MemberExpression memberExpression && memberExpression.Expression.NodeType == ExpressionType.Parameter)
+        else if (expression is MemberExpression memberExpression &&
+                 memberExpression.Expression.NodeType == ExpressionType.Parameter)
         {
             // Handle simple boolean property checks (e.g., Where(x => x.IsActive))
             result.Add(memberExpression.Member.Name, true);
@@ -144,8 +115,9 @@ public static class QueryableExtensions
             }
 
             // Compile and execute the expression to get the value
-            var lambda = Expression.Lambda(expression);
+            var lambda   = Expression.Lambda(expression);
             var compiled = lambda.Compile();
+
             return compiled.DynamicInvoke();
         }
         catch (Exception)
