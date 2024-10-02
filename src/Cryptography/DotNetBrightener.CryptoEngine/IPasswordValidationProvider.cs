@@ -34,7 +34,7 @@ public class DefaultPasswordValidationProvider(ICryptoEngine cryptoEngine,
     public virtual Tuple<string, string> GenerateEncryptedPassword(string plainTextPassword)
     {
         // create a key (salt) for hashing the password
-        var passwordSalt = CryptoUtilities.CreateRandomToken(32);
+        var passwordSalt = CryptoUtilities.CreateRandomToken(24);
 
         // hash the password with the salt
         var hashedPassword = AesCryptoEngine.Encrypt(plainTextPassword, passwordSalt);

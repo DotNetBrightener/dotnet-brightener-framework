@@ -123,7 +123,7 @@ public abstract class BaseApiKeyStoreService : IApiKeyStoreService
         var tokenSegment = new TokenSegment
         {
             TokenId       = tokenId ?? Uuid7.Guid().ToString(),
-            TokenPassword = CryptoUtilities.CreateRandomToken(32)
+            TokenPassword = CryptoUtilities.CreateRandomToken(24)
         };
 
         var tokenFormat = string.Join(TokenJoinSeparator,
