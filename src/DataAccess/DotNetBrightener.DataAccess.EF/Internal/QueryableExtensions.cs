@@ -1,105 +1,186 @@
 ﻿using System.Linq.Expressions;
+using Newtonsoft.Json;
 
 namespace DotNetBrightener.DataAccess.EF.Internal;
 
+/*
+ 
+// Handle Equal, GreaterThan, LessThan, etc.
+   var member        = binaryExpression.Left as MemberExpression;
+   var constantValue = GetValueFromExpression(binaryExpression.Right);
+
+   if (member != null)
+   {
+       object value = binaryExpression.NodeType == ExpressionType.Equal
+                          ? constantValue
+                          : $"{binaryExpression.NodeType.ToString()}({constantValue})";
+       result.Add(member.Member.Name, value);
+   }
+
+
+ */
+
+public class FilterInformation : List<object>
+{
+    public string Serialize(bool indented = false)
+    {
+        if (Count == 0)
+        {
+            return "[NO_FILTER_PROVIDED]";
+        }
+
+        var serializeObject = Count == 1
+                                  ? JsonConvert.SerializeObject(this[0],
+                                                                indented ? Formatting.Indented : Formatting.None)
+                                  : JsonConvert.SerializeObject(this,
+                                                                indented ? Formatting.Indented : Formatting.None);
+
+        return serializeObject;
+    }
+}
+
 public static class QueryableExtensions
 {
-    public static Dictionary<string, object> ExtractFilters<T>(this Expression<Func<T, bool>> conditionExpression)
+    public static FilterInformation ExtractFilters<T>(this Expression<Func<T, bool>>? conditionExpression)
     {
-        var result = new Dictionary<string, object>();
+        if (conditionExpression is null)
+        {
+            return new FilterInformation();
+        }
 
-        // The main expression is the body of the conditionExpression
-        Expression expression = conditionExpression.Body;
+        return ParseExpression(conditionExpression.Body);
+    }
+
+    public static FilterInformation ParseExpression(this Expression conditionExpression, int groupIndex = 0)
+    {
+        var result = new FilterInformation();
+
+        Expression expression = conditionExpression;
 
         if (expression is BinaryExpression binaryExpression)
         {
-            // Handle Equal, GreaterThan, LessThan, etc.
-            var member        = binaryExpression.Left as MemberExpression;
-            var constantValue = GetValueFromExpression(binaryExpression.Right);
-
-            if (member != null)
+            if (binaryExpression.NodeType == ExpressionType.AndAlso)
             {
-                object value = binaryExpression.NodeType == ExpressionType.Equal
-                                   ? constantValue
-                                   : $"{binaryExpression.NodeType.ToString()}({constantValue})";
-                result.Add(member.Member.Name, value);
-            }
+                // Group the AND conditions
+                var groupDict = new Dictionary<string, object>();
 
-            // Handle logical expressions with AndAlso/OrElse
-            if (binaryExpression.NodeType == ExpressionType.AndAlso ||
-                binaryExpression.NodeType == ExpressionType.OrElse)
-            {
-                var leftResult =
-                    ExtractFilters<T>(Expression.Lambda<Func<T, bool>>(binaryExpression.Left,
-                                                                       conditionExpression.Parameters));
-                var rightResult =
-                    ExtractFilters<T>(Expression.Lambda<Func<T, bool>>(binaryExpression.Right,
-                                                                       conditionExpression.Parameters));
+                var leftResult  = ParseExpression(binaryExpression.Left, groupIndex + 1);
+                var rightResult = ParseExpression(binaryExpression.Right, groupIndex + 1);
 
-                foreach (var kv in leftResult)
+                foreach (var item in leftResult)
                 {
-                    result[kv.Key] = kv.Value;
+                    if (item is Dictionary<string, object> dict)
+                    {
+                        foreach (var kv in dict)
+                        {
+                            groupDict[kv.Key] = kv.Value;
+                        }
+                    }
                 }
 
-                foreach (var kv in rightResult)
+                foreach (var item in rightResult)
                 {
-                    result[kv.Key] = kv.Value;
+                    if (item is Dictionary<string, object> dict)
+                    {
+                        foreach (var kv in dict)
+                        {
+                            groupDict[kv.Key] = kv.Value;
+                        }
+                    }
+                }
+
+                result.Add(new Dictionary<string, object>
+                {
+                    {
+                        $"g{groupIndex}", groupDict
+                    }
+                });
+            }
+            else if (binaryExpression.NodeType == ExpressionType.OrElse)
+            {
+                // Handle OR conditions
+                var leftResult  = ParseExpression(binaryExpression.Left, groupIndex + 1);
+                var rightResult = ParseExpression(binaryExpression.Right, groupIndex + 1);
+
+                result.AddRange(leftResult);
+                result.Add("OR");
+                result.AddRange(rightResult);
+            }
+            else
+            {
+                // Handle comparison expressions (e.g., ==, <, >)
+                var member        = binaryExpression.Left as MemberExpression;
+                var constantValue = GetValueFromExpression(binaryExpression.Right);
+
+                if (member != null)
+                {
+                    object value = binaryExpression.NodeType == ExpressionType.Equal
+                                       ? constantValue
+                                       : $"{binaryExpression.NodeType.ToString()}({constantValue})";
+
+                    result.Add(new Dictionary<string, object>
+                    {
+                        {
+                            member.Member.Name, value
+                        }
+                    });
                 }
             }
         }
         else if (expression is MethodCallExpression methodCallExpression)
         {
+            MemberExpression? member = null;
+
             if (methodCallExpression.Method.Name == "Contains" &&
-                methodCallExpression.Arguments.Count == 2)
+                methodCallExpression.Arguments.Count == 1)
             {
                 // Handle cases like someArray.Contains(x.Id)
-                var collection = GetValueFromExpression(methodCallExpression.Arguments[0]);
-                var member     = methodCallExpression.Arguments[1] as MemberExpression;
+                var collection = GetValueFromExpression(methodCallExpression.Object);
+                member = methodCallExpression.Arguments[0] as MemberExpression;
 
-                if (member != null)
+                if (collection is not null &&
+                    member is not null)
                 {
-                    result.Add(member.Member.Name, $"in({string.Join(",", ((IEnumerable<object>)collection))})");
+                    result.Add(new Dictionary<string, object>
+                    {
+                        {
+                            member.Member.Name, $"in({JsonConvert.SerializeObject(collection)})"
+                        }
+                    });
+
+                    return result;
                 }
             }
-            else
+
+            // Handle StartsWith, EndsWith, Contains (on string)
+            member = methodCallExpression.Object as MemberExpression;
+            var argument = (methodCallExpression.Arguments.First() as ConstantExpression)?.Value;
+
+            if (member != null)
             {
-                // Handle StartsWith, EndsWith, Contains (on string)
-                var member   = methodCallExpression.Object as MemberExpression;
-                var argument = (methodCallExpression.Arguments.First() as ConstantExpression)?.Value;
 
-                if (member != null)
+                result.Add(new Dictionary<string, object>
                 {
-                    switch (methodCallExpression.Method.Name)
                     {
-                        case "StartsWith":
-                            result.Add(member.Member.Name, $"startsWith({argument})");
-
-                            break;
-                        case "EndsWith":
-                            result.Add(member.Member.Name, $"endsWith({argument})");
-
-                            break;
-                        case "Contains":
-                            result.Add(member.Member.Name, $"contains({argument})");
-
-                            break;
-                        default:
-                            break;
+                        member.Member.Name,
+                        $"{methodCallExpression.Method.Name}({JsonConvert.SerializeObject(argument)})"
                     }
-                }
+                });
             }
         }
         else if (expression is UnaryExpression unaryExpression)
         {
-            // Handle cases like conversions or not expressions
-            return ExtractFilters<T>(Expression.Lambda<Func<T, bool>>(unaryExpression.Operand,
-                                                                      conditionExpression.Parameters));
+            return ParseExpression(unaryExpression.Operand, groupIndex);
         }
         else if (expression is MemberExpression memberExpression &&
                  memberExpression.Expression.NodeType == ExpressionType.Parameter)
         {
-            // Handle simple boolean property checks (e.g., Where(x => x.IsActive))
-            result.Add(memberExpression.Member.Name, true);
+            result.Add(new Dictionary<string, object>
+            {
+                {
+                    memberExpression.Member.Name, true
+                }
+            });
         }
 
         return result;

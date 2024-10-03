@@ -112,7 +112,6 @@ internal class AuditEnabledSavingChangesInterceptor(IServiceProvider serviceProv
                 StartTime             = startAction,
                 Action                = entityEntry.State.ToString(),
                 EntityType            = recordType.Name,
-                EntityTypeFullName    = recordType.FullName,
                 Url                   = $"{requestMethod} {url}".Trim(),
                 UserName              = _currentLoggedInUserResolver?.CurrentUserName ?? "[Not Detected]",
                 AssociatedEntityEntry = entityEntry,

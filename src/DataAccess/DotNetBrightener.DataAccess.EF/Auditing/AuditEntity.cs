@@ -22,12 +22,8 @@ public class AuditEntity
     [MaxLength(256)]
     public string EntityType { get; set; }
 
-    [MaxLength(64)]
     public string EntityIdentifier { get; set; }
-
-    [MaxLength(2048)]
-    public string EntityTypeFullName { get; set; }
-
+    
     public string DebugView { get; set; }
 
     public bool IsSuccess { get; set; }

@@ -1,6 +1,7 @@
 #nullable enable
 
 using DotNetBrightener.DataAccess.Attributes;
+using DotNetBrightener.DataAccess.EF.Auditing;
 using DotNetBrightener.DataAccess.EF.Events;
 using DotNetBrightener.DataAccess.EF.Extensions;
 using DotNetBrightener.DataAccess.EF.Internal;
@@ -19,11 +20,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using System.Reflection;
-using DotNetBrightener.DataAccess.EF.Auditing;
 using Uuid7 = DotNetBrightener.DataAccess.Models.Utils.Internal.Uuid7;
 
 namespace DotNetBrightener.DataAccess.EF.Repositories;
@@ -154,7 +153,8 @@ public class Repository : IRepository
     {
         if (!typeof(T).HasProperty<bool>(nameof(IAuditableEntity.IsDeleted)))
         {
-            throw new InvalidOperationException($"Entity of type {typeof(T).Name} does not have soft-delete capability");
+            throw
+                new InvalidOperationException($"Entity of type {typeof(T).Name} does not have soft-delete capability");
         }
 
         var query = DbContext.Set<T>().Where($"{nameof(IAuditableEntity.IsDeleted)} != True");
@@ -167,7 +167,7 @@ public class Repository : IRepository
     public bool Any<T>(Expression<Func<T, bool>>? expression = null)
         where T : class => AnyAsync(expression).Result;
 
-    public virtual async Task<bool> AnyAsync<T>(Expression<Func<T, bool>>? expression = null) 
+    public virtual async Task<bool> AnyAsync<T>(Expression<Func<T, bool>>? expression = null)
         where T : class
     {
         return expression is null
@@ -197,7 +197,7 @@ public class Repository : IRepository
     public virtual void InsertMany<T>(IEnumerable<T> entities)
         where T : class => InsertManyAsync(entities).Wait();
 
-    public virtual async Task InsertManyAsync<T>(IEnumerable<T> entities) 
+    public virtual async Task InsertManyAsync<T>(IEnumerable<T> entities)
         where T : class
     {
         var entitiesToInserts = entities.Select(TransformExpression)
@@ -288,7 +288,9 @@ public class Repository : IRepository
     {
         var query = Fetch(conditionExpression);
 
-        return await LinqToDB.LinqExtensions.InsertAsync(query, DbContext.Set<TTarget>().ToLinqToDBTable(), copyExpression);
+        return await LinqToDB.LinqExtensions.InsertAsync(query,
+                                                         DbContext.Set<TTarget>().ToLinqToDBTable(),
+                                                         copyExpression);
     }
 
     public virtual void Update<T>(T entity) where T : class => UpdateAsync(entity).Wait();
@@ -334,7 +336,7 @@ public class Repository : IRepository
         DbContext.Update(entity);
     }
 
-    public virtual void UpdateMany<T>(IEnumerable<T> entities) where T : class => 
+    public virtual void UpdateMany<T>(IEnumerable<T> entities) where T : class =>
         UpdateMany(entities.ToArray());
 
     public virtual void UpdateMany<T>(params T[] entities) where T : class
@@ -455,11 +457,12 @@ public class Repository : IRepository
         }
     }
 
-    private async Task<int> PerformUpdate<T>(Expression<Func<T, bool>>? conditionExpression, Expression<Func<T, T>> updateExpression)
+    private async Task<int> PerformUpdate<T>(Expression<Func<T, bool>>? conditionExpression,
+                                             Expression<Func<T, T>>     updateExpression)
         where T : class
     {
         SetPropertyBuilder<T> updateQueryBuilder = PrepareUpdatePropertiesBuilder(updateExpression);
-        
+
         var url           = HttpContextAccessor?.HttpContext?.Request.GetDisplayUrl();
         var requestMethod = HttpContextAccessor?.HttpContext?.Request.Method;
 
@@ -475,7 +478,6 @@ public class Repository : IRepository
                 StartTime          = DateTimeOffset.Now,
                 Action             = "Modified using Expression",
                 EntityType         = typeof(T).Name,
-                EntityTypeFullName = typeof(T).FullName,
                 Url                = $"{requestMethod} {url}".Trim(),
                 UserName           = CurrentLoggedInUserResolver?.CurrentUserName ?? "Not Detected"
             };
@@ -487,19 +489,13 @@ public class Repository : IRepository
 
         int result = await query.ExecutePatchUpdateAsync(updateQueryBuilder);
 
-        if (auditEntity is not null && EventPublisher is not null)
+        if (auditEntity is not null &&
+            EventPublisher is not null)
         {
-            var auditProperties  = updateQueryBuilder.ExtractAuditProperties();
-            var entityIdentifier = conditionExpression is null
-                                       ? new Dictionary<string, object>
-                                       {
-                                           {
-                                               "Id", "[All]"
-                                           }
-                                       }
-                                       : conditionExpression.ExtractFilters();
+            var auditProperties = updateQueryBuilder.ExtractAuditProperties();
+            var entityIdentifier = conditionExpression.ExtractFilters();
 
-            auditEntity.EntityIdentifier = JsonConvert.SerializeObject(entityIdentifier);
+            auditEntity.EntityIdentifier = entityIdentifier.Serialize();
             auditEntity.AuditProperties  = auditProperties;
 
             auditEntity.EndTime   = DateTimeOffset.Now;
@@ -567,14 +563,7 @@ public class Repository : IRepository
 
                 Logger.LogDebug("Initializing Audit Entity");
 
-                var entityIdentifier = conditionExpression is null
-                                           ? new Dictionary<string, object>
-                                           {
-                                               {
-                                                   "Id", "[All]"
-                                               }
-                                           }
-                                           : conditionExpression.ExtractFilters();
+                var entityIdentifier = conditionExpression.ExtractFilters();
 
                 var now = DateTimeOffset.UtcNow;
                 var auditEntity = new AuditEntity
@@ -584,9 +573,8 @@ public class Repository : IRepository
                     EndTime            = now,
                     Duration           = now.Subtract(start),
                     Action             = "Hard-Deleted using Expression",
-                    EntityIdentifier   = JsonConvert.SerializeObject(entityIdentifier),
+                    EntityIdentifier   = entityIdentifier.Serialize(),
                     EntityType         = typeof(T).Name,
-                    EntityTypeFullName = typeof(T).FullName,
                     Url                = $"{requestMethod} {url}".Trim(),
                     UserName           = CurrentLoggedInUserResolver?.CurrentUserName ?? "Not Detected",
                     IsSuccess          = true,
@@ -632,7 +620,7 @@ public class Repository : IRepository
         forceHardDelete =
             forceHardDelete || !typeof(T).HasProperty<bool>(isDeletedFieldName);
 
-        int updatedRecords = 0;
+        int updatedRecords;
 
         if (forceHardDelete)
         {
@@ -647,14 +635,7 @@ public class Repository : IRepository
 
                 Logger.LogDebug("Initializing Audit Entity");
 
-                var entityIdentifier = conditionExpression is null
-                                           ? new Dictionary<string, object>
-                                           {
-                                               {
-                                                   "Id", "[All]"
-                                               }
-                                           }
-                                           : conditionExpression.ExtractFilters();
+                var entityIdentifier = conditionExpression.ExtractFilters();
 
                 var now = DateTimeOffset.UtcNow;
                 var auditEntity = new AuditEntity
@@ -664,14 +645,13 @@ public class Repository : IRepository
                     EndTime            = now,
                     Duration           = now.Subtract(start),
                     Action             = "Hard-Deleted using Expression",
-                    EntityIdentifier   = JsonConvert.SerializeObject(entityIdentifier),
+                    EntityIdentifier   = entityIdentifier.Serialize(),
                     EntityType         = typeof(T).Name,
-                    EntityTypeFullName = typeof(T).FullName,
                     Url                = $"{requestMethod} {url}".Trim(),
                     UserName           = CurrentLoggedInUserResolver?.CurrentUserName ?? "Not Detected",
                     IsSuccess          = true,
                 };
-                
+
                 _ = EventPublisher.Publish(new AuditTrailMessage
                                            {
                                                AuditEntities = [auditEntity]
@@ -837,7 +817,8 @@ public class Repository : IRepository
             typeof(T).HasProperty<DateTimeOffset?>(nameof(IAuditableEntity.ModifiedDate)))
         {
             setPropBuilder.SetPropertyByName<DateTimeOffset?>(nameof(IAuditableEntity.ModifiedDate),
-                                                              DateTimeProvider?.UtcNowWithOffset ?? DateTimeOffset.UtcNow);
+                                                              DateTimeProvider?.UtcNowWithOffset ??
+                                                              DateTimeOffset.UtcNow);
         }
 
         if (!hasModifiedBy &&

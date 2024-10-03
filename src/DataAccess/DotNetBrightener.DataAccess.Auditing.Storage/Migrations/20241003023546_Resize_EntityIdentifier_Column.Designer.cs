@@ -4,6 +4,7 @@ using DotNetBrightener.DataAccess.Auditing.Storage.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DotNetBrightener.DataAccess.Auditing.Storage.Migrations
 {
     [DbContext(typeof(MssqlStorageAuditingDbContext))]
-    partial class MssqlStorageAuditingDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241003023546_Resize_EntityIdentifier_Column")]
+    partial class Resize_EntityIdentifier_Column
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -45,11 +48,16 @@ namespace DotNetBrightener.DataAccess.Auditing.Storage.Migrations
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("EntityIdentifier")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(2048)
+                        .HasColumnType("nvarchar(2048)");
 
                     b.Property<string>("EntityType")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("EntityTypeFullName")
+                        .HasMaxLength(2048)
+                        .HasColumnType("nvarchar(2048)");
 
                     b.Property<string>("Exception")
                         .HasColumnType("nvarchar(max)");
@@ -73,11 +81,9 @@ namespace DotNetBrightener.DataAccess.Auditing.Storage.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("EntityType");
-
-                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("EntityType"), new[] { "StartTime", "Action" });
-
                     b.HasIndex("StartTime");
+
+                    b.HasIndex("EntityType", "EntityIdentifier");
 
                     b.ToTable("AuditEntity", "Auditing");
                 });
