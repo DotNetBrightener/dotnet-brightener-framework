@@ -35,13 +35,6 @@ internal class MssqlStorageAuditingDbContext(DbContextOptions<MssqlStorageAuditi
                        });
 
             auditEntity.HasIndex(audit => audit.StartTime);
-
-
-            auditEntity.HasAnnotation("SqlServer:FullTextCatalog", "YourFullTextCatalog");
-
-            // Assuming there's a unique key (e.g., Id) in the table, create the full-text index
-            auditEntity.HasIndex(e => e.EntityIdentifier)
-                       .HasDatabaseName("IX_YourColumn_FullText");
         });
     }
 }
