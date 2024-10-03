@@ -1,8 +1,9 @@
-﻿using DotNetBrightener.Plugins.EventPubSub;
+﻿using System.Collections.Immutable;
+using DotNetBrightener.Plugins.EventPubSub;
 
 namespace DotNetBrightener.DataAccess.EF.Auditing;
 
 public class AuditTrailMessage : INonStoppedEventMessage
 {
-    public List<AuditEntity> AuditEntities { get; set; } = new();
+    public ImmutableList<AuditEntity> AuditEntities { get; init; }
 }

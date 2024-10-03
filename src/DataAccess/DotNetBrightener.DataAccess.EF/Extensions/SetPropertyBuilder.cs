@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using System.Linq.Expressions;
+using DotNetBrightener.DataAccess.Models;
 using DotNetBrightener.DataAccess.Models.Auditing;
 using Microsoft.EntityFrameworkCore.Query;
 
@@ -71,17 +72,30 @@ public class SetPropertyBuilder<TSource>
             object newValue          = ExtractActualValue(valueExpression.Body);
             string changeDescription = GetChangeDescription(valueExpression.Body);
 
-            if (!string.IsNullOrEmpty(changeDescription) && !changeDescription.Equals("value"))
+            if (!string.IsNullOrEmpty(changeDescription) &&
+                !changeDescription.Equals("value"))
             {
                 newValue = changeDescription;
             }
 
-            AuditProperties.Add(new AuditProperty
+            if (memberExpression.Member.Name == nameof(IAuditableEntity.IsDeleted))
             {
-                PropertyName = memberExpression.Member.Name,
-                OldValue     = "Not Tracked", // OldValue isn't available with this method
-                NewValue     = newValue
-            });
+                if (newValue is bool isDeletedValue || 
+                    bool.TryParse(newValue.ToString(), out isDeletedValue))
+                {
+                    _isDeleteOperation  = isDeletedValue;
+                    _isRestoreOperation = !isDeletedValue;
+                }
+            }
+            else
+            {
+                _auditProperties.Add(new AuditProperty
+                {
+                    PropertyName = memberExpression.Member.Name,
+                    OldValue     = "Not Tracked",
+                    NewValue     = newValue
+                });
+            }
         }
 
         SetPropertyCalls = SetPropertyCalls.Update(
@@ -115,11 +129,16 @@ public class SetPropertyBuilder<TSource>
         return propertyLambda;
     }
 
-    public List<AuditProperty> AuditProperties { get; } = new List<AuditProperty>();
+    private readonly List<AuditProperty> _auditProperties    = new();
+    private          bool                _isDeleteOperation  = false;
+    private          bool                _isRestoreOperation = false;
+
+    public string ActionName => _isDeleteOperation ? "Soft-Deleted using Expression" :
+                                _isRestoreOperation ? "Restored using Expression" : "Modified using Expression";
 
     public ImmutableList<AuditProperty> ExtractAuditProperties()
     {
-        return AuditProperties.ToImmutableList();
+        return _auditProperties.ToImmutableList();
     }
 
 

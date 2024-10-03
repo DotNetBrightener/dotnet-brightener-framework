@@ -17,10 +17,14 @@ public static class AuditingEnableServiceCollectionExtensions
     /// <returns></returns>
     public static IServiceCollection AddAuditingService(this IServiceCollection services)
     {
+        var ignoreAuditingEntitiesContainer = new IgnoreAuditingEntitiesContainer();
+
+        services.TryAddSingleton<IgnoreAuditingEntitiesContainer>(ignoreAuditingEntitiesContainer);
+        services.TryAddSingleton<IAuditEntriesProcessor, AuditEntriesProcessor>();
+
         services.TryAddScoped<IAuditEntriesContainer, AuditEntriesContainer>();
-        services.TryAddSingleton<IgnoreAuditingEntitiesContainer>(new IgnoreAuditingEntitiesContainer());
         services.AddDbContextConfigurator<AuditEnabledDbContextConfigurator>();
-        services.AddScoped<AuditEnabledSavingChangesInterceptor>();
+        services.TryAddScoped<AuditEnabledSavingChangesInterceptor>();
 
         return services;
     }
@@ -36,7 +40,7 @@ public static class AuditingEnableServiceCollectionExtensions
         {
             ignoreAuditingEntitiesContainer = new IgnoreAuditingEntitiesContainer();
 
-            services.TryAddSingleton<IgnoreAuditingEntitiesContainer>(ignoreAuditingEntitiesContainer);
+            services.TryAddSingleton(ignoreAuditingEntitiesContainer);
         }
 
         ignoreAuditingEntitiesContainer.AddRange(ignoredTypes);
@@ -56,7 +60,7 @@ public static class AuditingEnableServiceCollectionExtensions
         {
             ignoreAuditingEntitiesContainer = new IgnoreAuditingEntitiesContainer();
 
-            services.TryAddSingleton<IgnoreAuditingEntitiesContainer>(ignoreAuditingEntitiesContainer);
+            services.TryAddSingleton(ignoreAuditingEntitiesContainer);
         }
 
         ignoreAuditingEntitiesContainer.Add(typeof(TType));

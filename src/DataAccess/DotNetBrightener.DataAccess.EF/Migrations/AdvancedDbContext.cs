@@ -12,12 +12,12 @@ namespace DotNetBrightener.DataAccess.EF.Migrations;
 public abstract class AdvancedDbContext(DbContextOptions options) : DbContext(options)
 {
     [Injectable]
-    protected IServiceProvider _serviceProvider;
+    protected IServiceProvider? ServiceProvider;
 
-    protected List<IDbContextConfigurator>? Configurators => _serviceProvider?.GetServices<IDbContextConfigurator>()
+    protected List<IDbContextConfigurator>? Configurators => ServiceProvider?.GetServices<IDbContextConfigurator>()
                                                                               .ToList();
 
-    protected List<IDbContextConventionConfigurator>? ConventionConfigurators => _serviceProvider
+    protected List<IDbContextConventionConfigurator>? ConventionConfigurators => ServiceProvider
                                                                                ?.GetServices<
                                                                                      IDbContextConventionConfigurator>()
                                                                                 .ToList();

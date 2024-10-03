@@ -20,15 +20,3 @@ public class TestEntityOnUpdatedEventHandler(TestDbContext dbContext) : IEventHa
         return true;
     }
 }
-
-public class TestEntityOnUpdatedByExpressionEventHandler(TestDbContext dbContext)
-    : IEventHandler<EntityUpdatedByExpression<TestEntity>>
-{
-    public int Priority => 100;
-
-    public async Task<bool> HandleEvent(EntityUpdatedByExpression<TestEntity> eventMessage)
-    {
-
-        return true;
-    }
-}

@@ -28,6 +28,8 @@ public class AuditEntity
 
     public bool IsSuccess { get; set; }
 
+    public int? AffectedRows { get; set; }
+
     public string Exception { get; set; }
 
     public DateTimeOffset? StartTime { get; set; }
@@ -43,6 +45,9 @@ public class AuditEntity
     public TimeSpan? Duration { get; set; }
 
     public Guid ScopeId { get; set; } = Uuid7.Guid();
+
+    [MaxLength(64)]
+    public string AuditToolVersion { get; set; }
 
     [NotMapped]
     public EntityEntry AssociatedEntityEntry { get; internal init; }

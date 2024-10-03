@@ -1,11 +1,10 @@
+using DotNetBrightener.DataAccess.Models;
 using DotNetBrightener.DataAccess.Services;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using System.ComponentModel.DataAnnotations;
-using DotNetBrightener.DataAccess.Models;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System.ComponentModel.DataAnnotations;
 
 namespace DotNetBrightener.DataAccess.EF.Tests;
 
@@ -28,12 +27,6 @@ public class TestDbContext : DbContext
     {
         modelBuilder.Entity<TestEntity>();
     }
-}
-
-internal class UserResolver : ICurrentLoggedInUserResolver
-{
-    public string CurrentUserName => "Unit Test Runner";
-    public string CurrentUserId   => "UnitTestRunner";
 }
 
 public class EfRepositoryTests
@@ -66,7 +59,6 @@ public class EfRepositoryTests
         serviceCollection.AddLogging(builder => builder.AddConsole());
         serviceCollection.AddEventPubSubService();
         serviceCollection.AddEventHandlersFromAssemblies();
-        serviceCollection.Replace(ServiceDescriptor.Scoped<ICurrentLoggedInUserResolver, UserResolver>());
 
         serviceCollection.AddSingleton(serviceCollection);
 

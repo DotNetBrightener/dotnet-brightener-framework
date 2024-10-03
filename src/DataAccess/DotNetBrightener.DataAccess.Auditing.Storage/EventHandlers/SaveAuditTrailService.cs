@@ -1,22 +1,24 @@
-﻿using System.Collections.Immutable;
-using DotNetBrightener.DataAccess.Auditing.Storage.DbContexts;
+﻿using DotNetBrightener.DataAccess.Auditing.Storage.DbContexts;
 using DotNetBrightener.DataAccess.EF.Auditing;
 using DotNetBrightener.Plugins.EventPubSub;
 using LinqToDB.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
+using System.Collections.Immutable;
+using System.Reflection;
 
 namespace DotNetBrightener.DataAccess.Auditing.Storage.EventHandlers;
 
 internal class SaveAuditTrailService : IEventHandler<AuditTrailMessage>
 {
-    private readonly ILogger                       _logger;
+    private readonly ILogger _logger;
     private readonly MssqlStorageAuditingDbContext _dbContext;
+    private static bool _migrationExecuted = false;
 
     public SaveAuditTrailService(MssqlStorageAuditingDbContext dbContext, ILoggerFactory loggerFactory)
     {
         _dbContext = dbContext;
-        _logger    = loggerFactory.CreateLogger(GetType());
+        _logger = loggerFactory.CreateLogger(GetType());
     }
 
     public int Priority => 10_000;
@@ -27,15 +29,16 @@ internal class SaveAuditTrailService : IEventHandler<AuditTrailMessage>
                                         .DistinctBy(x => x.Id)
                                         .ToImmutableList();
 
-        foreach (var auditEntry in entriesToSave)
+        if (!_migrationExecuted)
         {
-            auditEntry.Changes = JsonConvert.SerializeObject(auditEntry.AuditProperties);
+            _dbContext.AutoMigrateDbSchema(_logger);
+            _migrationExecuted = true;
         }
 
         try
         {
             await _dbContext.BulkCopyAsync(entriesToSave);
-            
+
             _logger.LogInformation("Save {records} audit entries using bulk copy.\r\n" +
                                    "Audit entries: [@{auditEntries}].",
                                    entriesToSave.Count,
@@ -47,7 +50,7 @@ internal class SaveAuditTrailService : IEventHandler<AuditTrailMessage>
             {
                 await _dbContext.AddRangeAsync(entriesToSave);
                 await _dbContext.SaveChangesAsync();
-                
+
                 _logger.LogInformation("Save {records} audit entries using AddRange.\r\n" +
                                        "Audit entries: [@{auditEntries}].",
                                        entriesToSave.Count,

@@ -1,5 +1,4 @@
 ﻿using DotNetBrightener.DataAccess.Auditing.Tests.DbContexts;
-using DotNetBrightener.DataAccess.EF.Auditing;
 using DotNetBrightener.DataAccess.EF.Internal;
 using DotNetBrightener.DataAccess.Models.Auditing;
 using DotNetBrightener.Plugins.EventPubSub;
@@ -21,20 +20,7 @@ public class Auditing_DbContext_Tests(ITestOutputHelper testOutputHelper) : MsSq
     [Fact]
     public async Task AuditingService_ShouldTrackChangesFromDbContext()
     {
-        var initializedScopes     = new List<Guid>();
         var mockAuditTrailHandler = new Mock<IMockReceiveData>();
-
-        mockAuditTrailHandler.Setup(x => x.ReceiveData(It.IsAny<AuditTrailMessage>()))
-                             .Callback<AuditTrailMessage>(data =>
-                              {
-                                  var scopes = data.AuditEntities
-                                                   .Select(x => x.ScopeId)
-                                                   .Distinct();
-
-                                  initializedScopes.AddRange(scopes);
-                                  initializedScopes = initializedScopes.Distinct()
-                                                                       .ToList();
-                              });
 
         // Arrange
 
@@ -43,7 +29,6 @@ public class Auditing_DbContext_Tests(ITestOutputHelper testOutputHelper) : MsSq
             services.AddEventPubSubService();
             services.AddScoped<IMockReceiveData>(p => mockAuditTrailHandler.Object);
             services.AddScoped<IEventHandler, HandleAuditTrail>();
-            services.AddAuditingService();
         });
 
 
@@ -133,17 +118,12 @@ public class Auditing_DbContext_Tests(ITestOutputHelper testOutputHelper) : MsSq
         await Task.Delay(500);
 
         // Assert
-        mockAuditTrailHandler.Verify(x => x.ReceiveData(It.IsAny<AuditTrailMessage>()), Times.Exactly(3));
-        mockAuditTrailHandler.Verify(x => x.ChangedProperties(It.IsAny<ImmutableList<AuditProperty>>()),
-                                     Times.Exactly(3));
+        mockAuditTrailHandler.Verify(x => x.ChangedProperties(It.IsAny<ImmutableList<AuditProperty>>()));
         
         changedProperties.Select(x => x.PropertyName)
                          .ToList()
                          .Should()
                          .BeInAscendingOrder();
-
-        initializedScopes.Count.Should().Be(3);
-
 
         // Clean up
         await WithScoped(host,

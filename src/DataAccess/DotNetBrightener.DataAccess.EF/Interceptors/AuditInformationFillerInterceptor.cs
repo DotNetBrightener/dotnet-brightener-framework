@@ -61,10 +61,6 @@ internal class AuditInformationFillerInterceptor(IServiceProvider serviceProvide
                                   _currentLoggedInUserResolver?.CurrentUserId;
             var utcNow = _dateTimeProvider?.UtcNowWithOffset ?? DateTimeOffset.UtcNow;
 
-            var properties = entry.Properties.Select(x => x.Metadata.Name);
-
-            _logger?.LogDebug("Entity {entityType} properties: {@propertiesList}", actualEntityType, properties);
-
             if (entry.State is EntityState.Added)
             {
                 _logger?.LogDebug("Entity {entityType} is created", actualEntityType);

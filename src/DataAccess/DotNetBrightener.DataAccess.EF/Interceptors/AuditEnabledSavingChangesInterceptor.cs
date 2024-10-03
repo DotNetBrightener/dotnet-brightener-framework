@@ -1,8 +1,8 @@
 ﻿#nullable enable
 using DotNetBrightener.DataAccess.Auditing.Internal;
+using DotNetBrightener.DataAccess.EF.Auditing;
 using DotNetBrightener.DataAccess.EF.Internal;
 using DotNetBrightener.DataAccess.Models.Auditing;
-using DotNetBrightener.Plugins.EventPubSub;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -10,7 +10,6 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using System.Collections.Immutable;
-using DotNetBrightener.DataAccess.EF.Auditing;
 using Uuid7 = DotNetBrightener.DataAccess.Models.Utils.Internal.Uuid7;
 
 namespace DotNetBrightener.DataAccess.EF.Interceptors;
@@ -20,7 +19,7 @@ internal class AuditEnabledSavingChangesInterceptor(IServiceProvider serviceProv
     private readonly IAuditEntriesContainer _auditEntriesContainer =
         serviceProvider.GetRequiredService<IAuditEntriesContainer>();
 
-    private readonly IEventPublisher?      _eventPublisher      = serviceProvider.TryGet<IEventPublisher>();
+    private readonly IAuditEntriesProcessor _auditEntriesProcessor = serviceProvider.GetRequiredService<IAuditEntriesProcessor>();
     private readonly IHttpContextAccessor? _httpContextAccessor = serviceProvider.TryGet<IHttpContextAccessor>();
 
     private readonly ICurrentLoggedInUserResolver? _currentLoggedInUserResolver =
@@ -164,13 +163,7 @@ internal class AuditEnabledSavingChangesInterceptor(IServiceProvider serviceProv
             auditEntity.IsSuccess        = true;
         }
 
-        if (_eventPublisher is not null)
-            await _eventPublisher.Publish(new AuditTrailMessage
-                                          {
-                                              AuditEntities = [.. _auditEntriesContainer.AuditEntries]
-                                          },
-                                          runInBackground: true);
-
+        await _auditEntriesProcessor.QueueAuditEntries([.. _auditEntriesContainer.AuditEntries]);
         _auditEntriesContainer.AuditEntries.Clear();
 
         return await base.SavedChangesAsync(eventData, result, cancellationToken);
@@ -216,13 +209,7 @@ internal class AuditEnabledSavingChangesInterceptor(IServiceProvider serviceProv
             auditEntity.Exception        = eventData.Exception.GetFullExceptionMessage();
         }
 
-        if (_eventPublisher is not null)
-            await _eventPublisher.Publish(new AuditTrailMessage
-                                          {
-                                              AuditEntities = [.. _auditEntriesContainer.AuditEntries]
-                                          },
-                                          runInBackground: true);
-
+        await _auditEntriesProcessor.QueueAuditEntries([.. _auditEntriesContainer.AuditEntries]);
         _auditEntriesContainer.AuditEntries.Clear();
     }
 }

@@ -40,12 +40,61 @@ public class QueryableExtensionsTests(ITestOutputHelper testOutputHelper)
     }
 
     [Fact]
-    public void ExtractFilters_ContainsOperation_ShouldReturnCorrectly()
+    public void ExtractFilters_ContainsOperation_NonNullableType_ShouldReturnCorrectly()
+    {
+        var userIds = new List<long>([1, 2, 5, 6, 10, 20]);
+
+        // Arrange
+        Expression<Func<UserPreference, bool>> conditionExpression = p => userIds.Contains(p.UserId);
+
+        // Act
+        var result = conditionExpression.ExtractFilters();
+        testOutputHelper.WriteLine(result.Serialize(true));
+    }
+
+    [Fact]
+    public void ExtractFilters_ContainsOperation_NullableType_ShouldReturnCorrectly()
+    {
+        var userIds = new List<long?>([1, 2, 5, 6, 10, 20]);
+
+        // Arrange
+        Expression<Func<UserPreference, bool>> conditionExpression = p => userIds.Contains(p.UserId);
+
+        // Act
+        var result = conditionExpression.ExtractFilters();
+        testOutputHelper.WriteLine(result.Serialize(true));
+    }
+
+    [Fact]
+    public void ExtractFilters_ComplexOperations_ShouldReturnCorrectly()
     {
         List<long> userIds = [1, 2, 5, 6, 10, 20];
 
         // Arrange
-        Expression<Func<UserPreference, bool>> conditionExpression = p => userIds.Contains(p.UserId);
+        Expression<Func<UserPreference, bool>> conditionExpression;
+        conditionExpression = p => userIds.Contains(p.UserId) && 
+                                   string.IsNullOrEmpty(p.PreferenceValue);
+
+        // Act
+        var result = conditionExpression.ExtractFilters();
+        testOutputHelper.WriteLine(result.Serialize(true));
+
+        conditionExpression = p => userIds.Contains(p.UserId) || 
+                                   string.IsNullOrEmpty(p.PreferenceValue);
+
+        // Act
+        result = conditionExpression.ExtractFilters();
+        testOutputHelper.WriteLine(result.Serialize(true));
+    }
+
+    [Fact]
+    public void ExtractFilters_ComplexOperations_NegativeCheck_ShouldReturnCorrectly()
+    {
+        List<long> userIds = [1, 2, 5, 6, 10, 20];
+
+        // Arrange
+        Expression<Func<UserPreference, bool>> conditionExpression = p => userIds.Contains(p.UserId) && 
+                                                                          !string.IsNullOrEmpty(p.PreferenceValue);
 
         // Act
         var result = conditionExpression.ExtractFilters();

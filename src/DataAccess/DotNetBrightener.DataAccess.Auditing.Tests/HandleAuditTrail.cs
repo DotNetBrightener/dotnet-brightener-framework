@@ -10,17 +10,15 @@ public class HandleAuditTrail(IMockReceiveData mocker,
 {
     public async Task<bool> HandleEvent(AuditTrailMessage eventMessage)
     {
-        mocker.ReceiveData(eventMessage);
-
-        var auditEntries = eventMessage.AuditEntities;
-
-        foreach (var auditEntity in auditEntries)
+        foreach (var auditEntity in eventMessage.AuditEntities)
         {
-            mocker.ChangedProperties(auditEntity.AuditProperties);
-
-            logger.LogDebug("Entity was {state}. Changed properties: {@changeProperties}",
+            logger.LogDebug(Environment.NewLine +
+                            "[{appVersion}] Entity was {state}. Changed properties:\r\n{@changeProperties}\r\n",
+                            auditEntity.AuditToolVersion,
                             auditEntity.Action,
                             JsonConvert.SerializeObject(auditEntity.AuditProperties, Formatting.Indented));
+
+            mocker.ChangedProperties(auditEntity.AuditProperties);
         }
 
         return true;

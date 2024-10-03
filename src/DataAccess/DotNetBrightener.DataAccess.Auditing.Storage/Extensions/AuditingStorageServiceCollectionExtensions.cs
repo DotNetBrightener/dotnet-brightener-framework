@@ -25,7 +25,6 @@ public static class AuditingStorageServiceCollectionExtensions
                                        });
         });
 
-        serviceCollection.AddAutoMigrationForDbContextAfterAppStarted<MssqlStorageAuditingDbContext>();
         serviceCollection.AddScoped<IEventHandler, SaveAuditTrailService>();
 
         LinqToDBForEFTools.Initialize();

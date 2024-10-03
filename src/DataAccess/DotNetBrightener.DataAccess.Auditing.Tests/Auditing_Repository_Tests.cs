@@ -3,16 +3,15 @@ using DotNetBrightener.DataAccess.EF.Internal;
 using DotNetBrightener.DataAccess.Models.Auditing;
 using DotNetBrightener.DataAccess.Services;
 using DotNetBrightener.Plugins.EventPubSub;
+using DotNetBrightener.TestHelpers;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Moq;
 using System.Collections.Immutable;
-using DotNetBrightener.DataAccess.EF.Auditing;
-using DotNetBrightener.TestHelpers;
-using Microsoft.Extensions.Logging;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -54,20 +53,7 @@ public class Auditing_Repository_Tests(ITestOutputHelper testOutputHelper) : MsS
         }
 
         await UpdateUsingExpression_ShouldOutputAuditEntry(insertedEntityId);
-
-        //await WithScoped(host,
-        //                 async (dbContext, repository) =>
-        //                 {
-        //                     var entity = await dbContext.Set<TestEntity>().FindAsync(insertedEntityId);
-
-        //                     entity.Should().NotBeNull();
-
-        //                     dbContext.Remove(entity!);
-
-        //                     await dbContext.SaveChangesAsync();
-        //                 });
-
-        //await Task.Delay(500);
+        await DeleteUsingExpression_ShouldOutputAuditEntry(insertedEntityId);
 
         //// Assert
         //mockAuditTrailHandler.Verify(x => x.ReceiveData(It.IsAny<AuditTrailMessage>()), Times.Exactly(3));
@@ -117,32 +103,9 @@ public class Auditing_Repository_Tests(ITestOutputHelper testOutputHelper) : MsS
         ILogger?                     logger                = null;
 
         DateTimeOffset? start0 = null;
-        DateTimeOffset? start1 = null;
         DateTimeOffset? start2 = null;
 
         CancellationTokenSource cts = new();
-
-        mockAuditTrailHandler.Setup(x => x.ReceiveData(It.IsAny<AuditTrailMessage>()))
-                             .Callback<AuditTrailMessage>(data =>
-                              {
-                                  start1 = DateTimeOffset.UtcNow;
-
-                                  var scopes = data.AuditEntities
-                                                   .Select(x => x.ScopeId)
-                                                   .Distinct();
-
-                                  initializedScopes.AddRange(scopes);
-                                  initializedScopes = initializedScopes.Distinct()
-                                                                       .ToList();
-
-                                  foreach (var auditEntity in data.AuditEntities)
-                                  {
-                                      testOutputHelper.WriteLine(auditEntity.DebugView);
-                                      testOutputHelper.WriteLine(auditEntity.EntityIdentifier);
-                                  }
-
-                                  logger?.LogInformation($"Hit ReceiveData: {start1}");
-                              });
 
         mockAuditTrailHandler.Setup(x => x.ChangedProperties(It.IsAny<ImmutableList<AuditProperty>>()))
                              .Callback<ImmutableList<AuditProperty>>(cp =>
@@ -161,7 +124,66 @@ public class Auditing_Repository_Tests(ITestOutputHelper testOutputHelper) : MsS
             services.AddEventPubSubService();
             services.AddScoped<IMockReceiveData>(p => mockAuditTrailHandler.Object);
             services.AddScoped<IEventHandler, HandleAuditTrail>();
-            services.AddAuditingService();
+        });
+
+        await host.StartAsync();
+
+        await WithScoped(host,
+                         async (dbContext, repository, serviceProvider) =>
+                         {
+                             logger = serviceProvider.GetRequiredService<ILogger<Auditing_Repository_Tests>>();
+
+                             start0 = DateTimeOffset.UtcNow;
+
+                             logger.LogInformation($"Start test: {start0}");
+
+                             await repository.DeleteOneAsync<TestEntity>(x => x.Id == insertedEntityId);
+                         });
+
+        while (!cts.Token.IsCancellationRequested)
+        {
+            await Task.Delay(100);
+        }
+
+        start2.Should().NotBeNull();
+        
+        logger.LogInformation($"Took {(start2 - start0)} to hit methods");
+        
+        mockAuditTrailHandler.Verify(x => x.ChangedProperties(It.IsAny<ImmutableList<AuditProperty>>()),
+                                     Times.Once);
+
+        await host.StopAsync();
+    }
+
+    private async Task DeleteUsingExpression_ShouldOutputAuditEntry(long insertedEntityId)
+    {
+        var                          initializedScopes     = new List<Guid>();
+        var                          mockAuditTrailHandler = new Mock<IMockReceiveData>();
+        ImmutableList<AuditProperty> changedProperties     = ImmutableList<AuditProperty>.Empty;
+        ILogger?                     logger                = null;
+
+        DateTimeOffset? start0 = null;
+        DateTimeOffset? start2 = null;
+
+        CancellationTokenSource cts = new();
+
+        mockAuditTrailHandler.Setup(x => x.ChangedProperties(It.IsAny<ImmutableList<AuditProperty>>()))
+                             .Callback<ImmutableList<AuditProperty>>(cp =>
+                              {
+                                  start2 = DateTimeOffset.UtcNow;
+                                  changedProperties = cp;
+
+                                  logger?.LogInformation($"Hit ChangedProperties: {start2}");
+
+                                  Task.Delay(100).Wait();
+                                  cts.Cancel();
+                              });
+
+        var host = CreateTestHost((hostContext, services) =>
+        {
+            services.AddEventPubSubService();
+            services.AddScoped<IMockReceiveData>(p => mockAuditTrailHandler.Object);
+            services.AddScoped<IEventHandler, HandleAuditTrail>();
         });
 
         await host.StartAsync();
@@ -191,24 +213,12 @@ public class Auditing_Repository_Tests(ITestOutputHelper testOutputHelper) : MsS
             await Task.Delay(100);
         }
 
-        start1.Should().NotBeNull();
         start2.Should().NotBeNull();
         
         logger.LogInformation($"Took {(start2 - start0)} to hit methods");
         
         mockAuditTrailHandler.Verify(x => x.ChangedProperties(It.IsAny<ImmutableList<AuditProperty>>()),
                                      Times.Once);
-
-        foreach (var changedProperty in changedProperties)
-        {
-            logger.LogInformation(@"Property: {PropertyName}: 
-    - Old value: {OldValue}. 
-    - New value: {NewValue}.",
-                                  changedProperty.PropertyName,
-                                  changedProperty.OldValue,
-                                  changedProperty.NewValue
-                                 );
-        }
 
         await host.StopAsync();
     }

@@ -16,6 +16,7 @@ using DotNetBrightener.Plugins.EventPubSub;
 using LinqToDB.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.Rewrite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,10 +35,11 @@ public class Repository : IRepository
     protected readonly IEventPublisher?              EventPublisher;
     protected readonly IDateTimeProvider?            DateTimeProvider;
     protected readonly IHttpContextAccessor?         HttpContextAccessor;
-    protected          ILogger                       Logger { get; init; }
-    private readonly   Guid                          _scopeId = Uuid7.Guid();
 
     private readonly IgnoreAuditingEntitiesContainer? _ignoreAuditingEntitiesContainer;
+    private readonly IAuditEntriesProcessor?          _auditEntriesProcessor;
+    protected        ILogger                          Logger { get; init; }
+    private readonly Guid                             _scopeId = Uuid7.Guid();
 
     public Repository(DbContext        dbContext,
                       IServiceProvider serviceProvider,
@@ -49,6 +51,7 @@ public class Repository : IRepository
         DateTimeProvider                 = serviceProvider.TryGet<IDateTimeProvider>();
         HttpContextAccessor              = serviceProvider.TryGet<HttpContextAccessor>();
         _ignoreAuditingEntitiesContainer = serviceProvider.TryGet<IgnoreAuditingEntitiesContainer>();
+        _auditEntriesProcessor           = serviceProvider.TryGet<IAuditEntriesProcessor>();
         Logger                           = loggerFactory.CreateLogger(GetType());
     }
 
@@ -378,40 +381,27 @@ public class Repository : IRepository
     {
         int updatedRecords = 0;
 
-        if (expectedAffectedRows.HasValue)
+
+        var executionStrategy = DbContext.Database.CreateExecutionStrategy();
+
+        async Task ExecuteUpdate()
         {
-            var executionStrategy = DbContext.Database.CreateExecutionStrategy();
+            updatedRecords = await PerformUpdate(conditionExpression,
+                                                 updateExpression,
+                                                 expectedAffectedRows);
 
-            async Task ExecuteUpdate()
+            if (expectedAffectedRows is not null &&
+                updatedRecords != expectedAffectedRows.Value)
             {
-                updatedRecords = await PerformUpdate(conditionExpression, updateExpression);
-
-                if (updatedRecords != expectedAffectedRows.Value)
-                {
-                    throw new ExpectedAffectedRecordMismatchException(expectedAffectedRows.Value,
-                                                                      updatedRecords);
-                }
+                throw new ExpectedAffectedRecordMismatchException(expectedAffectedRows.Value,
+                                                                  updatedRecords);
             }
-
-            await executionStrategy.ExecuteInTransactionAsync(ExecuteUpdate,
-                                                              async () => updatedRecords == expectedAffectedRows.Value);
-        }
-        else
-        {
-            updatedRecords = await PerformUpdate(conditionExpression, updateExpression);
         }
 
-        if (EventPublisher != null)
-        {
-            _ = EventPublisher.Publish(new EntityUpdatedByExpression<T>
-            {
-                FilterExpression = conditionExpression,
-                UpdateExpression = updateExpression,
-                AffectedRecords  = updatedRecords,
-                UserName         = CurrentLoggedInUserResolver?.CurrentUserName,
-                UserId           = CurrentLoggedInUserResolver?.CurrentUserId
-            });
-        }
+        await executionStrategy.ExecuteInTransactionAsync(ExecuteUpdate,
+                                                          async () => expectedAffectedRows is null ||
+                                                                      updatedRecords == expectedAffectedRows.Value);
+
 
         return updatedRecords;
     }
@@ -458,7 +448,8 @@ public class Repository : IRepository
     }
 
     private async Task<int> PerformUpdate<T>(Expression<Func<T, bool>>? conditionExpression,
-                                             Expression<Func<T, T>>     updateExpression)
+                                             Expression<Func<T, T>>     updateExpression,
+                                             int?                       expectedAffectedRows = null)
         where T : class
     {
         SetPropertyBuilder<T> updateQueryBuilder = PrepareUpdatePropertiesBuilder(updateExpression);
@@ -466,22 +457,7 @@ public class Repository : IRepository
         var url           = HttpContextAccessor?.HttpContext?.Request.GetDisplayUrl();
         var requestMethod = HttpContextAccessor?.HttpContext?.Request.Method;
 
-        AuditEntity? auditEntity = null;
-
-        if (_ignoreAuditingEntitiesContainer?.Contains(typeof(T)) != true)
-        {
-            Logger.LogDebug("Initializing Audit Entity");
-
-            auditEntity = new AuditEntity
-            {
-                ScopeId            = _scopeId,
-                StartTime          = DateTimeOffset.Now,
-                Action             = "Modified using Expression",
-                EntityType         = typeof(T).Name,
-                Url                = $"{requestMethod} {url}".Trim(),
-                UserName           = CurrentLoggedInUserResolver?.CurrentUserName ?? "Not Detected"
-            };
-        }
+        var start = DateTimeOffset.UtcNow;
 
         var query = conditionExpression is not null
                         ? DbContext.Set<T>().Where(conditionExpression)
@@ -489,28 +465,44 @@ public class Repository : IRepository
 
         int result = await query.ExecutePatchUpdateAsync(updateQueryBuilder);
 
-        if (auditEntity is not null &&
-            EventPublisher is not null)
+        if (_ignoreAuditingEntitiesContainer?.Contains(typeof(T)) != true &&
+            result > 0 &&
+            _auditEntriesProcessor is not null &&
+            (expectedAffectedRows is null ||
+             expectedAffectedRows == result))
         {
-            var auditProperties = updateQueryBuilder.ExtractAuditProperties();
-            var entityIdentifier = conditionExpression.ExtractFilters();
-
-            auditEntity.EntityIdentifier = entityIdentifier.Serialize();
-            auditEntity.AuditProperties  = auditProperties;
-
-            auditEntity.EndTime   = DateTimeOffset.Now;
-            auditEntity.Duration  = auditEntity.EndTime - auditEntity.StartTime;
-            auditEntity.IsSuccess = true;
+            var now                    = DateTimeOffset.Now;
+            var extractAuditProperties = updateQueryBuilder.ExtractAuditProperties();
+            var auditEntity = new AuditEntity
+            {
+                ScopeId         = _scopeId,
+                StartTime       = start,
+                EndTime         = now,
+                Duration        = now.Subtract(start),
+                Action          = updateQueryBuilder.ActionName,
+                EntityType      = typeof(T).Name,
+                Url             = $"{requestMethod} {url}".Trim(),
+                UserName        = CurrentLoggedInUserResolver?.CurrentUserName ?? "Not Detected",
+                AuditProperties = extractAuditProperties,
+                IsSuccess       = true,
+                AffectedRows    = result
+            };
 
             auditEntity.PrepareDebugView();
 
-            Logger.LogDebug("Sending out Audit Entity");
 
-            _ = EventPublisher.Publish(new AuditTrailMessage
-                                       {
-                                           AuditEntities = [auditEntity]
-                                       },
-                                       runInBackground: true);
+            try
+            {
+                var entityIdentifier = conditionExpression.ExtractFilters();
+
+                auditEntity.EntityIdentifier = entityIdentifier.Serialize();
+            }
+            catch (NotSupportedException)
+            {
+
+            }
+            
+            await _auditEntriesProcessor.QueueAuditEntries(auditEntity);
         }
 
         return result;
@@ -555,7 +547,7 @@ public class Repository : IRepository
                                                               async () => updatedRecords == 1);
 
             if (_ignoreAuditingEntitiesContainer?.Contains(typeof(T)) != true &&
-                EventPublisher is not null &&
+                _auditEntriesProcessor is not null &&
                 updatedRecords == 1)
             {
                 var url           = HttpContextAccessor?.HttpContext?.Request.GetDisplayUrl();
@@ -568,24 +560,19 @@ public class Repository : IRepository
                 var now = DateTimeOffset.UtcNow;
                 var auditEntity = new AuditEntity
                 {
-                    ScopeId            = _scopeId,
-                    StartTime          = start,
-                    EndTime            = now,
-                    Duration           = now.Subtract(start),
-                    Action             = "Hard-Deleted using Expression",
-                    EntityIdentifier   = entityIdentifier.Serialize(),
-                    EntityType         = typeof(T).Name,
-                    Url                = $"{requestMethod} {url}".Trim(),
-                    UserName           = CurrentLoggedInUserResolver?.CurrentUserName ?? "Not Detected",
-                    IsSuccess          = true,
+                    ScopeId          = _scopeId,
+                    StartTime        = start,
+                    EndTime          = now,
+                    Duration         = now.Subtract(start),
+                    Action           = "Hard-Deleted using Expression",
+                    EntityIdentifier = entityIdentifier.Serialize(),
+                    EntityType       = typeof(T).Name,
+                    Url              = $"{requestMethod} {url}".Trim(),
+                    UserName         = CurrentLoggedInUserResolver?.CurrentUserName ?? "Not Detected",
+                    IsSuccess        = true,
+                    AffectedRows     = updatedRecords
                 };
-
-
-                _ = EventPublisher.Publish(new AuditTrailMessage
-                                           {
-                                               AuditEntities = [auditEntity]
-                                           },
-                                           runInBackground: true);
+                await _auditEntriesProcessor.QueueAuditEntries(auditEntity);
             }
         }
         else
@@ -598,7 +585,7 @@ public class Repository : IRepository
                               {
                                   IsDeleted      = true,
                                   DeletedDate    = DateTimeProvider?.UtcNowWithOffset ?? DateTimeOffset.UtcNow,
-                                  DeletedBy      = CurrentLoggedInUserResolver?.CurrentUserName,
+                                  UserName       = CurrentLoggedInUserResolver?.CurrentUserName ?? "Not Detected",
                                   DeletionReason = reason
                               },
                               expectedAffectedRows: 1);
@@ -627,8 +614,9 @@ public class Repository : IRepository
             DateTimeOffset start = DateTimeOffset.UtcNow;
             updatedRecords = await Fetch(conditionExpression).ExecuteDeleteAsync();
 
-            if (_ignoreAuditingEntitiesContainer?.Contains(typeof(T)) != true &&
-                EventPublisher is not null)
+            if (updatedRecords != 0 &&
+                _ignoreAuditingEntitiesContainer?.Contains(typeof(T)) != true &&
+                _auditEntriesProcessor is not null)
             {
                 var url           = HttpContextAccessor?.HttpContext?.Request.GetDisplayUrl();
                 var requestMethod = HttpContextAccessor?.HttpContext?.Request.Method;
@@ -640,23 +628,20 @@ public class Repository : IRepository
                 var now = DateTimeOffset.UtcNow;
                 var auditEntity = new AuditEntity
                 {
-                    ScopeId            = _scopeId,
-                    StartTime          = start,
-                    EndTime            = now,
-                    Duration           = now.Subtract(start),
-                    Action             = "Hard-Deleted using Expression",
-                    EntityIdentifier   = entityIdentifier.Serialize(),
-                    EntityType         = typeof(T).Name,
-                    Url                = $"{requestMethod} {url}".Trim(),
-                    UserName           = CurrentLoggedInUserResolver?.CurrentUserName ?? "Not Detected",
-                    IsSuccess          = true,
+                    ScopeId          = _scopeId,
+                    StartTime        = start,
+                    EndTime          = now,
+                    Duration         = now.Subtract(start),
+                    Action           = "Hard-Deleted using Expression",
+                    EntityIdentifier = entityIdentifier.Serialize(),
+                    EntityType       = typeof(T).Name,
+                    Url              = $"{requestMethod} {url}".Trim(),
+                    UserName         = CurrentLoggedInUserResolver?.CurrentUserName ?? "Not Detected",
+                    IsSuccess        = true,
+                    AffectedRows     = updatedRecords
                 };
 
-                _ = EventPublisher.Publish(new AuditTrailMessage
-                                           {
-                                               AuditEntities = [auditEntity]
-                                           },
-                                           runInBackground: true);
+                await _auditEntriesProcessor.QueueAuditEntries(auditEntity);
             }
 
             return updatedRecords;
