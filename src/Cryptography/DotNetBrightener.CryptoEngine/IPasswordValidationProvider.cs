@@ -53,9 +53,8 @@ public class DefaultPasswordValidationProvider(ICryptoEngine cryptoEngine,
         // use the salt to create the hash from plain text password
         try
         {
-            if (string.Equals(AesCryptoEngine.Encrypt(plainTextPassword, passwordSalt),
-                              hashedPassword,
-                              StringComparison.Ordinal))
+            if (AesCryptoEngine.TryDecrypt(hashedPassword, out var decryptedPassword, passwordSalt) && 
+                decryptedPassword == plainTextPassword)
                 return true;
         }
         catch (Exception ex)
