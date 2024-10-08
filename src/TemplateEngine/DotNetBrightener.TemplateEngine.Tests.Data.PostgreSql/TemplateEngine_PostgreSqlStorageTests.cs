@@ -3,11 +3,9 @@ using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using NUnit.Framework;
 using Testcontainers.PostgreSql;
 using Xunit;
 using Xunit.Abstractions;
-using Xunit.Sdk;
 
 namespace DotNetBrightener.TemplateEngine.Tests.Data.PostgreSql;
 

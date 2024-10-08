@@ -19,14 +19,8 @@ public abstract class MsSqlServerBaseXUnitTest(ITestOutputHelper testOutputHelpe
         var containerName = String.Concat("sqlserver-2022-", currentTestingType, $"-{Guid.NewGuid()}");
 
         testOutputHelper.WriteLine($"Spinning up container with Name: {containerName}");
-
-        MsSqlContainer = new MsSqlBuilder()
-                        .WithImage("mcr.microsoft.com/mssql/server:2022-latest")
-                        .WithPassword("Str0ng3stP@s5w0rd3ver!")
-                        .WithName(containerName)
-                        .WithWaitStrategy(Wait.ForUnixContainer()
-                                              .UntilMessageIsLogged("SQL Server is now ready for client connections"))
-                        .Build();
+        
+        MsSqlContainer = MsSqlContainerGenerator.CreateContainer(containerName);
 
         await MsSqlContainer.StartAsync();
 

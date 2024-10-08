@@ -7,12 +7,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Moq;
 using Newtonsoft.Json;
-using NUnit.Framework;
 using Testcontainers.MsSql;
 using Xunit;
 using Xunit.Abstractions;
-using Xunit.Sdk;
-using Assert = NUnit.Framework.Assert;
 
 namespace DotNetBrightener.DataAccess.EF.Tests.RepositoryTests_CRUD_Operations;
 
@@ -43,7 +40,7 @@ public class EfRepositoryTest : MsSqlServerBaseXUnitTest
 
             var deletableEntityCount = await repository.CountAsync<TestEntity>();
 
-            Assert.That(deletableEntityCount, Is.EqualTo(10));
+            deletableEntityCount.Should().Be(10);
         }
 
         await host.StopAsync();
@@ -288,7 +285,7 @@ public class EfRepositoryTest : MsSqlServerBaseXUnitTest
                                                                    .Replace("To update", "Already Updated")
                                                          });
 
-            Assert.That(affectedRecords, Is.EqualTo(3));
+            affectedRecords.Should().Be(3);
         }
 
         using (var serviceScope = host.Services.CreateScope())
@@ -303,8 +300,8 @@ public class EfRepositoryTest : MsSqlServerBaseXUnitTest
 
             foreach (var record in updatedEntities)
             {
-                Assert.That(record, Is.Not.Null);
-                Assert.That(record.Name, Is.EqualTo($"Already Updated {index++}"));
+                record.Should().NotBeNull();
+                record.Name.Should().Be($"Already Updated {index++}");
             }
         }
     }
@@ -331,8 +328,8 @@ public class EfRepositoryTest : MsSqlServerBaseXUnitTest
 
             var record = await repository.GetFirstAsync<TestEntity>(x => x.Name == "Name1");
 
-            Assert.That(record, Is.Not.Null);
-            Assert.That(record.IsDeleted, Is.EqualTo(true));
+            record.Should().NotBeNull();
+            record!.IsDeleted.Should().Be(true);
         }
     }
 

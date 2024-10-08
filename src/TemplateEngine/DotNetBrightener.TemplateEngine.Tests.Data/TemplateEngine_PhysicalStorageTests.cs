@@ -1,13 +1,12 @@
 using DotNetBrightener.TemplateEngine.Data.Services;
 using DotNetBrightener.TemplateEngine.Services;
+using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Moq;
-using NUnit.Framework;
 using Xunit;
 using Xunit.Abstractions;
-using Assert = NUnit.Framework.Assert;
 
 namespace DotNetBrightener.TemplateEngine.Tests.Data;
 
@@ -63,7 +62,6 @@ public class TemplateEngine_PhysicalStorageTests(ITestOutputHelper testOutputHel
             services.AddTemplateProvider<TestModelRegistration>();
         });
 
-
         var environment        = _testHost.Services.GetRequiredService<IHostEnvironment>();
         var templateFolderPath = Path.Combine(environment.ContentRootPath, "Templates");
         _pathsToCleanUp.Add(templateFolderPath);
@@ -84,7 +82,7 @@ public class TemplateEngine_PhysicalStorageTests(ITestOutputHelper testOutputHel
         var templatesPath      = Path.Combine(templateFolderPath, expectingFileName);
 
 
-        Assert.That(File.Exists(templatesPath), Is.True);
+        File.Exists(templatesPath).Should().BeTrue();
 
         using (var scope = _testHost.Services.CreateScope())
         {
@@ -92,9 +90,10 @@ public class TemplateEngine_PhysicalStorageTests(ITestOutputHelper testOutputHel
 
             var template = templateService.LoadTemplate<TemplateTestModel>();
 
-            Assert.That(template, Is.Not.Null);
-            Assert.That(template.TemplateTitle, Is.EqualTo("Hello {{Name}}"));
-            Assert.That(template.TemplateContent, Is.EqualTo("Hey {{Name}},<br />This is {{Description}}."));
+
+            template.Should().NotBeNull();
+            template.TemplateTitle.Should().Be("Hello {{Name}}");
+            template.TemplateContent.Should().Be("Hey {{Name}},<br />This is {{Description}}.");
         }
 
         using (var scope = _testHost.Services.CreateScope())
@@ -109,9 +108,9 @@ public class TemplateEngine_PhysicalStorageTests(ITestOutputHelper testOutputHel
 
             var template = await templateService.LoadAndParseTemplateAsync(model);
 
-            Assert.That(template, Is.Not.Null);
-            Assert.That(template.TemplateTitle, Is.EqualTo("Hello John"));
-            Assert.That(template.TemplateContent, Is.EqualTo("Hey John,<br />This is A test model."));
+            template.Should().NotBeNull();
+            template.TemplateTitle.Should().Be("Hello John");
+            template.TemplateContent.Should().Be("Hey John,<br />This is A test model.");
         }
         
         await _testHost.StopAsync();

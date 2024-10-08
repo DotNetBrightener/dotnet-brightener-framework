@@ -48,13 +48,7 @@ public class MsSqlWebApiTestFactory<TEndpoint> : WebApplicationFactory<TEndpoint
 
         var containerName = String.Concat("sqlserver-2022-", currentTestingType, $"-{Guid.NewGuid()}");
 
-        MsSqlContainer = new MsSqlBuilder()
-                        .WithImage("mcr.microsoft.com/mssql/server:2022-latest")
-                        .WithPassword("Str0ng3stP@s5w0rd3ver!")
-                        .WithName(containerName)
-                        .WithWaitStrategy(Wait.ForUnixContainer()
-                                              .UntilMessageIsLogged("SQL Server is now ready for client connections"))
-                        .Build();
+        MsSqlContainer = MsSqlContainerGenerator.CreateContainer(containerName);
 
         await MsSqlContainer.StartAsync();
         
@@ -111,13 +105,7 @@ public class MsSqlWebApiTestFactory<TEndpoint, TDbContext> : WebApplicationFacto
 
         var containerName = String.Concat("sqlserver-2022-", currentTestingType, $"-{Guid.NewGuid()}");
 
-        MsSqlContainer = new MsSqlBuilder()
-                        .WithImage("mcr.microsoft.com/mssql/server:2022-latest")
-                        .WithPassword("Str0ng3stP@s5w0rd3ver!")
-                        .WithName(containerName)
-                        .WithWaitStrategy(Wait.ForUnixContainer()
-                                              .UntilMessageIsLogged("SQL Server is now ready for client connections"))
-                        .Build();
+        MsSqlContainer = MsSqlContainerGenerator.CreateContainer(containerName);
 
         await MsSqlContainer.StartAsync();
 

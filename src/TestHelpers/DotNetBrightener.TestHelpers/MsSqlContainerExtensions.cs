@@ -1,4 +1,5 @@
 ﻿// ReSharper disable once CheckNamespace
+
 namespace Testcontainers.MsSql;
 
 public static class MsSqlContainerExtensions
