@@ -1,5 +1,4 @@
 ﻿#nullable enable
-using DotNetBrightener.DataAccess.Auditing.Internal;
 using DotNetBrightener.DataAccess.EF.Auditing;
 using DotNetBrightener.DataAccess.EF.Internal;
 using DotNetBrightener.DataAccess.Models.Auditing;
@@ -10,6 +9,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using System.Collections.Immutable;
+using DotNetBrightener.DataAccess.EF.Auditing.Internal;
 using Uuid7 = DotNetBrightener.DataAccess.Models.Utils.Internal.Uuid7;
 
 namespace DotNetBrightener.DataAccess.EF.Interceptors;

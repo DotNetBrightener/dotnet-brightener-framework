@@ -1,21 +1,41 @@
-﻿using Testcontainers.MsSql;
+﻿using DotNet.Testcontainers.Builders;
+using Testcontainers.MsSql;
+using Xunit;
+using Xunit.Abstractions;
 
 namespace DotNetBrightener.TestHelpers;
 
-public abstract class MsSqlServerBaseXUnitTest : IAsyncDisposable
+public abstract class MsSqlServerBaseXUnitTest(ITestOutputHelper testOutputHelper) : IAsyncLifetime
 {
-    protected readonly MsSqlContainer MsSqlContainer = new MsSqlBuilder()
-                                                      .WithPassword("Str0ng3stP@s5w0rd3ver!")
-                                                      .Build();
+    protected MsSqlContainer MsSqlContainer;
 
-    protected string ConnectionString => MsSqlContainer.GetConnectionString($"MsSqlServerBaseTest");
 
-    protected MsSqlServerBaseXUnitTest()
+    protected string ConnectionString;
+
+    public async Task InitializeAsync()
     {
-        MsSqlContainer.StartAsync().Wait();
+        var currentTestingType = GetType().Name;
+
+        var containerName = String.Concat("sqlserver-2022-", currentTestingType, $"-{Guid.NewGuid()}");
+
+        testOutputHelper.WriteLine($"Spinning up container with Name: {containerName}");
+
+        MsSqlContainer = new MsSqlBuilder()
+                        .WithImage("mcr.microsoft.com/mssql/server:2022-latest")
+                        .WithPassword("Str0ng3stP@s5w0rd3ver!")
+                        .WithName(containerName)
+                        .WithWaitStrategy(Wait.ForUnixContainer()
+                                              .UntilMessageIsLogged("SQL Server is now ready for client connections"))
+                        .Build();
+
+        await MsSqlContainer.StartAsync();
+
+        testOutputHelper.WriteLine($"Container {containerName} started");
+
+        ConnectionString = MsSqlContainer.GetConnectionString("MsSqlServerBaseTest");
     }
 
-    public async ValueTask DisposeAsync()
+    async Task IAsyncLifetime.DisposeAsync()
     {
         await MsSqlContainer.DisposeAsync();
     }

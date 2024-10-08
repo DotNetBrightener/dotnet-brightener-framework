@@ -1,5 +1,5 @@
-﻿using DotNetBrightener.DataAccess.Auditing.Internal;
-using DotNetBrightener.DataAccess.EF.Auditing;
+﻿using DotNetBrightener.DataAccess.EF.Auditing;
+using DotNetBrightener.DataAccess.EF.Auditing.Internal;
 using DotNetBrightener.DataAccess.EF.Interceptors;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 

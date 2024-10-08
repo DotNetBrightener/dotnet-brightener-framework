@@ -704,9 +704,6 @@ public class Repository : IRepository
 
     public async Task<int> CommitChangesAsync()
     {
-        List<EntityEntry> insertedEntities = [];
-        List<EntityEntry> updatedEntities  = [];
-
         try
         {
             if (!DbContext.ChangeTracker.HasChanges())
@@ -730,33 +727,6 @@ public class Repository : IRepository
 
             throw;
         }
-        finally
-        {
-            if (insertedEntities.Count != 0 ||
-                updatedEntities.Count != 0)
-            {
-                await OnAfterSaveChanges(insertedEntities, updatedEntities);
-            }
-        }
-    }
-
-    protected virtual async Task OnAfterSaveChanges(List<EntityEntry> insertedEntities,
-                                                    List<EntityEntry> updatedEntities)
-    {
-        if (EventPublisher is null ||
-            (insertedEntities.Count == 0 &&
-             updatedEntities.Count == 0))
-        {
-            return;
-        }
-
-        await EventPublisher.Publish(new DbContextAfterSaveChanges
-        {
-            InsertedEntityEntries = insertedEntities,
-            UpdatedEntityEntries  = updatedEntities,
-            CurrentUserId         = CurrentLoggedInUserResolver?.CurrentUserId,
-            CurrentUserName       = CurrentLoggedInUserResolver?.CurrentUserName,
-        });
     }
 
     private SetPropertyBuilder<T> PrepareUpdatePropertiesBuilder<T>(Expression<Func<T, T>> updateExpression)

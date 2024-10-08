@@ -1,17 +1,16 @@
 ﻿using Microsoft.Extensions.Logging;
-using Xunit.Abstractions;
 
 namespace DotNetBrightener.TestHelpers;
 
-public class XunitLogger : ILogger
+internal class XunitLogger : ILogger
 {
-    private readonly ITestOutputHelper _outputHelper;
-    private readonly string            _categoryName;
+    private          LogQueue _logQueue;
+    private readonly string   _categoryName;
 
-    public XunitLogger(ITestOutputHelper outputHelper, string categoryName)
+    public XunitLogger(LogQueue logQueue, string categoryName)
     {
-        _outputHelper = outputHelper;
-        _categoryName = categoryName;
+        _logQueue = logQueue;
+        _categoryName  = categoryName;
     }
 
     public IDisposable BeginScope<TState>(TState state) => null;
@@ -25,11 +24,11 @@ public class XunitLogger : ILogger
         var message = formatter(state, exception);
         if (string.IsNullOrEmpty(message)) return;
 
-        _outputHelper.WriteLine($"{logLevel}: {_categoryName}: {message}");
+        _logQueue.Enqueue($"{logLevel}: {_categoryName}: {message}").Wait();
 
         if (exception != null)
         {
-            _outputHelper.WriteLine(exception.ToString());
+            _logQueue.Enqueue(exception.ToString()).Wait();
         }
     }
 }

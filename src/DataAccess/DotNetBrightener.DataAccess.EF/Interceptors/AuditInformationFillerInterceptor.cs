@@ -1,6 +1,10 @@
 ﻿#nullable enable
+using DotNetBrightener.DataAccess.EF.Events;
+using DotNetBrightener.DataAccess.Events;
 using DotNetBrightener.DataAccess.Models;
+using DotNetBrightener.Plugins.EventPubSub;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Uuid7 = DotNetBrightener.DataAccess.Models.Utils.Internal.Uuid7;
@@ -11,6 +15,10 @@ internal class AuditInformationFillerInterceptor(IServiceProvider serviceProvide
 {
     private readonly IDateTimeProvider? _dateTimeProvider = serviceProvider.TryGet<IDateTimeProvider>();
     private readonly ILogger?           _logger = serviceProvider.TryGet<ILogger<AuditInformationFillerInterceptor>>();
+    private readonly IEventPublisher?   _eventPublisher = serviceProvider.TryGet<IEventPublisher>();
+
+    private readonly IInterceptorsEntriesContainer? _entriesContainer =
+        serviceProvider.TryGet<IInterceptorsEntriesContainer>();
 
     private readonly ICurrentLoggedInUserResolver? _currentLoggedInUserResolver =
         serviceProvider.TryGet<ICurrentLoggedInUserResolver>();
@@ -82,6 +90,8 @@ internal class AuditInformationFillerInterceptor(IServiceProvider serviceProvide
                                       utcNow);
                     entry.Property(CreatedDatePropName).CurrentValue = utcNow;
                 }
+
+                _entriesContainer?.InsertedEntityEntries.Add(entry);
             }
 
             if (entry.State is EntityState.Modified)
@@ -103,9 +113,79 @@ internal class AuditInformationFillerInterceptor(IServiceProvider serviceProvide
                                       utcNow);
                     entry.Property(LastUpdatedPropName).CurrentValue = utcNow;
                 }
+
+                _entriesContainer?.ModifiedEntityEntries.Add(entry);
             }
         }
 
         return await base.SavingChangesAsync(eventData, result, cancellationToken);
+    }
+
+    public override async ValueTask<int> SavedChangesAsync(SaveChangesCompletedEventData eventData,
+                                                           int                           result,
+                                                           CancellationToken cancellationToken =
+                                                               new CancellationToken())
+    {
+        if (_eventPublisher is not null &&
+            _entriesContainer is not null)
+        {
+            var insertedEntities = _entriesContainer.InsertedEntityEntries;
+            var updatedEntities  = _entriesContainer.ModifiedEntityEntries;
+
+
+            var eventMessages = new List<IEventMessage>();
+
+            ProcessEntitiesEvent(insertedEntities, eventMessages, typeof(EntityCreated<>));
+
+            ProcessEntitiesEvent(updatedEntities, eventMessages, typeof(EntityUpdated<>));
+
+            if (eventMessages.Any())
+            {
+                await eventMessages.ParallelForEachAsync(eventMsg =>
+                {
+                    return _eventPublisher.Publish(eventMsg, runInBackground: true);
+                });
+            }
+        }
+
+        return await base.SavedChangesAsync(eventData, result, cancellationToken);
+    }
+
+    private void ProcessEntitiesEvent(List<EntityEntry>   entityEntries,
+                                      List<IEventMessage> eventMessages,
+                                      Type                eventType)
+    {
+        if (!entityEntries.Any())
+        {
+            return;
+        }
+
+        var entityTypes = entityEntries.Select(entry => entry.Entity.GetType())
+                                       .Distinct()
+                                       .ToArray();
+
+        foreach (var entityType in entityTypes)
+        {
+            var actualEntityType = entityType.FullName?.StartsWith(CastleProxies) == true
+                                       ? entityType.BaseType
+                                       : entityType;
+
+            var eventMessageType = eventType.MakeGenericType(actualEntityType!);
+
+            var entries = entityEntries.Where(entry => entry.Entity.GetType() == entityType)
+                                       .ToArray();
+
+            foreach (var record in entries)
+            {
+                if (Activator.CreateInstance(eventMessageType,
+                                             record.Entity,
+                                             _currentLoggedInUserResolver?.CurrentUserId,
+                                             _currentLoggedInUserResolver?.CurrentUserName) is IEventMessage
+                    entityEventMsg)
+                {
+                    eventMessages.Add(entityEventMsg);
+                }
+            }
+        }
     }
 }

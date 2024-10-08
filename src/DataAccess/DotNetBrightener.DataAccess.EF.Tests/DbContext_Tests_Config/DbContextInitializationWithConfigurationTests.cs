@@ -7,10 +7,11 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Moq;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace DotNetBrightener.DataAccess.EF.Tests.DbContext_Tests_Config;
 
-public class DbContextInitializationWithConfigurationTests : MsSqlServerBaseXUnitTest
+public class DbContextInitializationWithConfigurationTests(ITestOutputHelper testOutputHelper) : MsSqlServerBaseXUnitTest(testOutputHelper)
 {
     [Fact]
     public async Task Configurator_ShouldBeExecuted()

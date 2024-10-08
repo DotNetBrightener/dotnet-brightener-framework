@@ -17,15 +17,23 @@ using Xunit.Abstractions;
 
 namespace DotNetBrightener.DataAccess.Auditing.Tests;
 
-public class Auditing_Repository_Tests(ITestOutputHelper testOutputHelper) : MsSqlServerBaseXUnitTest
+public class Auditing_Repository_Tests : MsSqlServerBaseXUnitTest
 {
+    private readonly ITestOutputHelper _testOutputHelper;
+
+    public Auditing_Repository_Tests(ITestOutputHelper testOutputHelper)
+        : base(testOutputHelper)
+    {
+        _testOutputHelper = testOutputHelper;
+    }
+
     [Fact]
     public async Task AuditingService_UseExpression_ShouldTrackChangesFromRepository()
     {
         long insertedEntityId = 0;
         var  insertedDateTime = DateTimeOffset.UtcNow;
         {
-            var host = CreateTestHost();
+            var host = await CreateTestHost();
 
             // Acts
             await host.StartAsync();
@@ -75,24 +83,6 @@ public class Auditing_Repository_Tests(ITestOutputHelper testOutputHelper) : MsS
         //                 .BeEquivalentTo(expectedPropNamesReturned.OrderBy(x => x).ToList());
 
         //initializedScopes.Count.Should().Be(3);
-
-
-        // clean up
-        {
-            var host = CreateTestHost();
-
-            // Acts
-            await host.StartAsync();
-
-            // Clean up
-            await WithScoped(host,
-                             async (dbContext, repository, serviceProvider) =>
-                             {
-                                 // await dbContext.Database.EnsureDeletedAsync();
-                             });
-
-            await host.StopAsync();
-        }
     }
 
     private async Task UpdateUsingExpression_ShouldOutputAuditEntry(long insertedEntityId)
@@ -119,7 +109,7 @@ public class Auditing_Repository_Tests(ITestOutputHelper testOutputHelper) : MsS
                                   cts.Cancel();
                               });
 
-        var host = CreateTestHost((hostContext, services) =>
+        var host = await CreateTestHost((hostContext, services) =>
         {
             services.AddEventPubSubService();
             services.AddScoped<IMockReceiveData>(p => mockAuditTrailHandler.Object);
@@ -179,7 +169,7 @@ public class Auditing_Repository_Tests(ITestOutputHelper testOutputHelper) : MsS
                                   cts.Cancel();
                               });
 
-        var host = CreateTestHost((hostContext, services) =>
+        var host = await CreateTestHost((hostContext, services) =>
         {
             services.AddEventPubSubService();
             services.AddScoped<IMockReceiveData>(p => mockAuditTrailHandler.Object);
@@ -223,12 +213,12 @@ public class Auditing_Repository_Tests(ITestOutputHelper testOutputHelper) : MsS
         await host.StopAsync();
     }
 
-    private IHost CreateTestHost(Action<HostBuilderContext, IServiceCollection> configureServices = null)
+    private async Task<IHost> CreateTestHost(Action<HostBuilderContext, IServiceCollection> configureServices = null)
     {
-        return XUnitTestHost.CreateTestHost(testOutputHelper,
+        return XUnitTestHost.CreateTestHost(testOutputHelper: _testOutputHelper,
                                             (hostContext, services) =>
                                             {
-                                                ConfigureDataAccessService( services, hostContext);
+                                                ConfigureDataAccessService(services, hostContext);
                                                 configureServices?.Invoke(hostContext, services);
                                             });
     }
@@ -237,6 +227,7 @@ public class Auditing_Repository_Tests(ITestOutputHelper testOutputHelper) : MsS
                                             HostBuilderContext hostContext)
     {
         services.TryAddSingleton<EFCoreExtendedServiceFactory>();
+
         services
            .AddEFCentralizedDataServices<
                 TestAuditingDbContext>(new DatabaseConfiguration

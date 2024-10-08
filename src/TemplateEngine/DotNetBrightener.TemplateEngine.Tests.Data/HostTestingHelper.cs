@@ -1,22 +1,24 @@
+using DotNetBrightener.TestHelpers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Xunit.Abstractions;
 
 namespace DotNetBrightener.TemplateEngine.Tests.Data;
 
 public static class HostTestingHelper
 {
-    public static IHost CreateTestHost(Action<IServiceCollection> configureServices = null)
+    public static IHost CreateTestHost(ITestOutputHelper          testOutputHelper,
+                                       Action<IServiceCollection> configureServices = null)
     {
-        var builder = new HostBuilder()
-           .ConfigureServices((hostContext, services) =>
-            {
-                services.AddHttpContextAccessor();
-                services.AddLogging();
-                services.AddTemplateEngine();
-                configureServices?.Invoke(services);
-            });
+        var host = XUnitTestHost.CreateTestHost(testOutputHelper,
+                                                (context, services) =>
+                                                {
+                                                    services.AddHttpContextAccessor();
 
-        var host = builder.Build();
+                                                    services.AddTemplateEngine();
+
+                                                    configureServices?.Invoke(services);
+                                                });
 
         return host;
     }

@@ -1,5 +1,4 @@
 ﻿using DotNetBrightener.DataAccess;
-using DotNetBrightener.DataAccess.Auditing.Internal;
 using DotNetBrightener.DataAccess.EF.Auditing;
 using DotNetBrightener.DataAccess.EF.Conventions;
 using DotNetBrightener.DataAccess.EF.EnumLookup;
@@ -118,6 +117,7 @@ public static class ServiceCollectionExtensions
 
         serviceCollection.AddDbContextConfigurator<AuditInformationFillerDbContextConfigurator>();
         serviceCollection.AddScoped<AuditInformationFillerInterceptor>();
+        serviceCollection.AddScoped<IInterceptorsEntriesContainer, InterceptorEntriesContainer>();
 
         serviceCollection.AddAuditingService();
 

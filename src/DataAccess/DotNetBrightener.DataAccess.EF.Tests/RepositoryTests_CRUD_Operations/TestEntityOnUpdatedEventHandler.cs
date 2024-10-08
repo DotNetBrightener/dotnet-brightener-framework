@@ -1,21 +1,24 @@
 ﻿using DotNetBrightener.DataAccess.Events;
 using DotNetBrightener.Plugins.EventPubSub;
-using NUnit.Framework;
+using FluentAssertions;
 
 namespace DotNetBrightener.DataAccess.EF.Tests.RepositoryTests_CRUD_Operations;
 
-public class TestEntityOnUpdatedEventHandler(TestDbContext dbContext) : IEventHandler<EntityUpdated<TestEntity>>
+public class TestEntityOnUpdatedEventHandler(IMockAwaiter  awaiter) : IEventHandler<EntityUpdated<TestEntity>>
 {
     public int Priority => 100;
 
     public async Task<bool> HandleEvent(EntityUpdated<TestEntity> eventMessage)
     {
-        Assert.That(eventMessage.Entity, Is.Not.Null);
+        eventMessage.Entity.Should().NotBeNull();
 
-        eventMessage.Entity.Name = $"{eventMessage.Entity.Name}_Updated by update event handler";
+        var expectedData = new TestEntity();
 
-        dbContext.Set<TestEntity>().Update(eventMessage.Entity);
-        await dbContext.SaveChangesAsync();
+        eventMessage.Entity.CopyTo(expectedData);
+
+        expectedData.Name = eventMessage.Entity!.Name + "_Updated by update event handler";
+
+        awaiter.WaitFinished(expectedData);
 
         return true;
     }

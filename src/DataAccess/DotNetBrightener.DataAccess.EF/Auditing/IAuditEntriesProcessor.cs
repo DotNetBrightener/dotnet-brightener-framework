@@ -1,10 +1,9 @@
-﻿using System.Collections.Immutable;
-using System.Reflection;
-using DotNetBrightener.DataAccess.Models;
-using DotNetBrightener.Plugins.EventPubSub;
+﻿using DotNetBrightener.Plugins.EventPubSub;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using System.Collections.Immutable;
+using System.Reflection;
 
 namespace DotNetBrightener.DataAccess.EF.Auditing;
 

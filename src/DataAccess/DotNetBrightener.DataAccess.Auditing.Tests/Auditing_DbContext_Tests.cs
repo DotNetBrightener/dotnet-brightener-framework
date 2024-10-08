@@ -10,13 +10,22 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Moq;
 using System.Collections.Immutable;
+using Testcontainers.MsSql;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace DotNetBrightener.DataAccess.Auditing.Tests;
 
-public class Auditing_DbContext_Tests(ITestOutputHelper testOutputHelper) : MsSqlServerBaseXUnitTest
+public class Auditing_DbContext_Tests : MsSqlServerBaseXUnitTest
 {
+    private readonly ITestOutputHelper _testOutputHelper;
+
+    public Auditing_DbContext_Tests(ITestOutputHelper testOutputHelper)
+        : base(testOutputHelper)
+    {
+        _testOutputHelper = testOutputHelper;
+    }
+
     [Fact]
     public async Task AuditingService_ShouldTrackChangesFromDbContext()
     {
@@ -24,14 +33,13 @@ public class Auditing_DbContext_Tests(ITestOutputHelper testOutputHelper) : MsSq
 
         // Arrange
 
-        var host = CreateTestHost((hostContext, services) =>
+        var host = await CreateTestHost((hostContext, services) =>
         {
             services.AddEventPubSubService();
             services.AddScoped<IMockReceiveData>(p => mockAuditTrailHandler.Object);
             services.AddScoped<IEventHandler, HandleAuditTrail>();
         });
-
-
+        
         // Acts
         await host.StartAsync();
 
@@ -134,9 +142,9 @@ public class Auditing_DbContext_Tests(ITestOutputHelper testOutputHelper) : MsSq
         await host.StopAsync();
     }
 
-    private IHost CreateTestHost(Action<HostBuilderContext, IServiceCollection> configureServices = null)
+    private async Task<IHost> CreateTestHost(Action<HostBuilderContext, IServiceCollection> configureServices = null)
     {
-        return XUnitTestHost.CreateTestHost(testOutputHelper,
+        return XUnitTestHost.CreateTestHost(_testOutputHelper,
                                             (hostContext, services) =>
                                             {
                                                 ConfigureDataAccessService(services, hostContext);
@@ -148,6 +156,7 @@ public class Auditing_DbContext_Tests(ITestOutputHelper testOutputHelper) : MsSq
                                             HostBuilderContext hostContext)
     {
         services.TryAddSingleton<EFCoreExtendedServiceFactory>();
+
         services
            .AddEFCentralizedDataServices<
                 TestAuditingDbContext>(new DatabaseConfiguration

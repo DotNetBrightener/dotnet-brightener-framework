@@ -4,18 +4,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NUnit.Framework;
+using Xunit;
+using Xunit.Abstractions;
+using Assert = NUnit.Framework.Assert;
 
 namespace DotNetBrightener.DataAccess.DataMigration.Tests;
 
-internal class DataMigrationTests_SqlServer: MsSqlServerBaseNUnitTest
+public class DataMigrationTests_SqlServer(ITestOutputHelper testOutputHelper): MsSqlServerBaseXUnitTest(testOutputHelper)
 {
-    [TearDown]
-    public void TearDown()
-    {
-        TearDownHost();
-    }
-
-    [Test]
+    [Fact]
     public async Task AddDataMigrator_ShouldThrowBecauseOfNotInitializeDataMigrationFirst()
     {
         Assert.Throws(Is.TypeOf<InvalidOperationException>()
@@ -33,7 +30,7 @@ internal class DataMigrationTests_SqlServer: MsSqlServerBaseNUnitTest
                       });
     }
 
-    [Test]
+    [Fact]
     public async Task AddDataMigrator_ShouldThrowBecauseOfNoAttribute()
     {
         Assert.Throws(Is.TypeOf<InvalidOperationException>()
@@ -42,7 +39,7 @@ internal class DataMigrationTests_SqlServer: MsSqlServerBaseNUnitTest
                       () => ConfigureService<ShouldNotBeRegisteredMigration>());
     }
 
-    [Test]
+    [Fact]
     public async Task AddDataMigrator_ShouldRegisterWithoutIssue()
     {
         // Arrange
@@ -57,7 +54,7 @@ internal class DataMigrationTests_SqlServer: MsSqlServerBaseNUnitTest
         Assert.That(metadata.Values.ElementAt(0), Is.EqualTo(typeof(GoodMigration)));
     }
 
-    [Test]
+    [Fact]
     public async Task AddDataMigrator_ShouldExecuteAtAppStart()
     {
         // Arrange
@@ -93,7 +90,7 @@ internal class DataMigrationTests_SqlServer: MsSqlServerBaseNUnitTest
         await host.StopAsync();
     }
 
-    [Test]
+    [Fact]
     public async Task AddDataMigrator_ShouldExecuteAtAppStart_WithoutWritingHistoryDueToException()
     {
         // Arrange
@@ -140,25 +137,5 @@ internal class DataMigrationTests_SqlServer: MsSqlServerBaseNUnitTest
         var host = builder.Build();
 
         return host;
-    }
-
-    private void TearDownHost()
-    {
-        var builder = new HostBuilder()
-           .ConfigureServices((hostContext, serviceCollection) =>
-            {
-                serviceCollection.AddDbContext<DataMigrationDbContext>(options =>
-                {
-                    options.UseSqlServer(ConnectionString);
-                });
-            });
-
-        var host = builder.Build();
-
-        using var serviceScope    = host.Services.CreateScope();
-        var       serviceProvider = serviceScope.ServiceProvider;
-
-        using var dbContext = serviceProvider.GetRequiredService<DataMigrationDbContext>();
-        dbContext.Database.EnsureDeleted();
     }
 }

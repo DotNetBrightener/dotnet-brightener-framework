@@ -5,48 +5,64 @@ using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Moq;
+using Newtonsoft.Json;
 using NUnit.Framework;
+using Testcontainers.MsSql;
+using Xunit;
+using Xunit.Abstractions;
+using Xunit.Sdk;
+using Assert = NUnit.Framework.Assert;
 
 namespace DotNetBrightener.DataAccess.EF.Tests.RepositoryTests_CRUD_Operations;
 
-internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
+public class EfRepositoryTest : MsSqlServerBaseXUnitTest
 {
-    [TearDown]
-    public async Task TearDown()
+    private          CancellationTokenSource _cts;
+    private          Mock<IMockAwaiter>      _mockAwaiter;
+    private readonly ITestOutputHelper       _testOutputHelper;
+
+    public EfRepositoryTest(ITestOutputHelper testOutputHelper)
+        : base(testOutputHelper)
     {
-        await TearDownHost();
+        _testOutputHelper = testOutputHelper;
     }
 
-    [Test]
+    [Fact]
     public async Task InsertMany_ShouldExecuteSuccessfully()
     {
         var host = ConfigureServices();
+        await host.StartAsync();
 
         await InsertFakeData(host);
 
         using (var serviceScope = host.Services.CreateScope())
         {
             var serviceProvider = serviceScope.ServiceProvider;
-            var repository = serviceProvider.GetRequiredService<IRepository>();
+            var repository      = serviceProvider.GetRequiredService<IRepository>();
 
             var deletableEntityCount = await repository.CountAsync<TestEntity>();
 
             Assert.That(deletableEntityCount, Is.EqualTo(10));
         }
+
+        await host.StopAsync();
     }
 
 
-    [Test]
+    [Fact]
     public async Task InsertOne_ShouldExecuteSuccessfully()
     {
         var host = ConfigureServices((services) =>
         {
         });
 
+        await host.StartAsync();
+
         using (var serviceScope = host.Services.CreateScope())
         {
             var serviceProvider = serviceScope.ServiceProvider;
-            var repository = serviceProvider.GetRequiredService<IRepository>();
+            var repository      = serviceProvider.GetRequiredService<IRepository>();
 
             await repository.InsertAsync(new TestEntity
             {
@@ -55,32 +71,31 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
             await repository.CommitChangesAsync();
         }
 
-        // give the event handler some time to execute
-        await Task.Delay(TimeSpan.FromSeconds(3));
-
-        using (var serviceScope = host.Services.CreateScope())
+        while (!_cts.IsCancellationRequested)
         {
-            var serviceProvider = serviceScope.ServiceProvider;
-            var repository = serviceProvider.GetRequiredService<IRepository>();
-
-            var firstEntity = await repository.GetFirstAsync<TestEntity>(_ => true);
-            firstEntity.Should().NotBeNull();
-            firstEntity!.Name.Should().Be("Name1_Updated by event handler");
+            await Task.Delay(TimeSpan.FromSeconds(3));
         }
+
+        await Task.Delay(TimeSpan.FromSeconds(3));
+        _mockAwaiter.Verify(x => x.WaitFinished(It.Is<TestEntity>(x => x.Name.EndsWith("_Created by create event handler"))));
+
+        await host.StopAsync();
     }
 
 
-    [Test]
+    [Fact]
     public async Task Update_ShouldExecuteSuccessfully()
     {
         var host = ConfigureServices((services) =>
         {
         });
 
+        await host.StartAsync();
+
         using (var serviceScope = host.Services.CreateScope())
         {
             var serviceProvider = serviceScope.ServiceProvider;
-            var repository = serviceProvider.GetRequiredService<IRepository>();
+            var repository      = serviceProvider.GetRequiredService<IRepository>();
 
             await repository.InsertAsync(new TestEntity
             {
@@ -92,7 +107,7 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
         using (var serviceScope = host.Services.CreateScope())
         {
             var serviceProvider = serviceScope.ServiceProvider;
-            var repository = serviceProvider.GetRequiredService<IRepository>();
+            var repository      = serviceProvider.GetRequiredService<IRepository>();
 
             var firstEntity = await repository.GetFirstAsync<TestEntity>(_ => true);
             firstEntity!.Name = "Name1_Updated";
@@ -100,32 +115,32 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
             await repository.CommitChangesAsync();
         }
 
-        // give the event handler some time to execute
+        while (!_cts.IsCancellationRequested)
+        {
+            await Task.Delay(TimeSpan.FromSeconds(3));
+        }
+
         await Task.Delay(TimeSpan.FromSeconds(3));
 
+        _mockAwaiter.Verify(x => x.WaitFinished(It.Is<TestEntity>(x => x.Name.Equals("Name1_Updated_Updated by update event handler"))));
 
-        using (var serviceScope = host.Services.CreateScope())
-        {
-            var serviceProvider = serviceScope.ServiceProvider;
-            var repository = serviceProvider.GetRequiredService<IRepository>();
-
-            var firstEntity = await repository.GetFirstAsync<TestEntity>(_ => true);
-            Assert.That(firstEntity!.Name, Is.EqualTo("Name1_Updated_Updated by update event handler"));
-        }
+        await host.StopAsync();
     }
 
 
-    [Test]
+    [Fact]
     public async Task UpdateWithDto_ShouldExecuteSuccessfully()
     {
         var host = ConfigureServices((services) =>
         {
         });
 
+        await host.StartAsync();
+
         using (var serviceScope = host.Services.CreateScope())
         {
             var serviceProvider = serviceScope.ServiceProvider;
-            var repository = serviceProvider.GetRequiredService<IRepository>();
+            var repository      = serviceProvider.GetRequiredService<IRepository>();
 
             await repository.InsertAsync(new TestEntity
             {
@@ -137,7 +152,7 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
         using (var serviceScope = host.Services.CreateScope())
         {
             var serviceProvider = serviceScope.ServiceProvider;
-            var repository = serviceProvider.GetRequiredService<IRepository>();
+            var repository      = serviceProvider.GetRequiredService<IRepository>();
 
             var firstEntity = await repository.GetFirstAsync<TestEntity>(_ => true);
 
@@ -149,35 +164,31 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
             await repository.CommitChangesAsync();
         }
 
-        Thread.Sleep(TimeSpan.FromSeconds(2));
+        await Task.Delay(TimeSpan.FromSeconds(3));
 
-        using (var serviceScope = host.Services.CreateScope())
-        {
-            var serviceProvider = serviceScope.ServiceProvider;
-            var repository = serviceProvider.GetRequiredService<IRepository>();
+        _mockAwaiter.Verify(x => x.WaitFinished(It.Is<TestEntity>(x => x.Name.Equals("Name1_Updated_From_Logic, _Updated by update event handler"))));
 
-            var firstEntity = await repository.GetFirstAsync<TestEntity>(_ => true);
-
-            firstEntity!.Name.Should().Be("Name1_Updated_From_Logic, _Updated by update event handler");
-        }
+        await host.StopAsync();
     }
 
 
-    [Test]
+    [Fact]
     public async Task UpdateWithDto_UsingIgnore_ShouldExecuteSuccessfully()
     {
         var host = ConfigureServices((services) =>
         {
         });
 
+        await host.StartAsync();
+
         using (var serviceScope = host.Services.CreateScope())
         {
             var serviceProvider = serviceScope.ServiceProvider;
-            var repository = serviceProvider.GetRequiredService<IRepository>();
+            var repository      = serviceProvider.GetRequiredService<IRepository>();
 
             await repository.InsertAsync(new TestEntity
             {
-                Name = "Name1",
+                Name        = "Name1",
                 Description = "Original Description"
             });
             await repository.CommitChangesAsync();
@@ -186,7 +197,7 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
         using (var serviceScope = host.Services.CreateScope())
         {
             var serviceProvider = serviceScope.ServiceProvider;
-            var repository = serviceProvider.GetRequiredService<IRepository>();
+            var repository      = serviceProvider.GetRequiredService<IRepository>();
 
             var firstEntity = await repository.GetFirstAsync<TestEntity>(_ => true);
 
@@ -195,28 +206,28 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
             await repository.UpdateAsync(firstEntity!,
                                          new
                                          {
-                                             Name = "Name1_Updated_From_Logic, ",
+                                             Name        = "Name1_Updated_From_Logic, ",
                                              Description = "Description_Updated_From_Logic"
                                          },
                                          nameof(firstEntity.Description));
             await repository.CommitChangesAsync();
         }
 
-        Thread.Sleep(TimeSpan.FromSeconds(2));
+        await Task.Delay(TimeSpan.FromSeconds(3));
+        
+        _mockAwaiter.Verify(x => x.WaitFinished(It.Is<TestEntity>(x =>
+                                                                      x.Name
+                                                                       .Equals("Name1_Updated_From_Logic, _Updated by update event handler") &&
+                                                                      x.Description
+                                                                       .Equals("Original Description")
+                                                                 )));
 
-        using (var serviceScope = host.Services.CreateScope())
-        {
-            var serviceProvider = serviceScope.ServiceProvider;
-            var repository = serviceProvider.GetRequiredService<IRepository>();
 
-            var firstEntity = await repository.GetFirstAsync<TestEntity>(_ => true);
-            firstEntity!.Name.Should().Be("Name1_Updated_From_Logic, _Updated by update event handler");
-            firstEntity.Description.Should().Be("Original Description");
-        }
+        await host.StopAsync();
     }
 
 
-    [Test]
+    [Fact]
     public async Task UpdateMany_ShouldExecuteSuccessfully()
     {
         var host = ConfigureServices((services) =>
@@ -226,7 +237,7 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
         using (var serviceScope = host.Services.CreateScope())
         {
             var serviceProvider = serviceScope.ServiceProvider;
-            var repository = serviceProvider.GetRequiredService<IRepository>();
+            var repository      = serviceProvider.GetRequiredService<IRepository>();
 
             await repository.InsertAsync(new TestEntity
             {
@@ -266,7 +277,7 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
         using (var serviceScope = host.Services.CreateScope())
         {
             var serviceProvider = serviceScope.ServiceProvider;
-            var repository = serviceProvider.GetRequiredService<IRepository>();
+            var repository      = serviceProvider.GetRequiredService<IRepository>();
 
             var affectedRecords =
                 await repository.UpdateAsync<TestEntity>(entity => entity.Name.StartsWith("To update"),
@@ -283,7 +294,7 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
         using (var serviceScope = host.Services.CreateScope())
         {
             var serviceProvider = serviceScope.ServiceProvider;
-            var repository = serviceProvider.GetRequiredService<IRepository>();
+            var repository      = serviceProvider.GetRequiredService<IRepository>();
 
             var updatedEntities = repository.Fetch<TestEntity>(e => e.Name.StartsWith("Already Updated"))
                                             .ToArray();
@@ -298,7 +309,7 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
         }
     }
 
-    [Test]
+    [Fact]
     public async Task DeleteOne_ShouldExecuteSuccessfully()
     {
         var host = ConfigureServices();
@@ -308,7 +319,7 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
         using (var serviceScope = host.Services.CreateScope())
         {
             var serviceProvider = serviceScope.ServiceProvider;
-            var repository = serviceProvider.GetRequiredService<IRepository>();
+            var repository      = serviceProvider.GetRequiredService<IRepository>();
 
             await repository.DeleteOneAsync<TestEntity>(x => x.Name == "Name1");
         }
@@ -316,7 +327,7 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
         using (var serviceScope = host.Services.CreateScope())
         {
             var serviceProvider = serviceScope.ServiceProvider;
-            var repository = serviceProvider.GetRequiredService<IRepository>();
+            var repository      = serviceProvider.GetRequiredService<IRepository>();
 
             var record = await repository.GetFirstAsync<TestEntity>(x => x.Name == "Name1");
 
@@ -325,7 +336,7 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
         }
     }
 
-    [Test]
+    [Fact]
     public async Task DeleteOne_ShouldExecute_Not_Successfully()
     {
         var host = ConfigureServices();
@@ -338,7 +349,7 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
             using (var serviceScope = host.Services.CreateScope())
             {
                 var serviceProvider = serviceScope.ServiceProvider;
-                var repository = serviceProvider.GetRequiredService<IRepository>();
+                var repository      = serviceProvider.GetRequiredService<IRepository>();
 
                 repository.DeleteOneAsync<TestEntity>(x => x.Name == "Name1").Wait();
             }
@@ -351,7 +362,7 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
         using (var serviceScope = host.Services.CreateScope())
         {
             var serviceProvider = serviceScope.ServiceProvider;
-            var repository = serviceProvider.GetRequiredService<IRepository>();
+            var repository      = serviceProvider.GetRequiredService<IRepository>();
 
             var record = await repository.Fetch<TestEntity>(x => x.Name == "Name1" && !x.IsDeleted)
                                          .CountAsync();
@@ -360,7 +371,7 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
         }
     }
 
-    [Test]
+    [Fact]
     public async Task DeleteMany_ShouldExecuteSuccessfully()
     {
         var host = ConfigureServices();
@@ -370,7 +381,7 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
         using (var serviceScope = host.Services.CreateScope())
         {
             var serviceProvider = serviceScope.ServiceProvider;
-            var repository = serviceProvider.GetRequiredService<IRepository>();
+            var repository      = serviceProvider.GetRequiredService<IRepository>();
 
             var affectedRecords = await repository.DeleteManyAsync<TestEntity>(x => x.Name != "Name1", "Test deletion");
 
@@ -380,7 +391,7 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
         using (var serviceScope = host.Services.CreateScope())
         {
             var serviceProvider = serviceScope.ServiceProvider;
-            var repository = serviceProvider.GetRequiredService<IRepository>();
+            var repository      = serviceProvider.GetRequiredService<IRepository>();
 
             var records = repository.Fetch<TestEntity>(x => x.Name != "Name1");
 
@@ -397,7 +408,7 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
         using (var serviceScope = host.Services.CreateScope())
         {
             var serviceProvider = serviceScope.ServiceProvider;
-            var repository = serviceProvider.GetRequiredService<IRepository>();
+            var repository      = serviceProvider.GetRequiredService<IRepository>();
 
             var entities = new List<TestEntity>
             {
@@ -450,65 +461,67 @@ internal class EfRepositoryTest : MsSqlServerBaseNUnitTest
 
     private IHost ConfigureServices(Action<IServiceCollection> configureServices = null)
     {
-        var builder = new HostBuilder()
-           .ConfigureServices((hostContext, services) =>
-            {
-                services.AddEFCentralizedDataServices<TestDbContext>(new DatabaseConfiguration
-                {
-                    ConnectionString = ConnectionString,
-                    DatabaseProvider = DatabaseProvider.MsSql
-                },
-                                                                     hostContext.Configuration,
-                                                                     optionsBuilder =>
-                                                                     {
-                                                                         optionsBuilder
-                                                                            .UseSqlServer(ConnectionString,
-                                                                                          c =>
-                                                                                          {
-                                                                                              c.EnableRetryOnFailure(20);
-                                                                                          });
-                                                                     });
+        _cts         = new CancellationTokenSource();
+        _mockAwaiter = new Mock<IMockAwaiter>();
+        _mockAwaiter.Setup(x => x.WaitFinished(It.IsAny<object>()))
+                    .Callback<object>((calledData) =>
+                     {
+                         _testOutputHelper.WriteLine("MockAwaiter called with data: ");
+                         _testOutputHelper.WriteLine(JsonConvert.SerializeObject(calledData, Formatting.Indented));
+                         _testOutputHelper.WriteLine("\r\n-----\r\n");
 
-                configureServices?.Invoke(services);
-            });
+                         _cts.Cancel();
+                     });
 
-        builder.ConfigureServices((context, services) =>
+        var host = XUnitTestHost.CreateTestHost(_testOutputHelper,
+                                                (hostContext, services) =>
+                                                {
+                                                    Configure(hostContext, services);
+
+                                                    configureServices?.Invoke(services);
+                                                });
+
+
+        using (var serviceScope = host.Services.CreateScope())
         {
-            services.AddEventPubSubService()
-                    .AddEventHandlersFromAssemblies();
+            var serviceProvider = serviceScope.ServiceProvider;
 
-            services.AddSingleton(services);
-        });
-
-        var host = builder.Build();
-
-
-        using var serviceScope = host.Services.CreateScope();
-        var serviceProvider = serviceScope.ServiceProvider;
-
-        using var dbContext = serviceProvider.GetRequiredService<TestDbContext>();
-        dbContext.Database.EnsureCreated();
+            using (var dbContext = serviceProvider.GetRequiredService<TestDbContext>())
+            {
+                dbContext.Database.EnsureCreated();
+            }
+        }
 
         return host;
     }
 
-    private async Task TearDownHost()
+    private void Configure(HostBuilderContext hostContext, IServiceCollection services)
     {
-        var builder = new HostBuilder()
-           .ConfigureServices((hostContext, serviceCollection) =>
-            {
-                serviceCollection.AddDbContext<TestDbContext>(options =>
-                {
-                    options.UseSqlServer(ConnectionString);
-                });
-            });
+        services.AddSingleton<IMockAwaiter>(_mockAwaiter.Object);
 
-        var host = builder.Build();
+        var connectionString = MsSqlContainer.GetConnectionString($"MsSqlServerBaseTest");
 
-        using var serviceScope = host.Services.CreateScope();
-        var serviceProvider = serviceScope.ServiceProvider;
+        services
+           .AddEFCentralizedDataServices<TestDbContext>(new DatabaseConfiguration
+                                                        {
+                                                            ConnectionString = connectionString,
+                                                            DatabaseProvider =
+                                                                DatabaseProvider.MsSql
+                                                        },
+                                                        hostContext.Configuration,
+                                                        optionsBuilder =>
+                                                        {
+                                                            optionsBuilder
+                                                               .UseSqlServer(connectionString,
+                                                                             c =>
+                                                                             {
+                                                                                 c.EnableRetryOnFailure(20);
+                                                                             });
+                                                        });
+        services.AddEventPubSubService()
+                .AddEventHandlersFromAssemblies();
 
-        await using var dbContext = serviceProvider.GetRequiredService<TestDbContext>();
-        await dbContext.Database.EnsureDeletedAsync();
+
+        services.AddSingleton(services);
     }
 }

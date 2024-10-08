@@ -11,20 +11,13 @@ internal class TemplateRegistrationStartupTask(
     IHostApplicationLifetime                 lifetime)
     : IHostedService, IDisposable
 {
-    public Task StartAsync(CancellationToken cancellationToken)
-    {
-        lifetime.ApplicationStarted.Register(InitializeAfterAppStarted);
-
-        return Task.CompletedTask;
-    }
-
-    private void InitializeAfterAppStarted()
+    public async Task StartAsync(CancellationToken cancellationToken)
     {
         using (var scope = serviceScopeFactory.CreateScope())
         {
             var serviceProvider     = scope.ServiceProvider;
             var registrationService = serviceProvider.GetRequiredService<ITemplateRegistrationService>();
-            registrationService.RegisterTemplates().Wait();
+            await registrationService.RegisterTemplates();
         }
     }
 

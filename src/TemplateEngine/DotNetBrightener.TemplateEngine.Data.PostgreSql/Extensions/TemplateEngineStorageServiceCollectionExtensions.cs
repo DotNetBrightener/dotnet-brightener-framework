@@ -1,4 +1,5 @@
-﻿using DotNetBrightener.TemplateEngine.Data.PostgreSql.Data;
+﻿using DotNetBrightener.DataAccess;
+using DotNetBrightener.TemplateEngine.Data.PostgreSql.Data;
 using DotNetBrightener.TemplateEngine.Data.PostgreSql.Services;
 using DotNetBrightener.TemplateEngine.Data.Services;
 using LinqToDB.EntityFrameworkCore;
@@ -24,16 +25,14 @@ public static class TemplateEngineStorageServiceCollectionExtensions
                                     })
                          .UseLazyLoadingProxies();
         });
+        
+        serviceCollection.TryAddScoped<ScopedCurrentUserResolver>();
+
+        serviceCollection.Replace(ServiceDescriptor.Scoped<ITemplateRegistrationService, PostgreSqlTemplateRegistrationService>());
+        serviceCollection.Replace(ServiceDescriptor.Scoped<ITemplateStorageService, PosgreSqlTemplateStorageService>());
 
         serviceCollection.AddScoped<TemplateEngineRepository>();
-
-        serviceCollection.Replace(ServiceDescriptor
-                                     .Scoped<ITemplateRegistrationService, PostgreSqlTemplateRegistrationService>());
-        serviceCollection.Replace(ServiceDescriptor.Scoped<ITemplateStorageService, PosgreSqlTemplateStorageService>());
-        
         serviceCollection.AddScoped<ITemplateRecordDataService, InternalTemplateRecordDataService>();
-
-        serviceCollection.AddAutoMigrationForDbContextAfterAppStarted<TemplateEngineDbContext>();
 
         LinqToDBForEFTools.Initialize();
 

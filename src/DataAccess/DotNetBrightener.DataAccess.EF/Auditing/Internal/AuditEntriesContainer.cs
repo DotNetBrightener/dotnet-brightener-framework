@@ -1,6 +1,4 @@
-﻿using DotNetBrightener.DataAccess.EF.Auditing;
-
-namespace DotNetBrightener.DataAccess.Auditing.Internal;
+﻿namespace DotNetBrightener.DataAccess.EF.Auditing.Internal;
 
 internal class AuditEntriesContainer : IAuditEntriesContainer
 {
