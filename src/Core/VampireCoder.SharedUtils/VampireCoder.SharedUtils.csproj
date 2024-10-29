@@ -17,10 +17,4 @@
 
 	<Import Project="..\..\Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems" Label="Shared" />
 
-	<ItemGroup>
-	  <Reference Include="Microsoft.Extensions.Hosting.Abstractions">
-	    <HintPath>C:\Program Files\dotnet\shared\Microsoft.AspNetCore.App\8.0.8\Microsoft.Extensions.Hosting.Abstractions.dll</HintPath>
-	  </Reference>
-	</ItemGroup>
-
 </Project>
