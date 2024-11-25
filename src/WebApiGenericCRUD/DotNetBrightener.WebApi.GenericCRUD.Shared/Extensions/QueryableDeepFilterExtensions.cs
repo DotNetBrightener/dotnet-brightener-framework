@@ -55,7 +55,7 @@ public static partial class QueryableDeepFilterExtensions
                 }
                 catch (UnknownPropertyException)
                 {
-                    continue;
+                    // ignore issue
                 }
             }
         }
@@ -99,78 +99,44 @@ public static partial class QueryableDeepFilterExtensions
 
             var propertyUnderlingType = property.PropertyUnderlyingType;
 
-            if (propertyUnderlingType == typeof(string))
+            var predicateQuery = propertyUnderlingType switch
             {
-                var predicateQuery = BuildStringPredicateQuery<TIn>(filter.Value, property);
+                _ when propertyUnderlingType == typeof(string) =>
+                    BuildStringPredicateQuery<TIn>(filter.Value, property),
 
-                if (predicateQuery is null)
-                    continue;
+                _ when propertyUnderlingType == typeof(bool) => 
+                    BuildBooleanPredicateQuery<TIn>(filter.Value, property),
 
-                predicateStatement =
-                    predicateStatement != null ? predicateStatement.And(predicateQuery) : predicateQuery;
+                _ when propertyUnderlingType == typeof(Guid) => 
+                    BuildGuidPredicateQuery<TIn>(filter.Value, property),
 
+                _ when propertyUnderlingType == typeof(int) ||
+                       propertyUnderlingType == typeof(long) ||
+                       propertyUnderlingType == typeof(float) ||
+                       propertyUnderlingType == typeof(double) ||
+                       propertyUnderlingType == typeof(decimal) =>
+                    BuildNumericPredicateQuery<TIn>(filter.Value, property),
+
+                _ when propertyUnderlingType == typeof(DateTime) =>
+                    BuildDateTimePredicateQuery<TIn>(filter.Value.Split(",",
+                                                                        StringSplitOptions.TrimEntries |
+                                                                        StringSplitOptions.RemoveEmptyEntries),
+                                                     property),
+
+                _ when propertyUnderlingType == typeof(DateTimeOffset) =>
+                    BuildDateTimeOffsetPredicateQuery<TIn>(filter.Value.Split(",",
+                                                                              StringSplitOptions.TrimEntries |
+                                                                              StringSplitOptions.RemoveEmptyEntries),
+                                                           property),
+                _ => null
+            };
+
+            if (predicateQuery is null)
                 continue;
-            }
 
-            if (propertyUnderlingType == typeof(bool))
-            {
-                var predicateQuery = BuildBooleanPredicateQuery<TIn>(filter.Value, property);
-
-                if (predicateQuery is null)
-                    continue;
-
-                predicateStatement =
-                    predicateStatement != null ? predicateStatement.And(predicateQuery) : predicateQuery;
-
-                continue;
-            }
-
-            if (propertyUnderlingType == typeof(Guid))
-            {
-                var predicateQuery = BuildGuidPredicateQuery<TIn>(filter.Value, property);
-
-                if (predicateQuery is null)
-                    continue;
-
-                predicateStatement =
-                    predicateStatement != null ? predicateStatement.And(predicateQuery) : predicateQuery;
-
-                continue;
-            }
-
-            if (propertyUnderlingType == typeof(int) ||
-                propertyUnderlingType == typeof(long) ||
-                propertyUnderlingType == typeof(float) ||
-                propertyUnderlingType == typeof(double) ||
-                propertyUnderlingType == typeof(decimal))
-            {
-
-                var predicateQuery = BuildNumericPredicateQuery<TIn>(filter.Value, property);
-
-                if (predicateQuery is null)
-                    continue;
-
-                predicateStatement =
-                    predicateStatement != null ? predicateStatement.And(predicateQuery) : predicateQuery;
-
-                continue;
-            }
-
-            var filterValues = filter.Value.Split(",",
-                                                  StringSplitOptions.TrimEntries |
-                                                  StringSplitOptions.RemoveEmptyEntries);
-
-            if (propertyUnderlingType == typeof(DateTime) ||
-                propertyUnderlingType == typeof(DateTimeOffset))
-            {
-                var predicateQuery = BuildDateTimePredicateQuery<TIn>(filterValues, propertyUnderlingType, property);
-
-                if (predicateQuery != null)
-                {
-                    predicateStatement =
-                        predicateStatement != null ? predicateStatement.And(predicateQuery) : predicateQuery;
-                }
-            }
+            predicateStatement = predicateStatement != null
+                                     ? predicateStatement.And(predicateQuery)
+                                     : predicateQuery;
         }
 
         return predicateStatement == null ? entitiesQuery : entitiesQuery.Where(predicateStatement);
@@ -261,7 +227,7 @@ public static partial class QueryableDeepFilterExtensions
         {
             var s = fieldName;
             property = fromType.GetProperties()
-                               .FirstOrDefault(_ => _.Name.Equals(s, StringComparison.OrdinalIgnoreCase));
+                               .FirstOrDefault(i => i.Name.Equals(s, StringComparison.OrdinalIgnoreCase));
 
             if (property != null)
             {

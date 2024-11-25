@@ -6,12 +6,13 @@
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
 	</ItemGroup>
 	<ItemGroup>
-	  <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.6" />
+	  <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.10" />
 	  <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-	  <PackageReference Include="System.Linq.Dynamic.Core" Version="1.4.2" />
+	  <PackageReference Include="System.Linq.Dynamic.Core" Version="1.4.9" />
 	</ItemGroup>
 	<ItemGroup>
 	  <ProjectReference Include="..\..\DataAccess\DotNetBrightener.DataAccess.Abstractions\DotNetBrightener.DataAccess.Abstractions.csproj" />
+	  <ProjectReference Include="..\..\Infrastructure\AspNet.Extensions.SelfDocumentedProblemResult\AspNet.Extensions.SelfDocumentedProblemResult.csproj" />
 	</ItemGroup>
 
 	<Import Project="..\..\Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems" Label="Shared" />

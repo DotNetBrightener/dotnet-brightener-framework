@@ -9,10 +9,44 @@
 public interface IEventMessage;
 
 /// <summary>
-///     Represents the event message that can be published to distributed systems, such as Azure Service Bus, RabbitMQ,
-///     and consumed by the distributed event subscriptions.
+///     Represents the event message that could be used in both local and distributed event handlers
 /// </summary>
-/// <remarks>
-///     The distributed event message data will not be modified by the event handlers.
-/// </remarks>
-public interface IDistributedEventMessage : IEventMessage;
+public interface ICombinationEventMessage : IEventMessage;
+
+public interface IDistributedEventMessage: IEventMessage
+{
+    /// <summary>
+    ///     The correlation id for the event message.
+    /// </summary>
+    Guid CorrelationId { get; set; }
+
+    /// <summary>
+    ///     The unique identifier for the event message.
+    /// </summary>
+    Guid EventId { get; set; }
+
+    /// <summary>
+    ///     Indicates when the event message was created.
+    /// </summary>
+    DateTime CreatedOn { get; set; }
+
+    /// <summary>
+    ///     The name of the application that initiates the event message.
+    /// </summary>
+    string OriginApp { get; set; }
+
+    /// <summary>
+    ///     The name of the application that processes and forwards the event message, if applicable.
+    /// </summary>
+    string FromApp { get; set; }
+
+    /// <summary>
+    ///     The name of the application that processes and forwards the event message, if applicable.
+    /// </summary>
+    string CurrentApp { get; set; }
+
+    /// <summary>
+    ///     The name of the machine that initiates the event message.
+    /// </summary>
+    string MachineName { get; set; }
+}

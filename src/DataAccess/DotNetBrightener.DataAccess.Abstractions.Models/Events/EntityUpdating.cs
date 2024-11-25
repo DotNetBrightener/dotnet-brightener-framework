@@ -5,7 +5,7 @@
 namespace DotNetBrightener.DataAccess.Events;
 
 /// <summary>
-///     Event fired before an update to entity of type <typeparam name="TEntity" /> is persisted
+///     Event fired before an update to entity of type <typeparamref name="TEntity" /> is persisted
 /// </summary>
 /// <remarks>
 ///     The <seealso cref="EntityEventMessage{TEntity}.Entity"/> contains the data of the entity that are being persisted.

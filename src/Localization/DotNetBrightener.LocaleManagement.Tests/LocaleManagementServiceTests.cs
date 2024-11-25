@@ -1,5 +1,4 @@
 ﻿using LocaleManagement.Services;
-using Newtonsoft.Json;
 using NUnit.Framework;
 
 namespace LocaleManagement.Tests;

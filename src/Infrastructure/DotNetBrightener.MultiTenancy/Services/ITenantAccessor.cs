@@ -16,25 +16,30 @@ public interface ITenantAccessor
     long[] LimitedTenantIdsToRecordsPersistence { get; }
 
     /// <summary>
-    ///     Temporarily specifies tenant ids for given callback action
+    ///     Temporarily specifies tenant ids for the following actions within the scope
     /// </summary>
-    /// <param name="tenantIds">The tenant ids for using in the callback action</param>
-    /// <param name="callback">The callback action</param>
-    /// <returns></returns>
-    Task UseTenant(long[] tenantIds, Action callback);
+    /// <param name="tenantIds">The tenant ids for using in the following actions</param>
+    IDisposable UseTenant(long[] tenantIds);
 
     Tenant CurrentTenant { get; }
 }
 
-public class TenantAccessor : ITenantAccessor
+public class TenantAccessor(IHttpContextAccessor httpContextAccessor) : ITenantAccessor
 {
-    private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly long[]               _currentTenantIds;
-    private readonly long[]               _limitRecordsToTenantIds;
-    private          long[]               _tempCurrentTenantIds;
-    private          long[]               _tempLimitRecordsToTenantIds;
+    private readonly long[] _currentTenantIds =
+        httpContextAccessor.RetrieveValue<long[]>(MultiTenantConstants.TenantIdsContextKey) ??
+        [
+        ];
 
-    public Tenant CurrentTenant => _httpContextAccessor.RetrieveValue<Tenant>();
+    private readonly long[] _limitRecordsToTenantIds =
+        httpContextAccessor.RetrieveValue<long[]>(MultiTenantConstants.LimitRecordToTenantIds) ??
+        [
+        ];
+
+    private long[] _tempCurrentTenantIds;
+    private long[] _tempLimitRecordsToTenantIds;
+
+    public Tenant CurrentTenant => httpContextAccessor.RetrieveValue<Tenant>();
 
     public long[] CurrentTenantIds
     {
@@ -43,7 +48,7 @@ public class TenantAccessor : ITenantAccessor
             if (_tempCurrentTenantIds != null)
                 return _tempCurrentTenantIds;
 
-            return _currentTenantIds ?? Array.Empty<long>();
+            return _currentTenantIds ?? [];
         }
     }
 
@@ -54,40 +59,38 @@ public class TenantAccessor : ITenantAccessor
             if (_tempLimitRecordsToTenantIds != null)
                 return _tempLimitRecordsToTenantIds;
 
-            return _limitRecordsToTenantIds ?? Array.Empty<long>();
+            return _limitRecordsToTenantIds ?? [];
         }
     }
 
-    public TenantAccessor(IHttpContextAccessor httpContextAccessor)
+    public IDisposable UseTenant(long[] tenantIds)
     {
-        _httpContextAccessor = httpContextAccessor;
-        _currentTenantIds = httpContextAccessor.RetrieveValue<long[]>(MultiTenantConstants.TenantIdsContextKey) ??
-                            new long[]
-                            {
-                            };
-
-        _limitRecordsToTenantIds =
-            httpContextAccessor.RetrieveValue<long[]>(MultiTenantConstants.LimitRecordToTenantIds) ??
-            new long[]
-            {
-            };
+        return new TenantScope(this, tenantIds);
     }
 
-    public async Task UseTenant(long[] tenantIds, Action callback)
+    private class TenantScope : IDisposable
     {
-        if (_tempCurrentTenantIds != null ||
-            _tempLimitRecordsToTenantIds != null)
+        private readonly TenantAccessor _tenantAccessor;
+
+        public TenantScope(TenantAccessor tenantAccessor, long[] tenantIds)
         {
-            throw new
-                InvalidOperationException($"Cannot nested use tenant. Callback actions must be done within one tenant scope.");
+            _tenantAccessor = tenantAccessor;
+
+            if (_tenantAccessor._tempCurrentTenantIds != null ||
+                _tenantAccessor._tempLimitRecordsToTenantIds != null)
+            {
+                throw new
+                    InvalidOperationException($"Cannot nested use tenant. Callback actions must be done within one tenant scope.");
+            }
+
+            _tenantAccessor._tempCurrentTenantIds        = tenantIds;
+            _tenantAccessor._tempLimitRecordsToTenantIds = tenantIds;
         }
 
-        _tempCurrentTenantIds        = tenantIds;
-        _tempLimitRecordsToTenantIds = tenantIds;
-
-        await Task.Run(callback);
-
-        _tempCurrentTenantIds        = null;
-        _tempLimitRecordsToTenantIds = null;
+        public void Dispose()
+        {
+            _tenantAccessor._tempCurrentTenantIds        = null;
+            _tenantAccessor._tempLimitRecordsToTenantIds = null;
+        }
     }
 }

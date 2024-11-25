@@ -1,8 +1,10 @@
 ﻿using DotNetBrightener.SiteSettings.Abstractions;
+using DotNetBrightener.SiteSettings.Internal;
 using DotNetBrightener.SiteSettings.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using Newtonsoft.Json;
 
 namespace DotNetBrightener.SiteSettings.Controllers;
 
@@ -52,16 +54,19 @@ public class SiteSettingsController : Controller
     }
 
     [HttpPost("{settingKey}")]
-    public virtual IActionResult SaveSetting(string settingKey,
-                                             [FromBody]
-                                             Dictionary<string, object> formModel)
+    [SettingJsonBodyReader]
+    public virtual IActionResult SaveSetting(string settingKey)
     {
         try
         {
             if (!TryGetSettingInstance(settingKey, out var siteSettingInstance, out IActionResult returnAction))
                 return returnAction;
 
-            _siteSettingService.SaveSetting(siteSettingInstance.GetType(), formModel);
+            var body = Request.HttpContext.Items[SettingJsonBodyReader.RequestBodyKey].ToString()!;
+
+            var formModel = JsonConvert.DeserializeObject(body, siteSettingInstance.GetType()) as SiteSettingBase;
+
+            _siteSettingService.SaveSetting(formModel, siteSettingInstance.GetType());
 
             return Ok();
         }

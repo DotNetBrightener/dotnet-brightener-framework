@@ -1,5 +1,4 @@
-﻿using DotNetBrightener.DataAccess;
-using DotNetBrightener.DataAccess.EF.Repositories;
+﻿using DotNetBrightener.DataAccess.EF.Repositories;
 using DotNetBrightener.DataAccess.Services;
 using DotNetBrightener.SiteSettings.Data.Mssql.Data;
 using Microsoft.Extensions.Logging;
@@ -10,7 +9,6 @@ internal interface ISiteSettingRepository : IRepository;
 
 internal class SiteSettingRepository(
     MssqlStorageSiteSettingDbContext dbContext,
-    ICurrentLoggedInUserResolver     currentLoggedInUserResolver,
     IServiceProvider                 serviceProvider,
     ILoggerFactory                   loggerFactory)
     : Repository(dbContext, serviceProvider, loggerFactory), ISiteSettingRepository;

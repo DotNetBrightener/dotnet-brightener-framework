@@ -37,6 +37,36 @@ public static class ProblemResultExtensions
         return new ProblemDetailResult(problemResult, statusCode);
     }
 
+
+    /// <summary>
+    ///     Creates an <see cref="ObjectResult"/> that produces a <see cref="ProblemDetails"/> response.
+    /// </summary>
+    /// <param name="problemResult">The <see cref="IProblemResult" /></param>
+    /// <param name="reason">The reason of why the problem / error occured</param>
+    /// <param name="instance">The value for <see cref="ProblemDetails.Instance" /></param>
+    /// <returns></returns>
+    public static IResult ToResult(this IProblemResult problemResult,
+                                   string              reason   = null,
+                                   string              instance = null)
+    {
+        var problemDetails = problemResult.ToProblemDetails(reason, instance);
+
+        return Results.Json(problemDetails, statusCode: problemDetails.Status);
+    }
+
+    /// <summary>
+    ///     Creates an <see cref="ObjectResult"/> that produces a <see cref="ProblemDetails"/> response.
+    /// </summary>
+    /// <param name="problemResult">The <see cref="IProblemResult" /></param>
+    /// <returns></returns>
+    public static IResult ToResult(this Exception problemResult,
+                                   HttpStatusCode statusCode = HttpStatusCode.InternalServerError)
+    {
+        var problemDetails = problemResult.ToProblemDetails(statusCode);
+
+        return Results.Json(problemDetails, statusCode: problemDetails.Status);
+    }
+
     /// <summary>
     ///     Creates a <see cref="ProblemDetails"/> response.
     /// </summary>

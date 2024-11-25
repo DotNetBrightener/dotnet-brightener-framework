@@ -1,0 +1,6 @@
+@DotNetBrightener.SiteSettings.WebApp_HostAddress = http://localhost:5090
+
+GET {{DotNetBrightener.SiteSettings.WebApp_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

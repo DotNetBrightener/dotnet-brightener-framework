@@ -1,9 +1,14 @@
-﻿namespace DotNetBrightener.DataAccess.Auditing;
+﻿using System.Text.Json.Serialization;
+using Newtonsoft.Json;
+
+namespace DotNetBrightener.DataAccess.Models.Auditing;
 
 public class AuditProperty
 {
     public string PropertyName { get; set; }
 
+    [System.Text.Json.Serialization.JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
     public object OldValue { get; set; }
 
     public object NewValue { get; set; }

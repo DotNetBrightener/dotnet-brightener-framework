@@ -1,6 +1,4 @@
-﻿using DotNetBrightener.Infrastructure.Security;
-
-// ReSharper disable CheckNamespace
+﻿// ReSharper disable CheckNamespace
 namespace Microsoft.AspNetCore.Http;
 
 public static class HttpContextAccessorUserContextExtensions
@@ -11,7 +9,20 @@ public static class HttpContextAccessorUserContextExtensions
     /// <param name="httpContextAccessor">The <see cref="IHttpContextAccessor" /> to access the current request information</param>
     /// <returns>The identifier of the user in <see cref="long"/>, if found. Otherwise, <c>null</c></returns>
     public static long? GetCurrentUserId(this IHttpContextAccessor httpContextAccessor)
-        => httpContextAccessor.HttpContext?.GetCurrentUserId();
+        => httpContextAccessor.HttpContext?.GetCurrentUserId<long>();
+
+    /// <summary>
+    ///     Gets the Identifier of the current logged-in user from the request
+    /// </summary>
+    /// <typeparam name="T">The type of the user identifier</typeparam>
+    /// <param name="httpContextAccessor">The <see cref="IHttpContextAccessor" /> to access the current request information</param>
+    /// <returns>The identifier of the user in <typeparamref name="T"/>, if found. Otherwise, <c>null</c></returns>
+    public static T GetCurrentUserId<T>(this IHttpContextAccessor httpContextAccessor)
+    {
+        return httpContextAccessor.HttpContext is null
+                   ? default
+                   : httpContextAccessor.HttpContext.GetCurrentUserId<T>();
+    }
 
     /// <summary>
     ///     Gets the username of the current logged-in user from the request
@@ -28,23 +39,34 @@ public static class HttpContextAccessorUserContextExtensions
     /// <returns>The identifier of the user in <see cref="long"/>, if found. Otherwise, <c>null</c></returns>
     public static long? GetCurrentUserId(this HttpContext httpContext)
     {
+        return GetCurrentUserId<long>(httpContext);
+    }
+
+    /// <summary>
+    ///     Gets the Identifier of the current logged-in user from the request
+    /// </summary>
+    /// <param name="httpContext">The current request information</param>
+    /// <returns>The identifier of the user in <see cref="long"/>, if found. Otherwise, <c>null</c></returns>
+    public static T GetCurrentUserId<T>(this HttpContext httpContext)
+    {
         var userContext = httpContext?.User;
 
-        if (userContext.Identity?.IsAuthenticated != true)
+        if (userContext?.Identity?.IsAuthenticated != true)
         {
-            return null;
+            return default(T);
         }
 
-        var userIdClaim = userContext.FindFirst(CommonUserClaimKeys.UserId);
+        var userIdClaim = userContext.FindFirst("sub") ?? userContext.FindFirst("USER_ID");
 
         if (userIdClaim != null)
         {
-            long.TryParse(userIdClaim.Value, out var userId);
+            var tValue = Convert.ChangeType(userIdClaim.Value, typeof(T));
 
-            return userId;
+            if (tValue is T result)
+                return result;
         }
 
-        return null;
+        return default(T);
     }
 
     /// <summary>
@@ -61,6 +83,7 @@ public static class HttpContextAccessorUserContextExtensions
             return null;
         }
 
-        return userContext.FindFirst(CommonUserClaimKeys.UserName)?.Value;
+        return userContext.FindFirst("email")?.Value ??
+               userContext.FindFirst("USERNAME")?.Value;
     }
 }

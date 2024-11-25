@@ -1,4 +1,5 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+﻿#nullable enable
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using DotNetBrightener.CryptoEngine;
@@ -66,7 +67,7 @@ public static class JwtConfigurationExtensions
 
         List<string> audiences = [];
 
-        IAuthAudiencesContainer audiencesContainer = null;
+        IAuthAudiencesContainer? audiencesContainer = null;
 
         using (var serviceScope = jwtConfiguration.ServiceScopeFactory.CreateScope())
         {
@@ -96,7 +97,7 @@ public static class JwtConfigurationExtensions
 
         foreach (var audience in audiences.Distinct())
         {
-            if (audiencesContainer.IsValidAudience(audience).Result)
+            if (audiencesContainer!.IsValidAudience(audience).Result)
                 claims.Add(new Claim(JwtRegisteredClaimNames.Aud, audience));
         }
 

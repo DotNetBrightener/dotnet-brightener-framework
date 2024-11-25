@@ -8,3 +8,8 @@ public class ProductCategory : BaseEntityWithAuditInfo
 
     public virtual ICollection<Product> Products { get; set; }
 }
+
+public class GroupEntity : BaseEntityWithAuditInfo
+{
+    public string Name { get; set; }
+}

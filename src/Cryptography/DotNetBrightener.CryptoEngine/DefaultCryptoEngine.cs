@@ -19,7 +19,7 @@ public class DefaultCryptoEngine(
         if (_isInitialized)
             return;
 
-        var rsaKeyLoader = rsaKeysLoaders.FirstOrDefault(_ => _.LoaderName == _cryptoConfig.RsaKeyLoader);
+        IRSAKeysLoader rsaKeyLoader = rsaKeysLoaders.FirstOrDefault(_ => _.LoaderName == _cryptoConfig.RsaKeyLoader);
 
         if (rsaKeyLoader == null)
         {

@@ -3,7 +3,7 @@ using System.Text;
 
 namespace DotNetBrightener.CryptoEngine;
 
-public class CryptoUtilities
+public static class CryptoUtilities
 {
     public const int DefaultSaltSize = 16;
 
@@ -30,26 +30,10 @@ public class CryptoUtilities
         return Convert.ToBase64String(bytes);
     }
 
-    /// <summary>
-    ///     Generate a random string
-    /// </summary>
-    /// <returns>A random string</returns>
-    public static string GenerateRandomString(int length = 32)
-    {
-        const string availableChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$&";
-        var          random         = new Random();
+    public static string GenerateTimeBasedToken(ref string token)
+        => GenerateTimeBasedToken(ref token, TimeSpan.FromMinutes(5));
 
-        var builder = new StringBuilder(length);
-        for (var i = 0; i < length; i++)
-        {
-            var @char = availableChars[random.Next(0, availableChars.Length)];
-            builder.Append(@char);
-        }
-
-        return builder.ToString();
-    }
-
-    public static string GenerateTimeBasedToken(TimeSpan expiresIn, ref string token)
+    public static string GenerateTimeBasedToken(ref string token, TimeSpan expiresIn)
     {
         token ??= CreateRandomToken();
 

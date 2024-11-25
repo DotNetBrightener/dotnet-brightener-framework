@@ -2,7 +2,7 @@ using DotNetBrightener.DataAccess.Attributes;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Reflection;
-using DotNetBrightener.DataAccess.EF;
+using DotNetBrightener.DataAccess.Models;
 
 // ReSharper disable CheckNamespace
 namespace Microsoft.EntityFrameworkCore;

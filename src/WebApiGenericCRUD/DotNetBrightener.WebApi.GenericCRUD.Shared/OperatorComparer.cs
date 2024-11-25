@@ -17,6 +17,10 @@ internal enum OperatorComparer
     NotEndsWith,
     In,
     NotIn,
+
+    // only applied to datetime
+    On,
+    NotOn
 }
 
 internal static class OperatorComparerMapping
@@ -119,6 +123,16 @@ internal static class OperatorComparerMapping
             },
             {
                 "!in", OperatorComparer.NotIn
+            },
+            // for date time
+            {
+                "on", OperatorComparer.On
+            },
+            {
+                "noton", OperatorComparer.NotOn
+            },
+            {
+                "!on", OperatorComparer.NotOn
             },
         };
 

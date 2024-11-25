@@ -9,7 +9,7 @@ internal class AzureSecretsConfigurationProvider : ConfigurationProvider
 {
     private readonly IConfiguration _originalConfiguration;
     private readonly string         _vaultSecretKeyIdentifierPrefix;
-    private readonly SecretClient   _secretClient = null;
+    private readonly SecretClient   _secretClient;
 
     public AzureSecretsConfigurationProvider(IConfiguration originalConfiguration,
                                              string         vaultSecretKeyIdentifierPrefix = "Secret:",
@@ -28,10 +28,8 @@ internal class AzureSecretsConfigurationProvider : ConfigurationProvider
 
     public override void Load()
     {
-        if (_secretClient is null)
-        {
+        if (_secretClient is null) // safety check, it should never happen
             return;
-        }
 
         var configuration = _originalConfiguration.AsEnumerable()
                                                   .Where(c => c.Value?.StartsWith(_vaultSecretKeyIdentifierPrefix) ==
@@ -47,7 +45,8 @@ internal class AzureSecretsConfigurationProvider : ConfigurationProvider
                                  .GetSecretValueIfNeeded(_vaultSecretKeyIdentifierPrefix,
                                                          keyPair.Value);
 
-                          concurrentData.TryAdd(keyPair.Key, secretValue);
+                          if (!string.IsNullOrWhiteSpace(secretValue))
+                              concurrentData.TryAdd(keyPair.Key, secretValue);
                       })
                      .Wait();
 

@@ -1,4 +1,5 @@
 ﻿// ReSharper disable CheckNamespace
+
 namespace System.Reflection;
 
 public static class AppDomainExtensions

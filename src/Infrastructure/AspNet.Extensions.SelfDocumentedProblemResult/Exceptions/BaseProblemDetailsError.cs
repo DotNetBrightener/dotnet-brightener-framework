@@ -24,6 +24,7 @@ public abstract class BaseProblemDetailsError : Exception, IProblemResult
         DetailReason = GetType().GetXmlDocumentationRemarks();
     }
 
+
     [NotNull]
     public abstract string ErrorCode { get; }
 

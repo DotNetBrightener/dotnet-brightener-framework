@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using DotNetBrightener.DataAccess.Attributes;
 using DotNetBrightener.DataAccess.Models;
 using Newtonsoft.Json;
@@ -33,7 +34,7 @@ public class ProductDocument : BaseEntityWithAuditInfo
     /// <summary>
     ///     Unique identifier of the file
     /// </summary>
-    public Guid? FileGuid { get; set; }
+    public Guid? FileGuid { get; set; } = Guid.NewGuid();
 
     /// <summary>
     ///    The display order of the document if it is displayed in a list
@@ -46,4 +47,10 @@ public class ProductDocument : BaseEntityWithAuditInfo
     [DataType(DataType.Currency)]
     [JsonIgnore]
     public decimal? Price { get; set; }
+
+    public long ProductId { get; set; }
+
+    [ForeignKey(nameof(ProductId))]
+    [JsonIgnore]
+    public virtual Product Product { get; set; }
 }

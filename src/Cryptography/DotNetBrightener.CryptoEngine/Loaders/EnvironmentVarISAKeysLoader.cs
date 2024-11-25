@@ -5,24 +5,19 @@ using Microsoft.Extensions.Options;
 
 namespace DotNetBrightener.CryptoEngine.Loaders;
 
-public class EnvironmentVarISAKeysLoader : IRSAKeysLoader
+public class EnvironmentVarISAKeysLoader(
+    IConfiguration                      configuration,
+    IOptions<CryptoEngineConfiguration> cryptoConfig)
+    : IRSAKeysLoader
 {
-    private readonly IConfiguration            _configuration;
-    private readonly CryptoEngineConfiguration _cryptoConfig;
+    private readonly CryptoEngineConfiguration _cryptoConfig  = cryptoConfig.Value;
 
     public string LoaderName => "EnvVarLoader";
-
-    public EnvironmentVarISAKeysLoader(IConfiguration                      configuration,
-                                       IOptions<CryptoEngineConfiguration> cryptoConfig)
-    {
-        _configuration = configuration;
-        _cryptoConfig  = cryptoConfig.Value;
-    }
 
     public Tuple<string, string> LoadOrInitializeKeyPair()
     {
         var privateKeyValueFromEnvVar = Environment.GetEnvironmentVariable(_cryptoConfig.RsaEnvironmentVariableName) ??
-                                        _configuration[_cryptoConfig.RsaEnvironmentVariableName];
+                                        configuration[_cryptoConfig.RsaEnvironmentVariableName];
 
         if (string.IsNullOrEmpty(privateKeyValueFromEnvVar))
         {

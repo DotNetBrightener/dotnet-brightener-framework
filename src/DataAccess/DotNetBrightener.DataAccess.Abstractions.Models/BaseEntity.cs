@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using DotNetBrightener.DataAccess.Models.Utils.Internal;
+using System.ComponentModel.DataAnnotations;
 
 namespace DotNetBrightener.DataAccess.Models;
 
@@ -6,11 +7,15 @@ public interface IBaseEntity
 {
 
 }
+public interface IBaseEntity<TIdentifier> : IBaseEntity
+{
+    TIdentifier Id { get; set; }
+}
 
 /// <summary>
 ///     Represents the base entity for all entities in the system
 /// </summary>
-public abstract class BaseEntity<TIdentifier> : IBaseEntity
+public abstract class BaseEntity<TIdentifier> : IBaseEntity<TIdentifier>
 {
     /// <summary>
     ///     Identifier of the record, is also the primary key
@@ -33,6 +38,6 @@ public abstract class GuidBaseEntity: BaseEntity<Guid>
 {
     protected GuidBaseEntity()
     {
-        Id = Guid.NewGuid();
+        Id = Uuid7.Guid();
     }
 }

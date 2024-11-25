@@ -1,5 +1,5 @@
 ﻿#nullable enable
-using DotNetBrightener.DataAccess.Auditing;
+using DotNetBrightener.DataAccess.Models.Auditing;
 using DotNetBrightener.Plugins.EventPubSub;
 
 // ReSharper disable CheckNamespace

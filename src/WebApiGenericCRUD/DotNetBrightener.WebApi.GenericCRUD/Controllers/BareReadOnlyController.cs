@@ -8,9 +8,11 @@ using Microsoft.AspNetCore.Mvc;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using System.Net;
+using AspNet.Extensions.SelfDocumentedProblemResult.Filters;
 
 namespace DotNetBrightener.WebApi.GenericCRUD.Controllers;
 
+[ExceptionHandleWithStatusCode(typeof(InvalidOperationException), HttpStatusCode.BadRequest)]
 public abstract class BareReadOnlyController<TEntityType> : Controller where TEntityType : class
 {
     /// <summary>

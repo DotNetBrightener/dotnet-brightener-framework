@@ -1,6 +1,4 @@
-﻿using System.Runtime.Serialization;
-
-namespace DotNetBrightener.TimeBasedOtp;
+﻿namespace DotNetBrightener.TimeBasedOtp;
 
 public class OneTimePasswordException : Exception
 {
@@ -16,11 +14,6 @@ public class OneTimePasswordException : Exception
 
     public OneTimePasswordException(string message, Exception innerException)
         : base(message, innerException)
-    {
-    }
-
-    public OneTimePasswordException(SerializationInfo info, StreamingContext context)
-        : base(info, context)
     {
     }
 }

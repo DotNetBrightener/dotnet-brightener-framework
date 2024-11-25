@@ -2,7 +2,7 @@
 
 namespace DotNetBrightener.DataAccess.Services;
 
-public interface IBaseDataService<TEntity>: IDisposable
+public interface IBaseDataService<TEntity>: IDisposable, IAsyncDisposable
 {
     /// <summary>
     ///     Returns a specific record that matches the given expression
@@ -209,6 +209,18 @@ public interface IBaseDataService<TEntity>: IDisposable
     /// <param name="updateExpression">The expression that describes the update instruction</param>
     Task<int> UpdateMany(Expression<Func<TEntity, bool>>?   filterExpression,
                          Expression<Func<TEntity, TEntity>> updateExpression);
+
+    /// <summary>
+    ///     Deletes a record of the entity to the database
+    /// </summary>
+    /// <param name="entity">The record to update</param>
+    void Delete(TEntity entity, string reason, bool forceHardDelete = false);
+
+    /// <summary>
+    ///     Deletes a record of the entity to the database
+    /// </summary>
+    /// <param name="entity">The record to update</param>
+    Task DeleteAsync(TEntity entity, string reason, bool forceHardDelete = false);
 
     /// <summary>
     ///     Delete the matched record with the given filter expression, expected only one record affected

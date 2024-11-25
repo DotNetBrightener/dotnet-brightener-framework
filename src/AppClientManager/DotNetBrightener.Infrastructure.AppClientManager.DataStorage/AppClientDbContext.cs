@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DotNetBrightener.Infrastructure.AppClientManager.DataStorage;
 
-public class AppClientDbContext : MigrationEnabledDbContext
+public class AppClientDbContext : AdvancedDbContext
 {
     protected AppClientDbContext(DbContextOptions options)
         : base(options)
@@ -16,7 +16,6 @@ public class AppClientDbContext : MigrationEnabledDbContext
                                  Action<DbContextOptionsBuilder> optionBuilder)
         : base(options)
     {
-        SetConfigureDbOptionsBuilder(optionBuilder);
     }
 
     public AppClientDbContext(DbContextOptions<AppClientDbContext> options)
@@ -30,8 +29,8 @@ public class AppClientDbContext : MigrationEnabledDbContext
 
         modelBuilder.ApplyConfigurationsFromCurrentAssembly();
 
-        RegisterEnumLookupTable<AppClientStatus>(modelBuilder, schema: AppClientDataDefaults.AppClientSchemaName);
+        this.RegisterEnumLookupTable<AppClientStatus>(modelBuilder, schema: AppClientDataDefaults.AppClientSchemaName);
 
-        RegisterEnumLookupTable<AppClientType>(modelBuilder, schema: AppClientDataDefaults.AppClientSchemaName);
+        this.RegisterEnumLookupTable<AppClientType>(modelBuilder, schema: AppClientDataDefaults.AppClientSchemaName);
     }
 }

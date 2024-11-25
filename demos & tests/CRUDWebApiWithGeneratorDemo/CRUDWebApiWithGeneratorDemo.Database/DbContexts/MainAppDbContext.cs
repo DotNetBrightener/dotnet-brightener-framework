@@ -5,25 +5,23 @@ using Microsoft.EntityFrameworkCore.Design;
 
 namespace CRUDWebApiWithGeneratorDemo.Database.DbContexts;
 
-public class DesignTimeAppDbContext : SqlServerDbContextDesignTimeFactory<MainAppDbContext>
+public class DesignTimeAppDbContext : SqlServerDbContextDesignTimeFactory<MainAppDbContext>;
+
+public class MainAppDbContext(DbContextOptions<MainAppDbContext> options)
+    : SqlServerVersioningMigrationEnabledDbContext(options)
 {
-}
-
-public class MainAppDbContext : SqlServerVersioningMigrationEnabledDbContext
-{
-    public MainAppDbContext(DbContextOptions<MainAppDbContext> options)
-        : base(options)
-    {
-
-    }
-
     protected override void ConfigureModelBuilder(ModelBuilder modelBuilder)
     {
-        var productEntity         = modelBuilder.Entity<Product>();
-        var productCategoryEntity = modelBuilder.Entity<ProductCategory>();
-        var document              = modelBuilder.Entity<ProductDocument>();
+        modelBuilder.Entity<Product>();
 
-        document.Property(_ => _.Price)
-                .HasColumnType("decimal");
+        modelBuilder.Entity<ProductCategory>();
+
+        modelBuilder.Entity<ProductDocument>(document =>
+        {
+            document.Property(_ => _.Price)
+                    .HasColumnType("decimal");
+        });
+
+        modelBuilder.Entity<GroupEntity>();
     }
 }

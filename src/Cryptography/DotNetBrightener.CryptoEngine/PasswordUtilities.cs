@@ -13,10 +13,10 @@ public static class PasswordUtilities
     /// Generate a random string for password salt, use for creating a key of the password
     /// </summary>
     /// <returns>Random string of password salt</returns>
-    public static string CreatePasswordSalt()
+    public static string CreatePasswordSalt(int? saltSize = null)
     {
         var rnd            = new Random();
-        var randomSaltSite = rnd.Next(DefaultSaltSize, DefaultSaltSize * 5);
+        var randomSaltSite = saltSize ?? rnd.Next(DefaultSaltSize, DefaultSaltSize * 5);
         var bytes          = RandomNumberGenerator.GetBytes(randomSaltSite);
         var result         = string.Concat(Convert.ToBase64String(bytes), GenerateRandomString());
 
@@ -27,9 +27,15 @@ public static class PasswordUtilities
     /// Generate a random string
     /// </summary>
     /// <returns>A random string</returns>
-    public static string GenerateRandomString(int length = 15)
+    public static string GenerateRandomString(int length = 16, bool includeSymbols = false)
     {
-        const string chars  = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        string chars  = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+        if (includeSymbols)
+        {
+            chars += "!@#$&\\*()-+'\",.[]|";
+        }
+
         var          random = new Random();
 
         var result = new string(
@@ -44,7 +50,7 @@ public static class PasswordUtilities
     ///     Generate a random numeric string
     /// </summary>
     /// <returns>A random string with only digits</returns>
-    public static string GenerateRandomNumericString(int length = 15)
+    public static string GenerateRandomNumericString(int length = 16)
     {
         const string chars  = "0123456789";
         var          random = new Random();
@@ -72,22 +78,5 @@ public static class PasswordUtilities
         var toReturn = Encoding.GetEncoding(28591).GetString(bytes);
 
         return toReturn;
-    }
-
-    /// <summary>
-    /// Create the encrypted password
-    /// </summary>
-    /// <param name="password">Password to be encrypted</param>
-    /// <param name="passwordSalt">Password salt for encrypted</param>
-    /// <returns>An encrypted password</returns>
-    public static string CreatePasswordHash(string password, string passwordSalt)
-    {
-        var        passwordAndSalt = string.Concat(password, passwordSalt);
-        var        bytes           = Encoding.Unicode.GetBytes(passwordAndSalt);
-        using SHA1 provider        = SHA1.Create();
-        bytes = provider.ComputeHash(bytes);
-        var result = Convert.ToBase64String(bytes);
-
-        return result;
     }
 }

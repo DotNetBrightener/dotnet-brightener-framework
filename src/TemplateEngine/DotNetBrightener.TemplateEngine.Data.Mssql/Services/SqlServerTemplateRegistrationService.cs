@@ -1,4 +1,5 @@
-﻿using DotNetBrightener.TemplateEngine.Data.Mssql.Data;
+﻿using DotNetBrightener.DataAccess;
+using DotNetBrightener.TemplateEngine.Data.Mssql.Data;
 using DotNetBrightener.TemplateEngine.Data.Mssql.Entity;
 using DotNetBrightener.TemplateEngine.Data.Services;
 using DotNetBrightener.TemplateEngine.Models;
@@ -12,36 +13,36 @@ internal class SqlServerTemplateRegistrationService : ITemplateRegistrationServi
     private readonly IEnumerable<ITemplateProvider> _providers;
     private readonly ITemplateRecordDataService     _templateRecordDataService;
     private readonly ILogger                        _logger;
+    private readonly ScopedCurrentUserResolver      _scopedCurrentUserResolver;
 
     public SqlServerTemplateRegistrationService(ITemplateContainer             templateContainer,
                                                 IEnumerable<ITemplateProvider> providers,
                                                 ITemplateRecordDataService     templateRecordDataService,
-                                                ILoggerFactory                 loggerFactory)
+                                                ILoggerFactory                 loggerFactory,
+                                                ScopedCurrentUserResolver      scopedCurrentUserResolver)
     {
         _templateContainer         = templateContainer;
         _providers                 = providers;
         _templateRecordDataService = templateRecordDataService;
+        _scopedCurrentUserResolver = scopedCurrentUserResolver;
         _logger                    = loggerFactory.CreateLogger(GetType());
     }
 
     public async Task RegisterTemplates()
     {
-        if (CheckCanProcessTemplate())
+        if (!CheckCanProcessTemplate())
+            return;
+
+        using (_scopedCurrentUserResolver.StartUseNameScope("Template Registration Service"))
         {
             // mark all templates as deleted, because they'll be registered again after this
+            await _templateRecordDataService.DeleteMany(null,
+                                                        reason: "Removed during registration");
 
-            await _templateRecordDataService.UpdateMany(record => true,
-                                                        model => new TemplateRecord
-                                                        {
-                                                            IsDeleted      = true,
-                                                            DeletedDate    = DateTimeOffset.UtcNow,
-                                                            DeletionReason = "Removed during registration"
-                                                        });
-        }
-
-        foreach (var templateProvider in _providers)
-        {
-            await templateProvider.RegisterTemplates(this);
+            foreach (var templateProvider in _providers)
+            {
+                await templateProvider.RegisterTemplates(this);
+            }
         }
     }
 
@@ -91,7 +92,8 @@ internal class SqlServerTemplateRegistrationService : ITemplateRegistrationServi
                                                             FieldsString     = string.Join(";", templateFields),
                                                             FromAssemblyName = assemblyName,
                                                             DeletedDate      = null,
-                                                            DeletionReason   = null
+                                                            DeletionReason   = null,
+                                                            DeletedBy        = null
                                                         });
 
             if (!string.IsNullOrEmpty(templateContent))

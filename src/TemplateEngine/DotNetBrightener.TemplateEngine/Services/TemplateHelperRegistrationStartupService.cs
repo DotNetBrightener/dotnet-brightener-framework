@@ -9,14 +9,16 @@ internal class TemplateHelperRegistrationStartupService(
     ILogger<TemplateHelperRegistrationStartupService> logger)
     : IHostedService
 {
-
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        var serviceProvider = serviceScopeFactory.CreateScope().ServiceProvider;
+        using (var serviceScope = serviceScopeFactory.CreateScope())
+        {
+            var serviceProvider = serviceScope.ServiceProvider;
 
-        var templateHelperRegistration = serviceProvider.GetRequiredService<ITemplateHelperRegistration>();
+            var templateHelperRegistration = serviceProvider.GetRequiredService<ITemplateHelperRegistration>();
 
-        templateHelperRegistration.RegisterHelpers();
+            templateHelperRegistration.RegisterHelpers();
+        }
 
         return Task.CompletedTask;
     }

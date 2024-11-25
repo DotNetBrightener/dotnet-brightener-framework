@@ -3,5 +3,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DotNetBrightener.Infrastructure.AppClientManager.DataStorage.Mssql;
 
-internal class SqlServerMigrationDbContext(DbContextOptions<SqlServerMigrationDbContext> options)
+internal class SqlServerMigrationDbContext(
+    DbContextOptions<SqlServerMigrationDbContext> options)
     : AppClientDbContext(options), IMigrationDefinitionDbContext<AppClientDbContext>;

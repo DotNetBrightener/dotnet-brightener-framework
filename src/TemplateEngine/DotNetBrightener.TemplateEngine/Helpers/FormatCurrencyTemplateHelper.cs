@@ -11,7 +11,7 @@ public class FormatCurrencyTemplateHelper : ITemplateHelperProvider
 
     public string HelperName => "formatCurrency";
 
-    public string UsageHint => "{{formatCurrency {your-data} [{format, default = 'O'}] [{culture}, default = 'en-US']}}";
+    public string UsageHint => "{{formatCurrency {your-data} [{format, default = 'C0'}] [{culture, default = 'en-US'}]}}";
 
     public FormatCurrencyTemplateHelper()
     {
@@ -32,25 +32,39 @@ public class FormatCurrencyTemplateHelper : ITemplateHelperProvider
         {
             return;
         }
-            
-        if (arguments.Length == 1)
-        {
-            output.Write(decimalValue.ToString("n0"));
 
-            return;
+        var argumentsList = new List<object>(3);
+
+        argumentsList.AddRange(arguments);
+
+        var format  = argumentsList.Count > 1 ? argumentsList[1].ToString() : "";
+        var culture = argumentsList.Count > 2 ? argumentsList[2].ToString() : "en-US";
+
+        if (string.IsNullOrWhiteSpace(format))
+        {
+            format = "C";
         }
 
-        if (arguments.Length == 2)
+        if (!Cultures.TryGetValue(culture!, out CultureInfo value))
         {
-            var culture = arguments[1].ToString();
-
-            if (!Cultures.TryGetValue(culture!, out CultureInfo value))
+            try
             {
+
                 value = new CultureInfo(culture);
                 Cultures.TryAdd(culture, value);
             }
-
-            output.Write(decimalValue.ToString("C0", value));
+            catch (Exception)
+            {
+                value = new CultureInfo("en-US");
+            }
         }
+
+        if (!format.StartsWith("C", StringComparison.OrdinalIgnoreCase) && 
+            !format.EndsWith("0"))
+        {
+            format += "0";
+        }
+
+        output.Write(decimalValue.ToString(format, value));
     }
 }

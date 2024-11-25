@@ -8,5 +8,5 @@ public class ServiceBusConfiguration
     public TimeSpan AutoDeleteOnIdle                    { get; set; } = TimeSpan.FromDays(90);
     public TimeSpan DefaultMessageTimeToLive            { get; set; } = TimeSpan.FromDays(5);
     public TimeSpan DuplicateDetectionHistoryTimeWindow { get; set; } = TimeSpan.FromMinutes(1);
-    public long     MaxSizeInMegabytes                  { get; set; } = 5120;
+    public long     MaxSizeInMegabytes                  { get; set; } = 1024;
 }

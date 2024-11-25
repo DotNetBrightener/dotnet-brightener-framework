@@ -48,13 +48,16 @@ public class SiteSettingService : ISiteSettingService
     {
         ValidateSettingType(type);
 
+        var defaultValue = _serviceProvider.TryGet(type);
+
+        if (isGetDefault)
+            return defaultValue;
+
         var settingKey = type.FullName;
 
         var setting = GetSiteSettingRecord(settingKey);
 
-        var defaultValue = _serviceProvider.TryGet(type);
-
-        if (setting == null)
+        if (setting == null || setting.Id == 0)
         {
             SaveSetting((SiteSettingBase)defaultValue, type);
 
@@ -91,14 +94,15 @@ public class SiteSettingService : ISiteSettingService
         _cacheManager.Remove(GetCacheKey(settingKey));
     }
 
-    public void SaveSetting(Type settingType, IDictionary<string, object> value)
+    public void SaveSetting(Type settingType, Dictionary<string, object> value)
     {
         if (!typeof(SiteSettingBase).IsAssignableFrom(settingType))
             throw new ArgumentException(string.Format(
                                                       $"{_stringLocalizer["SiteSettings.MsgError.SettingIsNotInherit"]}",
                                                       typeof(SiteSettingBase).FullName));
-
-        var settingValue = JsonConvert.DeserializeObject(JsonConvert.SerializeObject(value), settingType);
+        
+        var serializeObject = JsonConvert.SerializeObject(value);
+        var settingValue    = JsonConvert.DeserializeObject(serializeObject, settingType);
 
         if (settingValue is SiteSettingBase setting)
         {

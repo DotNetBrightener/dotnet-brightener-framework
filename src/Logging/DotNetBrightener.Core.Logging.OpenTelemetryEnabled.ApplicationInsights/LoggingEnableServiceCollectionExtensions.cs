@@ -1,5 +1,6 @@
 // ReSharper disable CheckNamespace
 
+#nullable enable
 using Azure.Core;
 using Azure.Identity;
 using Azure.Monitor.OpenTelemetry.AspNetCore;

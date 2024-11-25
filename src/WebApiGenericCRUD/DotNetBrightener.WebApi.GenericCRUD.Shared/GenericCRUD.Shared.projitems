@@ -13,9 +13,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\UnknownPropertyException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ExpressionExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\EntityMetadataExtractor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\QueryableDeepFilterExtensions.DateTime.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\QueryableDeepFilterExtensions.Boolean.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\QueryableDeepFilterExtensions.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Extensions\QueryableDeepFilterExtensions.DateTime.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\QueryableDeepFilterExtensions.DateTimeOffset.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\QueryableDeepFilterExtensions.DeepFilterApply.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\QueryableDeepFilterExtensions.Guid.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\QueryableDeepFilterExtensions.Numeric.cs" />

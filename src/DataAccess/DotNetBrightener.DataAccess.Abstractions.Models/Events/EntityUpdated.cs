@@ -5,7 +5,7 @@
 namespace DotNetBrightener.DataAccess.Events;
 
 /// <summary>
-///     Event fired when an entity of type <typeparam name="TEntity" /> is updated
+///     Event fired when an entity of type <typeparamref name="TEntity" /> is updated
 /// </summary>
 /// <typeparam name="TEntity">
 ///     The type of the entity specified in the event

@@ -10,20 +10,13 @@ using Microsoft.AspNetCore.Hosting;
 
 namespace AspNet.Extensions.SelfDocumentedProblemResult.UI.Services;
 
-internal class UiProblemResultEndpointsMapper
+internal class UiProblemResultEndpointsMapper(List<Type> problemTypes)
 {
-    private readonly List<Type> _problemTypes;
-
     private static readonly JsonSerializerOptions JsonSerializerOptions = new()
     {
         WriteIndented        = true,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
-
-    public UiProblemResultEndpointsMapper(List<Type> problemTypes)
-    {
-        _problemTypes = problemTypes;
-    }
 
     public IEnumerable<IEndpointConventionBuilder> Map(IEndpointRouteBuilder   builder,
                                                        ErrorsDocTrackerOptions errorsDocTrackerOptions)
@@ -48,7 +41,7 @@ internal class UiProblemResultEndpointsMapper
         Directory.CreateDirectory(mardownPath);
         
 
-        foreach (var type in _problemTypes)
+        foreach (var type in problemTypes)
         {
             var problemResult = Activator.CreateInstance(type) as IProblemResult;
 

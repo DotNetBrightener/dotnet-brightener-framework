@@ -6,8 +6,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using System.Reflection;
-using DotNetBrightener.DataAccess.Auditing;
+using DotNetBrightener.DataAccess.Models.Auditing;
 
+// ReSharper disable once CheckNamespace
 namespace DotNetBrightener.DataAccess.Utils;
 
 public static class DataTransferObjectUtils
@@ -188,7 +189,7 @@ public static class DataTransferObjectUtils
         where T : class
     {
         Type entityType           = typeof(T);
-        var  newExpression        = Expression.New(entityType.GetConstructor(new Type[0])!);
+        var  newExpression        = Expression.New(entityType.GetConstructor([])!);
         var  memberAssignmentList = new List<MemberAssignment>();
 
         var jobject = JObject.FromObject(dataTransferObject);
@@ -242,7 +243,7 @@ public static class DataTransferObjectUtils
     {
         var properties = propertiesList != null
                              ? propertiesList as string[] ?? propertiesList.ToArray()
-                             : Array.Empty<string>();
+                             : [];
 
         if (properties.Length == 0)
         {
@@ -251,7 +252,7 @@ public static class DataTransferObjectUtils
 
         var sourceQuery = Expression.Parameter(typeof(T), "o");
 
-        List<DynamicProperty>                        mainPropertiesBinding = new();
+        List<DynamicProperty>                        mainPropertiesBinding = [];
         Dictionary<string, NestedPropTypeDefinition> nestedProps           = new();
 
         foreach (var propName in properties)
@@ -260,7 +261,7 @@ public static class DataTransferObjectUtils
 
             if (propName.Contains('.'))
             {
-                var props   = propName.Split('.', 2);
+                var props   = propName.Split('.');
                 var navProp = props.First();
 
                 if (!nestedProps.TryGetValue(navProp, out var nestedPropType))
@@ -294,7 +295,7 @@ public static class DataTransferObjectUtils
         }
 
 
-        List<DynamicProperty> nestedPropertiesBinding = new();
+        List<DynamicProperty> nestedPropertiesBinding = [];
 
         foreach (var prop in nestedProps.Values)
         {
@@ -327,7 +328,6 @@ public static class DataTransferObjectUtils
             bindings.Add(bindingAssignment);
         }
 
-
         var result            = Expression.MemberInit(Expression.New(resultType), bindings);
         var mainPropSelectors = Expression.Lambda<Func<T, dynamic>>(result, sourceQuery);
 
@@ -358,13 +358,6 @@ public static class DataTransferObjectUtils
 
         if (!propertyOnEntity.CanWrite)
             return false;
-
-        var getMethod = propertyOnEntity.GetGetMethod();
-        var isGetMethodVirtual = getMethod?.IsVirtual == true;
-        //if (propertyOnEntity.GetGetMethod()?.IsVirtual == true)
-        //{
-        //    return false;
-        //}
 
         valueToUpdate = propertyFromDto.Value.ToObject(propertyOnEntity.PropertyType);
 
@@ -440,23 +433,23 @@ public static class DataTransferObjectUtils
             }
         }
 
-        public HashSet<string> ChildProps { get; } = new HashSet<string>();
+        public HashSet<string> ChildProps { get; } = [];
 
         public Type ReturnDynamicType { get; private set; }
 
         /// <summary>
         ///     Represents the type of the generic collection
         /// </summary>
-        private Type _sourceGenericTypeArgument;
+        private readonly Type _sourceGenericTypeArgument;
 
         /// <summary>
         ///     The type of enumerable generic, eg <seealso cref="IEnumerable{T}"/>
         /// </summary>
-        private Type _enumerableGenericType;
+        private readonly Type _enumerableGenericType;
 
         private Type _destinationResultTypeArgument;
 
-        private readonly List<MemberAssignment> _memberAssignments = new List<MemberAssignment>();
+        private readonly List<MemberAssignment> _memberAssignments = [];
         private          ParameterExpression    _childSourceParameter;
         private          MemberInitExpression   _memberInitExpression;
         private          Expression             _assignmentExpression;
@@ -468,7 +461,7 @@ public static class DataTransferObjectUtils
 
         public void FreezeDynamicBinding(ParameterExpression sourceQuery)
         {
-            List<DynamicProperty> arrayPropBindings = new();
+            List<DynamicProperty> arrayPropBindings = [];
 
             foreach (var childPropName in ChildProps)
             {
@@ -507,14 +500,13 @@ public static class DataTransferObjectUtils
                 var lambda = EnumerableMethodHelpers.LambdaMethod.MakeGenericMethod(delegateType);
 
                 dynamic childSelector = lambda.Invoke(null,
-                                                      new object[]
-                                                      {
-                                                          _memberInitExpression,
-                                                          new[]
-                                                          {
-                                                              _childSourceParameter
-                                                          }
-                                                      });
+                [
+                    _memberInitExpression,
+                    new[]
+                    {
+                        _childSourceParameter
+                    }
+                ]);
                 var selectMethod =
                     EnumerableMethodHelpers.NestedSelectMethod.MakeGenericMethod(_sourceGenericTypeArgument,
                                                                                  _destinationResultTypeArgument);

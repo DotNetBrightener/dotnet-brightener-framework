@@ -1,24 +1,30 @@
 #nullable enable
 
-using System.Linq.Dynamic.Core;
 using DotNetBrightener.DataAccess.Attributes;
-using DotNetBrightener.DataAccess.Auditing;
+using DotNetBrightener.DataAccess.EF.Auditing;
 using DotNetBrightener.DataAccess.EF.Events;
 using DotNetBrightener.DataAccess.EF.Extensions;
+using DotNetBrightener.DataAccess.EF.Internal;
 using DotNetBrightener.DataAccess.Events;
 using DotNetBrightener.DataAccess.Exceptions;
 using DotNetBrightener.DataAccess.Models;
+using DotNetBrightener.DataAccess.Models.Auditing;
 using DotNetBrightener.DataAccess.Models.Guards;
 using DotNetBrightener.DataAccess.Services;
 using DotNetBrightener.DataAccess.Utils;
 using DotNetBrightener.Plugins.EventPubSub;
 using LinqToDB.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.Rewrite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using System.Reflection;
-using LinqToDB.DataProvider.PostgreSQL;
+using Uuid7 = DotNetBrightener.DataAccess.Models.Utils.Internal.Uuid7;
 
 namespace DotNetBrightener.DataAccess.EF.Repositories;
 
@@ -28,17 +34,25 @@ public class Repository : IRepository
     protected readonly ICurrentLoggedInUserResolver? CurrentLoggedInUserResolver;
     protected readonly IEventPublisher?              EventPublisher;
     protected readonly IDateTimeProvider?            DateTimeProvider;
-    protected          ILogger                       Logger { get; init; }
+    protected readonly IHttpContextAccessor?         HttpContextAccessor;
+
+    private readonly IgnoreAuditingEntitiesContainer? _ignoreAuditingEntitiesContainer;
+    private readonly IAuditEntriesProcessor?          _auditEntriesProcessor;
+    protected        ILogger                          Logger { get; init; }
+    private readonly Guid                             _scopeId = Uuid7.Guid();
 
     public Repository(DbContext        dbContext,
                       IServiceProvider serviceProvider,
                       ILoggerFactory   loggerFactory)
     {
-        DbContext                   = dbContext;
-        CurrentLoggedInUserResolver = serviceProvider.TryGet<ICurrentLoggedInUserResolver>();
-        EventPublisher              = serviceProvider.TryGet<IEventPublisher>();
-        DateTimeProvider            = serviceProvider.TryGet<IDateTimeProvider>();
-        Logger                      = loggerFactory.CreateLogger(GetType());
+        DbContext                        = dbContext;
+        CurrentLoggedInUserResolver      = serviceProvider.TryGet<ICurrentLoggedInUserResolver>();
+        EventPublisher                   = serviceProvider.TryGet<IEventPublisher>();
+        DateTimeProvider                 = serviceProvider.TryGet<IDateTimeProvider>();
+        HttpContextAccessor              = serviceProvider.TryGet<HttpContextAccessor>();
+        _ignoreAuditingEntitiesContainer = serviceProvider.TryGet<IgnoreAuditingEntitiesContainer>();
+        _auditEntriesProcessor           = serviceProvider.TryGet<IAuditEntriesProcessor>();
+        Logger                           = loggerFactory.CreateLogger(GetType());
     }
 
     public virtual T? Get<T>(Expression<Func<T, bool>> expression)
@@ -142,7 +156,8 @@ public class Repository : IRepository
     {
         if (!typeof(T).HasProperty<bool>(nameof(IAuditableEntity.IsDeleted)))
         {
-            throw new InvalidOperationException($"Entity of type {typeof(T).Name} does not have soft-delete capability");
+            throw
+                new InvalidOperationException($"Entity of type {typeof(T).Name} does not have soft-delete capability");
         }
 
         var query = DbContext.Set<T>().Where($"{nameof(IAuditableEntity.IsDeleted)} != True");
@@ -155,7 +170,7 @@ public class Repository : IRepository
     public bool Any<T>(Expression<Func<T, bool>>? expression = null)
         where T : class => AnyAsync(expression).Result;
 
-    public virtual async Task<bool> AnyAsync<T>(Expression<Func<T, bool>>? expression = null) 
+    public virtual async Task<bool> AnyAsync<T>(Expression<Func<T, bool>>? expression = null)
         where T : class
     {
         return expression is null
@@ -169,14 +184,6 @@ public class Repository : IRepository
     public virtual async Task InsertAsync<T>(T entity)
         where T : class
     {
-        if (entity is IAuditableEntity auditableEntity)
-        {
-            auditableEntity.CreatedDate = DateTimeProvider?.UtcNow ?? DateTime.UtcNow;
-
-            if (string.IsNullOrEmpty(auditableEntity.CreatedBy))
-                auditableEntity.CreatedBy = CurrentLoggedInUserResolver?.CurrentUserName;
-        }
-
         if (EventPublisher is not null)
         {
             await EventPublisher.Publish(new EntityCreating<T>
@@ -187,25 +194,13 @@ public class Repository : IRepository
             });
         }
 
-        var entityEntry = DbContext.Entry(entity);
-
-        if (entityEntry.State != EntityState.Detached)
-        {
-            entityEntry.State = EntityState.Added;
-            DbContext.Set<T>()
-                     .Attach(entity);
-        }
-        else
-        {
-            await DbContext.Set<T>()
-                           .AddAsync(entity);
-        }
+        await DbContext.AddAsync(entity);
     }
 
     public virtual void InsertMany<T>(IEnumerable<T> entities)
         where T : class => InsertManyAsync(entities).Wait();
 
-    public virtual async Task InsertManyAsync<T>(IEnumerable<T> entities) 
+    public virtual async Task InsertManyAsync<T>(IEnumerable<T> entities)
         where T : class
     {
         var entitiesToInserts = entities.Select(TransformExpression)
@@ -224,8 +219,7 @@ public class Repository : IRepository
             });
         }
 
-        await DbContext.Set<T>()
-                       .AddRangeAsync(entitiesToInserts);
+        await DbContext.AddRangeAsync(entitiesToInserts);
     }
 
     public virtual void BulkInsert<T>(IEnumerable<T> entities)
@@ -275,7 +269,8 @@ public class Repository : IRepository
     {
         if (entity is not IAuditableEntity auditableEntity) return entity;
 
-        auditableEntity.CreatedDate = DateTimeProvider?.UtcNow ?? DateTime.UtcNow;
+        if (auditableEntity.CreatedDate is null)
+            auditableEntity.CreatedDate = DateTimeProvider?.UtcNowWithOffset ?? DateTimeOffset.UtcNow;
 
         if (string.IsNullOrEmpty(auditableEntity.CreatedBy))
             auditableEntity.CreatedBy = CurrentLoggedInUserResolver?.CurrentUserName;
@@ -296,7 +291,9 @@ public class Repository : IRepository
     {
         var query = Fetch(conditionExpression);
 
-        return await LinqToDB.LinqExtensions.InsertAsync(query, DbContext.Set<TTarget>().ToLinqToDBTable(), copyExpression);
+        return await LinqToDB.LinqExtensions.InsertAsync(query,
+                                                         DbContext.Set<TTarget>().ToLinqToDBTable(),
+                                                         copyExpression);
     }
 
     public virtual void Update<T>(T entity) where T : class => UpdateAsync(entity).Wait();
@@ -339,23 +336,11 @@ public class Repository : IRepository
             });
         }
 
-        if (entity is BaseEntityWithAuditInfo auditableEntity)
-        {
-            auditableEntity.ModifiedDate = DateTimeProvider?.UtcNow ?? DateTime.UtcNow;
-            auditableEntity.ModifiedBy   = CurrentLoggedInUserResolver?.CurrentUserName;
-        }
-
-        var entityEntry = DbContext.Entry(entity);
-
-        if (entityEntry.State == EntityState.Detached)
-        {
-            DbContext.Set<T>().Attach(entity);
-        }
-
-        entityEntry.State = EntityState.Modified;
+        DbContext.Update(entity);
     }
 
-    public virtual void UpdateMany<T>(IEnumerable<T> entities) where T : class => UpdateMany(entities.ToArray());
+    public virtual void UpdateMany<T>(IEnumerable<T> entities) where T : class =>
+        UpdateMany(entities.ToArray());
 
     public virtual void UpdateMany<T>(params T[] entities) where T : class
         => UpdateManyAsync(entities).Wait();
@@ -385,58 +370,142 @@ public class Repository : IRepository
                                  int?                       expectedAffectedRows = null)
         where T : class => UpdateAsync(conditionExpression, updateExpression, expectedAffectedRows).Result;
 
+    public Task<int> UpdateOneAsync<T>(Expression<Func<T, bool>>? conditionExpression,
+                                       Expression<Func<T, T>>     updateExpression)
+        where T : class => UpdateAsync(conditionExpression, updateExpression, expectedAffectedRows: 1);
+
     public virtual async Task<int> UpdateAsync<T>(Expression<Func<T, bool>>? conditionExpression,
                                                   Expression<Func<T, T>>     updateExpression,
                                                   int?                       expectedAffectedRows = null)
         where T : class
     {
-        var query = conditionExpression is not null
-                        ? DbContext.Set<T>().Where(conditionExpression)
-                        : DbContext.Set<T>();
+        int updatedRecords = 0;
 
-        int updatedRecords;
 
-        if (expectedAffectedRows.HasValue)
+        var executionStrategy = DbContext.Database.CreateExecutionStrategy();
+
+        async Task ExecuteUpdate()
         {
-            await using var dbTransaction = await DbContext.Database.BeginTransactionAsync();
+            updatedRecords = await PerformUpdate(conditionExpression,
+                                                 updateExpression,
+                                                 expectedAffectedRows);
 
-            updatedRecords = await PerformUpdate(query, updateExpression);
-
-            if (updatedRecords != expectedAffectedRows.Value)
+            if (expectedAffectedRows is not null &&
+                updatedRecords != expectedAffectedRows.Value)
             {
-                await dbTransaction.RollbackAsync();
-
-                throw new ExpectedAffectedRecordMismatchException(expectedAffectedRows.Value, updatedRecords);
+                throw new ExpectedAffectedRecordMismatchException(expectedAffectedRows.Value,
+                                                                  updatedRecords);
             }
-
-            await dbTransaction.CommitAsync();
-        }
-        else
-        {
-            updatedRecords = await PerformUpdate(query, updateExpression);
         }
 
-        if (EventPublisher != null)
-        {
-            _ = EventPublisher.Publish(new EntityUpdatedByExpression<T>
-            {
-                FilterExpression = conditionExpression,
-                UpdateExpression = updateExpression,
-                AffectedRecords  = updatedRecords,
-                UserName         = CurrentLoggedInUserResolver?.CurrentUserName,
-                UserId           = CurrentLoggedInUserResolver?.CurrentUserId
-            });
-        }
+        await executionStrategy.ExecuteInTransactionAsync(ExecuteUpdate,
+                                                          async () => expectedAffectedRows is null ||
+                                                                      updatedRecords == expectedAffectedRows.Value);
+
 
         return updatedRecords;
     }
 
-    private async Task<int> PerformUpdate<T>(IQueryable<T> query, Expression<Func<T, T>> updateExpression)
+    public void DeleteOne<T>(T entity, string? reason = null, bool forceHardDelete = false) where T : class
+        => DeleteOneAsync(entity, reason, forceHardDelete).Wait();
+
+    public virtual async Task DeleteOneAsync<T>(T entity, string? reason = null, bool forceHardDelete = false)
         where T : class
     {
-        var updateQueryBuilder = PrepareUpdatePropertiesBuilder(updateExpression);
+        var entityDeletingEvent = new EntityDeleting<T>()
+        {
+            UserName       = CurrentLoggedInUserResolver?.CurrentUserName,
+            UserId         = CurrentLoggedInUserResolver?.CurrentUserId,
+            Entity         = entity,
+            DeletionReason = reason
+        };
 
-        return await query.ExecutePatchUpdateAsync(updateQueryBuilder);
+        if (EventPublisher is not null)
+        {
+            await EventPublisher.Publish(entityDeletingEvent);
+        }
+
+        const string isDeletedFieldName = nameof(IAuditableEntity.IsDeleted);
+
+        forceHardDelete =
+            forceHardDelete || !typeof(T).HasProperty<bool>(isDeletedFieldName);
+
+
+        if (!forceHardDelete &&
+            entity is BaseEntityWithAuditInfo auditableEntity)
+        {
+            auditableEntity.IsDeleted      = true;
+            auditableEntity.DeletedDate    = DateTimeProvider?.UtcNowWithOffset ?? DateTimeOffset.UtcNow;
+            auditableEntity.DeletedBy      = CurrentLoggedInUserResolver?.CurrentUserName;
+            auditableEntity.DeletionReason = entityDeletingEvent.DeletionReason;
+
+            DbContext.Update(entity);
+        }
+        else
+        {
+            DbContext.Remove(entity);
+        }
+    }
+
+    private async Task<int> PerformUpdate<T>(Expression<Func<T, bool>>? conditionExpression,
+                                             Expression<Func<T, T>>     updateExpression,
+                                             int?                       expectedAffectedRows = null)
+        where T : class
+    {
+        SetPropertyBuilder<T> updateQueryBuilder = PrepareUpdatePropertiesBuilder(updateExpression);
+
+        var url           = HttpContextAccessor?.HttpContext?.Request.GetDisplayUrl();
+        var requestMethod = HttpContextAccessor?.HttpContext?.Request.Method;
+
+        var start = DateTimeOffset.UtcNow;
+
+        var query = conditionExpression is not null
+                        ? DbContext.Set<T>().Where(conditionExpression)
+                        : DbContext.Set<T>();
+
+        int result = await query.ExecutePatchUpdateAsync(updateQueryBuilder);
+
+        if (_ignoreAuditingEntitiesContainer?.Contains(typeof(T)) != true &&
+            result > 0 &&
+            _auditEntriesProcessor is not null &&
+            (expectedAffectedRows is null ||
+             expectedAffectedRows == result))
+        {
+            var now                    = DateTimeOffset.Now;
+            var extractAuditProperties = updateQueryBuilder.ExtractAuditProperties();
+            var auditEntity = new AuditEntity
+            {
+                ScopeId         = _scopeId,
+                StartTime       = start,
+                EndTime         = now,
+                Duration        = now.Subtract(start),
+                Action          = updateQueryBuilder.ActionName,
+                EntityType      = typeof(T).Name,
+                Url             = $"{requestMethod} {url}".Trim(),
+                UserName        = CurrentLoggedInUserResolver?.CurrentUserName ?? "Not Detected",
+                AuditProperties = extractAuditProperties,
+                IsSuccess       = true,
+                AffectedRows    = result
+            };
+
+            auditEntity.PrepareDebugView();
+
+
+            try
+            {
+                var entityIdentifier = conditionExpression.ExtractFilters();
+
+                auditEntity.EntityIdentifier = entityIdentifier.Serialize();
+            }
+            catch (NotSupportedException)
+            {
+
+            }
+            
+            await _auditEntriesProcessor.QueueAuditEntries(auditEntity);
+        }
+
+        return result;
     }
 
     public virtual void DeleteOne<T>(Expression<Func<T, bool>>? conditionExpression,
@@ -457,18 +526,54 @@ public class Repository : IRepository
 
         if (forceHardDelete)
         {
-            await using var dbTransaction = await DbContext.Database.BeginTransactionAsync();
+            var executionStrategy = DbContext.Database.CreateExecutionStrategy();
 
-            var updatedRecords = await Fetch(conditionExpression).ExecuteDeleteAsync();
+            int updatedRecords = 0;
 
-            if (updatedRecords != 1)
+            async Task ExecuteDelete()
             {
-                await dbTransaction.RollbackAsync();
+                updatedRecords = await Fetch(conditionExpression).ExecuteDeleteAsync();
 
-                throw new ExpectedAffectedRecordMismatchException(1, updatedRecords);
+                if (updatedRecords != 1)
+                {
+                    throw new ExpectedAffectedRecordMismatchException(1,
+                                                                      updatedRecords);
+                }
             }
 
-            await dbTransaction.CommitAsync();
+            DateTimeOffset start = DateTimeOffset.UtcNow;
+
+            await executionStrategy.ExecuteInTransactionAsync(ExecuteDelete,
+                                                              async () => updatedRecords == 1);
+
+            if (_ignoreAuditingEntitiesContainer?.Contains(typeof(T)) != true &&
+                _auditEntriesProcessor is not null &&
+                updatedRecords == 1)
+            {
+                var url           = HttpContextAccessor?.HttpContext?.Request.GetDisplayUrl();
+                var requestMethod = HttpContextAccessor?.HttpContext?.Request.Method;
+
+                Logger.LogDebug("Initializing Audit Entity");
+
+                var entityIdentifier = conditionExpression.ExtractFilters();
+
+                var now = DateTimeOffset.UtcNow;
+                var auditEntity = new AuditEntity
+                {
+                    ScopeId          = _scopeId,
+                    StartTime        = start,
+                    EndTime          = now,
+                    Duration         = now.Subtract(start),
+                    Action           = "Hard-Deleted using Expression",
+                    EntityIdentifier = entityIdentifier.Serialize(),
+                    EntityType       = typeof(T).Name,
+                    Url              = $"{requestMethod} {url}".Trim(),
+                    UserName         = CurrentLoggedInUserResolver?.CurrentUserName ?? "Not Detected",
+                    IsSuccess        = true,
+                    AffectedRows     = updatedRecords
+                };
+                await _auditEntriesProcessor.QueueAuditEntries(auditEntity);
+            }
         }
         else
         {
@@ -478,26 +583,12 @@ public class Repository : IRepository
             await UpdateAsync(conditionExpression,
                               new
                               {
-                                  IsDeleted   = true,
-                                  DeletedDate = DateTimeOffset.UtcNow,
-                                  DeletedBy = CurrentLoggedInUserResolver
-                                    ?.CurrentUserName,
+                                  IsDeleted      = true,
+                                  DeletedDate    = DateTimeProvider?.UtcNowWithOffset ?? DateTimeOffset.UtcNow,
+                                  UserName       = CurrentLoggedInUserResolver?.CurrentUserName ?? "Not Detected",
                                   DeletionReason = reason
                               },
                               expectedAffectedRows: 1);
-        }
-
-        // if no issue thus far, publish the event
-        if (EventPublisher is not null)
-        {
-            _ = EventPublisher.Publish(new EntityDeletedByExpression<T>
-            {
-                DeletionReason   = reason,
-                FilterExpression = conditionExpression,
-                UserName         = CurrentLoggedInUserResolver?.CurrentUserName,
-                UserId           = CurrentLoggedInUserResolver?.CurrentUserId,
-                IsHardDeleted    = forceHardDelete
-            });
         }
     }
 
@@ -516,30 +607,56 @@ public class Repository : IRepository
         forceHardDelete =
             forceHardDelete || !typeof(T).HasProperty<bool>(isDeletedFieldName);
 
-        var updatedRecords = forceHardDelete
-                                 ? await Fetch(conditionExpression).ExecuteDeleteAsync()
-                                 : await UpdateAsync(conditionExpression,
-                                                     new
-                                                     {
-                                                         IsDeleted      = true,
-                                                         DeletedDate    = DateTimeOffset.UtcNow,
-                                                         DeletedBy      = CurrentLoggedInUserResolver?.CurrentUserName,
-                                                         DeletionReason = reason
-                                                     },
-                                                     expectedAffectedRows: null);
+        int updatedRecords;
 
-        if (EventPublisher is not null)
+        if (forceHardDelete)
         {
-            _ = EventPublisher.Publish(new EntityDeletedByExpression<T>
+            DateTimeOffset start = DateTimeOffset.UtcNow;
+            updatedRecords = await Fetch(conditionExpression).ExecuteDeleteAsync();
+
+            if (updatedRecords != 0 &&
+                _ignoreAuditingEntitiesContainer?.Contains(typeof(T)) != true &&
+                _auditEntriesProcessor is not null)
             {
-                DeletionReason   = reason,
-                FilterExpression = conditionExpression,
-                AffectedRecords  = updatedRecords,
-                UserName         = CurrentLoggedInUserResolver?.CurrentUserName,
-                UserId           = CurrentLoggedInUserResolver?.CurrentUserId,
-                IsHardDeleted    = forceHardDelete
-            });
+                var url           = HttpContextAccessor?.HttpContext?.Request.GetDisplayUrl();
+                var requestMethod = HttpContextAccessor?.HttpContext?.Request.Method;
+
+                Logger.LogDebug("Initializing Audit Entity");
+
+                var entityIdentifier = conditionExpression.ExtractFilters();
+
+                var now = DateTimeOffset.UtcNow;
+                var auditEntity = new AuditEntity
+                {
+                    ScopeId          = _scopeId,
+                    StartTime        = start,
+                    EndTime          = now,
+                    Duration         = now.Subtract(start),
+                    Action           = "Hard-Deleted using Expression",
+                    EntityIdentifier = entityIdentifier.Serialize(),
+                    EntityType       = typeof(T).Name,
+                    Url              = $"{requestMethod} {url}".Trim(),
+                    UserName         = CurrentLoggedInUserResolver?.CurrentUserName ?? "Not Detected",
+                    IsSuccess        = true,
+                    AffectedRows     = updatedRecords
+                };
+
+                await _auditEntriesProcessor.QueueAuditEntries(auditEntity);
+            }
+
+            return updatedRecords;
         }
+
+        updatedRecords = await UpdateAsync(conditionExpression,
+                                           new
+                                           {
+                                               IsDeleted = true,
+                                               DeletedDate =
+                                                   DateTimeProvider?.UtcNowWithOffset ?? DateTimeOffset.UtcNow,
+                                               DeletedBy      = CurrentLoggedInUserResolver?.CurrentUserName,
+                                               DeletionReason = reason
+                                           },
+                                           expectedAffectedRows: null);
 
         return updatedRecords;
     }
@@ -587,17 +704,12 @@ public class Repository : IRepository
 
     public async Task<int> CommitChangesAsync()
     {
-        List<EntityEntry> insertedEntities = [];
-        List<EntityEntry> updatedEntities  = [];
-
         try
         {
             if (!DbContext.ChangeTracker.HasChanges())
             {
                 return 0;
             }
-
-            await OnBeforeSaveChanges(insertedEntities, updatedEntities);
 
             return await DbContext.SaveChangesAsync();
         }
@@ -614,62 +726,6 @@ public class Repository : IRepository
             }
 
             throw;
-        }
-        finally
-        {
-            if (insertedEntities.Count != 0 ||
-                updatedEntities.Count != 0)
-            {
-                await OnAfterSaveChanges(insertedEntities, updatedEntities);
-            }
-        }
-    }
-
-
-    protected virtual async Task OnBeforeSaveChanges(List<EntityEntry> insertedEntities,
-                                                     List<EntityEntry> updatedEntities)
-    {
-        if (!DbContext.ChangeTracker.HasChanges() ||
-            EventPublisher is null)
-        {
-            return;
-        }
-
-        var entityEntries = DbContext.ChangeTracker
-                                     .Entries()
-                                     .ToArray();
-
-        insertedEntities.AddRange(entityEntries.Where(e => e.State == EntityState.Added));
-
-        updatedEntities.AddRange(entityEntries.Where(e => e.State == EntityState.Modified ||
-                                                          e.State == EntityState.Deleted));
-
-        await EventPublisher.Publish(new DbContextBeforeSaveChanges
-        {
-            InsertedEntityEntries = insertedEntities,
-            UpdatedEntityEntries  = updatedEntities,
-            CurrentUserId         = CurrentLoggedInUserResolver?.CurrentUserId,
-            CurrentUserName       = CurrentLoggedInUserResolver?.CurrentUserName,
-        });
-    }
-
-    protected virtual async Task OnAfterSaveChanges(List<EntityEntry> insertedEntities, List<EntityEntry> updatedEntities)
-    {
-        if (insertedEntities.Count == 0 &&
-            updatedEntities.Count == 0)
-        {
-            return;
-        }
-
-        if (EventPublisher is not null)
-        {
-            await EventPublisher.Publish(new DbContextAfterSaveChanges
-            {
-                InsertedEntityEntries = insertedEntities,
-                UpdatedEntityEntries  = updatedEntities,
-                CurrentUserId         = CurrentLoggedInUserResolver?.CurrentUserId,
-                CurrentUserName       = CurrentLoggedInUserResolver?.CurrentUserName,
-            });
         }
     }
 
@@ -713,17 +769,18 @@ public class Repository : IRepository
         }
 
         if (!hasModifiedDate &&
-            typeof(T).IsAssignableTo(typeof(IAuditableEntity)))
+            typeof(T).HasProperty<DateTimeOffset?>(nameof(IAuditableEntity.ModifiedDate)))
         {
             setPropBuilder.SetPropertyByName<DateTimeOffset?>(nameof(IAuditableEntity.ModifiedDate),
-                                                              DateTimeProvider?.UtcNow ?? DateTime.UtcNow);
+                                                              DateTimeProvider?.UtcNowWithOffset ??
+                                                              DateTimeOffset.UtcNow);
         }
 
         if (!hasModifiedBy &&
             typeof(T).HasProperty<string>(nameof(IAuditableEntity.ModifiedBy)))
         {
             setPropBuilder.SetPropertyByName(nameof(IAuditableEntity.ModifiedBy),
-                                             CurrentLoggedInUserResolver?.CurrentUserName);
+                                             CurrentLoggedInUserResolver?.CurrentUserName ?? "[Not Detected]");
         }
 
         return setPropBuilder;
