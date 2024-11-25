@@ -30,7 +30,7 @@ internal class PostgreSqlTemplateRegistrationService : ITemplateRegistrationServ
         {
             // mark all templates as deleted, because they'll be registered again after this
 
-            await _templateRecordDataService.UpdateMany(record => true,
+            await _templateRecordDataService.UpdateMany(null,
                                                         model => new TemplateRecord
                                                         {
                                                             IsDeleted      = true,

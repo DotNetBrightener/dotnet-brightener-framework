@@ -7,14 +7,10 @@ namespace DotNetBrightener.DataAccess.EF.PostgreSQL;
 /// <summary>
 ///    Represents the <see cref="DbContext" /> that defines the entities, has migrations applied and versioning enabled
 /// </summary>
-public abstract class PostgreSqlVersioningMigrationEnabledDbContext : MigrationEnabledDbContext
+public abstract class PostgreSqlVersioningMigrationEnabledDbContext(
+    DbContextOptions options)
+    : AdvancedDbContext(options)
 {
-    protected PostgreSqlVersioningMigrationEnabledDbContext(DbContextOptions options)
-        : base(options)
-    {
-
-    }
-
     protected sealed override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigureModelBuilder(modelBuilder);

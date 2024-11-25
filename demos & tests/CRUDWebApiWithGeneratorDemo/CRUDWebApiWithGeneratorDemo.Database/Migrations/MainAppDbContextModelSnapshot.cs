@@ -17,10 +17,54 @@ namespace CRUDWebApiWithGeneratorDemo.Database.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.1")
+                .HasAnnotation("ProductVersion", "8.0.6")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("CRUDWebApiWithGeneratorDemo.Core.Entities.GroupEntity", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTimeOffset?>("CreatedDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("DeletedBy")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTimeOffset?>("DeletedDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("DeletionReason")
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTimeOffset?>("ModifiedDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("GroupEntity");
+                });
 
             modelBuilder.Entity("CRUDWebApiWithGeneratorDemo.Core.Entities.Product", b =>
                 {
@@ -37,8 +81,18 @@ namespace CRUDWebApiWithGeneratorDemo.Database.Migrations
                     b.Property<DateTimeOffset?>("CreatedDate")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<string>("DeletedBy")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTimeOffset?>("DeletedDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("DeletionReason")
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
+
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsDeleted")
@@ -52,10 +106,9 @@ namespace CRUDWebApiWithGeneratorDemo.Database.Migrations
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("Name")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long>("ProductCategoryId")
+                    b.Property<long?>("ProductCategoryId")
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
@@ -80,6 +133,17 @@ namespace CRUDWebApiWithGeneratorDemo.Database.Migrations
                     b.Property<DateTimeOffset?>("CreatedDate")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<string>("DeletedBy")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTimeOffset?>("DeletedDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("DeletionReason")
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -91,7 +155,6 @@ namespace CRUDWebApiWithGeneratorDemo.Database.Migrations
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("Name")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -114,8 +177,18 @@ namespace CRUDWebApiWithGeneratorDemo.Database.Migrations
                     b.Property<DateTimeOffset?>("CreatedDate")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<string>("DeletedBy")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTimeOffset?>("DeletedDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("DeletionReason")
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
+
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasMaxLength(1024)
                         .HasColumnType("nvarchar(1024)");
 
@@ -126,12 +199,10 @@ namespace CRUDWebApiWithGeneratorDemo.Database.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("FileName")
-                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
                     b.Property<string>("FileUrl")
-                        .IsRequired()
                         .HasMaxLength(2048)
                         .HasColumnType("nvarchar(2048)");
 
@@ -158,7 +229,12 @@ namespace CRUDWebApiWithGeneratorDemo.Database.Migrations
                     b.Property<decimal?>("Price")
                         .HasColumnType("decimal");
 
+                    b.Property<long>("ProductId")
+                        .HasColumnType("bigint");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
 
                     b.ToTable("ProductDocument");
 
@@ -178,11 +254,25 @@ namespace CRUDWebApiWithGeneratorDemo.Database.Migrations
                 {
                     b.HasOne("CRUDWebApiWithGeneratorDemo.Core.Entities.ProductCategory", "ProductCategory")
                         .WithMany("Products")
-                        .HasForeignKey("ProductCategoryId")
+                        .HasForeignKey("ProductCategoryId");
+
+                    b.Navigation("ProductCategory");
+                });
+
+            modelBuilder.Entity("CRUDWebApiWithGeneratorDemo.Core.Entities.ProductDocument", b =>
+                {
+                    b.HasOne("CRUDWebApiWithGeneratorDemo.Core.Entities.Product", "Product")
+                        .WithMany("ProductDocuments")
+                        .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("ProductCategory");
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("CRUDWebApiWithGeneratorDemo.Core.Entities.Product", b =>
+                {
+                    b.Navigation("ProductDocuments");
                 });
 
             modelBuilder.Entity("CRUDWebApiWithGeneratorDemo.Core.Entities.ProductCategory", b =>

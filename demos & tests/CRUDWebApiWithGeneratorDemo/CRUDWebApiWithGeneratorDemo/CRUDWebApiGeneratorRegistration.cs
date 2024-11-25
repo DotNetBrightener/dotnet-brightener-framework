@@ -12,5 +12,6 @@ public class CRUDWebApiGeneratorRegistration
         typeof(Product),
         typeof(ProductCategory),
         typeof(ProductDocument),
+        typeof(GroupEntity),
     ];
 }

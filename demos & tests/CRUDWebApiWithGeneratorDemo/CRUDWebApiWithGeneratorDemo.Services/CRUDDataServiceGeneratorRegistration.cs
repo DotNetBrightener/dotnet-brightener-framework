@@ -9,5 +9,6 @@ public class CRUDDataServiceGeneratorRegistration
         typeof(Product),
         typeof(ProductCategory),
         typeof(ProductDocument),
+        typeof(GroupEntity),
     ];
 }

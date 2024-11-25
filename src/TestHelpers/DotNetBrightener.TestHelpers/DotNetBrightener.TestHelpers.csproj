@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
@@ -8,15 +8,22 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="coverlet.collector" Version="6.0.0" />
-		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
-		<PackageReference Include="NUnit" Version="3.14.0" />
-		<PackageReference Include="NUnit.Analyzers" Version="3.9.0" />
-		<PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
+		<PackageReference Include="coverlet.collector" Version="6.0.2">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="FluentAssertions" Version="6.12.2" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.10" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.10" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.10" />
+		<PackageReference Include="Moq.AutoMock" Version="3.5.0" />
+		<PackageReference Include="Testcontainers.MsSql" Version="4.0.0" />
+		<PackageReference Include="xunit" Version="2.9.2" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<Using Include="NUnit.Framework" />
+	  <ProjectReference Include="..\..\Core\VampireCoder.SharedUtils\VampireCoder.SharedUtils.csproj" />
 	</ItemGroup>
 
 </Project>

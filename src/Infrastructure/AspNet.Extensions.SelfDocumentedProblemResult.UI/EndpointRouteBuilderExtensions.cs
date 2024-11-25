@@ -1,4 +1,5 @@
-﻿using AspNet.Extensions.SelfDocumentedProblemResult;
+﻿#nullable enable
+using AspNet.Extensions.SelfDocumentedProblemResult;
 using AspNet.Extensions.SelfDocumentedProblemResult.UI;
 using AspNet.Extensions.SelfDocumentedProblemResult.UI.Services;
 using DotNetBrightener.Extensions.ProblemsResult.UI;

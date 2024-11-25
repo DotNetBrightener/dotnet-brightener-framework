@@ -1,4 +1,6 @@
-﻿namespace DotNetBrightener.CryptoEngine;
+﻿using Microsoft.Extensions.Logging;
+
+namespace DotNetBrightener.CryptoEngine;
 
 /// <summary>
 ///     Represents the service for generating and validating password
@@ -24,15 +26,18 @@ public interface IPasswordValidationProvider
     bool ValidatePassword(string plainTextPassword, string passwordEncryptionKey, string hashedPassword);
 }
 
-public class DefaultPasswordValidationProvider(ICryptoEngine cryptoEngine) : IPasswordValidationProvider
+public class DefaultPasswordValidationProvider(ICryptoEngine cryptoEngine, 
+                                               ILoggerFactory loggerFactory) : IPasswordValidationProvider
 {
+    private ILogger Logger => loggerFactory.CreateLogger(GetType());
+
     public virtual Tuple<string, string> GenerateEncryptedPassword(string plainTextPassword)
     {
         // create a key (salt) for hashing the password
-        var passwordSalt = CryptoUtilities.CreateRandomToken();
+        var passwordSalt = CryptoUtilities.CreateRandomToken(24);
 
         // hash the password with the salt
-        var hashedPassword = SymmetricCryptoEngine.Encrypt(plainTextPassword, passwordSalt);
+        var hashedPassword = AesCryptoEngine.Encrypt(plainTextPassword, passwordSalt);
 
         // encrypt the salt
         var encryptedPasswordSalt = cryptoEngine.EncryptText(passwordSalt);
@@ -46,8 +51,24 @@ public class DefaultPasswordValidationProvider(ICryptoEngine cryptoEngine) : IPa
         var passwordSalt = cryptoEngine.DecryptText(passwordEncryptionKey);
 
         // use the salt to create the hash from plain text password
-        var encryptedPassword = SymmetricCryptoEngine.Encrypt(plainTextPassword, passwordSalt);
+        try
+        {
+            if (AesCryptoEngine.TryDecrypt(hashedPassword, out var decryptedPassword, passwordSalt) && 
+                decryptedPassword == plainTextPassword)
+                return true;
+        }
+        catch (Exception ex)
+        {
+            // don't need to handle, try the next one as fall back
+            Logger.LogInformation("Error while trying to compare using new encryption algorithm. Switching to old algorithm.");
+        }
 
-        return string.Equals(encryptedPassword, hashedPassword, StringComparison.Ordinal);
+        // fall back to the old implementation
+        if (string.Equals(TripleDesCryptoEngine.Encrypt(plainTextPassword, passwordSalt),
+                          hashedPassword,
+                          StringComparison.Ordinal))
+            return true;
+
+        return false;
     }
 }

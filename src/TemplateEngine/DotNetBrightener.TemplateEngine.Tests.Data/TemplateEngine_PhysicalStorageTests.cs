@@ -1,44 +1,27 @@
 using DotNetBrightener.TemplateEngine.Data.Services;
-using DotNetBrightener.TemplateEngine.Models;
 using DotNetBrightener.TemplateEngine.Services;
+using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Moq;
-using NUnit.Framework;
+using Xunit;
+using Xunit.Abstractions;
 
 namespace DotNetBrightener.TemplateEngine.Tests.Data;
 
-internal class TemplateTestModel : ITemplateModel
-{
-    public string Name { get; set; }
-
-    public string Description { get; set; }
-}
-
-internal class TestModelRegistration : ITemplateProvider
-{
-    public async Task RegisterTemplates(ITemplateStore templateStore)
-    {
-        await templateStore.RegisterTemplate<TemplateTestModel>("Hello {{Name}}",
-                                                                "Hey {{Name}},<br />This is {{Description}}.");
-    }
-}
-
-[TestFixture]
-public class TemplateEngine_PhysicalStorageTests
+public class TemplateEngine_PhysicalStorageTests(ITestOutputHelper testOutputHelper)
 {
     private readonly List<string> _pathsToCleanUp = new List<string>();
 
     private IHost _testHost;
-
-
-    [Test]
+    
+    [Fact]
     public async Task TemplateHelperProvider_ShouldBeCalledAtStartup()
     {
         var mockTemplateHelper = new Mock<ITemplateHelperRegistration>();
 
-        _testHost = HostTestingHelper.CreateTestHost(services =>
+        _testHost = HostTestingHelper.CreateTestHost(testOutputHelper, services =>
         {
             services.Replace(ServiceDescriptor.Scoped<ITemplateHelperRegistration>((s) => mockTemplateHelper.Object));
         });
@@ -51,12 +34,12 @@ public class TemplateEngine_PhysicalStorageTests
         await _testHost.StopAsync();
     }
 
-    [Test]
+    [Fact]
     public async Task TemplateProvider_ShouldBeCalledAtStartup()
     {
         var mockTemplateProvider = new Mock<ITemplateProvider>();
 
-        _testHost = HostTestingHelper.CreateTestHost(services =>
+        _testHost = HostTestingHelper.CreateTestHost(testOutputHelper, services =>
         {
             services.AddTemplateEngineStorage();
             services.AddScoped<ITemplateProvider>((s) => mockTemplateProvider.Object);
@@ -70,15 +53,14 @@ public class TemplateEngine_PhysicalStorageTests
         await _testHost.StopAsync();
     }
 
-    [Test]
+    [Fact]
     public async Task TemplateProvider_ShouldCreateANewTemplateFile()
     {
-        _testHost = HostTestingHelper.CreateTestHost(services =>
+        _testHost = HostTestingHelper.CreateTestHost(testOutputHelper, services =>
         {
             services.AddTemplateEngineStorage();
             services.AddTemplateProvider<TestModelRegistration>();
         });
-
 
         var environment        = _testHost.Services.GetRequiredService<IHostEnvironment>();
         var templateFolderPath = Path.Combine(environment.ContentRootPath, "Templates");
@@ -100,7 +82,7 @@ public class TemplateEngine_PhysicalStorageTests
         var templatesPath      = Path.Combine(templateFolderPath, expectingFileName);
 
 
-        Assert.That(File.Exists(templatesPath), Is.True);
+        File.Exists(templatesPath).Should().BeTrue();
 
         using (var scope = _testHost.Services.CreateScope())
         {
@@ -108,9 +90,10 @@ public class TemplateEngine_PhysicalStorageTests
 
             var template = templateService.LoadTemplate<TemplateTestModel>();
 
-            Assert.That(template, Is.Not.Null);
-            Assert.That(template.TemplateTitle, Is.EqualTo("Hello {{Name}}"));
-            Assert.That(template.TemplateContent, Is.EqualTo("Hey {{Name}},<br />This is {{Description}}."));
+
+            template.Should().NotBeNull();
+            template.TemplateTitle.Should().Be("Hello {{Name}}");
+            template.TemplateContent.Should().Be("Hey {{Name}},<br />This is {{Description}}.");
         }
 
         using (var scope = _testHost.Services.CreateScope())
@@ -125,9 +108,9 @@ public class TemplateEngine_PhysicalStorageTests
 
             var template = await templateService.LoadAndParseTemplateAsync(model);
 
-            Assert.That(template, Is.Not.Null);
-            Assert.That(template.TemplateTitle, Is.EqualTo("Hello John"));
-            Assert.That(template.TemplateContent, Is.EqualTo("Hey John,<br />This is A test model."));
+            template.Should().NotBeNull();
+            template.TemplateTitle.Should().Be("Hello John");
+            template.TemplateContent.Should().Be("Hey John,<br />This is A test model.");
         }
         
         await _testHost.StopAsync();

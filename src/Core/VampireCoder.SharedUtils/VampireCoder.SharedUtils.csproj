@@ -2,8 +2,18 @@
 
 	<PropertyGroup>
 		<ImplicitUsings>enable</ImplicitUsings>
-		
 	</PropertyGroup>
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="VampireCoder.SharedUtils.Tests" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Castle.Core" Version="5.1.1" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.2" />
+	</ItemGroup>
 
 	<Import Project="..\..\Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems" Label="Shared" />
 

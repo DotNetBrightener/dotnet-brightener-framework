@@ -3,7 +3,7 @@
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
 	</ItemGroup>
 	<ItemGroup>
-	  <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.6" />
+	  <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.10" />
 	</ItemGroup>
 	<ItemGroup>
 	  <ProjectReference Include="..\..\Security\DotNetBrightener.Infrastructure.JwtAuthentication\DotNetBrightener.Infrastructure.JwtAuthentication.csproj" />

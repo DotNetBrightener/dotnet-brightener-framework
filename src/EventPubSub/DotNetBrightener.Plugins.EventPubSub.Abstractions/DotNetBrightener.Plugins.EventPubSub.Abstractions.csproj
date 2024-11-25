@@ -4,13 +4,20 @@
 	</PropertyGroup>
 	<ItemGroup>
 		<InternalsVisibleTo Include="DotNetBrightener.Plugins.EventPubSub" />
+		<InternalsVisibleTo Include="DotNetBrightener.Plugins.EventPubSub.Tests" />
 		<InternalsVisibleTo Include="DotNetBrightener.Plugins.EventPubSub.DependencyInjection" />
 		<InternalsVisibleTo Include="DotNetBrightener.Plugins.EventPubSub.AzureServiceBus" />
+		<InternalsVisibleTo Include="DotNetBrightener.Plugins.EventPubSub.AzureServiceBus.Native" />
+		<InternalsVisibleTo Include="DotNetBrightener.Plugins.EventPubSub.RabbitMq" />
+		<InternalsVisibleTo Include="DotNetBrightener.Plugins.EventPubSub.Distributed" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.2" />
+		<PackageReference Include="Microsoft.Testing.Platform" Version="1.4.3" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 	</ItemGroup>
+
+	<Import Project="..\..\Shared\SharedExtensions.ObjectMethods\SharedExtensions.ObjectMethods.projitems" Label="Shared" />
 </Project>

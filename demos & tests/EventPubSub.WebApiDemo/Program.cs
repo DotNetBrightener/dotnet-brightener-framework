@@ -1,26 +1,23 @@
 using DotNetBrightener.Plugins.EventPubSub;
 using EventPubSub.WebApiDemo.Contracts;
+using Microsoft.AspNetCore.Mvc;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services
-       .AddEventPubSubService(Assembly.GetExecutingAssembly(), typeof(DistributedTestMessage).Assembly)
-       .AddAzureServiceBus("Endpoint=sb://hs-temp-sb-core.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=59hTxGwZnmvIRA4qsl3i1PYsTy/ST+PpRmNDfU+dddA=",
-                           "PublisherDemo")
-       .AddEventHandlersFromAssemblies([
-            Assembly.GetExecutingAssembly(),
-        ]);
-
-//.InitMassTransitConfig()
-//.WithAzureServiceBus("Endpoint=sb://hs-temp-sb-core.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=59hTxGwZnmvIRA4qsl3i1PYsTy/ST+PpRmNDfU+dddA=")
-// // .WithRabbitMq("100.102.153.17", "/", "rabbit", "dj1ig6BVoeATqhJfAuziSk76fLP4QDAU")
-//.AddEventHandlersFromAssemblies([
-//     Assembly.GetExecutingAssembly(),
-// ])
-//.Build();
-
 // Add services to the container.
+
+// Initialize EventPubSubService
+var eventPubSubConfig = builder.Services
+                               .AddEventPubSubService()
+                               // scan for event messages in the given assembly
+                               .AddEventMessagesFromAssemblies(typeof(DistributedTestMessage).Assembly)
+                               // scan for event handlers in the given assembly
+                               .AddEventHandlersFromAssemblies(Assembly.GetExecutingAssembly());
+
+// Add Azure Service Bus
+eventPubSubConfig.UseAzureServiceBus(builder.Configuration)
+                 .Finalize();
 
 var app = builder.Build();
 
@@ -28,42 +25,43 @@ var app = builder.Build();
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+app.MapGet("/", () => "Publisher launched. Watch the console for incoming messages.");
 
-app.MapGet("/weatherforecast", async (IEventPublisher eventPublisher) =>
-{
-    var eventMessage = new TestMessage
-    {
-        Name = "world"
-    };
+app.MapGet("/getresponse-test",
+           async (IEventPublisher eventPublisher,
+                  [FromQuery] bool runInBackground = false) =>
+           {
+               var eventMessage = new TestMessage
+               {
+                   Name = "world" + (runInBackground ? " (background)" : "")
+               };
 
-    await eventPublisher.Publish(eventMessage);
+               await eventPublisher.Publish(eventMessage, runInBackground);
 
-    var eventMessage2 = new DistributedTestMessage
-    {
-        Name = " distributed message"
-    };
+               var eventMessage2 = new DistributedTestMessage
+               {
+                   Name = eventMessage.Name
+               };
 
-    await eventPublisher.Publish(eventMessage2);
+               var response =
+                   await eventPublisher
+                      .GetResponse<DistributedTestMessageResponse, DistributedTestMessage>(eventMessage2);
 
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
+               return response;
+           });
 
-    return eventMessage;
-});
+
+app.MapGet("/test",
+           async (IEventPublisher eventPublisher) =>
+           {
+               var eventMessage = new SomeUpdateMessage
+               {
+                   Name = "world"
+               };
+
+               await eventPublisher.Publish(eventMessage);
+
+               return "Message sent";
+           });
 
 app.Run();
-
-internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

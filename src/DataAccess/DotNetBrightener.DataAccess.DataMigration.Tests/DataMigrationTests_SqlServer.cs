@@ -1,30 +1,18 @@
 ﻿using DotNetBrightener.DataAccess.DataMigration.Extensions;
+using DotNetBrightener.TestHelpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NUnit.Framework;
+using Xunit;
+using Xunit.Abstractions;
+using Assert = NUnit.Framework.Assert;
 
 namespace DotNetBrightener.DataAccess.DataMigration.Tests;
 
-internal class DataMigrationTests_SqlServer
+public class DataMigrationTests_SqlServer(ITestOutputHelper testOutputHelper): MsSqlServerBaseXUnitTest(testOutputHelper)
 {
-    private string _connectionString;
-
-    [SetUp]
-    public void Setup()
-    {
-        _connectionString =
-            $"Server=(localdb)\\MSSQLLocalDB;Database=DataMigration_UnitTest{DateTime.Now:yyyyMMddHHmm};Trusted_Connection=True;MultipleActiveResultSets=true";
-        // _connectionString = $"Server=100.121.179.124;Database=DataMigration_UnitTest{DateTime.Now:yyyyMMddHHmm};User Id=sa;Password=sCpTXbW8jbSbbUpILfZVulTiwqcPyJWt;MultipleActiveResultSets=True;Encrypt=True;TrustServerCertificate=True;";
-    }
-
-    [TearDown]
-    public void TearDown()
-    {
-        TearDownHost();
-    }
-
-    [Test]
+    [Fact]
     public async Task AddDataMigrator_ShouldThrowBecauseOfNotInitializeDataMigrationFirst()
     {
         Assert.Throws(Is.TypeOf<InvalidOperationException>()
@@ -42,7 +30,7 @@ internal class DataMigrationTests_SqlServer
                       });
     }
 
-    [Test]
+    [Fact]
     public async Task AddDataMigrator_ShouldThrowBecauseOfNoAttribute()
     {
         Assert.Throws(Is.TypeOf<InvalidOperationException>()
@@ -51,7 +39,7 @@ internal class DataMigrationTests_SqlServer
                       () => ConfigureService<ShouldNotBeRegisteredMigration>());
     }
 
-    [Test]
+    [Fact]
     public async Task AddDataMigrator_ShouldRegisterWithoutIssue()
     {
         // Arrange
@@ -66,7 +54,7 @@ internal class DataMigrationTests_SqlServer
         Assert.That(metadata.Values.ElementAt(0), Is.EqualTo(typeof(GoodMigration)));
     }
 
-    [Test]
+    [Fact]
     public async Task AddDataMigrator_ShouldExecuteAtAppStart()
     {
         // Arrange
@@ -74,7 +62,7 @@ internal class DataMigrationTests_SqlServer
            .ConfigureServices((hostContext, services) =>
             {
                 services.EnableDataMigrations()
-                        .UseSqlServer(_connectionString);
+                        .UseSqlServer(ConnectionString);
 
                 services.AddDataMigrator<GoodMigration>();
                 services.AddDataMigrator<GoodMigration2>();
@@ -102,7 +90,7 @@ internal class DataMigrationTests_SqlServer
         await host.StopAsync();
     }
 
-    [Test]
+    [Fact]
     public async Task AddDataMigrator_ShouldExecuteAtAppStart_WithoutWritingHistoryDueToException()
     {
         // Arrange
@@ -110,7 +98,7 @@ internal class DataMigrationTests_SqlServer
            .ConfigureServices((hostContext, services) =>
             {
                 services.EnableDataMigrations()
-                        .UseSqlServer(_connectionString);
+                        .UseSqlServer(ConnectionString);
 
                 services.AddDataMigrator<GoodMigration>();
                 services.AddDataMigrator<MigrationWithThrowingException>();
@@ -149,25 +137,5 @@ internal class DataMigrationTests_SqlServer
         var host = builder.Build();
 
         return host;
-    }
-
-    private void TearDownHost()
-    {
-        var builder = new HostBuilder()
-           .ConfigureServices((hostContext, serviceCollection) =>
-            {
-                serviceCollection.AddDbContext<DataMigrationDbContext>(options =>
-                {
-                    options.UseSqlServer(_connectionString);
-                });
-            });
-
-        var host = builder.Build();
-
-        using var serviceScope    = host.Services.CreateScope();
-        var       serviceProvider = serviceScope.ServiceProvider;
-
-        using var dbContext = serviceProvider.GetRequiredService<DataMigrationDbContext>();
-        dbContext.Database.EnsureDeleted();
     }
 }

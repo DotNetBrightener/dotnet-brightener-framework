@@ -13,5 +13,6 @@ public static class MsSqlDapperServiceCollectionExtensions
 
         serviceCollection.TryAddScoped<ITransactionWrapper, TransactionWrapper>();
         serviceCollection.TryAddScoped<ICurrentLoggedInUserResolver, DefaultCurrentUserResolver>();
+        serviceCollection.TryAddScoped<ScopedCurrentUserResolver>();
     }
 }

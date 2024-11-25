@@ -7,10 +7,10 @@ using Microsoft.Extensions.Options;
 namespace DotNetBrightener.DataAccess.EF.Migrations;
 
 internal class AutoMigrateDbStartupTask<TDbContext>(
-    IServiceScopeFactory                          serviceScopeFactory,
-    ILogger<AutoMigrateDbStartupTask<TDbContext>> logger,
-    IOptions<DataMigrationOptions>                migrationOptions)
-    : MigrateDbContextAtStartup<TDbContext>(serviceScopeFactory, logger)
+    IServiceScopeFactory           serviceScopeFactory,
+    ILoggerFactory                 loggerFactory,
+    IOptions<DataMigrationOptions> migrationOptions)
+    : MigrateDbContextAtStartup<TDbContext>(serviceScopeFactory, loggerFactory)
     where TDbContext : DbContext, IMigrationDefinitionDbContext
 {
     private readonly DataMigrationOptions _migrationOptions = migrationOptions.Value;

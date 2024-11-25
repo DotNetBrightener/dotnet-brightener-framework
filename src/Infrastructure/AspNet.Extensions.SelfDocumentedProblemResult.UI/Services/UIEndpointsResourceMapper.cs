@@ -5,14 +5,9 @@ using Microsoft.AspNetCore.Routing;
 
 namespace AspNet.Extensions.SelfDocumentedProblemResult.UI.Services;
 
-internal class UIEndpointsResourceMapper
+internal class UIEndpointsResourceMapper(IUIResourcesReader reader)
 {
-    private readonly IUIResourcesReader _reader;
-
-    public UIEndpointsResourceMapper(IUIResourcesReader reader)
-    {
-        _reader = Guard.ThrowIfNull(reader);
-    }
+    private readonly IUIResourcesReader _reader = Guard.ThrowIfNull(reader);
 
     public IEnumerable<IEndpointConventionBuilder> Map(IEndpointRouteBuilder   builder,
                                                        ErrorsDocTrackerOptions errorsDocTrackerOptions)

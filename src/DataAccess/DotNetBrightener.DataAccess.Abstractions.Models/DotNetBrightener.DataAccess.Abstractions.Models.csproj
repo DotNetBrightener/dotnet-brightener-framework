@@ -2,6 +2,9 @@
 	<PropertyGroup>
 		<RootNamespace>DotNetBrightener.DataAccess.Models</RootNamespace>
 	</PropertyGroup>
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
 
 	<PropertyGroup>
 		<ImplicitUsings>enable</ImplicitUsings>
@@ -9,7 +12,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-		<PackageReference Include="System.Linq.Dynamic.Core" Version="1.4.2" />
+		<PackageReference Include="System.Linq.Dynamic.Core" Version="1.4.9" />
 	</ItemGroup>
 
 	<ItemGroup>

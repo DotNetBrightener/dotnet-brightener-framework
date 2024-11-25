@@ -11,7 +11,7 @@ public class ImageMagickOptimizer : IImageResizer
 
         using (var image = new MagickImage(inputStream))
         {
-            var newSize = new MagickGeometry(newWidth, newHeight);
+            var newSize = new MagickGeometry((uint)Math.Abs(newWidth), (uint)Math.Abs(newHeight));
 
             image.Resize(newSize);
 

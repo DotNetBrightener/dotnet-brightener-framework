@@ -7,15 +7,13 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.2" />
 	</ItemGroup>
 
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\..\src\DataAccess\DotNetBrightener.DataAccess.Abstractions\DotNetBrightener.DataAccess.Abstractions.csproj" />
-		<ProjectReference Include="..\..\..\src\WebApiGenericCRUD\DotNetBrightener.WebApi.GenericCRUD.Generator\WebApi.GenericCRUD.Generator.csproj" 
-		                  OutputItemType="Analyzer"
-		                  ReferenceOutputAssembly="false"/>
+		<ProjectReference Include="..\..\..\src\WebApiGenericCRUD\DotNetBrightener.WebApi.GenericCRUD.Generator\WebApi.GenericCRUD.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 		<ProjectReference Include="..\CRUDWebApiWithGeneratorDemo.Core\CRUDWebApiWithGeneratorDemo.Core.csproj" />
 	</ItemGroup>
 

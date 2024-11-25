@@ -16,7 +16,6 @@ public interface IEventHandler
 /// </typeparam>
 public interface IEventHandler<in T> : IEventHandler where T : IEventMessage
 {
-
     /// <summary>
     ///		Processes the <typeparamref name="T"/> event message
     /// </summary>

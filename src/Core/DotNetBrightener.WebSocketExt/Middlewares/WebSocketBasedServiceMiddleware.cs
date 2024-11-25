@@ -169,8 +169,7 @@ internal class WebSocketBasedServiceMiddleware
                     default:
                         _logger.LogWarning("Unexpected message type {messageType}", webSocketMsg.MessageType);
                         var responseMessage = ResponseMessage.FromPayload<CommonResponsePayload>(connectionId,
-                                                                                                 Guid.NewGuid()
-                                                                                                     .ToString(),
+                                                                                                 Guid.NewGuid().ToString(),
                                                                                                  new("Error"),
                                                                                                  $"Unsupported message type {webSocketMsg.MessageType}");
                         webSocket.DeliverMessage(responseMessage,

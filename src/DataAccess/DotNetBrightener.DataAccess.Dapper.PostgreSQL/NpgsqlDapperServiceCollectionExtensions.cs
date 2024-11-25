@@ -12,6 +12,7 @@ public static class NpgsqlDapperServiceCollectionExtensions
         serviceCollection.AddScoped<IDapperRepository, NpgsqlDapperRepository>();
 
         serviceCollection.TryAddScoped<ITransactionWrapper, TransactionWrapper>();
+        serviceCollection.TryAddScoped<ScopedCurrentUserResolver>();
         serviceCollection.TryAddScoped<ICurrentLoggedInUserResolver, DefaultCurrentUserResolver>();
     }
 }

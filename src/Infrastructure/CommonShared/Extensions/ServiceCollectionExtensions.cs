@@ -56,7 +56,7 @@ public static class ServiceCollectionExtensions
 
         var commonAppBuilder = new CommonAppBuilder
         {
-            Services           = serviceCollection,
+            Services                  = serviceCollection,
             EventPubSubServiceBuilder = eventPubSubBuilder
         };
 
@@ -69,14 +69,16 @@ public static class ServiceCollectionExtensions
         serviceCollection.ConfigureHttpJsonOptions(options =>
         {
             options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            options.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
         });
 
         serviceCollection.Configure<JsonOptions>(options =>
         {
             options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
         });
 
-        serviceCollection.AddSingleton(serviceCollection);
+        serviceCollection.AddSingleton<IServiceCollection>(serviceCollection);
         serviceCollection.AddSingleton(commonAppBuilder);
 
         return commonAppBuilder;
@@ -205,10 +207,11 @@ public static class ServiceCollectionExtensions
 
         foreach (var dependencyType in dependencyTypes)
         {
-            var interfaces = dependencyType.GetInterfaces().ToArray();
+            var interfaces = dependencyType.GetInterfaces()
+                                           .ToArray();
 
             // Get only direct parent interfaces
-            interfaces = interfaces.Except(interfaces.SelectMany(t => t.GetInterfaces()))
+            interfaces = interfaces.Except(interfaces.SelectMany(t => t.GetInterfaces().Where(t2 => !t2.IsGenericType)))
                                    .ToArray();
 
             foreach (var @interface in interfaces)

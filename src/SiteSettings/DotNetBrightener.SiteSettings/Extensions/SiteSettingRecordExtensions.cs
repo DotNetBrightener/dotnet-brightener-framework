@@ -10,7 +10,7 @@ public static class SiteSettingRecordExtensions
                                                           Type                   type,
                                                           object                 defaultValue)
     {
-        var savedValue = JsonConvert.DeserializeObject<IDictionary<string, object>>(settingRecord.SettingContent);
+        var savedValue = JsonConvert.DeserializeObject<IDictionary<string, object>>(settingRecord.SettingContent ?? "{}");
 
         var serializedDefaultValue = JsonConvert.SerializeObject(defaultValue,
                                                                  settings: new JsonSerializerSettings
@@ -27,7 +27,11 @@ public static class SiteSettingRecordExtensions
             }
         }
 
-        var serializedSavedValue = JsonConvert.SerializeObject(savedValue);
+        var serializedSavedValue = JsonConvert.SerializeObject(savedValue,
+                                                               settings: new JsonSerializerSettings
+                                                               {
+                                                                   ContractResolver = SiteSettingsContractResolver.Instance
+                                                               });
 
         return JsonConvert.DeserializeObject(serializedSavedValue, type);
     }

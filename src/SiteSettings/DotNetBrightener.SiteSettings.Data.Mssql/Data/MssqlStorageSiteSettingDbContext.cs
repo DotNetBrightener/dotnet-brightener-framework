@@ -8,7 +8,7 @@ namespace DotNetBrightener.SiteSettings.Data.Mssql.Data;
 internal class SqlServerDbContextDesignTimeFactory : SqlServerDbContextDesignTimeFactory<MssqlStorageSiteSettingDbContext> { }
 
 internal class MssqlStorageSiteSettingDbContext(DbContextOptions<MssqlStorageSiteSettingDbContext> options)
-    : MigrationEnabledDbContext(options)
+    : AdvancedDbContext(options)
 {
     internal const string SchemaName = "SiteSettings";
 
