@@ -1,12 +1,12 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
+		<TargetFramework>net9.0</TargetFramework>
 		<Authors>DotNet Brightener &lt;admin@dotnetbrightener.com&gt;</Authors>
 		<Company>DotNet Brightener</Company>
 
 		<Copyright>© 2017 - $([System.DateTime]::Now.ToString(yyyy)) $(Company)</Copyright>
 
-		<LangVersion>12</LangVersion>
+		<LangVersion>latest</LangVersion>
 		<IncludeSymbols>true</IncludeSymbols>
 		<ImplicitUsings>enable</ImplicitUsings>
 
@@ -36,7 +36,7 @@
 		<FileVersionPotion>$([System.DateTime]::UtcNow.DayOfYear)$([System.DateTime]::UtcNow.ToString(HH))</FileVersionPotion>
 		<BuildNumber Condition="'$(BuildNumber)' == ''">08</BuildNumber>
 
-		<VersionPrefix>2024.0.14.6</VersionPrefix>
+		<VersionPrefix>2025.0.1</VersionPrefix>
 
 		<AssemblyVersion>$(VersionPrefix)</AssemblyVersion>
 		<FileVersion>$(VersionPrefix)</FileVersion>

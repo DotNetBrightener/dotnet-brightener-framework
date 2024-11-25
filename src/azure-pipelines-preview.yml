@@ -37,7 +37,7 @@ stages:
     - task: UseDotNet@2
       displayName: Ensure .NET Core SDK Installed
       inputs:
-        version: 8.x
+        version: 9.x
         performMultiLevelLookup: true
 
     - task: DotNetCoreCLI@2
@@ -68,7 +68,7 @@ stages:
     - task: UseDotNet@2
       displayName: Ensure .NET Core SDK Installed
       inputs:
-        version: 8.x
+        version: 9.x
         performMultiLevelLookup: true
 
     - task: DotNetCoreCLI@2
