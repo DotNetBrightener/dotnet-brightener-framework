@@ -1,0 +1,70 @@
+parameters:
+  - name: projectName
+    type: string
+  - name: projectFolder
+    type: string
+
+steps:
+  - task: PowerShell@2
+    displayName: "Update Pipeline Build Number to $(VersionNumber)"
+    inputs:
+      targetType: "inline"
+      script: |
+        Write-Host "##vso[build.updatebuildnumber]$(VersionNumber)"
+
+  - checkout: self
+    displayName: Checking out $(VersionNumber)
+    submodules: true
+    persistCredentials: true
+
+  - task: UseDotNet@2
+    displayName: Ensure .NET Core SDK Installed
+    inputs:
+      version: 9.x
+      performMultiLevelLookup: true
+
+  - task: DotNetCoreCLI@2
+    displayName: Restore Packages
+    inputs:
+      command: restore
+      projects: $(ProjectFile)
+
+  - task: PowerShell@2
+    displayName: "Looking for Test projects"
+    inputs:
+      targetType: "inline"
+      script: |
+        $path = "${{ parameters.projectFolder }}"
+        $testFiles = Get-ChildItem -Path $path -Recurse -Filter *.Tests.csproj
+        if ($testFiles.Count -gt 0) {
+            Write-Host "##vso[task.setvariable variable=TestProjectsExist]true"
+        } else {
+            Write-Host "##vso[task.setvariable variable=TestProjectsExist]false"
+        }
+
+  # Test the packages if the Tests projects available
+  - task: DotNetCoreCLI@2
+    condition: eq(variables.TestProjectsExist, 'true')
+    inputs:
+      command: test
+      projects: $(ProjectFile)
+      arguments: '--no-restore -p:GeneratePackageOnBuild=false --configuration $(BuildConfiguration) --collect "Code coverage"'
+    displayName: "Testing all test projects in ${{ parameters.projectName }}"
+
+  # Build the package
+  - task: DotNetCoreCLI@2
+    inputs:
+      command: build
+      projects: $(ProjectFile)
+      arguments: --no-restore --configuration $(BuildConfiguration) -p:GeneratePackageOnBuild=true -p:PackageOutputPath=$(Build.ArtifactStagingDirectory) -p:Version=$(VersionNumber)
+    condition: succeeded()
+    displayName: "Build ${{ parameters.projectName }} v$(VersionNumber)"
+
+  # Archive the package to build's artifacts
+  - task: PublishBuildArtifacts@1
+    condition: succeeded()
+    displayName: "Archiving Artifact"
+    inputs:
+      PathToPublish: $(Build.ArtifactStagingDirectory)
+      ArtifactName: "dnb-framework"
+      publishLocation: "Container"

@@ -1,0 +1,49 @@
+trigger:
+  branches:
+    include:
+      - master
+  paths:
+    include:
+      - /src/*
+    exclude:
+      - version.json
+      - Pipelines/*
+      - '**/README.md'
+
+pool:
+  vmImage:
+    "ubuntu-latest"
+
+    # pool:
+    #   name: dotnetbrightener-selfhosted
+    #   demands:
+    #   - agent.name -equals self-hosted
+
+# resources:
+#   repositories:
+#     - repository: CICD-PipelineTemplates
+#       type: git
+#       name: CICD-PipelineTemplates
+
+variables:
+  buildConfiguration: "Release"
+  projectName: "DotNetBrightenerFramework"
+  projectFolder: "src"
+
+parameters:
+  - name: versionIncrementType
+    displayName: Version Increment Type
+    type: string
+    default: Preview Version
+    values:
+      - Major Feature
+      - Feature
+      - BugFix
+      - Preview Version
+
+stages:
+  - template: ReleaseNewPackageVersionTemplate.yml
+    parameters:
+      projectFolder: $(projectFolder)
+      projectName: $(projectName)
+      versionIncrementType: ${{ parameters.versionIncrementType }}

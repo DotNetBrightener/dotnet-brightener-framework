@@ -1,0 +1,87 @@
+parameters:
+  - name: projectFolder
+    displayName: Path to root folder
+    type: string
+  - name: projectName
+    type: string
+  - name: versionIncrementType
+    type: string
+
+stages:
+  - stage: Variables
+    jobs:
+      - job: SetVariables
+        steps:
+          - powershell: |
+              if ('${{ parameters.projectFolder }}' -ne '')
+              {
+                $projectFile = "${{ parameters.projectFolder }}/${{ parameters.projectName }}.sln"
+              } else {
+                $projectFile = "${{ parameters.projectName }}.sln"
+              }
+
+              Write-Host "Setting projectFile to: $($projectFile)"
+              Write-Host "##vso[task.setvariable variable=ProjectFile;isOutput=true]$($projectFile)"
+
+            displayName: "Preparing Variables"
+            name: Variables
+
+  - stage: Versioning
+    dependsOn: Variables
+    jobs:
+      - job: CalculateVersion
+        workspace:
+          clean: all
+        steps:
+          - template: CalculateVersionTemplate.yml # Template for versioning
+            parameters:
+              versionIncrementType: ${{ parameters.versionIncrementType }}
+
+  - stage: BuildAndPackage
+    dependsOn:
+      - Variables
+      - Versioning
+    jobs:
+      - job: BuildAndPackage
+        variables:
+          VersionNumber: $[stageDependencies.Versioning.CalculateVersion.outputs['PackageVersion.SimpleVersion']]
+          IsNewVersion: $[ne('${{ parameters.versionIncrementType }}', 'Preview Version')]
+          ProjectFile: $[stageDependencies.Variables.SetVariables.outputs['Variables.ProjectFile']]
+        steps:
+          - template: BuildAndPublishTemplate.yml # Template for Building and packaging
+            parameters:
+              projectName: ${{ parameters.projectName }}
+              projectFolder: ${{ parameters.projectFolder }}
+
+  - stage: PersistVersion
+    dependsOn:
+      - Variables
+      - Versioning
+      - BuildAndPackage
+    condition: and(succeeded(), ne('${{ parameters.versionIncrementType }}', 'Preview Version'))
+    jobs:
+      - job: PersistVersion
+        workspace:
+          clean: all
+        variables:
+          IncrementType: $[stageDependencies.Versioning.CalculateVersion.outputs['IncrementType.nbgvType']]
+          VersionNumber: $[stageDependencies.Versioning.CalculateVersion.outputs['PackageVersion.SimpleVersion']]
+          IsNewVersion: $[ne('${{ parameters.versionIncrementType }}', 'Preview Version')]
+        steps:
+          - template: PersistVersionTemplate.yml # Template for persisting version update.
+            parameters:
+              projectName: ${{ parameters.projectName }}
+
+  - stage: MirrorToGithub
+    dependsOn:
+      - Variables
+      - Versioning
+      - BuildAndPackage
+      - PersistVersion
+    condition: succeeded()
+    jobs:
+      - job: Mirror_To_Github
+        workspace:
+          clean: all
+        steps:
+          - template: MirrorProjectToGithub.yml

@@ -1,0 +1,70 @@
+parameters:
+  - name: versionIncrementType
+    type: string
+
+steps:
+  - checkout: self
+    persistCredentials: true
+    fetchDepth: 0
+    clean: true
+
+  # Map build variable to NBGV variable
+  - task: PowerShell@2
+    displayName: "Map Increment Type"
+    name: IncrementType
+    inputs:
+      targetType: "inline"
+      script: |
+        if ("${{ parameters.versionIncrementType }}" -eq "Major Feature") {
+            Write-Host "##vso[task.setvariable variable=nbgvType;isOutput=true]Major"
+        } elseif ("${{ parameters.versionIncrementType }}" -eq "Feature") {
+            Write-Host "##vso[task.setvariable variable=nbgvType;isOutput=true]Minor"
+        } elseif ("${{ parameters.versionIncrementType }}" -eq "BugFix") {
+            Write-Host "##vso[task.setvariable variable=nbgvType;isOutput=true]Build"
+        }
+
+  # Set Git user and email
+  - script: |
+      git config --local user.email "azuredevops@microsoft.com"
+      git config --local user.name "Azure DevOps"
+      git config --local credential.helper "!f() { echo username=x-access-token; echo password=$(System.AccessToken); }; f"
+    displayName: "Configure Git Credentials"
+
+  # Checkout branch to set new version.json
+  - script: |
+      git checkout $(Build.SourceBranchName)
+    condition: ne('${{ parameters.versionIncrementType }}', 'Preview Version')
+    displayName: "Checkout branch to set version"
+
+  # Bump the version
+  - script: |
+      nbgv cloud -a -c
+      nbgv prepare-release --versionIncrement $(IncrementType.nbgvType)
+    condition: ne('${{ parameters.versionIncrementType }}', 'Preview Version')
+    displayName: "Setting version"
+
+  # Get the version using NBGV and set Azure DevOps variables
+  # This will increase the current version and add a preview tag if `Preview Version` is selected
+  - powershell: |
+      $version = & nbgv get-version -v SimpleVersion
+
+      if ("${{ parameters.versionIncrementType }}" -eq "Preview Version") {
+          # Parse the version and increment patch for preview builds
+          $parts = $version -split '\.'
+          $major = $parts[0]
+          $minor = $parts[1]
+          $patch = [int]$parts[2] + 1
+          $version = "$major.$minor.$patch-preview-$(Build.BuildId)"
+      }
+
+      Write-Host "Setting version to: $($version)"
+      Write-Host "##vso[task.setvariable variable=SimpleVersion;isOutput=true]$($version)"
+    displayName: "Store version in Environment Variable"
+    name: PackageVersion
+
+  - task: PowerShell@2
+    displayName: "Update Pipeline Build Number"
+    inputs:
+      targetType: "inline"
+      script: |
+        Write-Host "##vso[build.updatebuildnumber]$(PackageVersion.SimpleVersion)"

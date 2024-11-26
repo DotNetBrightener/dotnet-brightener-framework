@@ -5,10 +5,9 @@ VisualStudioVersion = 17.1.32228.430
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".builds", ".builds", "{ECA8FAA6-A93B-4985-948B-7D8F0BFF9792}"
 	ProjectSection(SolutionItems) = preProject
-		azure-pipelines-preview.yml = azure-pipelines-preview.yml
-		azure-pipelines.yml = azure-pipelines.yml
 		Directory.Build.props = Directory.Build.props
 		..\LICENSE = ..\LICENSE
+		..\version.json = ..\version.json
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Security", "Security", "{A8260E20-A153-47F4-AD48-3C711C1C1796}"
@@ -344,6 +343,16 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.DataAccess.Auditing.Storage", "DataAccess\DotNetBrightener.DataAccess.Auditing.Storage\DotNetBrightener.DataAccess.Auditing.Storage.csproj", "{32B3922C-17BD-4C42-8DD1-6A3B5B2576EE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Auditing", "Auditing", "{6198BBAE-FEB0-4786-82E7-4F123171230B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".Pipelines", ".Pipelines", "{F0EC9D68-703F-4E67-9839-3D8E71B09658}"
+	ProjectSection(SolutionItems) = preProject
+		..\Pipelines\azure-pipelines-entry.yml = ..\Pipelines\azure-pipelines-entry.yml
+		..\Pipelines\BuildAndPublishTemplate.yml = ..\Pipelines\BuildAndPublishTemplate.yml
+		..\Pipelines\CalculateVersionTemplate.yml = ..\Pipelines\CalculateVersionTemplate.yml
+		..\Pipelines\MirrorProjectToGithub.yml = ..\Pipelines\MirrorProjectToGithub.yml
+		..\Pipelines\PersistVersionTemplate.yml = ..\Pipelines\PersistVersionTemplate.yml
+		..\Pipelines\ReleaseNewPackageVersionTemplate.yml = ..\Pipelines\ReleaseNewPackageVersionTemplate.yml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

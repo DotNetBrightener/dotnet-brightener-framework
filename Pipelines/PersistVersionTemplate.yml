@@ -1,0 +1,52 @@
+parameters:
+  - name: projectName
+    type: string
+
+steps:
+  - checkout: self
+    persistCredentials: true
+    fetchDepth: 0
+    clean: true
+
+  # Checkout branch to set new version.json
+  - script: |
+      git checkout $(Build.SourceBranchName)
+      git reset --hard origin/$(Build.SourceBranchName)
+    condition: and(succeeded(), eq(variables.IsNewVersion, true))
+    displayName: "Checkout branch to set version"
+
+  # Set Git user and email
+  - script: |
+      git config --local user.email "azuredevops@microsoft.com"
+      git config --local user.name "Azure DevOps"
+      git config --local credential.helper "!f() { echo username=x-access-token; echo password=$(System.AccessToken); }; f"
+    condition: and(succeeded(), eq(variables.IsNewVersion, true))
+    displayName: "Configure Git Credentials"
+
+  # Bump the version
+  - script: |
+      nbgv cloud -a -c
+      nbgv prepare-release --versionIncrement $(IncrementType)
+    condition: and(succeeded(), eq(variables.IsNewVersion, true))
+    displayName: "Bump version to $(VersionNumber)"
+
+  # Commit and push the changes to the master branch
+  - script: |
+      git add .
+      git commit -m "Build Version: $(VersionNumber)"
+      git push origin $(Build.SourceBranchName)
+      git tag -a "v$(VersionNumber)" -m "Build Version: $(VersionNumber)"
+      git push origin "v$(VersionNumber)"
+    condition: and(succeeded(), eq(variables.IsNewVersion, true))
+    displayName: "Commit and Push changes"
+
+  # Create a release branch
+  - script: |
+      git checkout -b releases/v$(VersionNumber)
+      git push origin releases/v$(VersionNumber)
+    condition: and(succeeded(), eq(variables.IsNewVersion, true))
+    displayName: "Push Release Branch to Remote"
+
+  - script: |
+      echo ##vso[build.updatebuildnumber]$(VersionNumber)
+    displayName: "Update the Build Number"
