@@ -19,12 +19,6 @@ pool:
     #   demands:
     #   - agent.name -equals self-hosted
 
-# resources:
-#   repositories:
-#     - repository: CICD-PipelineTemplates
-#       type: git
-#       name: CICD-PipelineTemplates
-
 variables:
   buildConfiguration: "Release"
   projectName: "DotNetBrightenerFramework"
