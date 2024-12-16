@@ -354,6 +354,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".Pipelines", ".Pipelines", 
 		..\Pipelines\ReleaseNewPackageVersionTemplate.yml = ..\Pipelines\ReleaseNewPackageVersionTemplate.yml
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".benchmarks", ".benchmarks", "{431F806C-AED0-4B53-8D5A-AAC777BDADFC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

@@ -1,4 +1,3 @@
-using DotNetBrightener.IdentityAuth.Internal;
 using Microsoft.AspNetCore.Identity;
 
 namespace DotNetBrightener.IdentityAuth.Models;
@@ -7,7 +6,7 @@ public class User : IdentityUser<Guid>
 {
     public User()
     {
-        Id = Uuid7.Guid();
+        Id            = Guid.CreateVersion7();
         SecurityStamp = Guid.NewGuid().ToString();
     }
 

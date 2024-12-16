@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using DotNetBrightener.DataAccess.EF.Auditing;
+using DotNetBrightener.DataAccess.EF.Auditing.Internal;
 using DotNetBrightener.DataAccess.EF.Internal;
 using DotNetBrightener.DataAccess.Models.Auditing;
 using Microsoft.AspNetCore.Http;
@@ -9,8 +10,6 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using System.Collections.Immutable;
-using DotNetBrightener.DataAccess.EF.Auditing.Internal;
-using Uuid7 = DotNetBrightener.DataAccess.Models.Utils.Internal.Uuid7;
 
 namespace DotNetBrightener.DataAccess.EF.Interceptors;
 
@@ -28,7 +27,7 @@ internal class AuditEnabledSavingChangesInterceptor(IServiceProvider serviceProv
     private readonly IgnoreAuditingEntitiesContainer _ignoreAuditingEntitiesContainer =
         serviceProvider.GetRequiredService<IgnoreAuditingEntitiesContainer>();
 
-    private readonly Guid _scopeId = Uuid7.Guid();
+    private readonly Guid _scopeId = Guid.CreateVersion7();
 
     public override async ValueTask<InterceptionResult<int>> SavingChangesAsync(DbContextEventData      eventData,
                                                                                 InterceptionResult<int> result,

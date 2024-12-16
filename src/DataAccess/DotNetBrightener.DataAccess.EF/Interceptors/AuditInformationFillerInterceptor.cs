@@ -1,5 +1,4 @@
 ﻿#nullable enable
-using DotNetBrightener.DataAccess.EF.Events;
 using DotNetBrightener.DataAccess.Events;
 using DotNetBrightener.DataAccess.Models;
 using DotNetBrightener.Plugins.EventPubSub;
@@ -7,7 +6,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
-using Uuid7 = DotNetBrightener.DataAccess.Models.Utils.Internal.Uuid7;
 
 namespace DotNetBrightener.DataAccess.EF.Interceptors;
 
@@ -22,9 +20,7 @@ internal class AuditInformationFillerInterceptor(IServiceProvider serviceProvide
 
     private readonly ICurrentLoggedInUserResolver? _currentLoggedInUserResolver =
         serviceProvider.TryGet<ICurrentLoggedInUserResolver>();
-
-    private readonly Guid _scopeId = Uuid7.Guid();
-
+    
     private const string CreatedDatePropName   = nameof(BaseEntityWithAuditInfo.CreatedDate);
     private const string CreatedByPropName     = nameof(BaseEntityWithAuditInfo.CreatedBy);
     private const string LastUpdatedByPropName = nameof(BaseEntityWithAuditInfo.ModifiedBy);

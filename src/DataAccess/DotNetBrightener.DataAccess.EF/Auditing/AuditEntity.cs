@@ -1,9 +1,8 @@
-﻿using System.Collections.Immutable;
+﻿using DotNetBrightener.DataAccess.Models.Auditing;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using DotNetBrightener.DataAccess.Models.Auditing;
-using DotNetBrightener.DataAccess.Models.Utils.Internal;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace DotNetBrightener.DataAccess.EF.Auditing;
 
@@ -12,7 +11,7 @@ namespace DotNetBrightener.DataAccess.EF.Auditing;
 /// </summary>
 public class AuditEntity
 {
-    public Guid Id { get; set; } = Uuid7.Guid();
+    public Guid Id { get; set; } = Guid.CreateVersion7();
 
     [MaxLength(64)]
     public string Action { get; set; }
@@ -44,7 +43,7 @@ public class AuditEntity
 
     public TimeSpan? Duration { get; set; }
 
-    public Guid ScopeId { get; set; } = Uuid7.Guid();
+    public Guid ScopeId { get; set; } = Guid.CreateVersion7();
 
     [MaxLength(64)]
     public string AuditToolVersion { get; set; }

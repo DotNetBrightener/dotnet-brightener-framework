@@ -1,8 +1,8 @@
 ﻿using System.Security.Cryptography;
 
-namespace DotNetBrightener.UploadService.AzureBlobStorage.Internal;
+namespace DotNetBrightener.Uuidv7.Benchmarks;
 
-internal class Uuid7
+public class Uuid7
 {
     private static long TimeNs()
     {

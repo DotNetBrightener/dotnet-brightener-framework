@@ -1,5 +1,6 @@
 ﻿using DotNetBrightener.Core.BackgroundTasks;
 using DotNetBrightener.SimpleUploadService;
+using DotNetBrightener.SimpleUploadService.IO;
 using DotNetBrightener.SimpleUploadService.Models;
 using DotNetBrightener.SimpleUploadService.Services;
 using DotNetBrightener.UploadService.AzureBlobStorage.Internal;
@@ -8,7 +9,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Reflection;
-using DotNetBrightener.SimpleUploadService.IO;
 
 namespace DotNetBrightener.UploadService.AzureBlobStorage.Providers;
 
@@ -41,7 +41,7 @@ public class AzureBlobStorageUploadServiceProvider(
         {
             var fileExtension = Path.GetExtension(fileName);
 
-            uploadFileName = $"{Uuid7.Guid()}{fileExtension}";
+            uploadFileName = $"{Guid.CreateVersion7()}{fileExtension}";
         }
 
         return await base.ProcessUpload(fileUploadStream, uploadRequestModel, uploadFileName, baseUrl);

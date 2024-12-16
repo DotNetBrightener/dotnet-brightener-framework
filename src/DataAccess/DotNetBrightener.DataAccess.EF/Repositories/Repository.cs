@@ -2,7 +2,6 @@
 
 using DotNetBrightener.DataAccess.Attributes;
 using DotNetBrightener.DataAccess.EF.Auditing;
-using DotNetBrightener.DataAccess.EF.Events;
 using DotNetBrightener.DataAccess.EF.Extensions;
 using DotNetBrightener.DataAccess.EF.Internal;
 using DotNetBrightener.DataAccess.Events;
@@ -16,15 +15,12 @@ using DotNetBrightener.Plugins.EventPubSub;
 using LinqToDB.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.AspNetCore.Rewrite;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using System.Reflection;
-using Uuid7 = DotNetBrightener.DataAccess.Models.Utils.Internal.Uuid7;
 
 namespace DotNetBrightener.DataAccess.EF.Repositories;
 
@@ -39,7 +35,7 @@ public class Repository : IRepository
     private readonly IgnoreAuditingEntitiesContainer? _ignoreAuditingEntitiesContainer;
     private readonly IAuditEntriesProcessor?          _auditEntriesProcessor;
     protected        ILogger                          Logger { get; init; }
-    private readonly Guid                             _scopeId = Uuid7.Guid();
+    private readonly Guid                             _scopeId = Guid.CreateVersion7();
 
     public Repository(DbContext        dbContext,
                       IServiceProvider serviceProvider,
