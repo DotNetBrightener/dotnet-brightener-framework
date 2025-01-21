@@ -29,6 +29,13 @@ steps:
       nbgv prepare-release --versionIncrement $(IncrementType)
     condition: and(succeeded(), eq(variables.IsNewVersion, true))
     displayName: "Bump version to $(VersionNumber)"
+    
+  - task: PowerShell@2
+    displayName: "Update Pipeline Build Number"
+    inputs:
+      targetType: "inline"
+      script: |
+        Write-Host "##vso[build.updatebuildnumber]$(VersionNumber)"
 
   # Commit and push the changes to the master branch
   - script: |
@@ -46,7 +53,3 @@ steps:
       git push origin releases/v$(VersionNumber)
     condition: and(succeeded(), eq(variables.IsNewVersion, true))
     displayName: "Push Release Branch to Remote"
-
-  - script: |
-      echo ##vso[build.updatebuildnumber]$(VersionNumber)
-    displayName: "Update the Build Number"

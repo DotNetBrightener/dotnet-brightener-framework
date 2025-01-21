@@ -20,9 +20,16 @@ pool:
     #   - agent.name -equals self-hosted
 
 variables:
-  buildConfiguration: "Release"
-  projectName: "DotNetBrightenerFramework"
-  projectFolder: "src"
+- group: dotnet-brightener
+
+- name: projectName
+  value: 'DotNetBrightenerFramework'
+
+- name: projectFolder
+  value: 'src'
+
+- name: buildConfiguration
+  value: Release
 
 parameters:
   - name: versionIncrementType
