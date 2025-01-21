@@ -13,7 +13,7 @@ Don't change this file as your changes will be lost when the file is re-generate
 If you need to change the content for this entity, update the ProductDocumentController.cs file
 which should be in the same folder as this file.
 
-© 2024 DotNet Brightener. <admin@dotnetbrightener.com>
+© 2025 DotNet Brightener. <admin@dotnetbrightener.com>
 
 ****************************************************/
 

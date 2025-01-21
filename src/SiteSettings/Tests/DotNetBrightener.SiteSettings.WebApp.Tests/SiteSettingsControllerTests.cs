@@ -1,12 +1,12 @@
 using DotNetBrightener.SiteSettings.Data.Mssql.Data;
 using DotNetBrightener.SiteSettings.Models;
 using DotNetBrightener.TestHelpers;
-using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text;
+using Shouldly;
 
 namespace DotNetBrightener.SiteSettings.WebApp.Tests;
 
@@ -28,13 +28,13 @@ public class SiteSettingsControllerTests(SiteSettingsControllerTestFactory apiFa
     {
         var response = await _client.GetAsync("/api/siteSettings/allSettings");
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
 
         var settings = await response.Content.ReadFromJsonAsync<List<SettingDescriptorModel>>();
 
-        settings.Should().NotBeEmpty();
+        settings.ShouldNotBeEmpty();
 
-        settings!.FirstOrDefault(x => x.SettingType == typeof(DemoSiteSetting).FullName).Should().NotBeNull();
+        settings!.FirstOrDefault(x => x.SettingType == typeof(DemoSiteSetting).FullName).ShouldNotBeNull();
     }
 
     [Fact]
@@ -42,17 +42,23 @@ public class SiteSettingsControllerTests(SiteSettingsControllerTestFactory apiFa
     {
         var response = await _client.GetAsync($"/api/siteSettings/{typeof(DemoSiteSetting).FullName}");
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
 
         var settings = await response.Content.ReadFromJsonAsync<Dictionary<string, object>>();
 
-        settings.Should().NotBeNull();
+        settings.ShouldNotBeNull();
 
-        settings.Should()
-                .NotContainKeys("settingContent",
-                                "settingType",
-                                "SettingContent",
-                                "SettingType");
+        new List<string>
+            {
+                "settingContent",
+                "settingType",
+                "SettingContent",
+                "SettingType"
+            }
+           .ForEach(s =>
+            {
+                settings.Keys.ShouldNotContain(s);
+            });
     }
 
     [Fact]
@@ -69,28 +75,28 @@ public class SiteSettingsControllerTests(SiteSettingsControllerTestFactory apiFa
         var updateResponse = await _client.PostAsync($"/api/siteSettings/{typeof(DemoSiteSetting).FullName}",
                                                      new StringContent(jsonContent, Encoding.UTF8, "application/json"));
 
-        updateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        updateResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
 
         // validate the updated value
         {
             var response = await _client.GetAsync($"/api/siteSettings/{typeof(DemoSiteSetting).FullName}");
 
-            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            response.StatusCode.ShouldBe(HttpStatusCode.OK);
             var settings = await response.Content.ReadFromJsonAsync<DemoSiteSetting>();
 
-            settings.Should().NotBeNull();
-            settings!.Defaultvalue.Should().Be("Updated value");
+            settings.ShouldNotBeNull();
+            settings!.Defaultvalue.ShouldBe("Updated value");
         }
 
         // validate the original value
         {
             var response = await _client.GetAsync($"/api/siteSettings/{typeof(DemoSiteSetting).FullName}/default");
 
-            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            response.StatusCode.ShouldBe(HttpStatusCode.OK);
             var settings = await response.Content.ReadFromJsonAsync<DemoSiteSetting>();
 
-            settings.Should().NotBeNull();
-            settings!.Defaultvalue.Should().Be("Default Value");
+            settings.ShouldNotBeNull();
+            settings!.Defaultvalue.ShouldBe("Default Value");
         }
     }
 
@@ -99,6 +105,6 @@ public class SiteSettingsControllerTests(SiteSettingsControllerTestFactory apiFa
     {
         var response = await _client.GetAsync($"/api/siteSettings/This.Is.Non.Exist.Settings");
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 }

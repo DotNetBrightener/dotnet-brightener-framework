@@ -1,5 +1,5 @@
-﻿using FluentAssertions;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Shouldly;
 using VampireCoder.SharedUtils.DependencyInjection;
 
 namespace VampireCoder.SharedUtils.Tests.DependencyInjection;
@@ -52,14 +52,13 @@ public class FieldInjectionServiceCollectionTests
     {
         var testService2 = serviceProvider.GetRequiredService<ITestService2>();
 
-        testService2.ServiceInjectedViaConstructor.Should().NotBeNull();
-        testService2.ServiceInjectedViaField.Should().NotBeNull();
-        testService2.ServiceInjectedViaField.Should().BeSameAs(testService2.ServiceInjectedViaConstructor);
+        testService2.ServiceInjectedViaConstructor.ShouldNotBeNull();
+        testService2.ServiceInjectedViaField.ShouldNotBeNull();
+        testService2.ServiceInjectedViaField.ShouldBeSameAs(testService2.ServiceInjectedViaConstructor);
 
         var testService1 = serviceProvider.GetRequiredService<ITestService1>();
 
-        testService1.Should()
-                    .BeSameAs(testService2.ServiceInjectedViaField);
+        testService1.ShouldBeSameAs(testService2.ServiceInjectedViaField);
     }
 
     [Fact]
@@ -68,38 +67,34 @@ public class FieldInjectionServiceCollectionTests
         using (var scope = serviceProvider.CreateScope())
         {
             FieldInjectionEnableServiceCollectionExtensions.InjectableFields
-                                                           .Should()
-                                                           .BeEmpty();
+                                                           .ShouldBeEmpty();
 
             var testService2 = scope.ServiceProvider.GetRequiredService<ITestService2>();
 
-            testService2.ServiceInjectedViaConstructor.Should().NotBeNull();
-            testService2.ServiceInjectedViaField.Should().NotBeNull();
-            testService2.ServiceInjectedViaField.Should().BeSameAs(testService2.ServiceInjectedViaConstructor);
+            testService2.ServiceInjectedViaConstructor.ShouldNotBeNull();
+            testService2.ServiceInjectedViaField.ShouldNotBeNull();
+            testService2.ServiceInjectedViaField.ShouldBeSameAs(testService2.ServiceInjectedViaConstructor);
 
             FieldInjectionEnableServiceCollectionExtensions.InjectableFields
                                                            .Count
-                                                           .Should()
-                                                           .Be(2);
+                                                           .ShouldBe(2);
         }
 
         using (var scope = serviceProvider.CreateScope())
         {
             FieldInjectionEnableServiceCollectionExtensions.InjectableFields
                                                            .Count
-                                                           .Should()
-                                                           .Be(2);
+                                                           .ShouldBe(2);
 
             var testService2 = scope.ServiceProvider.GetRequiredService<ITestService2>();
 
-            testService2.ServiceInjectedViaConstructor.Should().NotBeNull();
-            testService2.ServiceInjectedViaField.Should().NotBeNull();
-            testService2.ServiceInjectedViaField.Should().BeSameAs(testService2.ServiceInjectedViaConstructor);
+            testService2.ServiceInjectedViaConstructor.ShouldNotBeNull();
+            testService2.ServiceInjectedViaField.ShouldNotBeNull();
+            testService2.ServiceInjectedViaField.ShouldBeSameAs(testService2.ServiceInjectedViaConstructor);
 
             FieldInjectionEnableServiceCollectionExtensions.InjectableFields
                                                            .Count
-                                                           .Should()
-                                                           .Be(2);
+                                                           .ShouldBe(2);
         }
     }
 }

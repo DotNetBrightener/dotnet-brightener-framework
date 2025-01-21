@@ -1,6 +1,6 @@
 ﻿using DotNetBrightener.DataAccess.Events;
 using DotNetBrightener.Plugins.EventPubSub;
-using FluentAssertions;
+using Shouldly;
 
 namespace DotNetBrightener.DataAccess.EF.Tests.RepositoryTests_CRUD_Operations;
 
@@ -10,7 +10,7 @@ public class TestEntityOnCreatedEventHandler(IMockAwaiter awaiter) : IEventHandl
 
     public async Task<bool> HandleEvent(EntityCreated<TestEntity> eventMessage)
     {
-        eventMessage.Entity.Should().NotBeNull();
+        eventMessage.Entity.ShouldNotBeNull();
 
         var expectedData = new TestEntity();
         

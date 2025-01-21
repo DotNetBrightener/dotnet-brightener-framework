@@ -1,8 +1,8 @@
 ﻿using DotNetBrightener.CryptoEngine.Loaders;
 using DotNetBrightener.CryptoEngine.Options;
 using DotNetBrightener.TestHelpers;
-using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -11,7 +11,7 @@ namespace DotNetBrightener.CryptoEngine.Tests;
 public class PasswordProviderTests(ITestOutputHelper testOutputHelper)
 {
     [Fact]
-    public async Task TestPasswordProvider_Generated_Encryped_Password_Should_Be_Valid()
+    public async Task TestPasswordProvider_Generated_Encrypted_Password_Should_Be_Valid()
     {
         var host = XUnitTestHost.CreateTestHost(testOutputHelper,
                                                 (context, services) =>
@@ -41,7 +41,7 @@ public class PasswordProviderTests(ITestOutputHelper testOutputHelper)
             var isPasswordValid =
                 passwordProvider.ValidatePassword(plainTextPassword, hashedPassword.Item1, hashedPassword.Item2);
 
-            isPasswordValid.Should().BeTrue();
+            isPasswordValid.ShouldBeTrue();
         }
 
         await host.StopAsync();

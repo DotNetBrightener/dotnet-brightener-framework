@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+﻿using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -13,9 +13,9 @@ public class AesCryptoEngineTests(ITestOutputHelper testOutputHelper)
 
         Action action = () => AesCryptoEngine.Encrypt("whatever string", encryptionKey);
 
-        action.Should()
-              .Throw<ArgumentException>()
-              .WithMessage("Encryption key cannot be longer than 32 characters.");
+        var exception = action.ShouldThrow<ArgumentException>();
+
+        exception.Message.ShouldBe("Encryption key cannot be longer than 32 characters.");
     }
 
     [Fact]
@@ -38,7 +38,7 @@ public class AesCryptoEngineTests(ITestOutputHelper testOutputHelper)
 
             var decryptedText = AesCryptoEngine.Decrypt(encryptedText, encryptionKey);
 
-            textToEncrypt.Should().Be(decryptedText);
+            textToEncrypt.ShouldBe(decryptedText);
         }
     }
 }

@@ -1,10 +1,10 @@
 using DotNetBrightener.TemplateEngine.Data.Services;
 using DotNetBrightener.TemplateEngine.Services;
-using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Moq;
+using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -82,7 +82,7 @@ public class TemplateEngine_PhysicalStorageTests(ITestOutputHelper testOutputHel
         var templatesPath      = Path.Combine(templateFolderPath, expectingFileName);
 
 
-        File.Exists(templatesPath).Should().BeTrue();
+        File.Exists(templatesPath).ShouldBeTrue();
 
         using (var scope = _testHost.Services.CreateScope())
         {
@@ -91,9 +91,9 @@ public class TemplateEngine_PhysicalStorageTests(ITestOutputHelper testOutputHel
             var template = templateService.LoadTemplate<TemplateTestModel>();
 
 
-            template.Should().NotBeNull();
-            template.TemplateTitle.Should().Be("Hello {{Name}}");
-            template.TemplateContent.Should().Be("Hey {{Name}},<br />This is {{Description}}.");
+            template.ShouldNotBeNull();
+            template.TemplateTitle.ShouldBe("Hello {{Name}}");
+            template.TemplateContent.ShouldBe("Hey {{Name}},<br />This is {{Description}}.");
         }
 
         using (var scope = _testHost.Services.CreateScope())
@@ -108,9 +108,9 @@ public class TemplateEngine_PhysicalStorageTests(ITestOutputHelper testOutputHel
 
             var template = await templateService.LoadAndParseTemplateAsync(model);
 
-            template.Should().NotBeNull();
-            template.TemplateTitle.Should().Be("Hello John");
-            template.TemplateContent.Should().Be("Hey John,<br />This is A test model.");
+            template.ShouldNotBeNull();
+            template.TemplateTitle.ShouldBe("Hello John");
+            template.TemplateContent.ShouldBe("Hey John,<br />This is A test model.");
         }
         
         await _testHost.StopAsync();

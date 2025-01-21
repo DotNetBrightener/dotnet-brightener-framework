@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+﻿using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -15,9 +15,9 @@ public class CryptoUtilitiesTests(ITestOutputHelper testOutputHelper)
 
         var validated = CryptoUtilities.ValidateTimeBasedToken(token, out var output);
 
-        validated.Should().Be(true);
+        validated.ShouldBe(true);
 
-        output.Should().Be(input);
+        output.ShouldBe(input);
     }
 
     [Fact]
@@ -29,6 +29,6 @@ public class CryptoUtilitiesTests(ITestOutputHelper testOutputHelper)
 
         var validated = CryptoUtilities.ValidateTimeBasedToken(token, out var output);
 
-        validated.Should().Be(false);
+        validated.ShouldBe(false);
     }
 }

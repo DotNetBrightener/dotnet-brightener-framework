@@ -1,7 +1,7 @@
-﻿using System.Reflection;
-using FluentAssertions;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Moq;
+using Shouldly;
+using System.Reflection;
 using Xunit.Abstractions;
 
 namespace DotNetBrightener.Plugins.EventPubSub.Tests;
@@ -115,7 +115,7 @@ public class ConcreteEventHandlerTests
         {
             var eventPublisher = scope.ServiceProvider.GetRequiredService<IEventPublisher>();
 
-            eventPublisher.Should().BeOfType<DefaultEventPublisher>();
+            eventPublisher.ShouldBeOfType<DefaultEventPublisher>();
 
             var message = new GenericMessage<TestEventMessage>
             {
@@ -127,10 +127,9 @@ public class ConcreteEventHandlerTests
             // verify that the irrelevant handler still be detected
             var genericEventHandlersContainer = scope.ServiceProvider.GetService<GenericEventHandlersContainer>();
 
-            genericEventHandlersContainer.Should().NotBeNull();
+            genericEventHandlersContainer.ShouldNotBeNull();
 
-            genericEventHandlersContainer!.GenericEventHandlerTypes.Should()
-                                          .Contain(typeof(GenericEventHandler2<>));
+            genericEventHandlersContainer!.GenericEventHandlerTypes.ShouldContain(typeof(GenericEventHandler2<>));
 
             // Verify that the HandleEvent method was called once
             mockHandler.Verify(x => x.ShouldGetCalledInEventHandler(testEventMessageData),
@@ -151,7 +150,7 @@ public class ConcreteEventHandlerTests
         {
             var eventPublisher = scope.ServiceProvider.GetRequiredService<IEventPublisher>();
 
-            eventPublisher.Should().BeOfType<DefaultEventPublisher>();
+            eventPublisher.ShouldBeOfType<DefaultEventPublisher>();
 
             var message = new GenericMessage2<TestEventMessage>
             {
@@ -179,7 +178,7 @@ public class ConcreteEventHandlerTests
         {
             var eventPublisher = scope.ServiceProvider.GetRequiredService<IEventPublisher>();
 
-            eventPublisher.Should().BeOfType<DefaultEventPublisher>();
+            eventPublisher.ShouldBeOfType<DefaultEventPublisher>();
 
             var testData = new TestData();
             var message = new GenericMessage<TestData>
@@ -219,7 +218,7 @@ public class ConcreteEventHandlerTests
         {
             var eventPublisher = scope.ServiceProvider.GetRequiredService<IEventPublisher>();
 
-            eventPublisher.Should().BeOfType<DefaultEventPublisher>();
+            eventPublisher.ShouldBeOfType<DefaultEventPublisher>();
 
             var message = new TestEventMessage();
             await eventPublisher.Publish(message);
@@ -256,7 +255,7 @@ public class ConcreteEventHandlerTests
         {
             var eventPublisher = scope.ServiceProvider.GetRequiredService<IEventPublisher>();
 
-            eventPublisher.Should().BeOfType<DefaultEventPublisher>();
+            eventPublisher.ShouldBeOfType<DefaultEventPublisher>();
 
             var message = new TestEventMessage();
             await eventPublisher.Publish(message);
@@ -267,7 +266,7 @@ public class ConcreteEventHandlerTests
                 handler.Verify(x => x.HandleEvent(message), Times.Once);
             }
 
-            executionOrder.Should().BeInDescendingOrder();
+            executionOrder.ShouldBeInOrder(SortDirection.Descending);
         }
     }
 
@@ -299,15 +298,14 @@ public class ConcreteEventHandlerTests
         {
             var eventPublisher = scope.ServiceProvider.GetRequiredService<IEventPublisher>();
 
-            eventPublisher.Should().BeOfType<DefaultEventPublisher>();
+            eventPublisher.ShouldBeOfType<DefaultEventPublisher>();
 
             var message = new TestEventMessage();
             await eventPublisher.Publish(message);
 
-            executionOrder.Should()
-                          .BeInDescendingOrder();
+            executionOrder.ShouldBeInOrder(SortDirection.Descending);
 
-            executionOrder.Count.Should().Be(3);
+            executionOrder.Count.ShouldBe(3);
 
             // Verify that the HandleEvent method was called once for each handler and short-circuited after the third handler
             for (var i = 0; i < eventHandlers.Count; i++)

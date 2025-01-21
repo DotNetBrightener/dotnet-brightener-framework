@@ -1,8 +1,7 @@
 using DotNetBrightener.TemplateEngine.Services;
-using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using Shouldly;
 using Xunit.Abstractions;
-using Xunit.Sdk;
 
 namespace DotNetBrightener.TemplateEngine.Tests;
 
@@ -41,7 +40,7 @@ public class TemplateEngineParserTest
         var templateParserService = _serviceProvider.GetService<ITemplateParserService>();
 
         var parsedValue = templateParserService.ParseTemplate("{{this}}", input, false);
-        parsedValue.Should().Be(expectedValue);
+        parsedValue.ShouldBe(expectedValue);
     }
 
     //[Test]
@@ -111,7 +110,7 @@ public class TemplateEngineParserTest
                                                          },
                                                          isHtml: false);
 
-        result.Should().Be(expectedResult);
+        result.ShouldBe(expectedResult);
     }
 
     [Theory]
@@ -158,6 +157,6 @@ public class TemplateEngineParserTest
                                                          },
                                                          isHtml: false);
         _testOutputHelper.WriteLine("Output: " + result);
-        result.Should().Be(expectedResult);
+        result.ShouldBe(expectedResult);
     }
 }

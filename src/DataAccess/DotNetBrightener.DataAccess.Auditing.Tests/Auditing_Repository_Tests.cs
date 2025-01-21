@@ -4,13 +4,13 @@ using DotNetBrightener.DataAccess.Models.Auditing;
 using DotNetBrightener.DataAccess.Services;
 using DotNetBrightener.Plugins.EventPubSub;
 using DotNetBrightener.TestHelpers;
-using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Moq;
+using Shouldly;
 using System.Collections.Immutable;
 using Xunit;
 using Xunit.Abstractions;
@@ -56,7 +56,7 @@ public class Auditing_Repository_Tests : MsSqlServerBaseXUnitTest
                                  insertedEntityId = entity.Id;
                              });
 
-            insertedEntityId.Should().NotBe(0);
+            insertedEntityId.ShouldNotBe(0);
             await host.StopAsync();
         }
 
@@ -82,7 +82,7 @@ public class Auditing_Repository_Tests : MsSqlServerBaseXUnitTest
         //                 .Should()
         //                 .BeEquivalentTo(expectedPropNamesReturned.OrderBy(x => x).ToList());
 
-        //initializedScopes.Count.Should().Be(3);
+        //initializedScopes.Count.ShouldBe(3);
     }
 
     private async Task UpdateUsingExpression_ShouldOutputAuditEntry(long insertedEntityId)
@@ -135,7 +135,7 @@ public class Auditing_Repository_Tests : MsSqlServerBaseXUnitTest
             await Task.Delay(100);
         }
 
-        start2.Should().NotBeNull();
+        start2.ShouldNotBeNull();
         
         logger.LogInformation($"Took {(start2 - start0)} to hit methods");
         
@@ -203,7 +203,7 @@ public class Auditing_Repository_Tests : MsSqlServerBaseXUnitTest
             await Task.Delay(100);
         }
 
-        start2.Should().NotBeNull();
+        start2.ShouldNotBeNull();
         
         logger.LogInformation($"Took {(start2 - start0)} to hit methods");
         

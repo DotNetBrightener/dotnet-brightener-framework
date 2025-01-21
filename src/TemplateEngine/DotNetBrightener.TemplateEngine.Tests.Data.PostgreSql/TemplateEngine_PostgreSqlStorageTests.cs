@@ -1,8 +1,8 @@
 using DotNetBrightener.TemplateEngine.Data.Services;
-using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Shouldly;
 using Testcontainers.PostgreSql;
 using Xunit;
 using Xunit.Abstractions;
@@ -77,9 +77,9 @@ public class TemplateEngine_PostgreSqlStorageTests(ITestOutputHelper testOutputH
 
             var template = templateService.LoadTemplate<TemplateTestModel>();
 
-            template.Should().NotBeNull();
-            template.TemplateTitle.Should().Be("Hello {{Name}}");
-            template.TemplateContent.Should().Be("Hey {{Name}},<br />This is {{Description}}.");
+            template.ShouldNotBeNull();
+            template.TemplateTitle.ShouldBe("Hello {{Name}}");
+            template.TemplateContent.ShouldBe("Hey {{Name}},<br />This is {{Description}}.");
         }
 
         using (var scope = _testHost.Services.CreateScope())
@@ -94,9 +94,9 @@ public class TemplateEngine_PostgreSqlStorageTests(ITestOutputHelper testOutputH
 
             var template = await templateService.LoadAndParseTemplateAsync(model);
 
-            template.Should().NotBeNull();
-            template.TemplateTitle.Should().Be("Hello John");
-            template.TemplateContent.Should().Be("Hey John,<br />This is A test model.");
+            template.ShouldNotBeNull();
+            template.TemplateTitle.ShouldBe("Hello John");
+            template.TemplateContent.ShouldBe("Hey John,<br />This is A test model.");
         }
 
         await _testHost.StopAsync();

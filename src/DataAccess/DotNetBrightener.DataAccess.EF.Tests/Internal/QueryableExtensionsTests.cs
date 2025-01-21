@@ -1,7 +1,5 @@
 ﻿using DotNetBrightener.DataAccess.EF.Internal;
 using System.Linq.Expressions;
-using FluentAssertions;
-using Newtonsoft.Json;
 using Xunit;
 using Xunit.Abstractions;
 

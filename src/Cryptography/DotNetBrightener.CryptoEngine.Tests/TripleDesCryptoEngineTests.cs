@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+﻿using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -26,7 +26,7 @@ public class TripleDesCryptoEngineTests(ITestOutputHelper testOutputHelper)
 
             var decryptedText = TripleDesCryptoEngine.Decrypt(encryptedText, encryptionKey);
 
-            textToEncrypt.Should().Be(decryptedText);
+            textToEncrypt.ShouldBe(decryptedText);
         }
     }
 }

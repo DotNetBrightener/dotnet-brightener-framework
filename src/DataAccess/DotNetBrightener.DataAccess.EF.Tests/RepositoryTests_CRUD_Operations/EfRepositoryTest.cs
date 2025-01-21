@@ -1,12 +1,12 @@
 ﻿using DotNetBrightener.DataAccess.Exceptions;
 using DotNetBrightener.DataAccess.Services;
 using DotNetBrightener.TestHelpers;
-using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Moq;
 using Newtonsoft.Json;
+using Shouldly;
 using Testcontainers.MsSql;
 using Xunit;
 using Xunit.Abstractions;
@@ -40,7 +40,7 @@ public class EfRepositoryTest : MsSqlServerBaseXUnitTest
 
             var deletableEntityCount = await repository.CountAsync<TestEntity>();
 
-            deletableEntityCount.Should().Be(10);
+            deletableEntityCount.ShouldBe(10);
         }
 
         await host.StopAsync();
@@ -198,7 +198,7 @@ public class EfRepositoryTest : MsSqlServerBaseXUnitTest
 
             var firstEntity = await repository.GetFirstAsync<TestEntity>(_ => true);
 
-            firstEntity.Should().NotBeNull();
+            firstEntity.ShouldNotBeNull();
 
             await repository.UpdateAsync(firstEntity!,
                                          new
@@ -285,7 +285,7 @@ public class EfRepositoryTest : MsSqlServerBaseXUnitTest
                                                                    .Replace("To update", "Already Updated")
                                                          });
 
-            affectedRecords.Should().Be(3);
+            affectedRecords.ShouldBe(3);
         }
 
         using (var serviceScope = host.Services.CreateScope())
@@ -300,8 +300,8 @@ public class EfRepositoryTest : MsSqlServerBaseXUnitTest
 
             foreach (var record in updatedEntities)
             {
-                record.Should().NotBeNull();
-                record.Name.Should().Be($"Already Updated {index++}");
+                record.ShouldNotBeNull();
+                record.Name.ShouldBe($"Already Updated {index++}");
             }
         }
     }
@@ -328,8 +328,8 @@ public class EfRepositoryTest : MsSqlServerBaseXUnitTest
 
             var record = await repository.GetFirstAsync<TestEntity>(x => x.Name == "Name1");
 
-            record.Should().NotBeNull();
-            record!.IsDeleted.Should().Be(true);
+            record.ShouldNotBeNull();
+            record!.IsDeleted.ShouldBe(true);
         }
     }
 
@@ -341,20 +341,26 @@ public class EfRepositoryTest : MsSqlServerBaseXUnitTest
         await InsertFakeData(host);
         await InsertFakeData(host);
 
-        Action act = () =>
+
+        using (var serviceScope = host.Services.CreateScope())
         {
-            using (var serviceScope = host.Services.CreateScope())
+            var serviceProvider = serviceScope.ServiceProvider;
+            var repository      = serviceProvider.GetRequiredService<IRepository>();
+
+            Action act = () =>
             {
-                var serviceProvider = serviceScope.ServiceProvider;
-                var repository      = serviceProvider.GetRequiredService<IRepository>();
-
                 repository.DeleteOneAsync<TestEntity>(x => x.Name == "Name1").Wait();
-            }
-        };
+            };
 
-        act.Should()
-           .Throw<ExpectedAffectedRecordMismatchException>()
-           .Where(ex => ex.ExpectedAffectedRecords == 1 && ex.ActualAffectedRecords == 2);
+            var exception = act.ShouldThrow<AggregateException>();
+
+            var ex = exception.InnerExceptions.FirstOrDefault(x => x is ExpectedAffectedRecordMismatchException);
+
+            ex.ShouldBeOfType<ExpectedAffectedRecordMismatchException>();
+
+            ((ExpectedAffectedRecordMismatchException)ex).ExpectedAffectedRecords.ShouldBe(1);
+            ((ExpectedAffectedRecordMismatchException)ex).ActualAffectedRecords.ShouldBe(2);
+        }
 
         using (var serviceScope = host.Services.CreateScope())
         {
@@ -364,7 +370,7 @@ public class EfRepositoryTest : MsSqlServerBaseXUnitTest
             var record = await repository.Fetch<TestEntity>(x => x.Name == "Name1" && !x.IsDeleted)
                                          .CountAsync();
 
-            record.Should().Be(2, "The transaction should roll back.");
+            record.ShouldBe(2, "The transaction should roll back.");
         }
     }
 
@@ -382,7 +388,7 @@ public class EfRepositoryTest : MsSqlServerBaseXUnitTest
 
             var affectedRecords = await repository.DeleteManyAsync<TestEntity>(x => x.Name != "Name1", "Test deletion");
 
-            affectedRecords.Should().Be(9);
+            affectedRecords.ShouldBe(9);
         }
 
         using (var serviceScope = host.Services.CreateScope())
@@ -394,8 +400,8 @@ public class EfRepositoryTest : MsSqlServerBaseXUnitTest
 
             foreach (var record in records)
             {
-                record.IsDeleted.Should().BeTrue();
-                record.DeletionReason.Should().Be("Test deletion");
+                record.IsDeleted.ShouldBeTrue();
+                record.DeletionReason.ShouldBe("Test deletion");
             }
         }
     }

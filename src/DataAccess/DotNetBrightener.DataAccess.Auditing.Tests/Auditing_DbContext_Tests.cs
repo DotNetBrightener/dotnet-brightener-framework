@@ -3,14 +3,13 @@ using DotNetBrightener.DataAccess.EF.Internal;
 using DotNetBrightener.DataAccess.Models.Auditing;
 using DotNetBrightener.Plugins.EventPubSub;
 using DotNetBrightener.TestHelpers;
-using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Moq;
+using Shouldly;
 using System.Collections.Immutable;
-using Testcontainers.MsSql;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -70,7 +69,7 @@ public class Auditing_DbContext_Tests : MsSqlServerBaseXUnitTest
                              insertedEntityId = entity.Id;
                          });
 
-        insertedEntityId.Should().NotBe(0);
+        insertedEntityId.ShouldNotBe(0);
 
         ImmutableList<AuditProperty> changedProperties = ImmutableList<AuditProperty>.Empty;
         
@@ -91,7 +90,7 @@ public class Auditing_DbContext_Tests : MsSqlServerBaseXUnitTest
                              {
                                  var entity = await dbContext.Set<TestEntity>().FindAsync(insertedEntityId);
 
-                                 entity.Should().NotBeNull();
+                                 entity.ShouldNotBeNull();
 
                                  entity!.Name = "John Smith Updated";
 
@@ -116,7 +115,7 @@ public class Auditing_DbContext_Tests : MsSqlServerBaseXUnitTest
                          {
                              var entity = await dbContext.Set<TestEntity>().FindAsync(insertedEntityId);
 
-                             entity.Should().NotBeNull();
+                             entity.ShouldNotBeNull();
 
                              dbContext.Remove(entity!);
 
@@ -127,11 +126,11 @@ public class Auditing_DbContext_Tests : MsSqlServerBaseXUnitTest
 
         // Assert
         mockAuditTrailHandler.Verify(x => x.ChangedProperties(It.IsAny<ImmutableList<AuditProperty>>()));
-        
+
+        // TODO: Implement the following assertion
         changedProperties.Select(x => x.PropertyName)
                          .ToList()
-                         .Should()
-                         .BeInAscendingOrder();
+                         .ShouldBeInOrder(SortDirection.Ascending);
 
         // Clean up
         await WithScoped(host,
