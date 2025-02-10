@@ -8,6 +8,8 @@ trigger:
     exclude:
       - version.json
       - Pipelines/*
+      - benchmarks/*
+      - demos & tests/*
       - '**/README.md'
 
 pool:
