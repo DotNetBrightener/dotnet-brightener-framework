@@ -72,13 +72,21 @@ stages:
             parameters:
               projectName: ${{ parameters.projectName }}
 
-  - stage: MirrorToGithub
+  - stage: MirrorToGithub_Preview
     dependsOn:
-      - Variables
-      - Versioning
       - BuildAndPackage
+    condition: and(succeeded(), eq('${{ parameters.versionIncrementType }}', 'Preview Version'))
+    jobs:
+      - job: Mirror_To_Github
+        workspace:
+          clean: all
+        steps:
+          - template: MirrorProjectToGithub.yml
+
+  - stage: MirrorToGithub_Release
+    dependsOn:
       - PersistVersion
-    condition: succeeded()
+    condition: and(succeeded(), ne('${{ parameters.versionIncrementType }}', 'Preview Version'))
     jobs:
       - job: Mirror_To_Github
         workspace:

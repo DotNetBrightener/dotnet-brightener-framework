@@ -1,11 +1,27 @@
 steps:
+  - script: |
+      echo "Unarchiving GitHub repository..."
+      curl -X PATCH -H "Authorization: token $(GithubAccessToken)" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/$(GITHUB_REPO) \
+            -d '{"archived": false}'
+    displayName: 'Unarchive GitHub Repo'
+
   - task: PowerShell@2
     inputs:
       targetType: "inline"
       script: |
         git clone --bare "https://justinchasez04121990:$(AzureAccessToken)@dev.azure.com/justinchasez/DotNet%20Brightener/_git/dotnet-brightener-framework"
         cd dotnet-brightener-framework.git
-        git push --mirror https://$(GithubAccessToken)@github.com/DotNetBrightener/dotnet-brightener-framework
+        git push --mirror https://$(GithubAccessToken)@github.com/$(GITHUB_REPO)
         cd ..
         rm -Rf dotnet-brightener-framework.git
       displayName: "Mirror to Github"
+
+  - script: |
+      echo "Re-archiving GitHub repository..."
+      curl -X PATCH -H "Authorization: token $(GithubAccessToken)" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/$(GITHUB_REPO) \
+            -d '{"archived": true}'
+    displayName: 'Archive GitHub Repo'
