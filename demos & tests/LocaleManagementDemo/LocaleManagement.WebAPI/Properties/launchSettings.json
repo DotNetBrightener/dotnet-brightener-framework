@@ -8,9 +8,7 @@
       "launchUrl": "swagger",
       "applicationUrl": "https://localhost:7185;http://localhost:5295",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "ConnectionStrings__DefaultConnection": "Server=100.117.90.128;Database=LocaleDb_Test;User Id=sa;Password=uZVEYUUQeL1ZGOJgMocARmdyOQwJ7dtM;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;",
-        "ConnectionStrings__DefaultConnection_local": "Server=192.168.20.163;Database=LocaleDb_Test;User Id=sa;Password=sCpTXbW8jbSbbUpILfZVulTiwqcPyJWt;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;"
+        "ASPNETCORE_ENVIRONMENT": "Development"
       }
     }
   }

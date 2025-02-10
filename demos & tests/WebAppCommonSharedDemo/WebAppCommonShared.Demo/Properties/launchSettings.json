@@ -7,9 +7,7 @@
       "launchBrowser": false,
       "applicationUrl": "https://localhost:7290;http://localhost:5030",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "ConnectionStrings:DefaultConnection": "Server=100.102.153.17;Database=TestAppClient_WebSocket0929;User Id=sa;Password=sCpTXbW8jbSbbUpILfZVulTiwqcPyJWt;MultipleActiveResultSets=True;Encrypt=True;TrustServerCertificate=True;Max Pool Size=200;",
-        "-ConnectionStrings:DefaultConnection": "Server=dev-ep-db1.database.windows.net;Database=JUSTIN_EXPERIMENT;User Id=sqladmin;Password=Br0keBackMountain;MultipleActiveResultSets=True;Encrypt=True;TrustServerCertificate=True;"
+        "ASPNETCORE_ENVIRONMENT": "Development"
       }
     }
   }

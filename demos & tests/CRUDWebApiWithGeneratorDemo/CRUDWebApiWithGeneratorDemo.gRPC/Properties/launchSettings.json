@@ -26,8 +26,7 @@
       "launchUrl": "swagger",
       "applicationUrl": "https://localhost:7077;http://localhost:5250",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "ConnectionStrings__DefaultConnection": "Server=192.168.20.163;Database=TestDB;User Id=sa;Password=sCpTXbW8jbSbbUpILfZVulTiwqcPyJWt;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;"
+        "ASPNETCORE_ENVIRONMENT": "Development"
       }
     }
   }

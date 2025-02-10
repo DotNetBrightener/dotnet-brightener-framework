@@ -33,10 +33,6 @@ public class EfRepositoryTests
 {
     private ServiceProvider _serviceProvider;
 
-    //private static readonly string DateTimeString = DateTime.Now.ToString("yyyyMMddHHmmss");
-
-    //private static readonly string ConnectionString = $"Data Source=192.168.20.163;Initial Catalog=dnb_testdb_{DateTimeString};User ID=sa;Password=sCpTXbW8jbSbbUpILfZVulTiwqcPyJWt;MultipleActiveResultSets=True;Encrypt=True;TrustServerCertificate=True;";
-
     private static readonly string ConnectionString = $"Data Source=TestDb.db;";
 
     [SetUp]
