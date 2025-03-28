@@ -1,5 +1,4 @@
 ﻿#nullable enable
-using DotNetBrightener.DataAccess.EF.Converters;
 using DotNetBrightener.DataAccess.EF.Entities;
 using DotNetBrightener.DataAccess.EF.EnumLookup;
 using Microsoft.EntityFrameworkCore.Infrastructure;

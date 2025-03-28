@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Concurrent;
-using System.Collections.Immutable;
 
 namespace DotNetBrightener.Plugins.EventPubSub;
 

@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using DotNetBrightener.Plugins.EventPubSub.Distributed;
+﻿using DotNetBrightener.Plugins.EventPubSub.Distributed;
 using DotNetBrightener.Plugins.EventPubSub.Distributed.Services;
 using MassTransit;
 using Microsoft.Extensions.DependencyInjection;

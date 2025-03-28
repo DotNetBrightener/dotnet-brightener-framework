@@ -5,7 +5,6 @@ using LinqToDB.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Collections.Immutable;
-using System.Reflection;
 
 namespace DotNetBrightener.DataAccess.Auditing.Storage.EventHandlers;
 

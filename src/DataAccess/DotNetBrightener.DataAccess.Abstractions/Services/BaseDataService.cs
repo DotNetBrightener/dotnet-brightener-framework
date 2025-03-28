@@ -62,9 +62,6 @@ public abstract class BaseDataService<TEntity>(IRepository repository) : IBaseDa
                          .Where($"{nameof(IAuditableEntity.IsDeleted)} == True");
     }
 
-    public IQueryable<TEntity> FetchActive(Expression<Func<TEntity, bool>>? expression = null)
-        => FetchNonDeleted(expression);
-
     public IQueryable<TEntity> FetchNonDeleted(Expression<Func<TEntity, bool>>? expression = null)
     {
         IQueryable<TEntity> query = Repository.Fetch(expression);

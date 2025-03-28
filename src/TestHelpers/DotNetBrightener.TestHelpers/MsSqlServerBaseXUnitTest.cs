@@ -1,5 +1,4 @@
-﻿using DotNet.Testcontainers.Builders;
-using Testcontainers.MsSql;
+﻿using Testcontainers.MsSql;
 using Xunit;
 using Xunit.Abstractions;
 

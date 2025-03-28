@@ -1,5 +1,4 @@
 ﻿using DotNetBrightener.DataAccess;
-using DotNetBrightener.DataAccess.EF.Auditing;
 using DotNetBrightener.DataAccess.EF.Conventions;
 using DotNetBrightener.DataAccess.EF.EnumLookup;
 using DotNetBrightener.DataAccess.EF.Interceptors;

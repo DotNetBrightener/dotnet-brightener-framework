@@ -90,18 +90,6 @@ public interface IBaseDataService<TEntity>: IDisposable, IAsyncDisposable
     /// <summary>
     ///     Generates a fetch query to the given entity table with the non-deleted records, optionally provides the condition for filtering
     /// </summary>
-    /// <remarks>
-    ///     This method is deprecated. Use <see cref="FetchNonDeleted"/> instead.
-    /// </remarks>
-    /// <param name="expression">The condition for filtering records in the query</param>
-    /// <returns>An IQueryable of the collection of the requested entities, which are not deleted</returns>
-    [Obsolete("Use FetchNonDeleted() method instead")]
-    IQueryable<TEntity> FetchActive(Expression<Func<TEntity, bool>>? expression = null);
-
-
-    /// <summary>
-    ///     Generates a fetch query to the given entity table with the non-deleted records, optionally provides the condition for filtering
-    /// </summary>
     /// <param name="expression">The condition for filtering records in the query</param>
     /// <returns>An IQueryable of the collection of the requested entities, which are not deleted</returns>
     IQueryable<TEntity> FetchNonDeleted(Expression<Func<TEntity, bool>>? expression = null);
