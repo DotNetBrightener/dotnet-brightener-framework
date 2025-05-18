@@ -1,23 +1,34 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System.Collections.Immutable;
+using Microsoft.CodeAnalysis;
 using WebApi.GenericCRUD.Generator.SyntaxReceivers;
 using WebApi.GenericCRUD.Generator.Utils;
 
 namespace WebApi.GenericCRUD.Generator.Generators;
 
 [Generator]
-public class ControllerClassGenerator : ISourceGenerator
+public class ControllerClassGenerator : IIncrementalGenerator
 {
-    public void Initialize(GeneratorInitializationContext context)
+    public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        context.RegisterForSyntaxNotifications(() => new AutoGenerateApiControllerSyntaxReceiver());
+        // Register syntax provider instead of syntax receiver
+        var syntaxProvider = context.SyntaxProvider
+                                    .CreateSyntaxProvider(
+                                                          predicate: AutoGenerateApiControllerSyntaxReceiver
+                                                             .IsCandidateForGeneration,
+                                                          transform: (ctx, _) =>
+                                                              AutoGenerateApiControllerSyntaxReceiver
+                                                                 .GetSemanticTargetForGeneration(ctx))
+                                    .Where(m => m != null);
+
+        context.RegisterSourceOutput(syntaxProvider.Collect(), Execute);
     }
 
-    /// <summary>
-    /// And consume the receiver here.
-    /// </summary>
-    public void Execute(GeneratorExecutionContext context)
+    private void Execute(SourceProductionContext                         context,
+                         ImmutableArray<IEnumerable<CodeGenerationInfo>> immutableArray)
     {
-        var models = (context.SyntaxContextReceiver as AutoGenerateApiControllerSyntaxReceiver).Models;
+        var models = immutableArray.SelectMany(i => i.Where(item => item is not null)
+                                                     .Select(item => item))
+                                   .ToImmutableArray();
 
         if (!models.Any())
             return;
@@ -40,16 +51,15 @@ public class ControllerClassGenerator : ISourceGenerator
             }
         }
 
-
         foreach (var modelClass in models)
         {
-            GenerateControllerClass(modelClass);
+            GenerateControllerClass(context, modelClass);
         }
     }
 
     private void InjectSwaggerConfigIfNeeded(string inputFile)
     {
-        var  fileContent = File.ReadAllText(inputFile);
+        var fileContent = File.ReadAllText(inputFile);
 
         const string usingStatement              = "using DotNetBrightener.WebApi.GenericCRUD.Extensions;";
         const string usingReflectionStatement    = "using System.Reflection;";
@@ -96,7 +106,8 @@ public class ControllerClassGenerator : ISourceGenerator
         File.WriteAllText(inputFile, fileContent);
     }
 
-    private static void GenerateControllerClass(CodeGenerationInfo modelClass)
+    // Modified to accept SourceProductionContext
+    private static void GenerateControllerClass(SourceProductionContext context, CodeGenerationInfo modelClass)
     {
         var className = $"{modelClass.TargetEntity}Controller";
 
@@ -159,7 +170,6 @@ public partial class {className}
         }
 
         var gPathFile = Path.Combine(targetFolder, $"{className}.g.cs");
-
         File.WriteAllText(gPathFile, controllerSrc);
 
         var defaultPathFile = Path.Combine(targetFolder, $"{className}.cs");

@@ -1,6 +1,7 @@
 using DotNetBrightener.WebApi.GenericCRUD.Controllers;
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using CRUDWebApiWithGeneratorDemo.Services.Data;
 using CRUDWebApiWithGeneratorDemo.Core.Entities;
 

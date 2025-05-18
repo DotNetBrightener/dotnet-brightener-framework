@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<ItemGroup>
-	  <PackageReference Include="MassTransit.Azure.ServiceBus.Core" Version="8.4.0" />
-	  <PackageReference Include="MassTransit.Newtonsoft" Version="8.4.0" />
-	  <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.3" />
-	  <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.3" />
-	  <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.3" />
-	  <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.3" />
+	  <PackageReference Include="MassTransit.Azure.ServiceBus.Core" Version="8.4.1" />
+	  <PackageReference Include="MassTransit.Newtonsoft" Version="8.4.1" />
+	  <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.5" />
+	  <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.5" />
+	  <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.5" />
+	  <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.5" />
 	</ItemGroup>
 	<ItemGroup>
 	  <ProjectReference Include="..\DotNetBrightener.Plugins.EventPubSub.Distributed\DotNetBrightener.Plugins.EventPubSub.Distributed.csproj" />

@@ -7,11 +7,11 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Bogus" Version="35.6.2" />
-		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.3" />
-		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="9.0.3" />
+		<PackageReference Include="Bogus" Version="35.6.3" />
+		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.5" />
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="9.0.5" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-		<PackageReference Include="Swashbuckle.AspNetCore" Version="7.3.2" />
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.1" />
 	</ItemGroup>
 
 
@@ -31,11 +31,6 @@
 		<ProjectReference Include="..\CRUDWebApiWithGeneratorDemo.Core\CRUDWebApiWithGeneratorDemo.Core.csproj" />
 		<ProjectReference Include="..\CRUDWebApiWithGeneratorDemo.Database\CRUDWebApiWithGeneratorDemo.Database.csproj" />
 		<ProjectReference Include="..\CRUDWebApiWithGeneratorDemo.Services\CRUDWebApiWithGeneratorDemo.Services.csproj" />
-	</ItemGroup>
-
-
-	<ItemGroup>
-	  <Folder Include="Controllers\" />
 	</ItemGroup>
 
 

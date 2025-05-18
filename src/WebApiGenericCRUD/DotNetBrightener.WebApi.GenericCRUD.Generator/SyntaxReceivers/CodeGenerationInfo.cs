@@ -1,6 +1,6 @@
 ﻿namespace WebApi.GenericCRUD.Generator.SyntaxReceivers;
 
-internal class CodeGenerationInfo
+public class CodeGenerationInfo
 {
     public string TargetEntity          { get; set; }
     public string TargetEntityNamespace { get; set; }
