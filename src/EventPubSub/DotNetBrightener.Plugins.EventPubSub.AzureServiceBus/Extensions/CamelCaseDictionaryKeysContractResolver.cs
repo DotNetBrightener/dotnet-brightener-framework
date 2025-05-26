@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json.Serialization;
 
-namespace DotNetBrightener.Plugins.EventPubSub.AzureServiceBus.Native.Extensions;
+namespace DotNetBrightener.Plugins.EventPubSub.AzureServiceBus.Extensions;
 
 internal class CamelCaseDictionaryKeysContractResolver : CamelCasePropertyNamesContractResolver
 {

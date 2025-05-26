@@ -9,7 +9,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\EventPubSub\DotNetBrightener.Plugins.EventPubSub.AzureServiceBus\DotNetBrightener.Plugins.EventPubSub.AzureServiceBus.csproj" />
     <ProjectReference Include="..\..\src\EventPubSub\DotNetBrightener.Plugins.EventPubSub.DependencyInjection\DotNetBrightener.Plugins.EventPubSub.DependencyInjection.csproj" />
-    <ProjectReference Include="..\..\src\EventPubSub\DotNetBrightener.Plugins.EventPubSub.RabbitMq\DotNetBrightener.Plugins.EventPubSub.RabbitMq.csproj" />
     <ProjectReference Include="..\EventPubSub.WebApiDemo.Contracts\EventPubSub.WebApiDemo.Contracts.csproj" />
   </ItemGroup>
 

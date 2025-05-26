@@ -1,4 +1,4 @@
-﻿namespace DotNetBrightener.Plugins.EventPubSub.AzureServiceBus.Native;
+﻿namespace DotNetBrightener.Plugins.EventPubSub.AzureServiceBus;
 
 public abstract class ServiceBusMessageProcessor<TEventMessage>(IServiceProvider serviceProvider)
     : IServiceBusMessageProcessor
@@ -10,7 +10,7 @@ public abstract class ServiceBusMessageProcessor<TEventMessage>(IServiceProvider
     /// </remarks>
     public virtual async Task<EventMessageWrapper> PrepareOutgoingMessage<T>(T                   message,
                                                                              EventMessageWrapper originMessage = null)
-        where T : DistributedEventMessage
+        where T : IDistributedEventMessage
     {
         var eventMessage = serviceProvider.TryGet<TEventMessage>();
 

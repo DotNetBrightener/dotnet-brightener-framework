@@ -1,5 +1,7 @@
 ﻿// ReSharper disable CheckNamespace
 
+using DotNetBrightener.Plugins.EventPubSub.Distributed.Services;
+
 namespace DotNetBrightener.Plugins.EventPubSub;
 
 /// <summary>
@@ -16,4 +18,22 @@ public abstract class DistributedEventHandler<TEventMessage> : IEventHandler<TEv
     public EventMessageWrapper OriginPayload { get; internal set; }
 
     public abstract Task<bool> HandleEvent(TEventMessage eventMessage);
+
+    async Task IConsumer<TEventMessage>.Consume(ConsumeContext<TEventMessage> context)
+    {
+        var eventMessage = context.Message;
+
+        OriginPayload = new DistributedEventMessageWrapper
+        {
+            CorrelationId = eventMessage.CorrelationId,
+            CreatedOn     = eventMessage.CreatedOn,
+            MachineName   = eventMessage.MachineName ?? context.SourceAddress?.Host,
+            OriginApp     = eventMessage.OriginApp,
+            EventId       = eventMessage.EventId,
+            Payload       = eventMessage.Payload
+        };
+
+
+        await HandleEvent(eventMessage);
+    }
 }

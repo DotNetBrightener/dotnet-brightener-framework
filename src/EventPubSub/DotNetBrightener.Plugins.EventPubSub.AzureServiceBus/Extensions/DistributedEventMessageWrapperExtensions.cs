@@ -1,4 +1,4 @@
-﻿using DotNetBrightener.Plugins.EventPubSub.AzureServiceBus.Native.Extensions;
+﻿using DotNetBrightener.Plugins.EventPubSub.AzureServiceBus.Extensions;
 using Newtonsoft.Json;
 
 // ReSharper disable once CheckNamespace
@@ -7,7 +7,7 @@ namespace DotNetBrightener.Plugins.EventPubSub;
 public static class DistributedEventMessageWrapperExtensions
 {
     internal static void WithPayload<T>(this EventMessageWrapper msg, T eventMessage)
-        where T : DistributedEventMessage
+        where T : IDistributedEventMessage
     {
         var serializedMessage = JsonConvert.SerializeObject(eventMessage, JsonConfig.SerializeOptions);
 
@@ -16,7 +16,7 @@ public static class DistributedEventMessageWrapperExtensions
                                                                       JsonConfig.DeserializeOptions);
     }
 
-    internal static T GetPayload<T>(this EventMessageWrapper msg) where T : DistributedEventMessage
+    internal static T GetPayload<T>(this EventMessageWrapper msg) where T : IDistributedEventMessage
     {
         var potentialNestedMsg = msg.Payload.TryGetValue("message", out var payloadValue);
         var jsonPayload = potentialNestedMsg

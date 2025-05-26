@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Collections.Concurrent;
 using System.Reflection;
+using DotNetBrightener.DataAccess.Models;
 
 namespace DotNetBrightener.DataAccess.EF.Internal;
 

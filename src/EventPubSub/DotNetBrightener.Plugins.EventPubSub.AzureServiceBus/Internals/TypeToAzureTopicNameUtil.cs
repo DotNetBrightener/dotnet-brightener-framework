@@ -1,4 +1,4 @@
-﻿namespace DotNetBrightener.Plugins.EventPubSub.AzureServiceBus.Native.Internals;
+﻿namespace DotNetBrightener.Plugins.EventPubSub.AzureServiceBus.Internals;
 
 internal static class TypeToAzureTopicNameUtil
 {
@@ -9,9 +9,9 @@ internal static class TypeToAzureTopicNameUtil
         if (string.IsNullOrEmpty(type.Namespace))
             throw new InvalidOperationException("EventMessage type must have a valid namespace");
 
-        if (!type.IsAssignableTo(typeof(DistributedEventMessage)))
+        if (!type.IsAssignableTo(typeof(IDistributedEventMessage)))
             throw new
-                InvalidOperationException($"EventMessage type must implement {nameof(DistributedEventMessage)} interface");
+                InvalidOperationException($"EventMessage type must implement {nameof(IDistributedEventMessage)} interface");
 
         if (ServiceBusConfiguration is not null && !ServiceBusConfiguration.IncludeNamespaceForTopicName)
             return type.Name;

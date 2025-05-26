@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<ItemGroup>
-	  <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.19.0" />
+	  <PackageReference Include="MassTransit.Azure.ServiceBus.Core" Version="8.4.1" />
+	  <PackageReference Include="MassTransit.Newtonsoft" Version="8.4.1" />
 	  <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.5" />
 	  <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.5" />
 	  <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.5" />
@@ -8,6 +9,6 @@
 	</ItemGroup>
 	<ItemGroup>
 	  <ProjectReference Include="..\DotNetBrightener.Plugins.EventPubSub.Distributed\DotNetBrightener.Plugins.EventPubSub.Distributed.csproj" />
-	  <ProjectReference Include="..\DotNetBrightener.Plugins.EventPubSub\DotNetBrightener.Plugins.EventPubSub.csproj" />
 	</ItemGroup>
+	<Import Project="..\..\Shared\SharedExtensions.Tasks\SharedExtensions.Tasks.projitems" Label="Shared" />
 </Project>

@@ -1,13 +1,13 @@
 ﻿using System.Collections.Concurrent;
 using System.Text;
 using Azure.Messaging.ServiceBus;
-using DotNetBrightener.Plugins.EventPubSub.AzureServiceBus.Native.Internals;
+using DotNetBrightener.Plugins.EventPubSub.AzureServiceBus.Internals;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace DotNetBrightener.Plugins.EventPubSub.AzureServiceBus.Native;
+namespace DotNetBrightener.Plugins.EventPubSub.AzureServiceBus;
 
 internal class AzureServiceBusSubscribeHostedService(
     ILogger<AzureServiceBusSubscribeHostedService> logger,
@@ -40,7 +40,8 @@ internal class AzureServiceBusSubscribeHostedService(
                                                         serviceBusService,
                                                         cancellationToken);
 
-            _serviceBusProcessors.TryAdd(messageType, busProcessor);
+            if (busProcessor is not null)
+                _serviceBusProcessors.TryAdd(messageType, busProcessor);
         });
     }
 
@@ -54,14 +55,22 @@ internal class AzureServiceBusSubscribeHostedService(
         await serviceBusService.CreateTopicIfNotExists(topicName);
         await serviceBusService.CreateSubscriptionIfNotExists(topicName, _subscriptionName);
 
+        if (messageType.IsAssignableTo(typeof(IResponseMessage)))
+        {
+            await serviceBusService.CreateReceiverQueue(topicName, _subscriptionName);
+        }
+
+        if (handlerType is null)
+            return null;
+
         var messageHandlerOptions = new ServiceBusProcessorOptions
         {
             MaxConcurrentCalls   = 1,
-            AutoCompleteMessages = false
+            AutoCompleteMessages = false,
         };
 
         var busProcessor = _serviceBusClient.CreateProcessor(topicName, _subscriptionName, messageHandlerOptions);
-        busProcessor.ProcessMessageAsync += args => ProcessMessage(args, handlerType);
+        busProcessor.ProcessMessageAsync += args => ProcessMessage(args, handlerType, _serviceBusClient);
         busProcessor.ProcessErrorAsync   += args => OnFailure(args, topicName, _subscriptionName);
 
         logger.LogInformation("Subscription {subscriptionName} for topic {topicName} is subscribing...",
@@ -94,7 +103,7 @@ internal class AzureServiceBusSubscribeHostedService(
         logger.LogInformation("Service Bus Subscription is stopping...");
     }
 
-    async Task ProcessMessage(ProcessMessageEventArgs args, Type handlerType)
+    async Task ProcessMessage(ProcessMessageEventArgs args, Type handlerType, ServiceBusClient serviceBusClient)
     {
         var bytesAsString = Encoding.UTF8.GetString(args.Message.Body);
 
@@ -104,9 +113,19 @@ internal class AzureServiceBusSubscribeHostedService(
 
         var domainEvent = await messageProcessor.ParseIncomingMessage(bytesAsString);
 
-        if (scope.ServiceProvider.GetRequiredService(handlerType) is IAzureServiceBusEventSubscription handler)
+        if (scope.ServiceProvider.TryGet(handlerType) is IAzureServiceBusEventSubscription handler)
         {
-            var shouldComplete = await handler.ProcessMessage(domainEvent);
+            domainEvent.CurrentApp = _subscriptionName;
+            var shouldComplete = await handler.ProcessMessage(domainEvent, args);
+
+            if (shouldComplete)
+                await args.CompleteMessageAsync(args.Message);
+        }
+
+        if (scope.ServiceProvider.TryGet(handlerType) is IAzureServiceBusEventRequestResponseHandler responder)
+        {
+            domainEvent.CurrentApp = _subscriptionName;
+            var shouldComplete = await responder.ProcessMessage(domainEvent, args, serviceBusClient);
 
             if (shouldComplete)
                 await args.CompleteMessageAsync(args.Message);

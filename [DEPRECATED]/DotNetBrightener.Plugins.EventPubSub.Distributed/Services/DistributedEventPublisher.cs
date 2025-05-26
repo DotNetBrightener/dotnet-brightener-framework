@@ -1,11 +1,9 @@
-﻿using MassTransit;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace DotNetBrightener.Plugins.EventPubSub.Distributed.Services;
 
-internal class DistributedEventPublisher
-    : DefaultEventPublisher
+internal class DistributedEventPublisher : DefaultEventPublisher
 {
     internal readonly IServiceScopeFactory                ServiceScopeFactory;
     internal readonly IDistributedEventPubSubConfigurator Configurator;

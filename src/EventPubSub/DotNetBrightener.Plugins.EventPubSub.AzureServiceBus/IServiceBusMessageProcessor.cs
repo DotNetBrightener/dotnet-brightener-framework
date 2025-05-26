@@ -1,4 +1,4 @@
-﻿namespace DotNetBrightener.Plugins.EventPubSub.AzureServiceBus.Native;
+﻿namespace DotNetBrightener.Plugins.EventPubSub.AzureServiceBus;
 
 /// <summary>
 ///     Represents the processor to convert the message to appropriate format for the service bus, and convert
@@ -22,7 +22,7 @@ public interface IServiceBusMessageProcessor
     /// </returns>
     Task<EventMessageWrapper> PrepareOutgoingMessage<T>(T                   message,
                                                         EventMessageWrapper originMessage = null)
-        where T : DistributedEventMessage;
+        where T : IDistributedEventMessage;
 
     /// <summary>
     ///     Parses the incoming message from the message broker

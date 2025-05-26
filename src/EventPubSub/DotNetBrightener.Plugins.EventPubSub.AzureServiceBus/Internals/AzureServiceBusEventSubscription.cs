@@ -1,10 +1,11 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Azure.Messaging.ServiceBus;
+using Microsoft.Extensions.Logging;
 
-namespace DotNetBrightener.Plugins.EventPubSub.AzureServiceBus.Native.Internals;
+namespace DotNetBrightener.Plugins.EventPubSub.AzureServiceBus.Internals;
 
 internal interface IAzureServiceBusEventSubscription
 {
-    Task<bool> ProcessMessage(EventMessageWrapper messageWrapper);
+    Task<bool> ProcessMessage(EventMessageWrapper messageWrapper, ProcessMessageEventArgs args);
 }
 
 internal class AzureServiceBusEventSubscription<T>(
@@ -15,7 +16,8 @@ internal class AzureServiceBusEventSubscription<T>(
 {
     private readonly ILogger _logger = loggerFactory.CreateLogger<AzureServiceBusEventSubscription<T>>();
 
-    public async Task<bool> ProcessMessage(EventMessageWrapper messageWrapper)
+    public async Task<bool> ProcessMessage(EventMessageWrapper messageWrapper, 
+                                           ProcessMessageEventArgs args)
     {
         if (!eventHandlers.Any())
         {

@@ -1,8 +1,8 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<PropertyGroup>
 		<TargetFramework>net9.0</TargetFramework>
-		<Authors>DotNet Brightener &lt;admin@dotnetbrightener.com&gt;</Authors>
-		<Company>DotNet Brightener</Company>
+		<Authors>Vampire Coder &lt;admin@vampirecoder.com&gt; (formerly DotNet Brightener)</Authors>
+		<Company>Vampire Coder (formerly DotNet Brightener)</Company>
 
 		<Copyright>© 2017 - $([System.DateTime]::Now.ToString(yyyy)) $(Company)</Copyright>
 
@@ -11,6 +11,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<RepositoryUrl>https://github.com/dotnetbrightener/dotnet-brightener-framework</RepositoryUrl>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 
@@ -21,6 +22,11 @@
 		<NoWarn>$(NoWarn);0168;1701;1702;1591;1574;1723;1998;1573;RCS1194;CS8618;IDE0063;</NoWarn>
 		
 		<PackageReadmeFile Condition="Exists('docs\readme.md') OR Exists('readme.md')">readme.md</PackageReadmeFile>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)'=='Release'">
+		<PackageIcon Condition="Exists('$(SolutionDir)\..\vampire-coder-logo.jpg')">vampire-coder-logo.jpg</PackageIcon>
+		<PackageLicenseFile Condition="Exists('$(SolutionDir)\..\LICENSE')">LICENSE</PackageLicenseFile>
 	</PropertyGroup>
 
 	<ItemGroup>

@@ -1,7 +1,7 @@
 ﻿using DotNetBrightener.Plugins.EventPubSub;
 using DotNetBrightener.Plugins.EventPubSub.AzureServiceBus;
-using DotNetBrightener.Plugins.EventPubSub.AzureServiceBus.Native;
-using DotNetBrightener.Plugins.EventPubSub.AzureServiceBus.Native.Internals;
+using DotNetBrightener.Plugins.EventPubSub.AzureServiceBus.Internals;
+using DotNetBrightener.Plugins.EventPubSub.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -81,12 +81,12 @@ public static class AzureServiceBusEnabledServiceCollectionExtensions
         var handlerMapping = new AzureServiceBusHandlerMapping();
         serviceCollection.AddSingleton(handlerMapping);
 
-        serviceCollection.AddScoped<IServiceBusMessagePublisher, ServiceBusMessagePublisher>();
+        serviceCollection.AddScoped<IDistributedMessagePublisher, DistributedMessagePublisher>();
         serviceCollection.AddScoped<IAzureServiceBusHelperService, AzureServiceBusHelperService>();
         serviceCollection.AddScoped<IServiceBusMessageProcessor,
             DefaultServiceBusMessageProcessor<SimpleAzureEventMessageWrapper>>();
 
-        serviceCollection.Replace(ServiceDescriptor.Scoped<IEventPublisher, AzureServiceBusEnabledEventPublisher>());
+        serviceCollection.Replace(ServiceDescriptor.Scoped<IEventPublisher, DistributedEventPublisher>());
 
         serviceCollection.AddScoped(typeof(AzureServiceBusEventSubscription<>));
 
@@ -143,6 +143,50 @@ public static class AzureServiceBusEnabledServiceCollectionExtensions
                 handlerMapping.TryAdd(eventMessageType, consumerType);
             }
 
+            var requestTypes = builder.EventMessageTypes
+                                                      .Where(evtMsgType => evtMsgType is not null &&
+                                                                           evtMsgType
+                                                                              .IsAssignableTo(typeof(RequestMessage)));
+            
+            foreach (var eventMessageType in requestTypes)
+            {
+                var topicName = eventMessageType.GetTopicName();
+
+                if (topicName.Length > 260)
+                {
+                    errors.Add($"Topic name {topicName} for event message type {eventMessageType.FullName} is too long. " +
+                               $"Must be less than 260 characters. " +
+                               $"Adjust the namespace of the event message type will help.");
+
+                    continue;
+                }
+
+                var consumerType = typeof(AzureServiceBusEventRequestResponseHandler<>).MakeGenericType(eventMessageType);
+
+                handlerMapping.TryAdd(eventMessageType, consumerType);
+            }
+
+            var responseTypes = builder.EventMessageTypes
+                                              .Where(evtMsgType => evtMsgType is not null &&
+                                                                   evtMsgType
+                                                                      .IsAssignableTo(typeof(ResponseMessage)));
+
+            foreach (var eventMessageType in responseTypes)
+            {
+                var topicName = eventMessageType.GetTopicName();
+
+                if (topicName.Length > 260)
+                {
+                    errors.Add($"Topic name {topicName} for event message type {eventMessageType.FullName} is too long. " +
+                               $"Must be less than 260 characters. " +
+                               $"Adjust the namespace of the event message type will help.");
+
+                    continue;
+                }
+
+                handlerMapping.TryAdd(eventMessageType, null);
+            }
+            
             if (errors.Any())
                 throw new
                     InvalidOperationException($"Failed to register Azure Service Bus: {string.Join(", ", errors)}");

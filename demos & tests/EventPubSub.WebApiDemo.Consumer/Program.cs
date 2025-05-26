@@ -16,8 +16,7 @@ var eventPubSubConfig = builder.Services
                                .AddEventHandlersFromAssemblies(Assembly.GetExecutingAssembly());
 
 // Add Azure Service Bus
-eventPubSubConfig.UseAzureServiceBus(builder.Configuration)
-                 .Finalize();
+eventPubSubConfig.AddAzureServiceBus(builder.Configuration);
 
 // Add RabbitMq
 //eventPubSubConfig.UseRabbitMq(builder.Configuration)

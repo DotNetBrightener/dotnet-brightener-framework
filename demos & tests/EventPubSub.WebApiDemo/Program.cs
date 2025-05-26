@@ -2,6 +2,7 @@ using DotNetBrightener.Plugins.EventPubSub;
 using EventPubSub.WebApiDemo.Contracts;
 using Microsoft.AspNetCore.Mvc;
 using System.Reflection;
+using DotNetBrightener.Plugins.EventPubSub.Distributed;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,8 +17,7 @@ var eventPubSubConfig = builder.Services
                                .AddEventHandlersFromAssemblies(Assembly.GetExecutingAssembly());
 
 // Add Azure Service Bus
-eventPubSubConfig.UseAzureServiceBus(builder.Configuration)
-                 .Finalize();
+eventPubSubConfig.AddAzureServiceBus(builder.Configuration);
 
 var app = builder.Build();
 
@@ -45,7 +45,7 @@ app.MapGet("/getresponse-test",
 
                var response =
                    await eventPublisher
-                      .GetResponse<DistributedTestMessageResponse, DistributedTestMessage>(eventMessage2);
+                      .GetResponse<DistributedTestMessage, DistributedTestMessageResponse>(eventMessage2);
 
                return response;
            });

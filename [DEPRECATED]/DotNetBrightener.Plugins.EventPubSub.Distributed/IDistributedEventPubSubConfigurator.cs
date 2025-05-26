@@ -1,4 +1,5 @@
 ﻿#nullable enable
+using MassTransit;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DotNetBrightener.Plugins.EventPubSub.Distributed;
@@ -20,4 +21,10 @@ internal class DistributedIntegrationsConfigurator : IDistributedEventPubSubConf
     public EventPubSubServiceBuilder Builder { get; init; }
 
     public string AppName { get; internal set; }
+
+    public IEndpointNameFormatter NameFormatter { get; internal set; } = KebabCaseEndpointNameFormatter.Instance;
+
+    public IEntityNameFormatter? EntityNameFormatter { get; internal set; } = null;
+    
+    public List<Action<IBusRegistrationConfigurator, Type[]>> ConfigureTransports { get; init; } = new();
 }
