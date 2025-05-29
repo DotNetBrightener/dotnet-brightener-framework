@@ -354,6 +354,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".benchmarks", ".benchmarks"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetBrightener.Plugins.EventPubSub.Distributed", "EventPubSub\DotNetBrightener.Plugins.EventPubSub.Distributed\DotNetBrightener.Plugins.EventPubSub.Distributed.csproj", "{99031CE0-F092-A238-B9AF-E17EB9D42614}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetBrightener.SiteSettings.Data.PostgreSql", "SiteSettings\DotNetBrightener.SiteSettings.Data.PostgreSql\DotNetBrightener.SiteSettings.Data.PostgreSql.csproj", "{35397024-80FD-3098-A9BC-040E43366B62}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1226,6 +1228,14 @@ Global
 		{99031CE0-F092-A238-B9AF-E17EB9D42614}.Release|Any CPU.Build.0 = Release|Any CPU
 		{99031CE0-F092-A238-B9AF-E17EB9D42614}.Release|ARM64.ActiveCfg = Release|Any CPU
 		{99031CE0-F092-A238-B9AF-E17EB9D42614}.Release|ARM64.Build.0 = Release|Any CPU
+		{35397024-80FD-3098-A9BC-040E43366B62}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{35397024-80FD-3098-A9BC-040E43366B62}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{35397024-80FD-3098-A9BC-040E43366B62}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{35397024-80FD-3098-A9BC-040E43366B62}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{35397024-80FD-3098-A9BC-040E43366B62}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{35397024-80FD-3098-A9BC-040E43366B62}.Release|Any CPU.Build.0 = Release|Any CPU
+		{35397024-80FD-3098-A9BC-040E43366B62}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{35397024-80FD-3098-A9BC-040E43366B62}.Release|ARM64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1371,6 +1381,7 @@ Global
 		{32B3922C-17BD-4C42-8DD1-6A3B5B2576EE} = {6198BBAE-FEB0-4786-82E7-4F123171230B}
 		{6198BBAE-FEB0-4786-82E7-4F123171230B} = {9F2E3D63-2AC9-4816-ADE5-7B255E17CC6E}
 		{99031CE0-F092-A238-B9AF-E17EB9D42614} = {0BF749BF-71CF-4FA8-9589-D29F5A34EC18}
+		{35397024-80FD-3098-A9BC-040E43366B62} = {78E05890-1EE2-4E9D-A0E1-21CC7F0ECA37}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CBA29A5C-A736-4EB9-8D61-8E76924706CD}
@@ -1399,6 +1410,13 @@ Global
 		Shared\SharedExtensions.DbContext\SharedExtensions.DbContext.projitems*{32b3922c-17bd-4c42-8dd1-6a3b5b2576ee}*SharedItemsImports = 5
 		Shared\SharedExtensions.Exception\SharedExtensions.Exception.projitems*{32b3922c-17bd-4c42-8dd1-6a3b5b2576ee}*SharedItemsImports = 5
 		Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{32b3922c-17bd-4c42-8dd1-6a3b5b2576ee}*SharedItemsImports = 5
+		Shared\SharedExtensions.DbContext\SharedExtensions.DbContext.projitems*{35397024-80fd-3098-a9bc-040e43366b62}*SharedItemsImports = 5
+		Shared\SharedExtensions.Exception\SharedExtensions.Exception.projitems*{35397024-80fd-3098-a9bc-040e43366b62}*SharedItemsImports = 5
+		Shared\SharedExtensions.Expression\SharedExtensions.Expression.projitems*{35397024-80fd-3098-a9bc-040e43366b62}*SharedItemsImports = 5
+		Shared\SharedExtensions.HttpContext\SharedExtensions.HttpContext.projitems*{35397024-80fd-3098-a9bc-040e43366b62}*SharedItemsImports = 5
+		Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{35397024-80fd-3098-a9bc-040e43366b62}*SharedItemsImports = 5
+		Shared\SharedExtensions.ServiceCollection\SharedExtensions.ServiceCollectionExtensions.projitems*{35397024-80fd-3098-a9bc-040e43366b62}*SharedItemsImports = 5
+		Shared\SharedExtensions.Tasks\SharedExtensions.Tasks.projitems*{35397024-80fd-3098-a9bc-040e43366b62}*SharedItemsImports = 5
 		Shared\SharedExtensions.Object\SharedExtensions.ObjectExtensions.projitems*{37fcad5c-ac17-49ef-966a-0b6e18c89276}*SharedItemsImports = 13
 		Shared\SharedExtensions.MessageCompression\SharedExtensions.MessageCompression.projitems*{39c76a4b-f223-46cd-876b-e49a1f8ec023}*SharedItemsImports = 5
 		Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{39c76a4b-f223-46cd-876b-e49a1f8ec023}*SharedItemsImports = 5
