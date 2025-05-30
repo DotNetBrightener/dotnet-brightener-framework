@@ -1,0 +1,6 @@
+@MultiTenancy.Demo.WebApi_HostAddress = http://localhost:5166
+
+GET {{MultiTenancy.Demo.WebApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

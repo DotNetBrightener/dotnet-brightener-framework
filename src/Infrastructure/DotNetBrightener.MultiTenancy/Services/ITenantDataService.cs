@@ -8,13 +8,8 @@ public interface ITenantDataService : IBaseDataService<Tenant>
     Tenant? GetTenantByHostName(string hostname);
 }
 
-public class TenantDataService : BaseDataService<Tenant>, ITenantDataService
+public class TenantDataService(IRepository repository) : BaseDataService<Tenant>(repository), ITenantDataService
 {
-    public TenantDataService(IRepository repository)
-        : base(repository)
-    {
-    }
-
     public Tenant? GetTenantByHostName(string hostname)
     {
         if (TenantSupportedRepository.HasTenantMapping == false)

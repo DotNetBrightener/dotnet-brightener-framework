@@ -3,38 +3,33 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DotNetBrightener.MultiTenancy.DbContexts;
 
-public class MultiTenantDbContext : DbContext
+public static class DbContextMultiTenantExtensions
 {
-    public MultiTenantDbContext(DbContextOptions<MultiTenantDbContext> options)
-        : base(options)
-    {
-
-    }
-
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        ConfigureModel(modelBuilder);
-    }
-
-    public static void ConfigureModel(ModelBuilder modelBuilder)
+    /// <summary>
+    ///     Enables the entity for supporting Multi-tenant feature
+    /// </summary>
+    /// <param name="modelBuilder">
+    ///     The <see cref="ModelBuilder"/> instance to attach entities for supporting multi-tenant
+    /// </param>
+    public static void EnableMultiTenantSupport(this ModelBuilder modelBuilder)
     {
         var tenant              = modelBuilder.Entity<Tenant>();
         var tenantEntityMapping = modelBuilder.Entity<TenantEntityMapping>();
 
-        tenantEntityMapping
-           .HasKey(_ => _.Id);
+        tenant.HasIndex(t => t.TenantGuid);
 
-        tenantEntityMapping
-           .HasIndex(_ => new
-            {
-                _.EntityId,
-                _.EntityType,
-                _.TenantId
-            })
-           .IsUnique();
+        tenantEntityMapping.HasKey(m => m.Id);
+
+        tenantEntityMapping.HasIndex(m => new
+                            {
+                                m.EntityId,
+                                m.EntityType,
+                                m.TenantId
+                            })
+                           .IsUnique();
 
         tenantEntityMapping.HasOne<Tenant>()
                            .WithMany()
-                           .HasForeignKey(_ => _.TenantId);
+                           .HasForeignKey(m => m.TenantId);
     }
 }

@@ -17,7 +17,7 @@ public class TenantSupportedRepository : Repository
     /// </summary>
     internal static bool? HasTenantMapping;
 
-    private static readonly object LockObj = new();
+    private static readonly Lock LockObj = new();
 
     public TenantSupportedRepository(DbContext        dbContext,
                                      ITenantAccessor  tenantAccessor,
@@ -57,12 +57,12 @@ public class TenantSupportedRepository : Repository
         var entityTypeName       = MultiTenantConfiguration.GetEntityType<T>();
 
         var tenantMappingQuery = DbContext.Set<TenantEntityMapping>()
-                                          .Where(_ => _.EntityType == entityTypeName);
+                                          .Where(m => m.EntityType == entityTypeName);
 
         var joinedResult = query.GroupJoin(tenantMappingQuery,
                                            ExpressionExtensions
                                               .BuildMemberAccessExpression<T>(nameof(BaseEntity.Id)),
-                                           _ => _.EntityId,
+                                           m => m.EntityId,
                                            (entity, mapping) => new
                                            {
                                                entity,

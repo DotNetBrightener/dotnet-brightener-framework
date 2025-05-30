@@ -5,18 +5,10 @@ using Microsoft.Extensions.Primitives;
 
 namespace DotNetBrightener.MultiTenancy;
 
-public class TenantDetectionAndCorsEnableMiddleware
+public class TenantDetectionAndCorsEnableMiddleware(
+    RequestDelegate next,
+    ICorsService    corsService)
 {
-    private readonly RequestDelegate _next;
-    private readonly ICorsService    _corsService;
-
-    public TenantDetectionAndCorsEnableMiddleware(RequestDelegate next,
-                                                  ICorsService    corsService)
-    {
-        _next        = next;
-        _corsService = corsService;
-    }
-
     public async Task Invoke(HttpContext              context,
                              IHttpContextAccessor     httpContextAccessor,
                              Lazy<ITenantDataService> tenantDataService)
@@ -27,7 +19,7 @@ public class TenantDetectionAndCorsEnableMiddleware
 
         if (string.IsNullOrEmpty(origin))
         {
-            await _next.Invoke(context);
+            await next.Invoke(context);
 
             return;
         }
@@ -37,7 +29,7 @@ public class TenantDetectionAndCorsEnableMiddleware
 
         if (tenant == null)
         {
-            await _next.Invoke(context);
+            await next.Invoke(context);
 
             return;
         }
@@ -53,8 +45,8 @@ public class TenantDetectionAndCorsEnableMiddleware
 
         var corsPolicy = policyBuilder.Build();
 
-        var corsResult = _corsService.EvaluatePolicy(context, corsPolicy);
-        _corsService.ApplyResult(corsResult, context.Response);
+        var corsResult = corsService.EvaluatePolicy(context, corsPolicy);
+        corsService.ApplyResult(corsResult, context.Response);
 
         var accessControlRequestMethod =
             context.Request.Headers[CorsConstants.AccessControlRequestMethod];
@@ -71,6 +63,6 @@ public class TenantDetectionAndCorsEnableMiddleware
             return;
         }
 
-        await _next.Invoke(context);
+        await next.Invoke(context);
     }
 }

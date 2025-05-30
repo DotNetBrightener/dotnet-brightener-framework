@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\DataAccess\DotNetBrightener.DataAccess.EF.PostgreSQL\DotNetBrightener.DataAccess.EF.PostgreSQL.csproj" />
+    <ProjectReference Include="..\..\..\src\Infrastructure\DotNetBrightener.MultiTenancy\DotNetBrightener.MultiTenancy.csproj" />
+    <ProjectReference Include="..\..\..\src\Security\DotNetBrightener.AzureVaultClient\DotNetBrightener.AzureVaultClient.csproj" />
+    <ProjectReference Include="..\..\..\src\Security\DotNetBrightener.InfisicalVaultClient\DotNetBrightener.InfisicalVaultClient.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="DbContexts\" />
+  </ItemGroup>
+
+</Project>

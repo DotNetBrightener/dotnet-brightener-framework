@@ -1,42 +1,62 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Infisical.Sdk;
+using Microsoft.Extensions.Configuration;
 
 namespace DotNetBrightener.InfisicalVaultClient;
 
-internal sealed class InfisicalSecretsConfigurationProvider : ConfigurationProvider
+internal sealed class InfisicalSecretsConfigurationProvider(IConfiguration originalConfiguration)
+    : ConfigurationProvider
 {
-    private readonly IConfiguration _originalConfiguration;
-
-    public InfisicalSecretsConfigurationProvider(IConfiguration originalConfiguration)
-    {
-        _originalConfiguration = originalConfiguration;
-    }
-
     public override void Load()
     {
-        var secretManagementEnabled = _originalConfiguration.GetValue<bool>("SecretsManagement:Enabled");
+        var secretManagementEnabled = originalConfiguration.GetValue<bool>("SecretsManagement:Enabled");
 
         if (!secretManagementEnabled)
         {
             return;
         }
 
-        var vaultUrl         = _originalConfiguration.GetValue<string>("SecretsManagement:VaultUrl");
-        var vaultAccessToken = _originalConfiguration.GetValue<string>("SecretsManagement:VaultAccessKey");
-        var vaultProjectId   = _originalConfiguration.GetValue<string>("SecretsManagement:ProjectID");
-        var vaultEnvironment = _originalConfiguration.GetValue<string>("SecretsManagement:Environment") ?? "dev";
+        var vaultUrl          = originalConfiguration.GetValue<string>("SecretsManagement:VaultUrl") ?? null;
+        var vaultClientId     = originalConfiguration.GetValue<string>("SecretsManagement:VaultClientID");
+        var vaultClientSecret = originalConfiguration.GetValue<string>("SecretsManagement:VaultClientSecret");
+        var vaultProjectId    = originalConfiguration.GetValue<string>("SecretsManagement:ProjectID");
+        var vaultEnvironment  = originalConfiguration.GetValue<string>("SecretsManagement:Environment") ?? "dev";
 
-        if (string.IsNullOrEmpty(vaultUrl) ||
-            string.IsNullOrEmpty(vaultAccessToken) ||
-            string.IsNullOrEmpty(vaultProjectId))
+        if (string.IsNullOrEmpty(vaultClientId) ||
+            string.IsNullOrEmpty(vaultClientSecret))
         {
             return;
         }
 
-        var secretClient = new InfisicalSecretClient(vaultUrl, vaultAccessToken);
-        secretClient.ChangeEnvironment(vaultEnvironment);
+        ClientSettings settings = new ClientSettings
+        {
 
-        var secrets = secretClient.RetrieveSecrets(vaultProjectId)
-                                  .Result;
+            Auth = new AuthenticationOptions
+            {
+                UniversalAuth = new UniversalAuthMethod
+                {
+                    ClientId     = vaultClientId,
+                    ClientSecret = vaultClientSecret
+                }
+            }
+        };
+
+        if (!string.IsNullOrEmpty(vaultUrl))
+        {
+            settings.SiteUrl = vaultUrl;
+        }
+
+
+        var infisicalClient = new InfisicalClient(settings);
+
+        var options = new ListSecretsOptions
+        {
+            ProjectId          = vaultProjectId,
+            Environment        = vaultEnvironment,
+            Path               = "",
+            AttachToProcessEnv = false,
+        };
+
+        var secrets = infisicalClient.ListSecrets(options);
 
         foreach (var secretInformation in secrets)
         {

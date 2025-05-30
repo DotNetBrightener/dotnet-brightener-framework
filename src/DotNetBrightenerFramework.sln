@@ -358,6 +358,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetBrightener.SiteSettin
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetBrightener.Core.Logging.PostgreSqlDbStorage", "Logging\DotNetBrightener.Core.Logging.PostgreSqlDbStorage\DotNetBrightener.Core.Logging.PostgreSqlDbStorage.csproj", "{BFCF08C0-AB92-21E0-196B-45981F23CDBD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MultiTenancy.Demo.WebApi", "..\demos & tests\MultiTenancyTest\MultiTenancy.Demo.WebApi\MultiTenancy.Demo.WebApi.csproj", "{909BB437-4378-407B-8EE7-301DE9ADDEB3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1246,6 +1248,14 @@ Global
 		{BFCF08C0-AB92-21E0-196B-45981F23CDBD}.Release|Any CPU.Build.0 = Release|Any CPU
 		{BFCF08C0-AB92-21E0-196B-45981F23CDBD}.Release|ARM64.ActiveCfg = Release|Any CPU
 		{BFCF08C0-AB92-21E0-196B-45981F23CDBD}.Release|ARM64.Build.0 = Release|Any CPU
+		{909BB437-4378-407B-8EE7-301DE9ADDEB3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{909BB437-4378-407B-8EE7-301DE9ADDEB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{909BB437-4378-407B-8EE7-301DE9ADDEB3}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{909BB437-4378-407B-8EE7-301DE9ADDEB3}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{909BB437-4378-407B-8EE7-301DE9ADDEB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{909BB437-4378-407B-8EE7-301DE9ADDEB3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{909BB437-4378-407B-8EE7-301DE9ADDEB3}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{909BB437-4378-407B-8EE7-301DE9ADDEB3}.Release|ARM64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1393,6 +1403,7 @@ Global
 		{99031CE0-F092-A238-B9AF-E17EB9D42614} = {0BF749BF-71CF-4FA8-9589-D29F5A34EC18}
 		{35397024-80FD-3098-A9BC-040E43366B62} = {78E05890-1EE2-4E9D-A0E1-21CC7F0ECA37}
 		{BFCF08C0-AB92-21E0-196B-45981F23CDBD} = {0CAF89D9-E9F1-40C4-9CA3-018BB8455767}
+		{909BB437-4378-407B-8EE7-301DE9ADDEB3} = {6E580008-435A-4396-A928-507321CEAE45}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CBA29A5C-A736-4EB9-8D61-8E76924706CD}

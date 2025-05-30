@@ -3,33 +3,28 @@ using Microsoft.AspNetCore.Http;
 
 namespace DotNetBrightener.MultiTenancy;
 
-public class TenantDetectionMiddleware
+public class TenantDetectionMiddleware(RequestDelegate next)
 {
-    private readonly RequestDelegate _next;
-
-    public TenantDetectionMiddleware(RequestDelegate next)
-    {
-        _next = next ?? throw new ArgumentNullException(nameof(next));
-    }
+    private readonly RequestDelegate _next = next ?? throw new ArgumentNullException(nameof(next));
 
     public async Task Invoke(HttpContext          context,
                              IHttpContextAccessor httpContextAccessor)
     {
-        long[] tenantIdClaimValues = Array.Empty<long>();
+        long[] tenantIdClaimValues = [];
 
         if (context.User?.Identity != null &&
             context.User.Identity.IsAuthenticated)
         {
             tenantIdClaimValues = context.User.FindAll(MultiTenantConstants.TenantIdentifierClaimKey)
-                                         .Select(_ => _.Value)
-                                         .Select(_ =>
+                                         .Select(c => c.Value)
+                                         .Select(s =>
                                           {
-                                              if (long.TryParse(_, out var tenantId))
+                                              if (long.TryParse(s, out var tenantId))
                                                   return tenantId;
 
                                               return -10;
                                           })
-                                         .Where(_ => _ != -10)
+                                         .Where(l => l != -10)
                                          .ToArray();
         }
 
@@ -38,19 +33,18 @@ public class TenantDetectionMiddleware
                                                 out var limitTenantHeadersValue))
         {
             var limitToTenantIds = limitTenantHeadersValue.ToString()
-                                                          .Split(new[]
-                                                                 {
+                                                          .Split([
                                                                      ",", ";"
-                                                                 },
+                                                                 ],
                                                                  StringSplitOptions.RemoveEmptyEntries)
-                                                          .Select(_ =>
+                                                          .Select(s =>
                                                            {
-                                                               if (long.TryParse(_, out var tenantId))
+                                                               if (long.TryParse(s, out var tenantId))
                                                                    return tenantId;
 
                                                                return -10;
                                                            })
-                                                          .Where(_ => _ != -10)
+                                                          .Where(l => l != -10)
                                                           .ToArray();
 
             httpContextAccessor.StoreValue(MultiTenantConstants.LimitRecordToTenantIds, limitToTenantIds);
@@ -65,10 +59,9 @@ public class TenantDetectionMiddleware
 
         if (detectedTenant != null)
         {
-            tenantIdClaimValues = tenantIdClaimValues.Concat(new[]
-                                                      {
+            tenantIdClaimValues = tenantIdClaimValues.Concat([
                                                           detectedTenant.Id
-                                                      })
+                                                      ])
                                                      .Distinct()
                                                      .ToArray();
         }

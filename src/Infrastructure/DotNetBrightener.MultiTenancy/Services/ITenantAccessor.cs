@@ -41,27 +41,9 @@ public class TenantAccessor(IHttpContextAccessor httpContextAccessor) : ITenantA
 
     public Tenant CurrentTenant => httpContextAccessor.RetrieveValue<Tenant>();
 
-    public long[] CurrentTenantIds
-    {
-        get
-        {
-            if (_tempCurrentTenantIds != null)
-                return _tempCurrentTenantIds;
+    public long[] CurrentTenantIds => _tempCurrentTenantIds ?? (_currentTenantIds ?? []);
 
-            return _currentTenantIds ?? [];
-        }
-    }
-
-    public long[] LimitedTenantIdsToRecordsPersistence
-    {
-        get
-        {
-            if (_tempLimitRecordsToTenantIds != null)
-                return _tempLimitRecordsToTenantIds;
-
-            return _limitRecordsToTenantIds ?? [];
-        }
-    }
+    public long[] LimitedTenantIdsToRecordsPersistence => _tempLimitRecordsToTenantIds ?? (_limitRecordsToTenantIds ?? []);
 
     public IDisposable UseTenant(long[] tenantIds)
     {

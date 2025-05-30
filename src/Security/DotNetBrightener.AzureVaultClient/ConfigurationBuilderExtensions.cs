@@ -28,9 +28,9 @@ public static class ConfigurationBuilderExtensions
 
                 return secretAsync.Value.Value;
             }
-            catch (Exception)
+            catch (Exception exception)
             {
-                return null;
+                throw;
             }
         }
 

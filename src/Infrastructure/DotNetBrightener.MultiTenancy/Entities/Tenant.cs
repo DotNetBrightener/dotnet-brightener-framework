@@ -9,7 +9,7 @@ public class Tenant : BaseEntity
     public string TenantName { get; set; }
 
     [MaxLength(40)]
-    public string TenantGuid { get; set; }
+    public string TenantGuid { get; set; } = Guid.CreateVersion7().ToString();
 
     [MaxLength(10240)]
     public string TenantDomains { get; set; }
@@ -17,6 +17,10 @@ public class Tenant : BaseEntity
     public string PublicSiteUrl { get; set; }
 
     public string AdminSiteUrl { get; set; }
+
+    public List<string> Domains => TenantDomains
+                                  .Split([";"], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                                  .ToList();
 
     public void SetTenantDomains(params string[] domains)
     {

@@ -1,17 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<PackageDescription>
-			A library that provides the abilities to retrieve secrets from Infisical vault.
+			A library that provides the abilities to retrieve secrets from Infisical vault and apply to Configuration
 		</PackageDescription>
 		<RepositoryUrl>https://github.com/dotnetbrightener/dotnet-brightener-framework</RepositoryUrl>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="BouncyCastle.Cryptography" Version="2.6.0" />
 		<PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.5" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.5" />
 		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.5" />
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+		<PackageReference Include="Infisical.Sdk" Version="2.3.9" />
 	</ItemGroup>
 
 </Project>
