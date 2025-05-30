@@ -356,6 +356,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetBrightener.Plugins.Ev
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetBrightener.SiteSettings.Data.PostgreSql", "SiteSettings\DotNetBrightener.SiteSettings.Data.PostgreSql\DotNetBrightener.SiteSettings.Data.PostgreSql.csproj", "{35397024-80FD-3098-A9BC-040E43366B62}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetBrightener.Core.Logging.PostgreSqlDbStorage", "Logging\DotNetBrightener.Core.Logging.PostgreSqlDbStorage\DotNetBrightener.Core.Logging.PostgreSqlDbStorage.csproj", "{BFCF08C0-AB92-21E0-196B-45981F23CDBD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1236,6 +1238,14 @@ Global
 		{35397024-80FD-3098-A9BC-040E43366B62}.Release|Any CPU.Build.0 = Release|Any CPU
 		{35397024-80FD-3098-A9BC-040E43366B62}.Release|ARM64.ActiveCfg = Release|Any CPU
 		{35397024-80FD-3098-A9BC-040E43366B62}.Release|ARM64.Build.0 = Release|Any CPU
+		{BFCF08C0-AB92-21E0-196B-45981F23CDBD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BFCF08C0-AB92-21E0-196B-45981F23CDBD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BFCF08C0-AB92-21E0-196B-45981F23CDBD}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{BFCF08C0-AB92-21E0-196B-45981F23CDBD}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{BFCF08C0-AB92-21E0-196B-45981F23CDBD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BFCF08C0-AB92-21E0-196B-45981F23CDBD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BFCF08C0-AB92-21E0-196B-45981F23CDBD}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{BFCF08C0-AB92-21E0-196B-45981F23CDBD}.Release|ARM64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1382,6 +1392,7 @@ Global
 		{6198BBAE-FEB0-4786-82E7-4F123171230B} = {9F2E3D63-2AC9-4816-ADE5-7B255E17CC6E}
 		{99031CE0-F092-A238-B9AF-E17EB9D42614} = {0BF749BF-71CF-4FA8-9589-D29F5A34EC18}
 		{35397024-80FD-3098-A9BC-040E43366B62} = {78E05890-1EE2-4E9D-A0E1-21CC7F0ECA37}
+		{BFCF08C0-AB92-21E0-196B-45981F23CDBD} = {0CAF89D9-E9F1-40C4-9CA3-018BB8455767}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CBA29A5C-A736-4EB9-8D61-8E76924706CD}
@@ -1511,6 +1522,13 @@ Global
 		WebApiGenericCRUD\DotNetBrightener.WebApi.GenericCRUD.Shared\GenericCRUD.Shared.projitems*{ba30f962-4294-41ab-a6da-8cca94371abb}*SharedItemsImports = 5
 		Shared\SharedExtensions.HttpContext\SharedExtensions.HttpContext.projitems*{babf41f8-66a1-444e-b2fc-9ceeccf86271}*SharedItemsImports = 5
 		Shared\SharedExtensions.DateTime\DateTimeExtensions.projitems*{bb84ec03-5eb3-4baf-b342-db2247424702}*SharedItemsImports = 13
+		Shared\SharedExtensions.DbContext\SharedExtensions.DbContext.projitems*{bfcf08c0-ab92-21e0-196b-45981f23cdbd}*SharedItemsImports = 5
+		Shared\SharedExtensions.Exception\SharedExtensions.Exception.projitems*{bfcf08c0-ab92-21e0-196b-45981f23cdbd}*SharedItemsImports = 5
+		Shared\SharedExtensions.Expression\SharedExtensions.Expression.projitems*{bfcf08c0-ab92-21e0-196b-45981f23cdbd}*SharedItemsImports = 5
+		Shared\SharedExtensions.HttpContext\SharedExtensions.HttpContext.projitems*{bfcf08c0-ab92-21e0-196b-45981f23cdbd}*SharedItemsImports = 5
+		Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{bfcf08c0-ab92-21e0-196b-45981f23cdbd}*SharedItemsImports = 5
+		Shared\SharedExtensions.ServiceCollection\SharedExtensions.ServiceCollectionExtensions.projitems*{bfcf08c0-ab92-21e0-196b-45981f23cdbd}*SharedItemsImports = 5
+		Shared\SharedExtensions.Tasks\SharedExtensions.Tasks.projitems*{bfcf08c0-ab92-21e0-196b-45981f23cdbd}*SharedItemsImports = 5
 		Shared\SharedExtensions.UI.Core\SharedExtensions.UI.Core.projitems*{c06bc166-cb76-4c92-a20f-e2963693b405}*SharedItemsImports = 13
 		Shared\SharedExtensions.DateTime\DateTimeExtensions.projitems*{c489afdb-e2f3-45a7-8ab4-5990d092db8e}*SharedItemsImports = 5
 		Shared\SharedExtensions.Exception\SharedExtensions.Exception.projitems*{c6063c87-994a-4fb4-86b1-847f0c6bf07a}*SharedItemsImports = 5

@@ -1,4 +1,5 @@
 ﻿#nullable enable
+using DotNetBrightener.DataAccess.EF.Converters;
 using DotNetBrightener.DataAccess.EF.Internal;
 using EntityFramework.Exceptions.SqlServer;
 using Microsoft.EntityFrameworkCore;
@@ -15,7 +16,7 @@ public abstract class AdvancedDbContext(DbContextOptions options) : DbContext(op
     protected IServiceProvider? ServiceProvider;
 
     protected List<IDbContextConfigurator>? Configurators => ServiceProvider?.GetServices<IDbContextConfigurator>()
-                                                                              .ToList();
+                                                                             .ToList();
 
     protected List<IDbContextConventionConfigurator>? ConventionConfigurators => ServiceProvider
                                                                                ?.GetServices<
@@ -38,6 +39,10 @@ public abstract class AdvancedDbContext(DbContextOptions options) : DbContext(op
     protected override void ConfigureConventions(ModelConfigurationBuilder builder)
     {
         base.ConfigureConventions(builder);
+
+        // making sure we'll be storing UTC time always
+        builder.Properties<DateTimeOffset>()
+               .HaveConversion<DateTimeOffsetUtcConverter>();
 
         if (ConventionConfigurators is { Count: > 0 })
         {
