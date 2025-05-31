@@ -103,7 +103,7 @@ internal class AzureServiceBusSubscribeHostedService(
         logger.LogInformation("Service Bus Subscription is stopping...");
     }
 
-    async Task ProcessMessage(ProcessMessageEventArgs args, Type handlerType, ServiceBusClient serviceBusClient)
+    private async Task ProcessMessage(ProcessMessageEventArgs args, Type handlerType, ServiceBusClient serviceBusClient)
     {
         var bytesAsString = Encoding.UTF8.GetString(args.Message.Body);
 
@@ -133,7 +133,7 @@ internal class AzureServiceBusSubscribeHostedService(
     }
 
 
-    async Task OnFailure(ProcessErrorEventArgs args, string topicName, string subscriptionName)
+    private async Task OnFailure(ProcessErrorEventArgs args, string topicName, string subscriptionName)
     {
         _logger?.LogError(args.Exception,
                           "Error occured while processing message of topic {topicName} from {subscription}",
@@ -143,7 +143,7 @@ internal class AzureServiceBusSubscribeHostedService(
 
     public void Dispose()
     {
-        _serviceScope.Dispose();
+        _serviceScope?.Dispose();
         _serviceScope = null;
         logger.LogInformation("Azure Service Bus Background Subscription Service is now stopped.");
     }

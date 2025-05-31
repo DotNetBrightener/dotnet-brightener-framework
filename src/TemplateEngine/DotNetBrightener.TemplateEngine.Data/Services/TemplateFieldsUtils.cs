@@ -9,10 +9,10 @@ public static class TemplateFieldsUtils
         return fieldNamesFromType;
     }
 
-    static List<string> GetFieldNamesFromType(this Type    type,
-                                              string       name          = "",
-                                              List<string> recursiveList = null,
-                                              int          level         = 0)
+    private static List<string> GetFieldNamesFromType(this Type    type,
+                                                      string       name          = "",
+                                                      List<string> recursiveList = null,
+                                                      int          level         = 0)
     {
         if (recursiveList == null)
             recursiveList = new List<string>();

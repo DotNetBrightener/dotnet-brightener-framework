@@ -7,7 +7,7 @@ public interface ICurrentRequestAudienceResolver
     string[] GetAudiences();
 }
 
-class NullCurrentRequestAudienceResolver(IHttpContextAccessor httpContextAccessor) : ICurrentRequestAudienceResolver
+internal class NullCurrentRequestAudienceResolver(IHttpContextAccessor httpContextAccessor) : ICurrentRequestAudienceResolver
 {
     public string[] GetAudiences()
     {

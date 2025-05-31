@@ -5,7 +5,7 @@ namespace CRUDWebApiWithGeneratorDemo;
 
 public class CRUDWebApiGeneratorRegistration
 {
-    Type DataServiceRegistrationType = typeof(CRUDDataServiceGeneratorRegistration);
+    private Type DataServiceRegistrationType = typeof(CRUDDataServiceGeneratorRegistration);
 
     public List<Type> Entities =
     [

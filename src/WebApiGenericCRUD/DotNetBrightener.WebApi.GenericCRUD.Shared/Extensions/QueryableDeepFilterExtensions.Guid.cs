@@ -4,7 +4,7 @@ namespace DotNetBrightener.GenericCRUD.Extensions;
 
 public static partial class QueryableDeepFilterExtensions
 {
-    static readonly List<OperatorComparer> SupportedGuidOperators =
+    private static readonly List<OperatorComparer> SupportedGuidOperators =
     [
         OperatorComparer.In,
         OperatorComparer.NotIn,

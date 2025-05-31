@@ -5,7 +5,7 @@ namespace DotNetBrightener.Core.Logging.DbStorage.Data;
 
 internal class SqlServerDbContextDesignTimeFactory : IDesignTimeDbContextFactory<LoggingDbContext>
 {
-    const string defaultConnectionString =
+    private const string defaultConnectionString =
         "Data Source=.;Initial Catalog=__;User ID=__;Password=__;MultipleActiveResultSets=True";
 
     public LoggingDbContext CreateDbContext(string[] args)

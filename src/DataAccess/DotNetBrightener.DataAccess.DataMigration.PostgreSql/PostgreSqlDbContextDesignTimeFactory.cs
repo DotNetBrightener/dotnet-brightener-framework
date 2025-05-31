@@ -6,7 +6,7 @@ namespace DotNetBrightener.DataAccess.DataMigration.PostgreSql;
 
 internal class PostgreSqlDbContextDesignTimeFactory : IDesignTimeDbContextFactory<DataMigrationDbContext>
 {
-    const string defaultConnectionString =
+    private const string defaultConnectionString =
         "Data Source=.;Initial Catalog=__;User ID=__;Password=__;MultipleActiveResultSets=True";
 
     public DataMigrationDbContext CreateDbContext(string[] args)

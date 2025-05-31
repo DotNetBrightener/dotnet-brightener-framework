@@ -5,7 +5,7 @@ namespace DotNetBrightener.Core.BackgroundTasks.Data.DbContexts;
 
 internal class SqlServerDbContextDesignTimeFactory : IDesignTimeDbContextFactory<BackgroundTaskDbContext>
 {
-    const string defaultConnectionString =
+    private const string defaultConnectionString =
         "Data Source=.;Initial Catalog=__;User ID=__;Password=__;MultipleActiveResultSets=True";
 
     public BackgroundTaskDbContext CreateDbContext(string[] args)
