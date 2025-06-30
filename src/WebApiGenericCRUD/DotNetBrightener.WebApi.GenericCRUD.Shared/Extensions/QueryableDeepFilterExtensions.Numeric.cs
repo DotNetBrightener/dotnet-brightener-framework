@@ -33,10 +33,9 @@ public static partial class QueryableDeepFilterExtensions
         }
         else
         {
-            filterWholeValues.AddRange(filterValue.Split(new[]
-                                                         {
+            filterWholeValues.AddRange(filterValue.Split([
                                                              ','
-                                                         },
+                                                         ],
                                                          StringSplitOptions.RemoveEmptyEntries |
                                                          StringSplitOptions.TrimEntries));
         }
@@ -45,10 +44,9 @@ public static partial class QueryableDeepFilterExtensions
         {
             var wholeValue = filterWholeValue;
 
-            var filterWithOperation = filterWholeValue.Split(new[]
-                                                             {
+            var filterWithOperation = filterWholeValue.Split([
                                                                  '_', '(', ')'
-                                                             },
+                                                             ],
                                                              StringSplitOptions.RemoveEmptyEntries |
                                                              StringSplitOptions.TrimEntries);
 
@@ -72,10 +70,9 @@ public static partial class QueryableDeepFilterExtensions
 
             var dynamicValues = escapedFilterValue
                                .ToLower()
-                               .Split(new[]
-                                      {
+                               .Split([
                                           ',', ';'
-                                      },
+                                      ],
                                       StringSplitOptions.RemoveEmptyEntries |
                                       StringSplitOptions.TrimEntries)
                                .Select(value => Regex.Replace(value, "[^0-9.]", ""))
@@ -98,10 +95,9 @@ public static partial class QueryableDeepFilterExtensions
             foreach (var value in dynamicValues)
             {
                 addMethod.Invoke(typedList,
-                                 new[]
-                                 {
-                                     value
-                                 });
+                [
+                    value
+                ]);
             }
 
             if (operation == OperatorComparer.In ||

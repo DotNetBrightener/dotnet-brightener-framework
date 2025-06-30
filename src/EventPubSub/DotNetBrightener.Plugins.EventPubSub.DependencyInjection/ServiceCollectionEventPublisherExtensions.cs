@@ -7,6 +7,8 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class ServiceCollectionEventPublisherExtensions
 {
+    private static  EventPubSubServiceBuilder _singleInstance;
+
     /// <summary>
     ///     Registers the event publish / Subscribe service to the <see cref="serviceCollection"/>
     /// </summary>
@@ -16,12 +18,16 @@ public static class ServiceCollectionEventPublisherExtensions
     /// <returns>
     ///     The <see cref="EventPubSubServiceBuilder"/> for chaining operations
     /// </returns>
-    public static EventPubSubServiceBuilder AddEventPubSubService(this   IServiceCollection serviceCollection,
-                                                                  params Assembly[]         assembliesContainMessages)
+    public static EventPubSubServiceBuilder AddEventPubSubService(this IServiceCollection serviceCollection,
+                                                                  params IEnumerable<Assembly>
+                                                                      assembliesContainMessages)
     {
-        var appAssemblies = assembliesContainMessages.Length == 0
+        if (_singleInstance is not null)
+            return _singleInstance;
+
+        var appAssemblies = assembliesContainMessages?.Any() == false
                                 ? AppDomain.CurrentDomain.GetAppOnlyAssemblies()
-                                : assembliesContainMessages;
+                                : assembliesContainMessages ?? [];
 
         var eventMessageTypes = appAssemblies.GetDerivedTypes<IEventMessage>()
                                              .Where(t => !t.IsInterface && !t.IsAbstract)
@@ -50,12 +56,14 @@ public static class ServiceCollectionEventPublisherExtensions
 
         serviceCollection.EnableLazyResolver();
 
+        _singleInstance = eventPubSubBuilder;
+
         return eventPubSubBuilder;
     }
 
     public static EventPubSubServiceBuilder AddEventMessagesFromAssemblies(
         this   EventPubSubServiceBuilder eventPubSubBuilder,
-        params Assembly[]                assemblies)
+        params IEnumerable<Assembly>     assemblies)
     {
         var eventMessageTypes = assemblies.GetDerivedTypes<IEventMessage>()
                                           .Except(eventPubSubBuilder.EventMessageTypes);
@@ -65,8 +73,8 @@ public static class ServiceCollectionEventPublisherExtensions
         return eventPubSubBuilder;
     }
 
-    public static IServiceCollection AddEventMessagesFromAssemblies(this   IServiceCollection serviceCollection,
-                                                                    params Assembly[]         assemblies)
+    public static IServiceCollection AddEventMessagesFromAssemblies(this   IServiceCollection    serviceCollection,
+                                                                    params IEnumerable<Assembly> assemblies)
     {
         if (serviceCollection.FirstOrDefault(d => d.ServiceType == typeof(EventPubSubServiceBuilder) &&
                                                   d.ImplementationInstance is not null)
@@ -99,7 +107,7 @@ public static class ServiceCollectionEventPublisherExtensions
     /// </returns>
     public static EventPubSubServiceBuilder AddEventHandlersFromAssemblies(
         this   EventPubSubServiceBuilder serviceBuilder,
-        params Assembly[]                assemblies)
+        params IEnumerable<Assembly>     assemblies)
     {
         serviceBuilder.Services.AddEventHandlersFromAssemblies(assemblies);
 
@@ -119,11 +127,11 @@ public static class ServiceCollectionEventPublisherExtensions
     ///     The <see cref="IServiceCollection"/> for chaining operations
     /// </returns>
     public static IServiceCollection AddEventHandlersFromAssemblies(this   IServiceCollection serviceBuilder,
-                                                                    params Assembly[]         assemblies)
+                                                                    params IEnumerable<Assembly>      assemblies)
     {
-        var appAssemblies = assemblies.Length == 0
+        var appAssemblies = assemblies?.Any() == false
                                 ? AppDomain.CurrentDomain.GetAppOnlyAssemblies()
-                                : assemblies;
+                                : assemblies ?? [];
 
         serviceBuilder.RegisterServiceImplementations<IEventHandler>(appAssemblies,
                                                                      ServiceLifetime.Scoped,

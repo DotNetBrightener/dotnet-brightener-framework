@@ -22,19 +22,21 @@ public class DbContextInitializationWithConfigurationTests(ITestOutputHelper tes
                         .Verifiable();
 
         // Arrange
-        var builder = new HostBuilder()
-           .ConfigureServices((hostContext, services) =>
-           {
-               services.TryAddSingleton<EFCoreExtendedServiceFactory>();
-               services.AddTransient<IDbContextConfigurator>((p) => mockConfigurator.Object);
+        var builder = new HostBuilder();
+        ExtendedServiceFactory.ApplyServiceProviderFactory(builder);
 
-                services.AddDbContext<DbContextWithDynamicConfiguration>(c =>
-                {
-                    c.UseSqlServer(ConnectionString);
-                });
+        builder.ConfigureServices((hostContext, services) =>
+        {
+            services.TryAddSingleton<EFCoreExtendedServiceFactory>();
+            services.AddTransient<IDbContextConfigurator>((p) => mockConfigurator.Object);
+
+            services.AddDbContext<DbContextWithDynamicConfiguration>(c =>
+            {
+                c.UseSqlServer(ConnectionString);
             });
+        });
 
-        builder.UseServiceProviderFactory(new ExtendedServiceFactory());
+
         var host = builder.Build();
 
         // Acts

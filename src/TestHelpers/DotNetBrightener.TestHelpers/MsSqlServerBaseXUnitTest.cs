@@ -15,7 +15,7 @@ public abstract class MsSqlServerBaseXUnitTest(ITestOutputHelper testOutputHelpe
     {
         var currentTestingType = GetType().Name;
 
-        var containerName = String.Concat("sqlserver-2022-", currentTestingType, $"-{Guid.NewGuid()}");
+        var containerName = string.Concat("sqlserver-2022-", currentTestingType, $"-{Guid.NewGuid()}");
 
         testOutputHelper.WriteLine($"Spinning up container with Name: {containerName}");
         

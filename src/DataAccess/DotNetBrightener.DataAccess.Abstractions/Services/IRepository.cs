@@ -255,7 +255,7 @@ public interface IRepository : IDisposable
     /// </summary>
     /// <typeparam name="T">The type of the records</typeparam>
     /// <param name="entities">The records to insert into the database</param>
-    void InsertMany<T>(IEnumerable<T> entities)
+    void InsertMany<T>(params IEnumerable<T> entities)
         where T : class;
 
     /// <summary>
@@ -263,7 +263,7 @@ public interface IRepository : IDisposable
     /// </summary>
     /// <typeparam name="T">The type of the records</typeparam>
     /// <param name="entities">The records to insert into the database</param>
-    Task InsertManyAsync<T>(IEnumerable<T> entities)
+    Task InsertManyAsync<T>(params IEnumerable<T> entities)
         where T : class;
 
     /// <summary>
@@ -765,4 +765,6 @@ public interface IRepository : IDisposable
     ///     Commits all changes into the database, if any
     /// </summary>
     Task<int> CommitChangesAsync();
+
+    IAsyncDisposable BeginUnitOfWork();
 }

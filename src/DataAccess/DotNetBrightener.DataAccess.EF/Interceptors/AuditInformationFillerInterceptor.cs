@@ -137,10 +137,7 @@ internal class AuditInformationFillerInterceptor(IServiceProvider serviceProvide
 
             if (eventMessages.Any())
             {
-                await eventMessages.ParallelForEachAsync(eventMsg =>
-                {
-                    return _eventPublisher.Publish(eventMsg, runInBackground: true);
-                });
+                await eventMessages.ParallelForEachAsync(eventMsg => _eventPublisher.Publish(eventMsg, runInBackground: true));
             }
         }
 

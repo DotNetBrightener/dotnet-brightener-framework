@@ -125,10 +125,9 @@ public static partial class QueryableDeepFilterExtensions
     private static (OperatorComparer? comparisonOperations, string operandValue)
         GetComparisonOperations(string filterValue)
     {
-        var segments = filterValue.Split(new[]
-                                         {
+        var segments = filterValue.Split([
                                              '_', '(', ')'
-                                         },
+                                         ],
                                          StringSplitOptions.RemoveEmptyEntries |
                                          StringSplitOptions.TrimEntries);
 

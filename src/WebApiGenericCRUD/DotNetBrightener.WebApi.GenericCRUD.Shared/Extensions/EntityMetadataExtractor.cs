@@ -152,13 +152,13 @@ public static class EntityMetadataExtractor
         // ignore properties with JsonIgnoreAttribute
         if (hasIgnoredAttr)
         {
-            return Array.Empty<string>();
+            return [];
         }
 
-        return new[]
-        {
+        return
+        [
             propName.Replace(".Item.", ".")
-        };
+        ];
     }
 
     internal static int? GetMaxLength(this PropertyInfo property)
@@ -187,10 +187,9 @@ public static class EntityMetadataExtractor
     /// </returns>
     internal static string ToCamelCase(this string str)
     {
-        var words = str.Split(new[]
-                              {
+        var words = str.Split([
                                   "_", " "
-                              },
+                              ],
                               StringSplitOptions.RemoveEmptyEntries);
         var leadWord = Regex.Replace(words[0],
                                      @"([A-Z])([A-Z]+|[a-z0-9]+)($|[A-Z]\w*)",

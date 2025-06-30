@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Host.UseServiceProviderFactory(new ExtendedServiceFactory());
+ExtendedServiceFactory.ApplyServiceProviderFactory(builder.Host);
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 

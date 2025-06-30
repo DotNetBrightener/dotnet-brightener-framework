@@ -10,7 +10,7 @@ namespace DotNetBrightener.DataAccess.DataMigration.Tests;
 internal class DataMigrationTests_PostgreSql
 {
     private readonly PostgreSqlContainer _postgreSqlContainer = new PostgreSqlBuilder()
-                                                               .WithImage("postgres:15")
+                                                               .WithImage("postgres:17")
                                                                .WithDatabase($"DataMigration_UnitTest{DateTime.Now:yyyyMMddHHmm}")
                                                                .WithUsername("test")
                                                                .WithPassword("password")

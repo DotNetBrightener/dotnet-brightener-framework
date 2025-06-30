@@ -3,20 +3,21 @@ using DotNetBrightener.MultiTenancy.Entities;
 
 namespace DotNetBrightener.MultiTenancy.Services;
 
-public interface ITenantDataService : IBaseDataService<Tenant>
+public interface ITenantDataService<TTenantEntity> : IBaseDataService<TTenantEntity> where TTenantEntity: TenantBase, new()
 {
-    Tenant? GetTenantByHostName(string hostname);
+    TTenantEntity? GetTenantByDomain(string hostname);
 }
 
-public class TenantDataService(IRepository repository) : BaseDataService<Tenant>(repository), ITenantDataService
+public class TenantDataService<TTenantEntity>(IRepository repository)
+    : BaseDataService<TTenantEntity>(repository), ITenantDataService<TTenantEntity> where TTenantEntity : TenantBase, new()
 {
-    public Tenant? GetTenantByHostName(string hostname)
+    public TTenantEntity? GetTenantByDomain(string hostname)
     {
         if (TenantSupportedRepository.HasTenantMapping == false)
             return null;
 
         var hostnameCondition = hostname + ";";
 
-        return Get(_ => _.TenantDomains.Contains(hostnameCondition));
+        return Get(t => t.TenantDomains != null && t.TenantDomains.Contains(hostnameCondition));
     }
 }

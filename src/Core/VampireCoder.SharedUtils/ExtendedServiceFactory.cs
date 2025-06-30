@@ -1,11 +1,22 @@
 ﻿using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 
 // ReSharper disable CheckNamespace
 namespace Microsoft.Extensions.DependencyInjection;
 
 public class ExtendedServiceFactory : IServiceProviderFactory<IServiceCollection>
 {
-    private readonly Type _serviceFactoryType = typeof(IServiceProviderFactory<IServiceCollection>);
+    private static readonly Type ServiceFactoryType = typeof(IServiceProviderFactory<IServiceCollection>);
+
+    public static void ApplyServiceProviderFactory(IHostBuilder host)
+    {
+        host.UseServiceProviderFactory(new ExtendedServiceFactory());
+    }
+
+    private ExtendedServiceFactory()
+    {
+        
+    }
 
     public IServiceCollection CreateBuilder(IServiceCollection services)
     {
@@ -24,9 +35,9 @@ public class ExtendedServiceFactory : IServiceProviderFactory<IServiceCollection
         var subContainer = new ServiceCollection();
 
         var factoryDescriptors = containerBuilder
-                                .Where(x => x.ServiceType == _serviceFactoryType ||
+                                .Where(x => x.ServiceType == ServiceFactoryType ||
                                             x.ImplementationType is not null &&
-                                            x.ImplementationType.IsAssignableTo(_serviceFactoryType))
+                                            x.ImplementationType.IsAssignableTo(ServiceFactoryType))
                                 .ToList();
 
         if (factoryDescriptors.Count == 0)
@@ -36,7 +47,7 @@ public class ExtendedServiceFactory : IServiceProviderFactory<IServiceCollection
 
         factoryDescriptors.ForEach(x =>
         {
-            subContainer.Add(ServiceDescriptor.Singleton(_serviceFactoryType, x.ImplementationType!));
+            subContainer.Add(ServiceDescriptor.Singleton(ServiceFactoryType, x.ImplementationType!));
         });
 
         using (ServiceProvider subProvider = subContainer.BuildServiceProvider())

@@ -1,20 +1,27 @@
 ﻿using DotNetBrightener.DataAccess.Models;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DotNetBrightener.MultiTenancy;
 
-public class MultiTenantConfiguration
+public class MultiTenantConfiguration(IServiceCollection serviceCollection)
 {
+    internal readonly IServiceCollection ServiceCollection = serviceCollection;
+
     internal static readonly HashSet<Type> TenantMappableEntityTypes = new();
 
-    public void RegisterTenantMappableType<TType>() where TType : BaseEntity
+    public MultiTenantConfiguration RegisterTenantMappableType<TType>() where TType : IBaseEntity
     {
         TenantMappableEntityTypes.Add(typeof(TType));
+
+        return this;
     }
 
-    public void RegisterTenantMappableType(Type type)
+    public MultiTenantConfiguration RegisterTenantMappableType(Type type)
     {
-        if (type.IsAssignableTo(typeof(BaseEntity)))
+        if (type.IsAssignableTo(typeof(IBaseEntity)))
             TenantMappableEntityTypes.Add(type);
+
+        return this;
     }
 
     internal static bool ShouldIgnoreTenantMapping<T>()
@@ -24,7 +31,7 @@ public class MultiTenantConfiguration
 
     internal static bool ShouldIgnoreTenantMapping(Type entityType)
     {
-        return !typeof(BaseEntity).IsAssignableFrom(entityType) ||
+        return !typeof(IBaseEntity).IsAssignableFrom(entityType) ||
                !TenantMappableEntityTypes.Contains(entityType);
     }
 

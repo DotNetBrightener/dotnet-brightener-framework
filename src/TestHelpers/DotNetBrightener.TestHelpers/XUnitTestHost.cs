@@ -7,30 +7,31 @@ namespace DotNetBrightener.TestHelpers;
 
 public class XUnitTestHost
 {
-    public static IHost CreateTestHost(ITestOutputHelper?                              testOutputHelper, 
+    public static IHost CreateTestHost(ITestOutputHelper?                              testOutputHelper,
                                        Action<HostBuilderContext, IServiceCollection>? configureServices = null)
     {
         // Arrange
-        var builder = new HostBuilder()
-           .ConfigureServices((hostContext, services) =>
-           {
-               services.AddLogging(logBuilder =>
-               {
-                   if (testOutputHelper is not null)
-                   {
-                       logBuilder.AddProvider(new XunitLoggerProvider(testOutputHelper));
-                   }
+        var builder = new HostBuilder();
 
-                   logBuilder.AddConsole();
-                   logBuilder.SetMinimumLevel(LogLevel.Debug);
-                   logBuilder.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning);
-                   logBuilder.AddFilter("Microsoft", LogLevel.Warning);
-               });
+        ExtendedServiceFactory.ApplyServiceProviderFactory(builder);
 
-               configureServices?.Invoke(hostContext, services);
-           });
+        builder.ConfigureServices((hostContext, services) =>
+        {
+            services.AddLogging(logBuilder =>
+            {
+                if (testOutputHelper is not null)
+                {
+                    logBuilder.AddProvider(new XunitLoggerProvider(testOutputHelper));
+                }
 
-        builder.UseServiceProviderFactory(new ExtendedServiceFactory());
+                logBuilder.AddConsole();
+                logBuilder.SetMinimumLevel(LogLevel.Debug);
+                logBuilder.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning);
+                logBuilder.AddFilter("Microsoft", LogLevel.Warning);
+            });
+
+            configureServices?.Invoke(hostContext, services);
+        });
 
         IHost host = builder.Build();
 

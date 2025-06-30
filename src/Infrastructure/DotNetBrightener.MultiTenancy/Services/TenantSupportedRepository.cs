@@ -36,16 +36,23 @@ public class TenantSupportedRepository : Repository
 
     public override IQueryable<T> Fetch<T>(Expression<Func<T, bool>>? expression = null)
     {
-        // override the logic of loading a record from database for specifies tenant
-        var query            = base.Fetch(expression);
-        var currentTenantIds = _tenantAccessor.CurrentTenant?.Id;
+        var query = base.Fetch(expression);
+
+        if (_tenantAccessor.IsFetchingAllTenants)
+        {
+            Logger.LogDebug($"Loading data from all tenants as requested");
+
+            return query;
+        }
+
+        var currentTenantIds = _tenantAccessor.CurrentTenantId;
 
         // if we don't need to load tenant mapping (because the entity does not support),
         // or current tenant not specified (because user has access to ALL tenant or user not logged in)
         // then just use the original method
         if (HasTenantMapping == false ||
             MultiTenantConfiguration.ShouldIgnoreTenantMapping<T>() ||
-            !currentTenantIds.HasValue
+            currentTenantIds is null
            )
         {
             Logger.LogDebug($"No multi-tenant mapping support for entity of type {typeof(T).FullName}");
@@ -59,9 +66,10 @@ public class TenantSupportedRepository : Repository
         var tenantMappingQuery = DbContext.Set<TenantEntityMapping>()
                                           .Where(m => m.EntityType == entityTypeName);
 
+        var entityIdAccessExpression = ExpressionExtensions.BuildMemberAccessToStringExpression<T>(nameof(BaseEntity.Id));
+
         var joinedResult = query.GroupJoin(tenantMappingQuery,
-                                           ExpressionExtensions
-                                              .BuildMemberAccessExpression<T>(nameof(BaseEntity.Id)),
+                                           entityIdAccessExpression,
                                            m => m.EntityId,
                                            (entity, mapping) => new
                                            {

@@ -4,7 +4,6 @@ using System.Collections;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq.Dynamic.Core;
 using System.Reflection;
-using DotNetBrightener.WebApi.GenericCRUD;
 
 namespace System.Linq.Expressions;
 
@@ -90,14 +89,14 @@ internal static class ExpressionExtensions
 
             if (memberExpression == null)
             {
-                return Array.Empty<PropertyInfo>();
+                return [];
             }
 
             var propertyInfo = memberExpression.Member as PropertyInfo;
 
             if (propertyInfo == null)
             {
-                return Array.Empty<PropertyInfo>();
+                return [];
             }
 
             propertyInfos.Insert(0, propertyInfo);
@@ -156,7 +155,7 @@ internal static class ExpressionExtensions
     public static Expression<Func<T, T>> BuildMemberInitExpressionFromDto<T>(object dataTransferObject) where T : class
     {
         Type type                 = typeof(T);
-        var  newExpression        = Expression.New(type.GetConstructor(new Type[0]));
+        var  newExpression        = Expression.New(type.GetConstructor([]));
         var  memberAssignmentList = new List<MemberAssignment>();
 
         var jobject = JObject.FromObject(dataTransferObject);
@@ -269,10 +268,9 @@ internal static class ExpressionExtensions
     {
         var parameterExpression = Expression.Parameter(typeof(T), typeof(T).Name);
 
-        var properties = propertiesPath.Split(new[]
-                                              {
+        var properties = propertiesPath.Split([
                                                   "."
-                                              },
+                                              ],
                                               StringSplitOptions.RemoveEmptyEntries);
 
         return (Expression<Func<T, bool>>)BuildNavigationExpression(parameterExpression, comparer, value, properties);
@@ -313,10 +311,9 @@ internal static class ExpressionExtensions
     {
         var parameterExpression = Expression.Parameter(typeof(T), typeof(T).Name);
 
-        var properties = propertiesPath.Split(new[]
-                                              {
+        var properties = propertiesPath.Split([
                                                   "."
-                                              },
+                                              ],
                                               StringSplitOptions.RemoveEmptyEntries);
 
         return (Expression<Func<T, bool>>)BuildNavigationExpression(parameterExpression, comparer, value, properties);
@@ -336,7 +333,7 @@ internal static class ExpressionExtensions
             //build path
             parameter = Expression.Property(parameter, properties[0]);
             var isCollection = typeof(IEnumerable).IsAssignableFrom(parameter.Type);
-            //if it´s a collection we later need to use the predicate in the methodexpressioncall
+            //if it´s a collection we later need to use the predicate in the MethodExpressionCall
             if (isCollection)
             {
                 childType      = parameter.Type.GetGenericArguments()[0];
@@ -346,7 +343,7 @@ internal static class ExpressionExtensions
             {
                 childParameter = parameter;
             }
-            //skip current property and get navigation property expression recursivly
+            //skip current property and get navigation property expression recursively
             var innerProperties = properties.Skip(1).ToArray();
             predicate = BuildNavigationExpression(childParameter, comparer, value, innerProperties);
             if (isCollection)

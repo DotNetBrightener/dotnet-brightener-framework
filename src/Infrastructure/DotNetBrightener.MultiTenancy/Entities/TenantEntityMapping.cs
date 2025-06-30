@@ -5,10 +5,10 @@ namespace DotNetBrightener.MultiTenancy.Entities;
 
 public class TenantEntityMapping: BaseEntity
 {
-    public long TenantId { get; set; }
+    public Guid TenantId { get; set; }
 
     [MaxLength(1024)]
     public string EntityType { get; set; }
 
-    public long EntityId { get; set; }
+    public string EntityId { get; set; }
 }

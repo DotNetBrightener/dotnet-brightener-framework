@@ -13,7 +13,7 @@ using WebAppCommonShared.Demo.WebSocketCommandHandlers;
 
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Host.UseServiceProviderFactory(new ExtendedServiceFactory());
+ExtendedServiceFactory.ApplyServiceProviderFactory(builder.Host);
 
 builder.Configuration.AddInfisicalSecretsProvider();
 

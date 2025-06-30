@@ -193,10 +193,10 @@ public class Repository : IRepository
         await DbContext.AddAsync(entity);
     }
 
-    public virtual void InsertMany<T>(IEnumerable<T> entities)
+    public virtual void InsertMany<T>(params IEnumerable<T> entities)
         where T : class => InsertManyAsync(entities).Wait();
 
-    public virtual async Task InsertManyAsync<T>(IEnumerable<T> entities)
+    public virtual async Task InsertManyAsync<T>(params IEnumerable<T> entities)
         where T : class
     {
         var entitiesToInserts = entities.Select(TransformExpression)
@@ -725,6 +725,11 @@ public class Repository : IRepository
         }
     }
 
+    public IAsyncDisposable BeginUnitOfWork()
+    {
+        return new RepositoryUnitOfWork(DbContext, Logger);
+    }
+
     private SetPropertyBuilder<T> PrepareUpdatePropertiesBuilder<T>(Expression<Func<T, T>> updateExpression)
     {
         if (updateExpression.Body is not MemberInitExpression memberInitExpression)
@@ -785,5 +790,23 @@ public class Repository : IRepository
     public void Dispose()
     {
         DbContext.Dispose();
+    }
+    
+    private class RepositoryUnitOfWork(DbContext dbContext,
+                                       ILogger   logger) : IAsyncDisposable
+    {
+        public async ValueTask DisposeAsync()
+        {
+            try
+            {
+                await dbContext.SaveChangesAsync();
+            }
+            catch (Exception exception)
+            {
+                logger.LogError(exception, "Error while saving changes to database");
+
+                throw;
+            }
+        }
     }
 }

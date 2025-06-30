@@ -11,10 +11,9 @@ public static partial class QueryableDeepFilterExtensions
     {
         var filterWholeValue = filterValue;
 
-        var filterWithOperation = filterWholeValue.Split(new[]
-                                                         {
+        var filterWithOperation = filterWholeValue.Split([
                                                              '_', '(', ')'
-                                                         },
+                                                         ],
                                                          StringSplitOptions.RemoveEmptyEntries |
                                                          StringSplitOptions.TrimEntries);
 
@@ -36,10 +35,9 @@ public static partial class QueryableDeepFilterExtensions
         {
             filterValues = escapedFilterValue
                           .ToLower()
-                          .Split(new[]
-                                 {
+                          .Split([
                                      ',', ';'
-                                 },
+                                 ],
                                  StringSplitOptions.RemoveEmptyEntries |
                                  StringSplitOptions.TrimEntries)
                           .Select(value => value.Trim())

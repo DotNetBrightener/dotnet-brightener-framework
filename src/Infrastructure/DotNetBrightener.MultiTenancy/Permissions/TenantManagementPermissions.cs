@@ -8,4 +8,9 @@ public class TenantManagementPermissions : AutomaticPermissionProvider
     ///     Provides permission to manage tenants
     /// </summary>
     public const string ManageTenants = "MultiTenant.Permissions.ManageTenants";
+
+    /// <summary>
+    ///     Permission to access resources from all tenants
+    /// </summary>
+    public const string AccessAllTenantsResources = "MultiTenant.Permissions.AllTenantsResourceAccess";
 }
