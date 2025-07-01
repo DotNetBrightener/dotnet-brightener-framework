@@ -2,7 +2,8 @@
 using DotNetBrightener.SiteSettings.Entities;
 using DotNetBrightener.SiteSettings.Extensions;
 using DotNetBrightener.SiteSettings.Models;
-using NUnit.Framework;
+using Shouldly;
+using Xunit;
 
 internal class TestSetting : SiteSettingWrapper<TestSetting>
 {
@@ -15,7 +16,7 @@ internal class TestSetting : SiteSettingWrapper<TestSetting>
 
 public class TestSiteSettingObject
 {
-    [Test]
+    [Fact]
     public void SerializeObject_ShouldOnlySerializeNeededFields()
     {
         var siteSettingRecord = new SiteSettingRecord();
@@ -23,6 +24,6 @@ public class TestSiteSettingObject
 
         testSetting.UpdateSetting(siteSettingRecord);
 
-        Assert.That(siteSettingRecord.SettingContent, Is.EqualTo("{\"testString\":\"hello world\",\"testInt\":2}"));
+        siteSettingRecord.SettingContent.ShouldBe("{\"testString\":\"hello world\",\"testInt\":2}");
     }
 }
