@@ -152,6 +152,34 @@ internal static class ExpressionExtensions
         return memberAccessExpression;
     }
 
+    public static Expression<Func<T, object>> BuildMemberAccessToStringExpression<T>(string fieldName) where T : class
+    {
+        var type      = typeof(T);
+        var fieldInfo = type.GetMember(fieldName).FirstOrDefault();
+
+        if (fieldInfo == null)
+        {
+            // Try PascalCase fallback
+            fieldName = fieldName.First().ToString().ToUpper() + fieldName.Substring(1);
+            fieldInfo = type.GetMember(fieldName).FirstOrDefault();
+        }
+
+        if (fieldInfo == null ||
+            fieldInfo is not PropertyInfo propertyInfo)
+            throw new UnknownPropertyException(fieldName, type);
+
+        var paramExpression = Expression.Parameter(type, "_");
+        var memberAccess    = Expression.MakeMemberAccess(paramExpression, propertyInfo);
+
+        // Build member.ToString()
+        var toStringCall = Expression.Call(memberAccess, typeof(object).GetMethod("ToString", Type.EmptyTypes)!);
+
+        // Box the result to object if necessary
+        Expression boxed = Expression.Convert(toStringCall, typeof(object));
+
+        return Expression.Lambda<Func<T, object>>(boxed, paramExpression);
+    }
+
     public static Expression<Func<T, T>> BuildMemberInitExpressionFromDto<T>(object dataTransferObject) where T : class
     {
         Type type                 = typeof(T);

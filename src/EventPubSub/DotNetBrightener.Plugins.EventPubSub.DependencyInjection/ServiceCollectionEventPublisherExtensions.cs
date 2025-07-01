@@ -22,7 +22,8 @@ public static class ServiceCollectionEventPublisherExtensions
                                                                   params IEnumerable<Assembly>
                                                                       assembliesContainMessages)
     {
-        if (_singleInstance is not null)
+        if (_singleInstance is not null && 
+            _singleInstance.Services.Equals(serviceCollection))
             return _singleInstance;
 
         var appAssemblies = assembliesContainMessages?.Any() == false
