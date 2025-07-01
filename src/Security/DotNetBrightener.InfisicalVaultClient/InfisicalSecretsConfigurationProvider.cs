@@ -1,4 +1,5 @@
 ﻿using Infisical.Sdk;
+using Infisical.Sdk.Model;
 using Microsoft.Extensions.Configuration;
 
 namespace DotNetBrightener.InfisicalVaultClient;
@@ -27,36 +28,28 @@ internal sealed class InfisicalSecretsConfigurationProvider(IConfiguration origi
             return;
         }
 
-        ClientSettings settings = new ClientSettings
-        {
 
-            Auth = new AuthenticationOptions
-            {
-                UniversalAuth = new UniversalAuthMethod
-                {
-                    ClientId     = vaultClientId,
-                    ClientSecret = vaultClientSecret
-                }
-            }
-        };
+        var settingsBuilder = new InfisicalSdkSettingsBuilder();
+
 
         if (!string.IsNullOrEmpty(vaultUrl))
         {
-            settings.SiteUrl = vaultUrl;
+            settingsBuilder.WithHostUri(vaultUrl);
         }
 
+        var settings = settingsBuilder.Build();
 
         var infisicalClient = new InfisicalClient(settings);
 
         var options = new ListSecretsOptions
         {
-            ProjectId          = vaultProjectId,
-            Environment        = vaultEnvironment,
-            Path               = "",
-            AttachToProcessEnv = false,
+            ProjectId                        = vaultProjectId,
+            EnvironmentSlug                  = vaultEnvironment,
+            SecretPath                       = "/",
+            SetSecretsAsEnvironmentVariables = false,
         };
 
-        var secrets = infisicalClient.ListSecrets(options);
+        var secrets = infisicalClient.Secrets().ListAsync(options).Result;
 
         foreach (var secretInformation in secrets)
         {
