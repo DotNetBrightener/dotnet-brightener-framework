@@ -28,9 +28,7 @@ internal sealed class InfisicalSecretsConfigurationProvider(IConfiguration origi
             return;
         }
 
-
         var settingsBuilder = new InfisicalSdkSettingsBuilder();
-
 
         if (!string.IsNullOrEmpty(vaultUrl))
         {
@@ -40,6 +38,11 @@ internal sealed class InfisicalSecretsConfigurationProvider(IConfiguration origi
         var settings = settingsBuilder.Build();
 
         var infisicalClient = new InfisicalClient(settings);
+
+        var _ = infisicalClient.Auth()
+                               .UniversalAuth()
+                               .LoginAsync(vaultClientId, vaultClientSecret).Result;
+
 
         var options = new ListSecretsOptions
         {

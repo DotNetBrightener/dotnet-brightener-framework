@@ -1,28 +1,42 @@
-//using NUnit.Framework;
+using Microsoft.Extensions.Configuration;
+using Shouldly;
+using Xunit;
+using Xunit.Abstractions;
 
-//namespace DotNetBrightener.InfisicalVaultClient.Tests;
+namespace DotNetBrightener.InfisicalVaultClient.Tests;
 
-//[TestFixture]
-//public class InfisicalSecretClientTest
-//{
-//    private InfisicalSecretClient _client;
-//    [SetUp]
-//    public void Setup()
-//    {
-//        _client = new InfisicalSecretClient(
-//                                            "https://dnbvault.dotnetbrightener.com",
-// "st.645b62b73cd3b0b98b246586.5d1cee582c21c7b7f1975ee9ddf28113.2d000a08ea46f267e1d3e4ae6480b5ea");
-//    }
+public class InfisicalSecretClientTest
+{
+    private readonly ITestOutputHelper _testOutputHelper;
 
-//    [Test]
-//    public async Task TestLoadSecret()
-//    {
-//        var secretResult = await _client.RetrieveSecret("DbConnectionString", "645b5fd29f367616b4be6ac1");
-//    }
+    public InfisicalSecretClientTest(ITestOutputHelper testOutputHelper)
+    {
+        _testOutputHelper = testOutputHelper;
+    }
 
-//    [Test]
-//    public async Task TestLoadSecrets()
-//    {
-//        var secretResult = await _client.RetrieveSecrets("645b5fd29f367616b4be6ac1");
-//    }
-//}
+    [Fact]
+    public void TestInfisicalSecretsProvider_ShouldLoadSecrets()
+    {
+        // Arrange
+        var configurationBuilder = new ConfigurationBuilder();
+        configurationBuilder.AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["SecretsManagement:Enabled"]       = "true",
+            ["SecretsManagement:ProjectID"]     = "08e9b386-4ba6-4662-ac11-716d9936091d",
+            ["SecretsManagement:Environment"]   = "dev",
+            ["SecretsManagement:VaultClientID"] = "6187f2c5-28a1-4efc-9629-e75506245b31",
+            ["SecretsManagement:VaultClientSecret"] =
+                "111dc02562dadc646dafa56e3c09a463bb664742f9e67b6c95734559888893bb",
+            // Missing VaultClientID and VaultClientSecret
+        });
+
+        // Act
+        configurationBuilder.AddInfisicalSecretsProvider();
+        var configuration = configurationBuilder.Build();
+
+        // Assert
+        var configValues = configuration.AsEnumerable().ToList();
+
+        configValues.ShouldContain(v => v.Key == "ConnectionStrings:DefaultConnectionStringForTesting");
+    }
+}

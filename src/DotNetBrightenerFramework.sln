@@ -366,6 +366,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MultiTenancy.Demo.WebApi.In
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetBrightener.TestHelpers.PostgreSql", "TestHelpers\DotNetBrightener.TestHelpers.PostgreSql\DotNetBrightener.TestHelpers.PostgreSql.csproj", "{14F29C86-44EA-F7C6-C34C-F3EEEF360EEC}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OAuth", "OAuth", "{BAC290EF-F5FF-4C82-8FDF-E9D5E83589B2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1429,6 +1431,7 @@ Global
 		{02EA681E-C7D8-13C7-8484-4AC65E1B71E8} = {6E580008-435A-4396-A928-507321CEAE45}
 		{27009C23-5EDA-3210-F3B1-30D60C1CE272} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{14F29C86-44EA-F7C6-C34C-F3EEEF360EEC} = {17CF6FFF-1966-4534-8B68-6AAE4AE440BD}
+		{BAC290EF-F5FF-4C82-8FDF-E9D5E83589B2} = {EB2CC1F2-C748-4C47-AFA3-B1E89FDA8C73}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CBA29A5C-A736-4EB9-8D61-8E76924706CD}
