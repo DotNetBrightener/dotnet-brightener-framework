@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+	</ItemGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\..\Caching\DotNetBrightener.Caching\DotNetBrightener.Caching.Abstractions.csproj" />
+	</ItemGroup>
+	<Import Project="..\DotNetBrightener.OAuth.Shared.UrlBuilderExtensions\DotNetBrightener.OAuth.Shared.UrlBuilderExtensions.projitems" Label="Shared" />
+</Project>

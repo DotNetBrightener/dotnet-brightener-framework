@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<IsPackable>false</IsPackable>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\DotNetBrightener.OAuth.Integration.Apple\DotNetBrightener.OAuth.Integration.Apple.csproj" />
+	  <ProjectReference Include="..\DotNetBrightener.OAuth.Integration.Google\DotNetBrightener.OAuth.Integration.Google.csproj" />
+	  <ProjectReference Include="..\DotNetBrightener.OAuth\DotNetBrightener.OAuth.csproj" />
+	</ItemGroup>
+
+</Project>

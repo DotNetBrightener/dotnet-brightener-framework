@@ -1,0 +1,17 @@
+﻿{
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "DotNetBrightener.OAuth.DemoWebApi": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "applicationUrl": "https://localhost:5034",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "GoogleOAuthSettings__ClientId": "113150482865-f4tsaumng7pk67gt102ftvp6ue0q0be4.apps.googleusercontent.com",
+        "GoogleOAuthSettings__ClientSecret": "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"
+      }
+    }
+  }
+}
