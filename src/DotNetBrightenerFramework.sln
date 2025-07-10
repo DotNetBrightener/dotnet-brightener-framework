@@ -1491,6 +1491,7 @@ Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{052db4f4-5da4-4dee-897f-c072622fca09}*SharedItemsImports = 5
 		Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{0f0e79f0-bcb6-43d1-8a4a-5a1d50c36a22}*SharedItemsImports = 13
+		OAuthLibrary\DotNetBrightener.OAuth.Shared.UrlBuilderExtensions\DotNetBrightener.OAuth.Shared.UrlBuilderExtensions.projitems*{1160aa87-3799-4917-aa03-460cf8ca44b0}*SharedItemsImports = 5
 		Shared\SharedExtensions.Tasks\SharedExtensions.Tasks.projitems*{11637d4c-0f4d-40a5-adfc-f93ba27a4277}*SharedItemsImports = 13
 		Shared\SharedExtensions.DbContext\SharedExtensions.DbContext.projitems*{11a36038-d86a-4dc9-b660-d881d242ee2f}*SharedItemsImports = 5
 		Shared\SharedExtensions.Exception\SharedExtensions.Exception.projitems*{11a36038-d86a-4dc9-b660-d881d242ee2f}*SharedItemsImports = 5
@@ -1638,9 +1639,11 @@ Global
 		Shared\SharedExtensions.Object\SharedExtensions.ObjectExtensions.projitems*{cee919b4-3cef-4f22-ab11-ed8b45749336}*SharedItemsImports = 5
 		Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{cee919b4-3cef-4f22-ab11-ed8b45749336}*SharedItemsImports = 5
 		Shared\SharedExtensions.MessageCompression\SharedExtensions.MessageCompression.projitems*{d835caba-448f-4703-8ebe-549ff94e5655}*SharedItemsImports = 13
+		OAuthLibrary\DotNetBrightener.OAuth.Shared.UrlBuilderExtensions\DotNetBrightener.OAuth.Shared.UrlBuilderExtensions.projitems*{df31b21f-4a62-4314-9267-5d53ac211e04}*SharedItemsImports = 5
 		Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{e0d3e777-c608-432c-9aea-b549c41b07fa}*SharedItemsImports = 5
 		Shared\SharedExtensions.ServiceCollection\SharedExtensions.ServiceCollectionExtensions.projitems*{e0d3e777-c608-432c-9aea-b549c41b07fa}*SharedItemsImports = 5
 		Shared\SharedExtensions.String\StringExtensions.projitems*{e0d3e777-c608-432c-9aea-b549c41b07fa}*SharedItemsImports = 5
+		OAuthLibrary\DotNetBrightener.OAuth.Shared.UrlBuilderExtensions\DotNetBrightener.OAuth.Shared.UrlBuilderExtensions.projitems*{e2a84ef4-795d-417c-8819-306a23e91630}*SharedItemsImports = 13
 		Shared\SharedExtensions.Dictionary\SharedExtensions.Dictionary.projitems*{e4358d5e-109b-4050-a5b9-d4ff094754a4}*SharedItemsImports = 13
 		Shared\SharedExtensions.Exception\SharedExtensions.Exception.projitems*{e622b744-935a-4809-8f6d-7b0919d863c5}*SharedItemsImports = 5
 		Shared\SharedExtensions.MvcBuilder\SharedExtensions.MvcBuilder.projitems*{e622b744-935a-4809-8f6d-7b0919d863c5}*SharedItemsImports = 5
@@ -1653,6 +1656,7 @@ Global
 		Shared\SharedExtensions.HttpContext\SharedExtensions.HttpContext.projitems*{ef16f907-7da4-4816-b0e3-f3097a46d66b}*SharedItemsImports = 5
 		Shared\SharedExtensions.String\StringExtensions.projitems*{ef16f907-7da4-4816-b0e3-f3097a46d66b}*SharedItemsImports = 5
 		Shared\SharedExtensions.XmlDocumentationHelper\SharedExtensions.XmlDocumentationHelper.projitems*{ef16f907-7da4-4816-b0e3-f3097a46d66b}*SharedItemsImports = 5
+		OAuthLibrary\DotNetBrightener.OAuth.Shared.UrlBuilderExtensions\DotNetBrightener.OAuth.Shared.UrlBuilderExtensions.projitems*{f01b6e1e-d06b-4b10-b1d3-7d5920d98b69}*SharedItemsImports = 5
 		Shared\SharedExtensions.DateTime\DateTimeExtensions.projitems*{f1b6f426-1ea7-4571-8f9a-2fc5cce1dcc5}*SharedItemsImports = 5
 		Shared\SharedExtensions.HttpContext\SharedExtensions.HttpContext.projitems*{f1b6f426-1ea7-4571-8f9a-2fc5cce1dcc5}*SharedItemsImports = 5
 		Shared\SharedExtensions.MvcBuilder\SharedExtensions.MvcBuilder.projitems*{f1b6f426-1ea7-4571-8f9a-2fc5cce1dcc5}*SharedItemsImports = 5
