@@ -14,9 +14,9 @@
 		</PackageReference>
 		<PackageReference Include="Shouldly" Version="4.3.0" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
-		<PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.6" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.6" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.6" />
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.7" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.7" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.7" />
 		<PackageReference Include="Microsoft.Identity.Client" Version="4.73.1" />
 		<PackageReference Include="Moq.AutoMock" Version="3.5.0" />
 		<PackageReference Include="Testcontainers.MsSql" Version="4.6.0" />
