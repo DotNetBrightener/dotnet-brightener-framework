@@ -40,9 +40,13 @@ public abstract class OAuthController(
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
     [HttpGet, Route("{externalLoginProvider}")]
-    public async Task<IActionResult> OAuthLogIn(string externalLoginProvider,
-                                                [FromQuery] string redirectUrl = null,
-                                                [FromQuery] bool isMobile = false)
+    public virtual async Task<IActionResult> OAuthLogIn(string externalLoginProvider,
+                                                        [FromQuery]
+                                                        string redirectUrl = null,
+                                                        [FromQuery]
+                                                        bool isMobile = false,
+                                                        [FromQuery]
+                                                        string[] scopes = null)
     {
         var oauthServiceProvider = RetrieveOAuthProviderOrThrow(externalLoginProvider);
 
@@ -70,13 +74,19 @@ public abstract class OAuthController(
 
         var oAuthRequestModel = new OAuthRequestModel
         {
-            RequestId        = Guid.NewGuid().ToString(),
-            CallbackUrl      = callback,
-            LinkedUserId     = null,
+            RequestId    = Guid.CreateVersion7().ToString(),
+            CallbackUrl  = callback,
+            LinkedUserId = null,
             ValidateUserOnly = validateUserOnly.ToString()
                                                .Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase),
-            RedirectUrl      = finalRedirectUrl
+            RedirectUrl = finalRedirectUrl
         };
+
+        if (scopes is not null &&
+            scopes.Any())
+        {
+            oAuthRequestModel.Scopes = scopes;
+        }
 
         // Add mobile flag to extra parameters for callback processing
         oAuthRequestModel.ExtraParameters.Add("isMobile", isMobile.ToString());
@@ -104,7 +114,7 @@ public abstract class OAuthController(
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
     [HttpGet, HttpPost, Route("{externalLoginProvider}/callback")]
-    public async Task<IActionResult> OAuthLogInCallback(string externalLoginProvider)
+    public virtual async Task<IActionResult> OAuthLogInCallback(string externalLoginProvider)
     {
         var oauthServiceProvider = RetrieveOAuthProviderOrThrow(externalLoginProvider);
 
@@ -136,32 +146,32 @@ public abstract class OAuthController(
             return HandleAuthenticationError(externalLoginProvider, oAuthRequestModel, isMobile);
         }
 
+        await OnExternalUserAuthenticated(result);
+
         if (isMobile)
         {
             return HandleMobileCallback(result, oAuthRequestModel);
         }
-        else
-        {
-            return HandleWebCallback(result, oAuthRequestModel);
-        }
+
+        return HandleWebCallback(result, oAuthRequestModel);
     }
 
     [HttpPost("{externalLoginProvider}/verifyOAuthResponse")]
-    public async Task<IActionResult> VerifyOAuthResponse(string externalLoginProvider)
+    public virtual async Task<IActionResult> VerifyOAuthResponse(string externalLoginProvider)
     {
         var oauthServiceProvider = RetrieveOAuthProviderOrThrow(externalLoginProvider);
 
         var formData = Request.Form;
 
         var result = await oauthServiceProvider.AuthorizeFromClient(formData);
-        
+
         return await AuthenticateOAuthUser(externalLoginProvider, result);
     }
 
     [HttpPost("AuthenticateOAuthUser/{externalLoginProvider}")]
-    public async Task<IActionResult> AuthenticateOAuthUser(string externalLoginProvider,
-                                                           [FromBody]
-                                                           OAuthUser model)
+    public virtual async Task<IActionResult> AuthenticateOAuthUser(string externalLoginProvider,
+                                                                   [FromBody]
+                                                                   OAuthUser model)
     {
         var oAuthLogin = new OAuthLogInResponse
         {
@@ -175,9 +185,11 @@ public abstract class OAuthController(
 
     protected abstract Task<IActionResult> ProcessAuthenticatedExternalUser(ExternalLoginData externalLogin);
 
+    protected abstract Task OnExternalUserAuthenticated(OAuthLogInResponse externalLogin);
+
     #region Private Methods
 
-    private IOAuthServiceProvider RetrieveOAuthProviderOrThrow(string externalLoginProvider)
+    protected virtual IOAuthServiceProvider RetrieveOAuthProviderOrThrow(string externalLoginProvider)
     {
         Func<IOAuthServiceProvider, bool> query;
 
@@ -192,7 +204,7 @@ public abstract class OAuthController(
         return oauthServiceProvider;
     }
 
-    private OAuthRequestModel FindOAuthRequest(Uri requestRequestUri)
+    protected virtual OAuthRequestModel FindOAuthRequest(Uri requestRequestUri)
     {
         StringValues stateQueryString = StringValues.Empty;
 
@@ -200,7 +212,7 @@ public abstract class OAuthController(
         {
             QueryHelpers.ParseQuery(requestRequestUri.Query)
                         .TryGetValue("state", out stateQueryString);
-        } 
+        }
         else if (Request.Method.Equals(HttpMethods.Post, StringComparison.OrdinalIgnoreCase))
         {
             Request.Form.TryGetValue("state", out stateQueryString);
@@ -227,22 +239,22 @@ public abstract class OAuthController(
         return oauthRequest;
     }
 
-    private async Task<IActionResult> AuthenticateOAuthUser(string             externalLoginProvider,
-                                                            OAuthLogInResponse result,
-                                                            OAuthRequestModel  oAuthRequestModel = null)
+    protected virtual async Task<IActionResult> AuthenticateOAuthUser(string             externalLoginProvider,
+                                                                      OAuthLogInResponse result,
+                                                                      OAuthRequestModel  oAuthRequestModel = null)
     {
         var externalLogin = new ExternalLoginData
         {
-            ExternalAccessToken = result.UserInformation.AccessToken,
-            FirstName = result.UserInformation.FirstName,
-            LastName = result.UserInformation.LastName,
-            UserName = result.UserInformation.Email,
-            ExternalId = result.UserInformation.ExternalKey,
-            ProviderName = externalLoginProvider,
-            ProfileImageUrl = result.UserInformation.ProfileImageUrl,
+            ExternalAccessToken    = result.UserInformation.AccessToken,
+            FirstName              = result.UserInformation.FirstName,
+            LastName               = result.UserInformation.LastName,
+            UserName               = result.UserInformation.Email,
+            ExternalId             = result.UserInformation.ExternalKey,
+            ProviderName           = externalLoginProvider,
+            ProfileImageUrl        = result.UserInformation.ProfileImageUrl,
             ProfileImageUrlCropped = result.UserInformation.ProfileImageUrlCropped,
-            LinkedUserId = oAuthRequestModel?.LinkedUserId,
-            ExtraParameters = oAuthRequestModel?.ExtraParameters
+            LinkedUserId           = oAuthRequestModel?.LinkedUserId,
+            ExtraParameters        = oAuthRequestModel?.ExtraParameters
         };
 
         return await ProcessAuthenticatedExternalUser(externalLogin);
@@ -254,7 +266,7 @@ public abstract class OAuthController(
     /// <param name="providedRedirectUrl">Redirect URL provided by the client</param>
     /// <param name="isMobile">Whether this is a mobile client</param>
     /// <returns>The final redirect URL to use</returns>
-    private string DetermineRedirectUrl(string providedRedirectUrl, bool isMobile)
+    protected virtual string DetermineRedirectUrl(string providedRedirectUrl, bool isMobile)
     {
         // If a redirect URL is explicitly provided, use it
         if (!string.IsNullOrEmpty(providedRedirectUrl))
@@ -263,7 +275,8 @@ public abstract class OAuthController(
         }
 
         // For web clients, try to use the Referer header
-        if (!isMobile && !string.IsNullOrEmpty(Request.Headers.Referer))
+        if (!isMobile &&
+            !string.IsNullOrEmpty(Request.Headers.Referer))
         {
             return Request.Headers.Referer;
         }
@@ -281,7 +294,9 @@ public abstract class OAuthController(
     /// <summary>
     /// Handles authentication errors for both web and mobile clients
     /// </summary>
-    private IActionResult HandleAuthenticationError(string externalLoginProvider, OAuthRequestModel oAuthRequestModel, bool isMobile)
+    protected virtual IActionResult HandleAuthenticationError(string            externalLoginProvider,
+                                                              OAuthRequestModel oAuthRequestModel,
+                                                              bool              isMobile)
     {
         var errorMessage = $"Error while authenticating with {externalLoginProvider}";
 
@@ -291,8 +306,12 @@ public abstract class OAuthController(
             var mobileRedirectUrl = new UriBuilder(oAuthRequestModel.RedirectUrl);
             mobileRedirectUrl.AddQueryParameters(new Dictionary<string, string>
             {
-                { "error", "authentication_failed" },
-                { "error_description", errorMessage }
+                {
+                    "error", "authentication_failed"
+                },
+                {
+                    "error_description", errorMessage
+                }
             });
 
             return Redirect(mobileRedirectUrl.Uri.AbsoluteUri);
@@ -303,7 +322,9 @@ public abstract class OAuthController(
             var redirectUrl = new UriBuilder(oAuthRequestModel.RedirectUrl);
             redirectUrl.AddQueryParameters(new Dictionary<string, string>
             {
-                { "error_message", errorMessage }
+                {
+                    "error_message", errorMessage
+                }
             });
 
             return Redirect(redirectUrl.Uri.AbsoluteUri);
@@ -313,19 +334,31 @@ public abstract class OAuthController(
     /// <summary>
     /// Handles successful authentication callback for mobile clients
     /// </summary>
-    private IActionResult HandleMobileCallback(OAuthLogInResponse result, OAuthRequestModel oAuthRequestModel)
+    protected virtual IActionResult HandleMobileCallback(OAuthLogInResponse result, OAuthRequestModel oAuthRequestModel)
     {
         // For mobile clients, redirect to the mobile app with user data as query parameters
         var mobileRedirectUrl = new UriBuilder(oAuthRequestModel.RedirectUrl);
 
         var userData = new Dictionary<string, string>
         {
-            { "success", "true" },
-            { "email", result.UserInformation.Email ?? "" },
-            { "firstName", result.UserInformation.FirstName ?? "" },
-            { "lastName", result.UserInformation.LastName ?? "" },
-            { "externalKey", result.UserInformation.ExternalKey ?? "" },
-            { "profileImageUrl", result.UserInformation.ProfileImageUrl ?? "" }
+            {
+                "success", "true"
+            },
+            {
+                "email", result.UserInformation.Email ?? ""
+            },
+            {
+                "firstName", result.UserInformation.FirstName ?? ""
+            },
+            {
+                "lastName", result.UserInformation.LastName ?? ""
+            },
+            {
+                "externalKey", result.UserInformation.ExternalKey ?? ""
+            },
+            {
+                "profileImageUrl", result.UserInformation.ProfileImageUrl ?? ""
+            }
         };
 
         mobileRedirectUrl.AddQueryParameters(userData);
@@ -336,7 +369,7 @@ public abstract class OAuthController(
     /// <summary>
     /// Handles successful authentication callback for web clients
     /// </summary>
-    private IActionResult HandleWebCallback(OAuthLogInResponse result, OAuthRequestModel oAuthRequestModel)
+    protected virtual IActionResult HandleWebCallback(OAuthLogInResponse result, OAuthRequestModel oAuthRequestModel)
     {
         // For web clients, use the existing JavaScript postMessage approach
         var serializedData = JsonConvert.SerializeObject(new
@@ -351,7 +384,7 @@ public abstract class OAuthController(
                                                                  new CamelCasePropertyNamesContractResolver()
                                                          });
 
-        var redirectUrl = new UriBuilder(oAuthRequestModel.RedirectUrl);
+        var redirectUrl  = new UriBuilder(oAuthRequestModel.RedirectUrl);
         var targetOrigin = new Uri(redirectUrl.Uri, "/");
 
         var replace = OAuthResponseScripts.OAuthResponseScript

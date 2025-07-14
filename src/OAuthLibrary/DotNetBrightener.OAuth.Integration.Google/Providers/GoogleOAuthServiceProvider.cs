@@ -10,9 +10,6 @@ using Microsoft.AspNetCore.Http;
 
 namespace DotNetBrightener.OAuth.Integration.Google.Providers;
 
-/// <summary>
-/// 
-/// </summary>
 public class GoogleOAuthServiceProvider(IOAuthProviderSettingLoader<GoogleOAuthSettings> providerSettingLoader)
     : IOAuthServiceProvider
 {
@@ -24,16 +21,8 @@ public class GoogleOAuthServiceProvider(IOAuthProviderSettingLoader<GoogleOAuthS
 
     private const string EmailRequestUrl = "https://www.googleapis.com/oauth2/v2/userinfo";
 
-    /// <summary>
-    /// 
-    /// </summary>
     public string ProviderName => "google";
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="oAuthRequestModel"></param>
-    /// <returns></returns>
     public async Task<Uri> GetAuthenticationUrl(OAuthRequestModel oAuthRequestModel)
     {
         var settings = await providerSettingLoader.LoadSettings();
@@ -41,6 +30,11 @@ public class GoogleOAuthServiceProvider(IOAuthProviderSettingLoader<GoogleOAuthS
         var requestId = oAuthRequestModel.RequestId;
 
         var authenticationUrl = new UriBuilder("https://accounts.google.com/o/oauth2/auth");
+
+        var scopes = string.Join(" ",
+                                 oAuthRequestModel.Scopes.Any()
+                                     ? oAuthRequestModel.Scopes
+                                     : [ScopeProfile, ScopeEmail]);
 
         authenticationUrl.AddQueryParameters(new Dictionary<string, string>
         {
@@ -54,7 +48,7 @@ public class GoogleOAuthServiceProvider(IOAuthProviderSettingLoader<GoogleOAuthS
                 "redirect_uri", oAuthRequestModel.CallbackUrl
             },
             {
-                "scope", ScopeProfile + " " + ScopeEmail
+                "scope", scopes
             },
             {
                 "state", requestId
@@ -64,13 +58,6 @@ public class GoogleOAuthServiceProvider(IOAuthProviderSettingLoader<GoogleOAuthS
         return authenticationUrl.Uri;
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="currentRequestUri"></param>
-    /// <param name="originalRedirectUrl"></param>
-    /// <param name="formCollection"></param>
-    /// <returns></returns>
     public async Task<OAuthLogInResponse> AuthorizeFromCallback(Uri             currentRequestUri,
                                                                 string          originalRedirectUrl,
                                                                 IFormCollection formCollection)

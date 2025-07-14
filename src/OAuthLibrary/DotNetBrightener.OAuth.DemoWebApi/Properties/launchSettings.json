@@ -6,11 +6,11 @@
       "dotnetRunMessages": true,
       "launchBrowser": true,
       "launchUrl": "swagger",
-      "applicationUrl": "https://localhost:5034",
+      "applicationUrl": "https://0.0.0.0:14575",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "GoogleOAuthSettings__ClientId": "113150482865-f4tsaumng7pk67gt102ftvp6ue0q0be4.apps.googleusercontent.com",
-        "GoogleOAuthSettings__ClientSecret": "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"
+        "GoogleOAuthSettings__ClientId": "188022934942-8j8l9itsgkkvl9as7a7nnr05eq2jjjbm.apps.googleusercontent.com",
+        "GoogleOAuthSettings__ClientSecret": "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"
       }
     }
   }

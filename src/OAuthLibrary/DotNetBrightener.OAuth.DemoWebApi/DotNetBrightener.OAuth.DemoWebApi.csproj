@@ -13,6 +13,8 @@
 	<ItemGroup>
 	  <ProjectReference Include="..\DotNetBrightener.OAuth.Integration.Apple\DotNetBrightener.OAuth.Integration.Apple.csproj" />
 	  <ProjectReference Include="..\DotNetBrightener.OAuth.Integration.Google\DotNetBrightener.OAuth.Integration.Google.csproj" />
+	  <ProjectReference Include="..\DotNetBrightener.OAuth.Persistent.PostgreSql\DotNetBrightener.OAuth.Persistent.PostgreSql.csproj" />
+	  <ProjectReference Include="..\DotNetBrightener.OAuth.Persistent\DotNetBrightener.OAuth.Persistent.csproj" />
 	  <ProjectReference Include="..\DotNetBrightener.OAuth\DotNetBrightener.OAuth.csproj" />
 	</ItemGroup>
 

@@ -26,4 +26,21 @@ public class OpenIdLoginController(
     {
         return Ok(externalLogin);
     }
+
+    [HttpGet("connect/youtube")]
+    public async Task<IActionResult> AuthorizeYoutube()
+    {
+        return await OAuthLogIn("google",
+                                scopes:
+                                [
+                                    "https://www.googleapis.com/auth/youtube.readonly",
+                                    "https://www.googleapis.com/auth/yt-analytics.readonly",
+                                    "https://www.googleapis.com/auth/youtube.channel-memberships.creator"
+                                ]);
+    }
+
+    protected override async Task OnExternalUserAuthenticated(OAuthLogInResponse externalLogin)
+    {
+
+    }
 }
