@@ -1,6 +1,7 @@
 ﻿using AspNet.Extensions.SelfDocumentedProblemResult.ExceptionHandlers;
 using DotNetBrightener.Caching.Memory;
 using DotNetBrightener.CryptoEngine.DependencyInjection;
+using DotNetBrightener.Infrastructure.JwtAuthentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -15,6 +16,7 @@ using System.Reflection;
 using System.Text.Json.Serialization;
 using WebApp.CommonShared;
 using WebApp.CommonShared.Endpoints;
+using WebApp.CommonShared.Internal;
 using WebApp.CommonShared.Mvc;
 
 // ReSharper disable once CheckNamespace
@@ -40,6 +42,34 @@ public static class ServiceCollectionExtensions
         {
             options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
         });
+
+
+        // add CORS support if Configuration contains AllowedCorsOrigins
+        var allowedOriginConfigs = configuration.GetValue<string>("ASPNETCORE__AllowedCorsOrigins");
+
+        if (!string.IsNullOrEmpty(allowedOriginConfigs))
+        {
+            serviceCollection.AddCors(options =>
+            {
+                options.AddPolicy("Default__AllowedOrigins",
+                                  builder =>
+                                  {
+                                      var allowedOrigins =
+                                          allowedOriginConfigs.Split(";",
+                                                                     StringSplitOptions.RemoveEmptyEntries |
+                                                                     StringSplitOptions.TrimEntries);
+
+                                      builder.WithOrigins(allowedOrigins)
+                                             .AllowCredentials()
+                                             .AllowAnyMethod()
+                                             .AllowAnyHeader();
+                                  });
+            });
+            
+            serviceCollection.RegisterAuthAudienceValidator<DefaultAllowedOriginsAudienceValidator>();
+            serviceCollection.RegisterAuthAudienceResolver<DefaultAllowedOriginAudienceResolver>();
+        }
+
 
         serviceCollection.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
         serviceCollection.TryAddSingleton<IContentTypeProvider, FileExtensionContentTypeProvider>();
@@ -108,6 +138,13 @@ public static class ServiceCollectionExtensions
             app.UseHttpsRedirection();
         }
         
+        var allowedOriginConfigs = Environment.GetEnvironmentVariable("ASPNETCORE__AllowedCorsOrigins");
+
+        if (!string.IsNullOrEmpty(allowedOriginConfigs))
+        {
+            app.UseCors("Default__AllowedOrigins");
+        }
+
         app.UseExceptionHandler();
 
         return app;

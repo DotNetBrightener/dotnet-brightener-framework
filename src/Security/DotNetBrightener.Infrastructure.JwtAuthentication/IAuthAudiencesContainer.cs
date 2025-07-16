@@ -28,21 +28,16 @@ public interface IAuthAudiencesContainer
     Task<bool> IsValidAudience(string audienceString);
 }
 
-public class DefaultAuthAudiencesContainer : IAuthAudiencesContainer
+public class DefaultAuthAudiencesContainer(
+    ILogger<DefaultAuthAudiencesContainer> logger,
+    IServiceScopeFactory                   serviceScopeFactory)
+    : IAuthAudiencesContainer
 {
     private readonly        List<string>                    _validAudiences = new();
-    private readonly        IServiceScopeFactory            _serviceScopeFactory;
-    private                 bool                            _initialized = false;
-    private static readonly object                          _lockObject  = new();
-    private readonly        ILogger                         _logger;
+    private                 bool                            _initialized    = false;
+    private static readonly object                          _lockObject     = new();
+    private readonly        ILogger                         _logger         = logger;
     private                 TimeBaseCancellationTokenSource _refreshAudienceTimeout;
-
-    public DefaultAuthAudiencesContainer(ILogger<DefaultAuthAudiencesContainer> logger,
-                                         IServiceScopeFactory                   serviceScopeFactory)
-    {
-        _logger                   = logger;
-        _serviceScopeFactory = serviceScopeFactory;
-    }
 
     public IEnumerable<string> ValidAudiences
     {
@@ -113,7 +108,7 @@ public class DefaultAuthAudiencesContainer : IAuthAudiencesContainer
     {
         _validAudiences.Clear();
 
-        using var scope              = _serviceScopeFactory.CreateScope();
+        using var scope              = serviceScopeFactory.CreateScope();
         var       serviceProvider    = scope.ServiceProvider;
         var       audienceValidators = serviceProvider.GetServices<IAuthAudienceValidator>();
 
