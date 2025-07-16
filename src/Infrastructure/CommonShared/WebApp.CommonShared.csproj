@@ -20,6 +20,7 @@
 		<ProjectReference Include="..\..\EventPubSub\DotNetBrightener.Plugins.EventPubSub.DependencyInjection\DotNetBrightener.Plugins.EventPubSub.DependencyInjection.csproj" />
 		<ProjectReference Include="..\..\EventPubSub\DotNetBrightener.Plugins.EventPubSub\DotNetBrightener.Plugins.EventPubSub.csproj" />
 		<ProjectReference Include="..\..\Security\DotNetBrightener.Infrastructure.Security\DotNetBrightener.Infrastructure.Security.csproj" />
+		<ProjectReference Include="..\..\Security\DotNetBrightener.Infrastructure.JwtAuthentication\DotNetBrightener.Infrastructure.JwtAuthentication.csproj" />
 		<ProjectReference Include="..\AspNet.Extensions.SelfDocumentedProblemResult\AspNet.Extensions.SelfDocumentedProblemResult.csproj" />
 	</ItemGroup>
 

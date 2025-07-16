@@ -5,18 +5,11 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace DotNetBrightener.Infrastructure.AppClientManager.JwtAuthentication;
 
-public class AuthClientsAuthAudienceValidator : IAuthAudienceValidator
+public class AuthClientsAuthAudienceValidator(IServiceScopeFactory serviceScopeFactory) : IAuthAudienceValidator
 {
-    private readonly IServiceScopeFactory _serviceScopeFactory;
-
-    public AuthClientsAuthAudienceValidator(IServiceScopeFactory serviceScopeFactory)
-    {
-        _serviceScopeFactory = serviceScopeFactory;
-    }
-
     public string[] GetValidAudiences()
     {
-        using var scope = _serviceScopeFactory.CreateScope();
+        using var scope = serviceScopeFactory.CreateScope();
         var serviceProvider = scope.ServiceProvider;
 
         var appClientDataService = serviceProvider.GetService<IAppClientManager>();
