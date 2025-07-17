@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Newtonsoft.Json;
-using System.Net;
 using System.Reflection;
 using System.Text.Json.Serialization;
 using WebApp.CommonShared;
@@ -36,7 +35,6 @@ public static class ServiceCollectionExtensions
                                                            IConfiguration          configuration)
     {
         System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
-        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
         serviceCollection.Configure<ForwardedHeadersOptions>(options =>
         {
@@ -45,29 +43,23 @@ public static class ServiceCollectionExtensions
 
 
         // add CORS support if Configuration contains AllowedCorsOrigins
-        var allowedOriginConfigs = configuration.GetValue<string>("ASPNETCORE__AllowedCorsOrigins");
+        var allowedOriginConfigs = configuration.GetDefaultAllowedOrigins();
 
-        if (!string.IsNullOrEmpty(allowedOriginConfigs))
+        if (allowedOriginConfigs.Length > 0)
         {
+            serviceCollection.RegisterAuthAudienceValidator<DefaultAllowedOriginsAudienceValidator>();
+
             serviceCollection.AddCors(options =>
             {
                 options.AddPolicy("Default__AllowedOrigins",
                                   builder =>
                                   {
-                                      var allowedOrigins =
-                                          allowedOriginConfigs.Split(";",
-                                                                     StringSplitOptions.RemoveEmptyEntries |
-                                                                     StringSplitOptions.TrimEntries);
-
-                                      builder.WithOrigins(allowedOrigins)
+                                      builder.WithOrigins(allowedOriginConfigs)
                                              .AllowCredentials()
                                              .AllowAnyMethod()
                                              .AllowAnyHeader();
                                   });
             });
-            
-            serviceCollection.RegisterAuthAudienceValidator<DefaultAllowedOriginsAudienceValidator>();
-            serviceCollection.RegisterAuthAudienceResolver<DefaultAllowedOriginAudienceResolver>();
         }
 
 
