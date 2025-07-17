@@ -4,6 +4,7 @@ using System.Security.Claims;
 using System.Text;
 using DotNetBrightener.CryptoEngine;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 
 namespace DotNetBrightener.Infrastructure.JwtAuthentication;
@@ -68,21 +69,24 @@ public static class JwtConfigurationExtensions
         List<string> audiences = [];
 
         IAuthAudiencesContainer? audiencesContainer = null;
+        ILogger?                  logger;
 
         using (var serviceScope = jwtConfiguration.ServiceScopeFactory.CreateScope())
         {
             audiencesContainer = serviceScope.ServiceProvider
                                              .GetService<IAuthAudiencesContainer>();
+            logger = serviceScope.ServiceProvider
+                                 .GetService<ILogger<JwtConfiguration>>();
 
             if (string.IsNullOrEmpty(audiencesString))
             {
                 var audienceResolvers = serviceScope.ServiceProvider
                                                     .GetServices<ICurrentRequestAudienceResolver>();
 
-                foreach (var getAudience in audienceResolvers)
-                {
-                    audiences.AddRange(getAudience.GetAudiences());
-                }
+                audiences.AddRange(audienceResolvers.SelectMany(x => x.GetAudiences())
+                                                    .Distinct());
+
+                logger?.LogInformation("Audiences list: {audiences}", audiences);
             }
 
             else
