@@ -18,7 +18,7 @@ internal class AuditEntriesProcessor(IServiceScopeFactory serviceScopeFactory,
     private readonly List<AuditEntity> _auditEntitiesQueue = new();
     private readonly TimeSpan          _delay              = TimeSpan.FromSeconds(5);
     private          Timer             _timer;
-    private readonly object            _lock = new();
+    private readonly Lock              _lock = new();
 
     private static readonly AssemblyInformationalVersionAttribute VersionInfo = Assembly.GetExecutingAssembly()
                                                                                         .GetCustomAttribute<AssemblyInformationalVersionAttribute>();

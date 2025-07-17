@@ -35,7 +35,7 @@ public class DefaultAuthAudiencesContainer(
 {
     private readonly        List<string>                    _validAudiences = new();
     private                 bool                            _initialized    = false;
-    private static readonly object                          _lockObject     = new();
+    private static readonly Lock                            LockObject      = new();
     private readonly        ILogger                         _logger         = logger;
     private                 TimeBaseCancellationTokenSource _refreshAudienceTimeout;
 
@@ -52,7 +52,7 @@ public class DefaultAuthAudiencesContainer(
 
             if (!_initialized)
             {
-                lock (_lockObject)
+                lock (LockObject)
                 {
                     EnsureInitialized();
                 }
@@ -78,7 +78,7 @@ public class DefaultAuthAudiencesContainer(
 
     public void RemoveAudiences(params string[] validAudiences)
     {
-        lock (_lockObject)
+        lock (LockObject)
         {
             foreach (var validAudience in validAudiences)
             {
@@ -91,7 +91,7 @@ public class DefaultAuthAudiencesContainer(
     {
         if (!_initialized)
         {
-            lock (_lockObject)
+            lock (LockObject)
             {
                 _refreshAudienceTimeout?.Dispose();
                 _refreshAudienceTimeout = null;

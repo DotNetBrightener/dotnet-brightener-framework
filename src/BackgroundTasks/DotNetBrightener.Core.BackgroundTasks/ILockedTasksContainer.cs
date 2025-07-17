@@ -22,12 +22,12 @@ public interface ILockedTasksContainer
 
 public class LockedTasksContainer(IDateTimeProvider dateTimeProvider) : ILockedTasksContainer
 {
-    private readonly ConcurrentDictionary<string, LockedTaskInstance> _lockedTasks = new();
-    private readonly object _lock = new();
+    private readonly        ConcurrentDictionary<string, LockedTaskInstance> _lockedTasks = new();
+    private static readonly Lock                                             Lock         = new();
 
     public bool TryLock(string key, TimeSpan timeout)
     {
-        lock (_lock)
+        lock (Lock)
         {
             if (_lockedTasks.TryGetValue(key, out var lockedInstance) &&
                 lockedInstance.IsLocked &&
@@ -42,7 +42,7 @@ public class LockedTasksContainer(IDateTimeProvider dateTimeProvider) : ILockedT
 
     public void Release(string key)
     {
-        lock (_lock)
+        lock (Lock)
         {
             _lockedTasks.TryRemove(key, out _);
         }

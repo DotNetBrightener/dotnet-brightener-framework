@@ -2,9 +2,10 @@
 
 public class FrontEndRoutingEntries : IFrontEndRoutingEntries
 {
-    private readonly Dictionary<string, FrontEndRoutingEntry> _pathsWithEntry;
-    private readonly Dictionary<string, FrontEndRoutingEntry> _pathsMapRouteEntries;
-    private readonly Type[]                                   _typeMetadatas;
+    private readonly        Dictionary<string, FrontEndRoutingEntry> _pathsWithEntry;
+    private readonly        Dictionary<string, FrontEndRoutingEntry> _pathsMapRouteEntries;
+    private readonly        Type[]                                   _typeMetadatas;
+    private static readonly Lock                                     Lock = new();
 
     public FrontEndRoutingEntries()
     {
@@ -24,9 +25,11 @@ public class FrontEndRoutingEntries : IFrontEndRoutingEntries
     public bool TryGetPath(string itemId, string targetType, out string path)
     {
         var target = _typeMetadatas.FirstOrDefault(_ => _.FullName == targetType);
+
         if (target == null)
         {
             path = null;
+
             return false;
         }
 
@@ -43,10 +46,12 @@ public class FrontEndRoutingEntries : IFrontEndRoutingEntries
         if (_pathsWithEntry.TryGetValue(GetEntryKey(itemId, targetType), out var entry))
         {
             path = entry.Path;
+
             return true;
         }
 
         path = null;
+
         return false;
     }
 
@@ -58,6 +63,7 @@ public class FrontEndRoutingEntries : IFrontEndRoutingEntries
     public void AddEntry(string itemId, string path, string targetTypeFullName)
     {
         var target = _typeMetadatas.FirstOrDefault(_ => _.FullName == targetTypeFullName);
+
         if (target == null)
             return;
 
@@ -66,7 +72,7 @@ public class FrontEndRoutingEntries : IFrontEndRoutingEntries
 
     public void AddEntry(string itemId, string path, Type targetType)
     {
-        lock (this)
+        lock (Lock)
         {
             if (!path.StartsWith("/"))
             {
@@ -91,13 +97,12 @@ public class FrontEndRoutingEntries : IFrontEndRoutingEntries
 
     public void RemoveEntry(string itemId, Type targetType)
     {
-        lock (this)
+        lock (Lock)
         {
             var key = GetEntryKey(itemId, targetType);
 
-            if (_pathsWithEntry.TryGetValue(key, out var existingRecord))
+            if (_pathsWithEntry.Remove(key, out var existingRecord))
             {
-                _pathsWithEntry.Remove(key);
                 _pathsMapRouteEntries.Remove(existingRecord.Path);
             }
 
@@ -106,7 +111,7 @@ public class FrontEndRoutingEntries : IFrontEndRoutingEntries
 
     public void ClearAllEntries()
     {
-        lock (this)
+        lock (Lock)
         {
             _pathsWithEntry.Clear();
             _pathsMapRouteEntries.Clear();

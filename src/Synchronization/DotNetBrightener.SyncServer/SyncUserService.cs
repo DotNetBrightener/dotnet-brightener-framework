@@ -5,7 +5,7 @@ namespace DotNetBrightener.SyncServer;
 public class SyncUserService : BaseApiHandler<UserRecord>
 {
     private static          long   _syncCount;
-    private static readonly object SyncLock = new();
+    private static readonly Lock SyncLock = new();
 
     protected override async Task<UserRecord> ProcessRequest(UserRecord message)
     {
