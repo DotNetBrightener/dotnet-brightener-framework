@@ -83,23 +83,21 @@ public class EventLoggingWatcher : TargetWithLayout, IEventLogWatcher
 
     public List<EventLogBaseModel> GetQueuedEventLogRecords()
     {
-        if (_queue.Count == 0)
-            return new List<EventLogBaseModel>();
-
-        Lock.TryEnter();
-
-        try
+        lock (Lock)
         {
+            if (_queue.Count == 0)
+                return new List<EventLogBaseModel>();
 
             List<EventLogBaseModel> queuedEventLogRecords = [];
-            queuedEventLogRecords.AddRange(_queue);
+
+            while (_queue.TryDequeue(out var eventLogModel))
+            {
+                queuedEventLogRecords.Add(eventLogModel);
+            }
+
+            _queue.Clear();
 
             return queuedEventLogRecords;
-        }
-        finally
-        {
-            _queue.Clear();
-            Lock.Exit();
         }
     }
 
@@ -130,7 +128,7 @@ public class EventLoggingWatcher : TargetWithLayout, IEventLogWatcher
         eventLogModel.UserAgent        = RequestUserAgentLayoutRenderer.Render(logEvent);
         eventLogModel.RequestId        = TraceIdentifierLayoutRenderer.Render(logEvent);
 
-        if (logEvent.Properties != null)
+        if (logEvent.Properties is not null)
         {
             try
             {
@@ -159,7 +157,10 @@ public class EventLoggingWatcher : TargetWithLayout, IEventLogWatcher
             logEvent.Exception = null;
         }
 
-        _queue.Enqueue(eventLogModel);
+        lock (Lock)
+        {
+            _queue.Enqueue(eventLogModel);
+        }
 
         if (_serviceScopeFactory == null) // when app not fully initialized, don't put logs to queue
             return;
