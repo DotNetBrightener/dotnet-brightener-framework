@@ -9,18 +9,11 @@ using System.Web;
 
 namespace DotNetBrightener.Infrastructure.AppClientManager.Middlewares;
 
-public class AppClientCorsEnableMiddleware
+public class AppClientCorsEnableMiddleware(
+    RequestDelegate next,
+    ICorsService    corsService)
 {
-    private static readonly CorsPolicy      PublicCorsPolicy = GetPublicCorsPolicy();
-    private readonly        RequestDelegate _next;
-    private readonly        ICorsService    _corsService;
-
-    public AppClientCorsEnableMiddleware(RequestDelegate next,
-                                         ICorsService    corsService)
-    {
-        _next        = next;
-        _corsService = corsService;
-    }
+    private static readonly CorsPolicy   PublicCorsPolicy = GetPublicCorsPolicy();
 
     public async Task Invoke(HttpContext                             context,
                              IOptions<CorsOptions> corsOptions,
@@ -36,9 +29,9 @@ public class AppClientCorsEnableMiddleware
 
         if (option.OpenForPublicAccess)
         {
-            var corsResult = _corsService.EvaluatePolicy(context, PublicCorsPolicy);
+            var corsResult = corsService.EvaluatePolicy(context, PublicCorsPolicy);
 
-            _corsService.ApplyResult(corsResult, context.Response);
+            corsService.ApplyResult(corsResult, context.Response);
 
             var accessControlRequestMethod = context.Request.Headers[CorsConstants.AccessControlRequestMethod];
 
@@ -54,7 +47,7 @@ public class AppClientCorsEnableMiddleware
                 return;
             }
 
-            await _next.Invoke(context);
+            await next.Invoke(context);
 
             return;
         }
@@ -68,7 +61,7 @@ public class AppClientCorsEnableMiddleware
 
         if (!result.IsSuccess)
         {
-            await _next.Invoke(context);
+            await next.Invoke(context);
 
             return;
         }
@@ -90,7 +83,7 @@ public class AppClientCorsEnableMiddleware
         if (result.ShortCircuit)
             return;
 
-        await _next.Invoke(context);
+        await next.Invoke(context);
     }
 
     private async Task<AppClientIdentifyingResult> ProcessCorsBuilderForCurrentRequest(HttpContext context,
@@ -211,9 +204,9 @@ public class AppClientCorsEnableMiddleware
 
         var corsPolicy = policyBuilder.Build();
 
-        var corsResult = _corsService.EvaluatePolicy(context, corsPolicy);
+        var corsResult = corsService.EvaluatePolicy(context, corsPolicy);
 
-        _corsService.ApplyResult(corsResult, context.Response);
+        corsService.ApplyResult(corsResult, context.Response);
 
         var accessControlRequestMethod = context.Request.Headers[CorsConstants.AccessControlRequestMethod];
 
