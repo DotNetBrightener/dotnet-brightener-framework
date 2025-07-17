@@ -11,7 +11,12 @@ internal class NullCurrentRequestAudienceResolver(IHttpContextAccessor httpConte
 {
     public string[] GetAudiences()
     {
-        var referer = httpContextAccessor.HttpContext?.Request.Headers.Referer.ToString();
+        var referer = httpContextAccessor.HttpContext?.Request.Headers.Origin.ToString();
+
+        if (string.IsNullOrEmpty(referer))
+        {
+            referer = httpContextAccessor.HttpContext?.Request.Headers.Referer.ToString();
+        }
 
         if (string.IsNullOrEmpty(referer))
         {
