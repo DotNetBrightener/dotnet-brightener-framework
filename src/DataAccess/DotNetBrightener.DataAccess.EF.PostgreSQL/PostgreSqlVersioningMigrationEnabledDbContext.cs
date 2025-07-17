@@ -1,6 +1,9 @@
 ﻿using DotNetBrightener.DataAccess.Attributes;
 using DotNetBrightener.DataAccess.EF.Migrations;
+using DotNetBrightener.DataAccess.EF.PostgreSQL.Extensions;
+using DotNetBrightener.DataAccess.EF.PostgreSQL.History;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace DotNetBrightener.DataAccess.EF.PostgreSQL;
 
@@ -18,6 +21,14 @@ public abstract class PostgreSqlVersioningMigrationEnabledDbContext(
         ConfigureHistoryTables(modelBuilder);
     }
 
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        base.OnConfiguring(optionsBuilder);
+
+        // Add PostgreSQL history interceptor to automatically create triggers
+        optionsBuilder.AddPostgreSqlHistoryInterceptor(ServiceProvider);
+    }
+
     /// <summary>
     ///     Registers the entities to the <see cref="ModelBuilder"/>
     /// </summary>
@@ -28,20 +39,8 @@ public abstract class PostgreSqlVersioningMigrationEnabledDbContext(
 
     protected virtual void ConfigureHistoryTables(ModelBuilder modelBuilder)
     {
-        // read models from modelBuilder
-        var models = modelBuilder.Model.GetEntityTypes();
+        var historyTableManager = new PostgreSqlHistoryTableManager(ServiceProvider);
 
-        // detect HistoryEnabled entities
-        var historyEnabledEntities =
-            models.Where(x => x.ClrType.GetCustomAttributes(typeof(HistoryEnabledAttribute), true).Any());
-
-        foreach (var entityType in historyEnabledEntities)
-        {
-            entityType.SetIsTemporal(true);
-
-            var tableName = entityType.GetTableName();
-
-            entityType.SetHistoryTableName($"{tableName}_History");
-        }
+        historyTableManager.ConfigureHistoryTables(modelBuilder);
     }
 }
