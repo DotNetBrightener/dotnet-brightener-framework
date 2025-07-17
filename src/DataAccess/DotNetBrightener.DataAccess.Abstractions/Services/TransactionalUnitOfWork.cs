@@ -8,7 +8,8 @@ internal class TransactionalUnitOfWork : ITransactionalUnitOfWork
     private readonly TransactionScope _transactionScope;
     private readonly ILogger          _logger;
 
-    private bool _needRollingBack = false;
+    private                 bool _needRollingBack = false;
+    private static readonly Lock _lock            = new();
 
     public TransactionalUnitOfWork(ILogger<TransactionalUnitOfWork> logger)
     {
@@ -25,7 +26,7 @@ internal class TransactionalUnitOfWork : ITransactionalUnitOfWork
 
     public void Dispose()
     {
-        lock (this)
+        lock (_lock)
         {
             try
             {

@@ -14,7 +14,7 @@ public class RedisConnectionWrapper : IRedisConnectionWrapper
     #region Fields
 
     private          bool                  _disposed = false;
-    private readonly object                _lock     = new object();
+    private readonly Lock                  _lock     = new();
     private volatile ConnectionMultiplexer _connection;
 
     #endregion

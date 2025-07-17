@@ -33,6 +33,7 @@ public class EventLoggingWatcher : TargetWithLayout, IEventLogWatcher
     private readonly        Queue<EventLogBaseModel> _queue = new();
     private                 IServiceScopeFactory     _serviceScopeFactory;
     private                 bool                     _serviceProviderSet;
+    private static readonly Lock                     Lock = new();
 
     public static void Initialize(IHostEnvironment environment, IConfiguration configuration)
     {
@@ -85,10 +86,21 @@ public class EventLoggingWatcher : TargetWithLayout, IEventLogWatcher
         if (_queue.Count == 0)
             return new List<EventLogBaseModel>();
 
-        List<EventLogBaseModel> queuedEventLogRecords = [.._queue];
-        _queue.Clear();
+        Lock.TryEnter();
 
-        return queuedEventLogRecords;
+        try
+        {
+
+            List<EventLogBaseModel> queuedEventLogRecords = [];
+            queuedEventLogRecords.AddRange(_queue);
+
+            return queuedEventLogRecords;
+        }
+        finally
+        {
+            _queue.Clear();
+            Lock.Exit();
+        }
     }
 
     protected override void Write(LogEventInfo logEvent)
