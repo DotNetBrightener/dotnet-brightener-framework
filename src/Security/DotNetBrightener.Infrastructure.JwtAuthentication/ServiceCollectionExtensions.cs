@@ -87,7 +87,7 @@ public static class ServiceCollectionExtensions
 
         serviceCollection.AddSingleton<IJwtMessageHandler, NullJwtMessageHandler>();
 
-        serviceCollection.RegisterAuthAudienceResolver<NullCurrentRequestAudienceResolver>();
+        serviceCollection.RegisterAuthAudienceResolver<CurrentRequestAudienceResolver>();
 
         var serviceProvider = serviceCollection.BuildServiceProvider();
         var contextAccessor = serviceProvider.GetService<IHttpContextAccessor>();
