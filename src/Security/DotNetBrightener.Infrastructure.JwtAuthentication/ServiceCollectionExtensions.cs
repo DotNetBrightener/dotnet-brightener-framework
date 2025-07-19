@@ -1,6 +1,7 @@
 ﻿using System.Data;
 using System.Text;
 using DotNetBrightener.CryptoEngine;
+using DotNetBrightener.Infrastructure.JwtAuthentication.Internal;
 using DotNetBrightener.Infrastructure.JwtAuthentication.Middlewares;
 using DotNetBrightener.Infrastructure.Security;
 using Microsoft.AspNetCore.Authentication;
@@ -88,6 +89,7 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddSingleton<IJwtMessageHandler, NullJwtMessageHandler>();
 
         serviceCollection.RegisterAuthAudienceResolver<CurrentRequestAudienceResolver>();
+        serviceCollection.RegisterAuthAudienceResolver<UserAgentBasedRequestAudienceResolver>();
 
         var serviceProvider = serviceCollection.BuildServiceProvider();
         var contextAccessor = serviceProvider.GetService<IHttpContextAccessor>();
