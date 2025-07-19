@@ -59,13 +59,6 @@ public class AppClientCorsEnableMiddleware(
                                                                option,
                                                                defaultPolicy);
 
-        if (!result.IsSuccess)
-        {
-            await next.Invoke(context);
-
-            return;
-        }
-
         foreach (var appBundleDetectionService in appBundleDetectionServices)
         {
             var appBundleId = appBundleDetectionService.GetBundleIdFromRequest(context);
@@ -78,6 +71,14 @@ public class AppClientCorsEnableMiddleware(
 
                 break;
             }
+        }
+
+
+        if (!result.IsSuccess)
+        {
+            await next.Invoke(context);
+
+            return;
         }
 
         if (result.ShortCircuit)
