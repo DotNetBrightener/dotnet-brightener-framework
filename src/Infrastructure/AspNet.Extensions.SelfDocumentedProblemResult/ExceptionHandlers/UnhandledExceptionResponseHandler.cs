@@ -39,14 +39,17 @@ public class UnhandledExceptionResponseHandler : IExceptionHandler
         }
     };
 
-    private readonly ILogger              _logger;
-    private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly ILogger                _logger;
+    private readonly IProblemDetailsService _problemDetailsService;
+    private readonly IHttpContextAccessor   _httpContextAccessor;
 
     public UnhandledExceptionResponseHandler(ILogger<UnhandledExceptionResponseHandler> logger,
+                                             IProblemDetailsService problemDetailsService ,
                                              IHttpContextAccessor                       httpContextAccessor)
     {
-        _logger              = logger;
-        _httpContextAccessor = httpContextAccessor;
+        _logger                     = logger;
+        _problemDetailsService = problemDetailsService;
+        _httpContextAccessor        = httpContextAccessor;
 
         ProblemResultExtensions.HttpContextAccessor ??= _httpContextAccessor;
     }
@@ -128,8 +131,14 @@ public class UnhandledExceptionResponseHandler : IExceptionHandler
                          problemDetails.Status);
 
         httpContext.Response.StatusCode = problemDetails.Status!.Value;
-        await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
+        problemDetails.Extensions.TryAdd("requestId", httpContext.TraceIdentifier);
 
-        return true;
+        return await _problemDetailsService
+            .TryWriteAsync(new ProblemDetailsContext
+            {
+                HttpContext = httpContext,
+                Exception = exception,
+                ProblemDetails = problemDetails
+            });
     }
 }

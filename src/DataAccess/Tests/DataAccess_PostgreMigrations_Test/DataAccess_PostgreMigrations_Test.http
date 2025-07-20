@@ -1,0 +1,6 @@
+@DataAccess_PostgreMigrations_Test_HostAddress = http://localhost:5261
+
+GET {{DataAccess_PostgreMigrations_Test_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

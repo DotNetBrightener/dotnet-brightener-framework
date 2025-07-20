@@ -37,6 +37,6 @@ public abstract class GuidBaseEntity: BaseEntity<Guid>
 {
     protected GuidBaseEntity()
     {
-        Id = Guid.CreateVersion7();
+        Id = Guid.CreateVersion7(); 
     }
 }

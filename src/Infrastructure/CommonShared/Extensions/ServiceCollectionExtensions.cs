@@ -84,9 +84,8 @@ public static class ServiceCollectionExtensions
 
         serviceCollection.EnableBackgroundTaskServices(configuration);
 
-        serviceCollection.AddExceptionHandler<UnhandledExceptionResponseHandler>();
-
         serviceCollection.AddProblemDetails();
+        serviceCollection.AddExceptionHandler<UnhandledExceptionResponseHandler>();
 
         serviceCollection.ConfigureHttpJsonOptions(options =>
         {

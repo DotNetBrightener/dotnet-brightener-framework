@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<IsPackable>false</IsPackable>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.6" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\..\..\Core\VampireCoder.SharedUtils\VampireCoder.SharedUtils.csproj" />
+	  <ProjectReference Include="..\..\DotNetBrightener.DataAccess.EF.PostgreSQL\DotNetBrightener.DataAccess.EF.PostgreSQL.csproj" />
+	  <ProjectReference Include="..\DataAccess_PostgreMigrations_Test.Db\DataAccess_PostgreMigrations_Test.Db.csproj" />
+	  <ProjectReference Include="..\DataAccess_PostgreMigrations_Test.Migrations\DataAccess_PostgreMigrations_Test.Migrations.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Controllers\" />
+	</ItemGroup>
+
+</Project>
