@@ -1,6 +1,7 @@
 using DataAccess_PostgreMigrations_Test.Db.DbContexts;
 using DataAccess_PostgreMigrations_Test.Migrations;
 using DotNetBrightener.DataAccess;
+using DotNetBrightener.DataAccess.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -50,5 +51,15 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+using (var scope = app.Services.CreateScope())
+{
+    var repository = scope.ServiceProvider.GetRequiredService<IRepository>();
+
+    await using (repository.BeginUnitOfWork())
+    {
+        await repository.InsertAsync(new TestEntityWithAuditInfo());
+    }
+}
 
 app.Run();

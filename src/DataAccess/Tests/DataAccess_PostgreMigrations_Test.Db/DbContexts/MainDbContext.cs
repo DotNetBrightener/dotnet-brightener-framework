@@ -19,7 +19,9 @@ public class MainDbContext : PostgreSqlVersioningMigrationEnabledDbContext
     protected override void ConfigureModelBuilder(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<TestEntity>();
+        modelBuilder.Entity<TestEntityWithAuditInfo>();
     }
 }
 
 public class TestEntity : GuidBaseEntity;
+public class TestEntityWithAuditInfo : GuidBaseEntityWithAuditInfo;

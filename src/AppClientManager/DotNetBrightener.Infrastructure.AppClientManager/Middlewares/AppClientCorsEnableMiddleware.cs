@@ -1,4 +1,5 @@
-﻿using DotNetBrightener.Infrastructure.AppClientManager.Options;
+﻿using System.Diagnostics;
+using DotNetBrightener.Infrastructure.AppClientManager.Options;
 using DotNetBrightener.Infrastructure.AppClientManager.Services;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Http;
@@ -23,6 +24,11 @@ public class AppClientCorsEnableMiddleware(
                              IEnumerable<IAppBundleDetectionService> appBundleDetectionServices,
                              ILogger<AppClientCorsEnableMiddleware>  logger)
     {
+#if DEBUG
+        if (!Debugger.IsAttached)
+            Debugger.Launch();
+#endif
+
         var option = appClientConfig.Value;
 
         var defaultPolicy = corsOptions.Value.GetPolicy(corsOptions.Value.DefaultPolicyName);
