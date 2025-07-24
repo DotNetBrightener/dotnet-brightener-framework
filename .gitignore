@@ -17,6 +17,8 @@ nuget.config
 # Mono auto generated files
 mono_crash.*
 
+.logs
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/

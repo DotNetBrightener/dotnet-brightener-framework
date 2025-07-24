@@ -8,6 +8,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".builds", ".builds", "{ECA8
 		Directory.Build.props = Directory.Build.props
 		..\LICENSE = ..\LICENSE
 		..\version.json = ..\version.json
+		..\.gitignore = ..\.gitignore
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Security", "Security", "{A8260E20-A153-47F4-AD48-3C711C1C1796}"
