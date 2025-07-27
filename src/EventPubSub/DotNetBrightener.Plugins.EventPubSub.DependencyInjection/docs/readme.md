@@ -1,6 +1,6 @@
 ﻿# Extensions for ASP.NET Core of Event Publish/Subscribe Library
 
-&copy; 2024 DotNet Brightener
+&copy; 2025 DotNet Brightener
 
 ![NuGet Version](https://img.shields.io/nuget/v/DotNetBrightener.Plugins.EventPubSub.DependencyInjection)
 

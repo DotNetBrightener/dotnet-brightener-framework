@@ -15,8 +15,13 @@ public static class AutoGenerateApiControllerSyntaxReceiver
             return false;
         }
 
-        // Check if this is the registration class we're looking for
-        return classDec.Identifier.ToString() == "CRUDWebApiGeneratorRegistration";
+        // Check if this class implements ICRUDWebApiGeneratorRegistration interface
+        return classDec.BaseList?.Types.Any(baseType =>
+        {
+            var typeName = baseType.Type.ToString();
+            return typeName == "ICRUDWebApiGeneratorRegistration" ||
+                   typeName.EndsWith(".ICRUDWebApiGeneratorRegistration");
+        }) == true;
     }
 
     // Static method for IIncrementalGenerator transform
@@ -27,6 +32,23 @@ public static class AutoGenerateApiControllerSyntaxReceiver
         var classSymbol   = semanticModel.GetDeclaredSymbol(classDec);
 
         if (classSymbol == null)
+        {
+            return null;
+        }
+
+        // Validate that the class actually implements ICRUDWebApiGeneratorRegistration interface
+        if (classSymbol is INamedTypeSymbol namedTypeSymbol)
+        {
+            var implementsInterface = namedTypeSymbol.AllInterfaces.Any(i =>
+                i.Name == "ICRUDWebApiGeneratorRegistration" ||
+                i.ToDisplayString().EndsWith(".ICRUDWebApiGeneratorRegistration"));
+
+            if (!implementsInterface)
+            {
+                return null;
+            }
+        }
+        else
         {
             return null;
         }
@@ -83,6 +105,84 @@ public static class AutoGenerateApiControllerSyntaxReceiver
             }
 
             if (typeInfo.Type?.ToString() == "System.Collections.Generic.List<System.Type>")
+            {
+                // Handle InitializerExpressionSyntax (older C# versions)
+                if (valueInitializer.Value is InitializerExpressionSyntax initExpr)
+                {
+                    foreach (var expr in initExpr.Expressions)
+                    {
+                        if (expr is TypeOfExpressionSyntax typeOfExpr)
+                        {
+                            var extractedType = semanticModel.GetTypeInfo(typeOfExpr.Type).Type;
+
+                            if (extractedType is ITypeSymbol typeS &&
+                                typeS.ContainingNamespace.ToDisplayString() != "<global namespace>")
+                            {
+                                modelsList.Add(new CodeGenerationInfo
+                                {
+                                    TargetEntity           = typeS.Name,
+                                    TargetEntityNamespace  = typeS.ContainingNamespace.ToDisplayString(),
+                                    DataServiceNamespace   = dataServiceNamespace,
+                                    ControllerAssemblyPath = assemblyDirectory,
+                                    ControllerNamespace    = $"{generatedAssemblyName}.Controllers",
+                                    ControllerPath         = Path.Combine(assemblyDirectory, "Controllers")
+                                });
+                            }
+                        }
+                    }
+                }
+                // Handle CollectionExpressionSyntax (C# 12+)
+                else if (valueInitializer.Value is CollectionExpressionSyntax collExpr)
+                {
+                    foreach (var element in collExpr.Elements.OfType<ExpressionElementSyntax>())
+                    {
+                        if (element.Expression is TypeOfExpressionSyntax typeOfExpr)
+                        {
+                            var extractedType = semanticModel.GetTypeInfo(typeOfExpr.Type).Type;
+
+                            if (extractedType is ITypeSymbol typeS &&
+                                typeS.ContainingNamespace.ToDisplayString() != "<global namespace>")
+                            {
+                                modelsList.Add(new CodeGenerationInfo
+                                {
+                                    TargetEntity           = typeS.Name,
+                                    TargetEntityNamespace  = typeS.ContainingNamespace.ToDisplayString(),
+                                    DataServiceNamespace   = dataServiceNamespace,
+                                    ControllerAssemblyPath = assemblyDirectory,
+                                    ControllerNamespace    = $"{generatedAssemblyName}.Controllers",
+                                    ControllerPath         = Path.Combine(assemblyDirectory, "Controllers")
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Also look for properties
+        foreach (var propertyDeclarationSyntax in members.OfType<PropertyDeclarationSyntax>())
+        {
+            var typeInfo = semanticModel.GetTypeInfo(propertyDeclarationSyntax.Type);
+
+            if (propertyDeclarationSyntax.Initializer?.Value == null)
+                continue;
+
+            var valueInitializer = propertyDeclarationSyntax.Initializer;
+
+            if (typeInfo.Type?.ToString() == "System.Type")
+            {
+                var typeofSyntax = valueInitializer.Value as TypeOfExpressionSyntax;
+
+                if (typeofSyntax == null) continue;
+
+                var extractedType = semanticModel.GetTypeInfo(typeofSyntax.Type).Type;
+
+                if (extractedType is ITypeSymbol typeS)
+                {
+                    dataServiceNamespace = $"{typeS.ContainingAssembly.Name}.Data";
+                }
+            }
+            else if (typeInfo.Type?.ToString() == "System.Collections.Generic.List<System.Type>")
             {
                 // Handle InitializerExpressionSyntax (older C# versions)
                 if (valueInitializer.Value is InitializerExpressionSyntax initExpr)

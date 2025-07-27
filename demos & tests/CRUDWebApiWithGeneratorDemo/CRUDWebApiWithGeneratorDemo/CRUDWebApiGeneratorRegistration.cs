@@ -1,13 +1,14 @@
 ﻿using CRUDWebApiWithGeneratorDemo.Core.Entities;
 using CRUDWebApiWithGeneratorDemo.Services;
+using DotNetBrightener.WebApi.GenericCRUD.Contracts;
 
 namespace CRUDWebApiWithGeneratorDemo;
 
-public class CRUDWebApiGeneratorRegistration
+public class CRUDWebApiGeneratorRegistration : ICRUDWebApiGeneratorRegistration
 {
-    private Type DataServiceRegistrationType = typeof(CRUDDataServiceGeneratorRegistration);
+    public Type DataServiceRegistrationType { get; } = typeof(CRUDDataServiceGeneratorRegistration);
 
-    public List<Type> Entities =
+    public List<Type> Entities { get; } =
     [
         typeof(Product),
         typeof(ProductCategory),

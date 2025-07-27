@@ -1,6 +1,6 @@
 # Data Migration CLI Tool
 
-&copy; 2024 [DotNet Brightener](mailto:admin@dotnetbrightener.com)
+&copy; 2025 [DotNet Brightener](mailto:admin@dotnetbrightener.com)
 
 ## Versions
 

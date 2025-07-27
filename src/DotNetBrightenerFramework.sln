@@ -5,10 +5,10 @@ VisualStudioVersion = 17.1.32228.430
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".builds", ".builds", "{ECA8FAA6-A93B-4985-948B-7D8F0BFF9792}"
 	ProjectSection(SolutionItems) = preProject
+		..\.gitignore = ..\.gitignore
 		Directory.Build.props = Directory.Build.props
 		..\LICENSE = ..\LICENSE
 		..\version.json = ..\version.json
-		..\.gitignore = ..\.gitignore
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Security", "Security", "{A8260E20-A153-47F4-AD48-3C711C1C1796}"
@@ -1604,6 +1604,8 @@ Global
 		Shared\SharedExtensions.ServiceCollection\SharedExtensions.ServiceCollectionExtensions.projitems*{7e618afd-cf2f-4a14-b949-fdd79aee1133}*SharedItemsImports = 5
 		Shared\SharedExtensions.String\StringExtensions.projitems*{7e618afd-cf2f-4a14-b949-fdd79aee1133}*SharedItemsImports = 5
 		Shared\SharedExtensions.Tasks\SharedExtensions.Tasks.projitems*{7e618afd-cf2f-4a14-b949-fdd79aee1133}*SharedItemsImports = 5
+		Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{81e68dde-31cb-4cd8-9b5c-44658e3c69a1}*SharedItemsImports = 13
+		Shared\SharedExtensions.XmlDocumentationHelper\SharedExtensions.XmlDocumentationHelper.projitems*{81e68dde-31cb-4cd8-9b5c-44658e3c69a1}*SharedItemsImports = 13
 		WebApiGenericCRUD\DotNetBrightener.WebApi.GenericCRUD.Shared\GenericCRUD.Shared.projitems*{81e68dde-31cb-4cd8-9b5c-44658e3c69a1}*SharedItemsImports = 13
 		Shared\SharedExtensions.Exception\SharedExtensions.Exception.projitems*{88444542-fce6-4853-948f-f51986513665}*SharedItemsImports = 5
 		Shared\SharedExtensions.HttpContext\SharedExtensions.HttpContext.projitems*{88444542-fce6-4853-948f-f51986513665}*SharedItemsImports = 5

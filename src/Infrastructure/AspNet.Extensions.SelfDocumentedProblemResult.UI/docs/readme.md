@@ -1,6 +1,6 @@
 # UI for ASP.NET Core Problem Result Extension
 
-&copy; 2024 [DotNet Brightener](mailto:admin@dotnetbrightener.com)
+&copy; 2025 [DotNet Brightener](mailto:admin@dotnetbrightener.com)
 
 ![NuGet Version](https://img.shields.io/nuget/v/DotNetBrightener.AspNet.Extensions.SelfDocumentedProblemResult.UI)
 

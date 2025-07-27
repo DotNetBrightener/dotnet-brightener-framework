@@ -1,6 +1,6 @@
 ﻿# Centralized CRUD WebAPI in ASP.NET Core Applications
  
-&copy; 2024 DotNet Brightener. <admin@dotnetbrightener.com>
+&copy; 2025 DotNet Brightener. <admin@dotnetbrightener.com>
  
 # Instruction
  

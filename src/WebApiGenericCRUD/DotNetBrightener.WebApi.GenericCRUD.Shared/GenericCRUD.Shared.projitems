@@ -28,4 +28,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)OperatorComparer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PredicateBuilder.cs" />
   </ItemGroup>
+  <Import Project="$(MSBuildThisFileDirectory)..\..\Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems" Label="Shared" />
+  <Import Project="$(MSBuildThisFileDirectory)..\..\Shared\SharedExtensions.XmlDocumentationHelper\SharedExtensions.XmlDocumentationHelper.projitems" Label="Shared" />
 </Project>
