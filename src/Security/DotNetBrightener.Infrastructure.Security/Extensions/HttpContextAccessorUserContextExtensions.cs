@@ -1,4 +1,7 @@
 ﻿// ReSharper disable CheckNamespace
+
+using DotNetBrightener.Infrastructure.Security;
+
 namespace Microsoft.AspNetCore.Http;
 
 public static class HttpContextAccessorUserContextExtensions
@@ -56,7 +59,7 @@ public static class HttpContextAccessorUserContextExtensions
             return default(T);
         }
 
-        var userIdClaim = userContext.FindFirst("sub") ?? userContext.FindFirst("USER_ID");
+        var userIdClaim = userContext.FindFirst("sub") ?? userContext.FindFirst(CommonUserClaimKeys.UserId);
 
         if (userIdClaim != null)
         {

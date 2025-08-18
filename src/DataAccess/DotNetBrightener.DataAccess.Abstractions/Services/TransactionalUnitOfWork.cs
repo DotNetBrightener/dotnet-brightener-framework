@@ -3,20 +3,15 @@ using Microsoft.Extensions.Logging;
 
 namespace DotNetBrightener.DataAccess.Services;
 
-internal class TransactionalUnitOfWork : ITransactionalUnitOfWork
+internal class TransactionalUnitOfWork(ILogger<TransactionalUnitOfWork> logger) : ITransactionalUnitOfWork
 {
-    private readonly TransactionScope _transactionScope;
-    private readonly ILogger          _logger;
+    private readonly TransactionScope _transactionScope = new(TransactionScopeOption.RequiresNew,
+                                                              TransactionScopeAsyncFlowOption.Enabled);
+
+    private readonly ILogger _logger = logger;
 
     private                 bool _needRollingBack = false;
-    private static readonly Lock _lock            = new();
-
-    public TransactionalUnitOfWork(ILogger<TransactionalUnitOfWork> logger)
-    {
-        _logger = logger;
-        _transactionScope = new TransactionScope(TransactionScopeOption.RequiresNew,
-                                                 TransactionScopeAsyncFlowOption.Enabled);
-    }
+    private static readonly Lock Lock             = new();
 
     public void Rollback()
     {
@@ -26,7 +21,7 @@ internal class TransactionalUnitOfWork : ITransactionalUnitOfWork
 
     public void Dispose()
     {
-        lock (_lock)
+        lock (Lock)
         {
             try
             {

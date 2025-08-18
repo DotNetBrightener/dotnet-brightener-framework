@@ -16,7 +16,7 @@ public enum DatabaseProvider
     PostgreSql,
 
     /// <summary>
-    ///     The Sqlite cross platform db
+    ///     The Sqlite db
     /// </summary>
     Sqlite,
 }
