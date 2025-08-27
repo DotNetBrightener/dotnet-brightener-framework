@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Microsoft.Extensions.DependencyInjection.Extensions;
+﻿using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 
 // ReSharper disable CheckNamespace
@@ -14,14 +13,7 @@ public class ExtendedServiceFactory : IServiceProviderFactory<IServiceCollection
         host.UseServiceProviderFactory(new ExtendedServiceFactory());
     }
 
-    private ExtendedServiceFactory()
-    {
-#if DEBUG
-        if (!Debugger.IsAttached)
-            Debugger.Launch();
-#endif
-
-    }
+    private ExtendedServiceFactory() { }
 
     public IServiceCollection CreateBuilder(IServiceCollection services)
     {

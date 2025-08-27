@@ -2,21 +2,21 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using NUnit.Framework;
+using Shouldly;
 using System.Net;
+using Xunit;
 
 namespace DotNetBrightener.SecuredApi.Tests;
 
-internal class SecureApiTest_RegisterHandlerViaMappingGroupedEndpoint
+public class SecureApiTest_RegisterHandlerViaMappingGroupedEndpoint : IAsyncDisposable
 {
     private WebApplication _host;
     private int            _port;
 
-    [SetUp]
-    public async Task Setup()
+    public SecureApiTest_RegisterHandlerViaMappingGroupedEndpoint()
     {
         // Arrange
-        _port = new Random().Next(32454, 33000);
+        _port = new Random().Next(33001, 33500);
         var builder = WebApplication.CreateBuilder();
 
         builder.Services.AddSecuredApi();
@@ -29,27 +29,26 @@ internal class SecureApiTest_RegisterHandlerViaMappingGroupedEndpoint
         _host.MapSecuredPost<SyncUserService>("syncUser");
 
         // Acts
-        await _host.StartAsync();
+        _host.StartAsync().Wait();
     }
 
-    [TearDown]
-    public async Task TearDown()
+    public async ValueTask DisposeAsync()
     {
         await TearDownHost();
     }
 
-    [Test]
-    [TestCase("/test/syncUser", HttpStatusCode.OK, "POST")]
-    [TestCase("/test/syncUser", HttpStatusCode.NotFound, "PUT")]
-    [TestCase("/test/syncUser", HttpStatusCode.NotFound, "GET")]
-    [TestCase("/test/sync-user", HttpStatusCode.NotFound)]
-    [TestCase("/test/this-action-is-not-found", HttpStatusCode.NotFound)]
-    [TestCase("/test?action=syncUser", HttpStatusCode.NotFound)]
-    [TestCase("/test?action=sync-user", HttpStatusCode.NotFound)]
-    [TestCase("/should-be-not-found", HttpStatusCode.NotFound)]
+    [Theory]
+    [InlineData("/test/syncUser", HttpStatusCode.OK, "POST")]
+    [InlineData("/test/syncUser", HttpStatusCode.NotFound, "PUT")]
+    [InlineData("/test/syncUser", HttpStatusCode.NotFound, "GET")]
+    [InlineData("/test/sync-user", HttpStatusCode.NotFound, "GET")]
+    [InlineData("/test/this-action-is-not-found", HttpStatusCode.NotFound, "GET")]
+    [InlineData("/test?action=syncUser", HttpStatusCode.NotFound, "GET")]
+    [InlineData("/test?action=sync-user", HttpStatusCode.NotFound, "GET")]
+    [InlineData("/should-be-not-found", HttpStatusCode.NotFound, "GET")]
     public async Task RequestToSecuredApi_ShouldSuccess(string         requestUrl,
                                                         HttpStatusCode expectedResponseCode,
-                                                        string         httpMethod = "GET")
+                                                        string         httpMethod)
     {
         var method = HttpMethod.Parse(httpMethod);
 
@@ -69,11 +68,11 @@ internal class SecureApiTest_RegisterHandlerViaMappingGroupedEndpoint
 
         var response = await httpClient.SendAsync(requestMsg);
 
-        Assert.That(response.StatusCode, Is.EqualTo(expectedResponseCode));
+        response.StatusCode.ShouldBe(expectedResponseCode);
 
         if (response.StatusCode == HttpStatusCode.OK)
         {
-            UserRecord responseData = null;
+            UserRecord? responseData = null;
 
             using (var responseStream = await response.Content.ReadAsStreamAsync())
             {
@@ -85,9 +84,9 @@ internal class SecureApiTest_RegisterHandlerViaMappingGroupedEndpoint
                 }
             }
 
-            Assert.That(responseData, Is.Not.Null);
-            Assert.That(responseData.Id, Is.EqualTo(5100));
-            Assert.That(responseData.Name, Is.EqualTo("test user"));
+            responseData.ShouldNotBeNull();
+            responseData.Id.ShouldBe(5100);
+            responseData.Name.ShouldBe("test user");
         }
     }
 

@@ -2,12 +2,13 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using NUnit.Framework;
+using Shouldly;
 using Testcontainers.PostgreSql;
+using Xunit;
 
 namespace DotNetBrightener.DataAccess.DataMigration.Tests;
 
-internal class DataMigrationTests_PostgreSql
+public class DataMigrationTests_PostgreSql : IAsyncDisposable
 {
     private readonly PostgreSqlContainer _postgreSqlContainer = new PostgreSqlBuilder()
                                                                .WithImage("postgres:17")
@@ -17,52 +18,46 @@ internal class DataMigrationTests_PostgreSql
                                                                .Build();
 
 
-    [SetUp]
-    public async Task Setup()
+    public DataMigrationTests_PostgreSql()
     {
-        await _postgreSqlContainer.StartAsync();
+        // Start the PostgreSQL container synchronously in constructor
+        _postgreSqlContainer.StartAsync().Wait();
     }
 
-    [TearDown]
-    public async Task TearDown()
+    public async ValueTask DisposeAsync()
     {
+        // Clean up after each test and dispose container
         TearDownHost();
-    }
-
-    [OneTimeTearDown]
-    public async Task OneTimeTearDown()
-    {
         await _postgreSqlContainer.DisposeAsync();
     }
 
-    [Test]
+    [Fact]
     public async Task AddDataMigrator_ShouldThrowBecauseOfNotInitializeDataMigrationFirst()
     {
-        Assert.Throws(Is.TypeOf<InvalidOperationException>()
-                        .And.Message
-                        .EqualTo("The data migrations must be enabled first using EnableDataMigrations method"),
-                      () =>
-                      {
-                          var builder = new HostBuilder()
-                             .ConfigureServices((_, services) =>
-                              {
-                                  services.AddDataMigrator<GoodMigration>();
-                              });
+        var exception = Should.Throw<InvalidOperationException>(() =>
+        {
+            var builder = new HostBuilder()
+               .ConfigureServices((_, services) =>
+                {
+                    services.AddDataMigrator<GoodMigration>();
+                });
 
-                          _ = builder.Build();
-                      });
+            _ = builder.Build();
+        });
+
+        exception.Message.ShouldBe("The data migrations must be enabled first using EnableDataMigrations method");
     }
 
-    [Test]
+    [Fact]
     public async Task AddDataMigrator_ShouldThrowBecauseOfNoAttribute()
     {
-        Assert.Throws(Is.TypeOf<InvalidOperationException>()
-                        .And.Message
-                        .EqualTo($"The data migration {typeof(ShouldNotBeRegisteredMigration).FullName} must have [DataMigration] attribute defined with the migration id"),
-                      () => ConfigureService<ShouldNotBeRegisteredMigration>());
+        var exception =
+            Should.Throw<InvalidOperationException>(() => ConfigureService<ShouldNotBeRegisteredMigration>());
+        exception.Message
+                 .ShouldBe($"The data migration {typeof(ShouldNotBeRegisteredMigration).FullName} must have [DataMigration] attribute defined with the migration id");
     }
 
-    [Test]
+    [Fact]
     public async Task AddDataMigrator_ShouldRegisterWithoutIssue()
     {
         // Arrange
@@ -73,11 +68,11 @@ internal class DataMigrationTests_PostgreSql
         var metadata        = serviceProvider.GetRequiredService<DataMigrationMetadata>();
 
         // Assert
-        Assert.That(metadata.Values.Count, Is.EqualTo(1));
-        Assert.That(metadata.Values.ElementAt(0), Is.EqualTo(typeof(GoodMigration)));
+        metadata.Values.Count.ShouldBe(1);
+        metadata.Values.ElementAt(0).ShouldBe(typeof(GoodMigration));
     }
 
-    [Test]
+    [Fact]
     public async Task AddDataMigrator_ShouldExecuteAtAppStart()
     {
         // Arrange
@@ -106,14 +101,14 @@ internal class DataMigrationTests_PostgreSql
                                         .ToList();
 
         // Assert
-        Assert.That(migrationHistory.Count, Is.EqualTo(2));
-        Assert.That(migrationHistory[0].MigrationId, Is.EqualTo("20240502_160412_InitializeMigration"));
-        Assert.That(migrationHistory[1].MigrationId, Is.EqualTo("20240502_160413_InitializeMigration3"));
+        migrationHistory.Count.ShouldBe(2);
+        migrationHistory[0].MigrationId.ShouldBe("20240502_160412_InitializeMigration");
+        migrationHistory[1].MigrationId.ShouldBe("20240502_160413_InitializeMigration3");
 
         await host.StopAsync();
     }
 
-    [Test]
+    [Fact]
     public async Task AddDataMigrator_ShouldExecuteAtAppStart_WithoutWritingHistoryDueToException()
     {
         // Arrange
@@ -142,7 +137,7 @@ internal class DataMigrationTests_PostgreSql
                                         .ToList();
 
         // Assert
-        Assert.That(migrationHistory.Count, Is.EqualTo(0));
+        migrationHistory.Count.ShouldBe(0);
 
         await host.StopAsync();
     }
