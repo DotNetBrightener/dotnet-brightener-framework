@@ -389,6 +389,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAccess_PostgreMigration
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAccess_PostgreMigrations_Test.Db", "DataAccess\Tests\DataAccess_PostgreMigrations_Test.Db\DataAccess_PostgreMigrations_Test.Db.csproj", "{2BE181A8-A888-2F96-405C-23A44F8EE217}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetBrightener.PushNotification.DependencyInjection", "PushNotification\DotNetBrightener.PushNotification.DependencyInjection\DotNetBrightener.PushNotification.DependencyInjection.csproj", "{81D182DB-44FA-09BE-6494-DC13C1BBBB13}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1349,6 +1351,14 @@ Global
 		{2BE181A8-A888-2F96-405C-23A44F8EE217}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2BE181A8-A888-2F96-405C-23A44F8EE217}.Release|ARM64.ActiveCfg = Release|Any CPU
 		{2BE181A8-A888-2F96-405C-23A44F8EE217}.Release|ARM64.Build.0 = Release|Any CPU
+		{81D182DB-44FA-09BE-6494-DC13C1BBBB13}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{81D182DB-44FA-09BE-6494-DC13C1BBBB13}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{81D182DB-44FA-09BE-6494-DC13C1BBBB13}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{81D182DB-44FA-09BE-6494-DC13C1BBBB13}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{81D182DB-44FA-09BE-6494-DC13C1BBBB13}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{81D182DB-44FA-09BE-6494-DC13C1BBBB13}.Release|Any CPU.Build.0 = Release|Any CPU
+		{81D182DB-44FA-09BE-6494-DC13C1BBBB13}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{81D182DB-44FA-09BE-6494-DC13C1BBBB13}.Release|ARM64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1510,6 +1520,7 @@ Global
 		{69C64D26-4CD0-492F-B628-F47224CC37B1} = {177AA7BB-E1C6-4CDF-B77E-A69A57990A1E}
 		{06AF74D6-AA3C-49D2-82BD-62B4B9F6D1FE} = {69C64D26-4CD0-492F-B628-F47224CC37B1}
 		{2BE181A8-A888-2F96-405C-23A44F8EE217} = {69C64D26-4CD0-492F-B628-F47224CC37B1}
+		{81D182DB-44FA-09BE-6494-DC13C1BBBB13} = {85480262-4B08-4286-ABE9-5C7609ACA593}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CBA29A5C-A736-4EB9-8D61-8E76924706CD}
@@ -1585,6 +1596,7 @@ Global
 		Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{75dd4d8f-5c63-4816-804c-2490d3524887}*SharedItemsImports = 5
 		Shared\SharedExtensions.String\StringExtensions.projitems*{75dd4d8f-5c63-4816-804c-2490d3524887}*SharedItemsImports = 5
 		Shared\SharedExtensions.Tasks\SharedExtensions.Tasks.projitems*{75dd4d8f-5c63-4816-804c-2490d3524887}*SharedItemsImports = 5
+		Shared\SharedExtensions.Tasks\SharedExtensions.Tasks.projitems*{77763076-2587-4fcb-abf5-3eb0e108a1b4}*SharedItemsImports = 5
 		Shared\SharedExtensions.ObjectMethods\SharedExtensions.ObjectMethods.projitems*{7bd32457-afb2-4d06-8500-20dc58a755bb}*SharedItemsImports = 5
 		Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{7cd1be0c-e1b6-4d05-b4e3-f2ae1b85eff7}*SharedItemsImports = 5
 		Shared\SharedExtensions.ServiceCollection\SharedExtensions.ServiceCollectionExtensions.projitems*{7cd1be0c-e1b6-4d05-b4e3-f2ae1b85eff7}*SharedItemsImports = 5
