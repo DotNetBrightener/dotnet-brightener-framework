@@ -1,14 +1,7 @@
 ﻿namespace DotNetBrightener.Core.BackgroundTasks.Cron;
 
-internal class CronExpressionComplexPart
+internal class CronExpressionComplexPart(string expression)
 {
-    private string _expression;
-
-    public CronExpressionComplexPart(string expression)
-    {
-        _expression = expression;
-    }
-
     /// <summary>
     /// From the cron expression, get all the int values that are valid due times.
     /// </summary>
@@ -16,31 +9,31 @@ internal class CronExpressionComplexPart
     /// <returns></returns>
     public bool CheckIfTimeIsDue(int time)
     {
-        var isRange           = _expression.IndexOf('-') > -1;
-        var isDivisibleRange  = isRange && _expression.IndexOf('/') > -1;
-        var isDelineatedArray = _expression.IndexOf(',') > -1;
+        var isRange           = expression.IndexOf('-') > -1;
+        var isDivisibleRange  = isRange && expression.IndexOf('/') > -1;
+        var isDelineatedArray = expression.IndexOf(',') > -1;
 
         if (isRange && isDelineatedArray)
         {
-            throw new InvalidCronExpressionException($"Cron expression '{_expression}' has mixed entry type.");
+            throw new InvalidCronExpressionException($"Cron expression '{expression}' has mixed entry type.");
         }
 
         if (isDivisibleRange)
         {
-            return CheckDivisibleRange(_expression, time);
+            return CheckDivisibleRange(expression, time);
         }
 
         if (isRange)
         {
-            return CheckRange(_expression, time);
+            return CheckRange(expression, time);
         }
         else if (isDelineatedArray)
         {
-            return CheckDelineatedArray(_expression, time);
+            return CheckDelineatedArray(expression, time);
         }
         else
         {
-            return CheckIsSpecifiedInt(_expression, time);
+            return CheckIsSpecifiedInt(expression, time);
         }
     }
 

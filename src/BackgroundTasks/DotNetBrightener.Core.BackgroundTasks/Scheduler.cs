@@ -7,31 +7,23 @@ using System.Reflection;
 
 namespace DotNetBrightener.Core.BackgroundTasks;
 
-public class Scheduler : IScheduler
+public class Scheduler(
+    IServiceScopeFactory  scopeFactory,
+    ILockedTasksContainer lockedTasksContainer,
+    ILogger<Scheduler>    logger)
+    : IScheduler
 {
-    private readonly ConcurrentDictionary<string, ScheduledTask> _tasks = new();
-    private readonly IServiceScopeFactory                        _scopeFactory;
-    private readonly ILockedTasksContainer                       _lockedTasksContainer;
-    private readonly ILogger                                     _logger;
-    private readonly CancellationTokenSource                     _cancellationTokenSource;
+    private readonly ConcurrentDictionary<string, ScheduledTask> _tasks                   = new();
+    private readonly ILogger                                     _logger                  = logger;
+    private readonly CancellationTokenSource                     _cancellationTokenSource = new();
 
     private int _schedulerIterationsActiveCount;
 
     public bool IsRunning => _schedulerIterationsActiveCount > 0;
 
-    public Scheduler(IServiceScopeFactory  scopeFactory,
-                     ILockedTasksContainer lockedTasksContainer,
-                     ILogger<Scheduler>    logger)
-    {
-        _scopeFactory            = scopeFactory;
-        _logger                  = logger;
-        _lockedTasksContainer    = lockedTasksContainer;
-        _cancellationTokenSource = new CancellationTokenSource();
-    }
-
     public IScheduleConfig ScheduleTask(MethodInfo methodAction, params object[] parameters)
     {
-        var scheduled = ScheduledTask.WithAction(_scopeFactory, methodAction, parameters);
+        var scheduled = ScheduledTask.WithAction(scopeFactory, methodAction, parameters);
 
         _tasks.TryAdd(scheduled.OverlappingUniqueIdentifier(), scheduled);
 
@@ -41,7 +33,7 @@ public class Scheduler : IScheduler
     public IScheduleConfig ScheduleTask<T>()
         where T : IBackgroundTask
     {
-        var scheduled = ScheduledTask.WithInvocable<T>(_scopeFactory);
+        var scheduled = ScheduledTask.WithInvocable<T>(scopeFactory);
 
         _tasks.TryAdd(scheduled.OverlappingUniqueIdentifier(), scheduled);
 
@@ -50,7 +42,7 @@ public class Scheduler : IScheduler
 
     public IScheduleConfig ScheduleTask(Type taskType)
     {
-        var scheduled = ScheduledTask.WithInvocableType(taskType, _scopeFactory);
+        var scheduled = ScheduledTask.WithInvocableType(taskType, scopeFactory);
 
         _tasks.TryAdd(scheduled.OverlappingUniqueIdentifier(), scheduled);
 
@@ -95,7 +87,7 @@ public class Scheduler : IScheduler
             logger.LogDebug("Scheduled task finished...");
         }
 
-        using (var scope = _scopeFactory.CreateScope())
+        using (var scope = scopeFactory.CreateScope())
         {
             var scopeProvider  = scope.ServiceProvider;
             var eventPublisher = scopeProvider.GetService<IEventPublisher>();
@@ -111,7 +103,7 @@ public class Scheduler : IScheduler
 
                 if (scheduledTask.ShouldPreventOverlapping())
                 {
-                    if (_lockedTasksContainer.TryLock(scheduledTask.OverlappingUniqueIdentifier(),
+                    if (lockedTasksContainer.TryLock(scheduledTask.OverlappingUniqueIdentifier(),
                                                       TimeSpan.FromHours(24)))
                     {
                         try
@@ -120,7 +112,7 @@ public class Scheduler : IScheduler
                         }
                         finally
                         {
-                            _lockedTasksContainer.Release(scheduledTask.OverlappingUniqueIdentifier());
+                            lockedTasksContainer.Release(scheduledTask.OverlappingUniqueIdentifier());
                         }
                     }
                 }

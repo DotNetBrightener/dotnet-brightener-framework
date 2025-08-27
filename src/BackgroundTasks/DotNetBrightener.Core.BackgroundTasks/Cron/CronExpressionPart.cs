@@ -3,20 +3,12 @@ namespace DotNetBrightener.Core.BackgroundTasks.Cron;
 /// <summary>
 ///     Represents a part of the cron expression to check when it is due
 /// </summary>
-public class CronExpressionPart
+public class CronExpressionPart(string expression, int replaceZeroWith)
 {
     /// <summary>
     ///     The cron expression used to determine when event is due
     /// </summary>
-    private readonly string _expression;
-
-    private readonly int _replaceZeroWith;
-
-    public CronExpressionPart(string expression, int replaceZeroWith)
-    {
-        _expression      = expression.Trim();
-        _replaceZeroWith = replaceZeroWith;
-    }
+    private readonly string _expression = expression.Trim();
 
     /// <summary>
     ///     Checks if the cron expression is due at the given time value
@@ -51,7 +43,7 @@ public class CronExpressionPart
 
             if (time == 0)
             {
-                time = _replaceZeroWith;
+                time = replaceZeroWith;
             }
 
             return time % divisor == 0;

@@ -23,7 +23,7 @@ public class SiteSettingsController : Controller
     }
 
     [HttpGet("allSettings")]
-    public IActionResult GetAllSettings()
+    public virtual IActionResult GetAllSettings()
     {
         var siteSettings = _siteSettingService.GetAllAvailableSettings();
 
@@ -59,14 +59,18 @@ public class SiteSettingsController : Controller
     {
         try
         {
-            if (!TryGetSettingInstance(settingKey, out var siteSettingInstance, out IActionResult returnAction))
+            if (!TryGetSettingInstance(settingKey, 
+                                       out var siteSettingInstance, 
+                                       out IActionResult returnAction))
                 return returnAction;
 
             var body = Request.HttpContext.Items[SettingJsonBodyReader.RequestBodyKey].ToString()!;
 
-            var formModel = JsonConvert.DeserializeObject(body, siteSettingInstance.GetType()) as SiteSettingBase;
+            var settingType = siteSettingInstance.GetType();
 
-            _siteSettingService.SaveSetting(formModel, siteSettingInstance.GetType());
+            var formModel = JsonConvert.DeserializeObject(body, settingType) as SiteSettingBase;
+
+            _siteSettingService.SaveSetting(formModel, settingType);
 
             return Ok();
         }
