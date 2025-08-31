@@ -12,12 +12,6 @@ public class AppClientDbContext : AdvancedDbContext
 
     }
 
-    protected AppClientDbContext(DbContextOptions                options,
-                                 Action<DbContextOptionsBuilder> optionBuilder)
-        : base(options)
-    {
-    }
-
     public AppClientDbContext(DbContextOptions<AppClientDbContext> options)
         : base(options)
     {
