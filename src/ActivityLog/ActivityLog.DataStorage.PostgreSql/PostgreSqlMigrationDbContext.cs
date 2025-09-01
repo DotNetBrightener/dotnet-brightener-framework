@@ -1,12 +1,7 @@
-using ActivityLog.DataStorage;
+using DotNetBrightener.DataAccess.EF.Migrations;
 using Microsoft.EntityFrameworkCore;
 
 namespace ActivityLog.DataStorage.PostgreSql;
 
-public class PostgreSqlMigrationDbContext : ActivityLogDbContext
-{
-    public PostgreSqlMigrationDbContext(DbContextOptions<PostgreSqlMigrationDbContext> options)
-        : base(options)
-    {
-    }
-}
+internal class PostgreSqlMigrationDbContext(DbContextOptions<PostgreSqlMigrationDbContext> options)
+    : ActivityLogDbContext(options), IMigrationDefinitionDbContext<ActivityLogDbContext>;

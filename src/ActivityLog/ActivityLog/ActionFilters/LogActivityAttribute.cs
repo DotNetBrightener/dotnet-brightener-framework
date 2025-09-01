@@ -17,6 +17,8 @@ public class LogActivityAttribute : Attribute
     public string Name { get; set; }
 
     public string Description { get; set; }
+    
+    public string TargetEntity { get; set; }
 
     /// <summary>
     ///     The format of the description of the activity.

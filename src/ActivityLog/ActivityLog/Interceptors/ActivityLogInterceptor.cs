@@ -4,8 +4,8 @@ using ActivityLog.Internal;
 using ActivityLog.Models;
 using ActivityLog.Services;
 using Castle.DynamicProxy;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Collections.Concurrent;
 using System.Reflection;
 
 namespace ActivityLog.Interceptors;
@@ -16,9 +16,7 @@ namespace ActivityLog.Interceptors;
 public class ActivityLogInterceptor(
     IActivityLogService                activityLogService,
     IActivityLogContextProvider        contextProvider,
-    IActivityLogSerializer             serializer,
-    IOptions<ActivityLogConfiguration> configuration,
-    ILogger<ActivityLogInterceptor>    logger)
+    IOptions<ActivityLogConfiguration> configuration)
     : IInterceptor
 {
     private readonly ActivityLogConfiguration _configuration = configuration.Value;
@@ -34,7 +32,7 @@ public class ActivityLogInterceptor(
         }
 
         // Check if method has LogActivity attribute
-        var logActivityAttribute = GetLogActivityAttribute(invocation.Method);
+        var logActivityAttribute = GetLogActivityAttribute(invocation.Method, invocation);
 
         if (logActivityAttribute == null)
         {
@@ -53,16 +51,14 @@ public class ActivityLogInterceptor(
 
         var context = CreateExecutionContext(invocation, logActivityAttribute);
 
+        // Set up context for metadata collection
+        var previousContext = ActivityLogContextAccessor.CurrentContext;
+        ActivityLogContextAccessor.CurrentContext = context;
+
         try
         {
             // Start timing and logging
             context.StartTiming();
-
-            // Log method start if configured
-            if (_configuration.MinimumLogLevel <= ActivityLogLevel.Debug)
-            {
-                _ = Task.Run(async () => await activityLogService.LogMethodStartAsync(context));
-            }
 
             // Execute the method
             invocation.Proceed();
@@ -84,6 +80,8 @@ public class ActivityLogInterceptor(
         }
         catch (Exception ex)
         {
+
+
             context.Exception = ex;
             context.StopTiming();
 
@@ -93,12 +91,44 @@ public class ActivityLogInterceptor(
             // Re-throw the original exception
             throw;
         }
+        finally
+        {
+            // Restore previous context
+            ActivityLogContextAccessor.CurrentContext = previousContext;
+        }
     }
 
-    private LogActivityAttribute? GetLogActivityAttribute(MethodInfo method)
+    private LogActivityAttribute? GetLogActivityAttribute(MethodInfo method, IInvocation invocation)
     {
         // Only check method-level attributes, not class-level
-        return method.GetCustomAttribute<LogActivityAttribute>();
+
+        // First check the method itself (for class-based proxies)
+        var attribute = method.GetCustomAttribute<LogActivityAttribute>();
+
+        if (attribute != null)
+        {
+            return attribute;
+        }
+
+        // For interface-based proxies, check the target object's method
+        if (invocation.InvocationTarget != null)
+        {
+            var targetType = invocation.InvocationTarget.GetType();
+            var targetMethod =
+                targetType.GetMethod(method.Name, method.GetParameters().Select(p => p.ParameterType).ToArray());
+
+            if (targetMethod != null)
+            {
+                var targetAttribute = targetMethod.GetCustomAttribute<LogActivityAttribute>();
+
+                if (targetAttribute != null)
+                {
+                    return targetAttribute;
+                }
+            }
+        }
+
+        return null;
     }
 
     private bool ShouldFilterMethod(MethodInfo method)
@@ -127,25 +157,55 @@ public class ActivityLogInterceptor(
         }
     }
 
-    private MethodExecutionContext CreateExecutionContext(IInvocation invocation, LogActivityAttribute attribute)
+    private MethodExecutionContext CreateExecutionContext(IInvocation          invocation,
+                                                          LogActivityAttribute attribute)
     {
+        // Create named arguments dictionary mapping parameter names to values
+        var namedArguments = CreateNamedArguments(invocation.Method, invocation.Arguments);
+
         var context = new MethodExecutionContext
         {
             MethodInfo          = invocation.Method,
             Target              = invocation.InvocationTarget,
-            Arguments           = invocation.Arguments,
+            Arguments           = namedArguments,
             ActivityName        = attribute.Name,
             ActivityDescription = attribute.Description,
             DescriptionFormat   = attribute.DescriptionFormat,
+            TargetEntity        = attribute.TargetEntity,
             CorrelationId       = contextProvider.GetCorrelationId(),
             UserContext         = contextProvider.GetUserContext(),
             HttpContext         = contextProvider.GetHttpContext()
         };
 
+
         return context;
     }
 
-    private void HandleAsyncMethod(IInvocation invocation, MethodExecutionContext context)
+    private Dictionary<string, object?> CreateNamedArguments(MethodInfo method, object?[] arguments)
+    {
+        var parameters = method.GetParameters();
+
+        // Handle methods with no parameters
+        if (parameters.Length == 0)
+        {
+            return new Dictionary<string, object?>();
+        }
+
+        // Create dictionary mapping parameter names to argument values
+        var namedArguments = new Dictionary<string, object?>();
+
+        for (int i = 0; i < parameters.Length && i < arguments.Length; i++)
+        {
+            namedArguments[parameters[i].Name ?? $"param{i}"] = arguments[i];
+        }
+
+        return namedArguments;
+    }
+
+
+
+    private void HandleAsyncMethod(IInvocation            invocation,
+                                   MethodExecutionContext context)
     {
         var returnType = invocation.Method.ReturnType;
 
@@ -188,11 +248,13 @@ public class ActivityLogInterceptor(
         }
     }
 
-    private async Task HandleTaskAsync(Task task, MethodExecutionContext context)
+    private async Task HandleTaskAsync(Task                   task,
+                                       MethodExecutionContext context)
     {
         try
         {
             await task;
+
             context.StopTiming();
             await activityLogService.LogMethodCompletionAsync(context);
         }
@@ -206,11 +268,13 @@ public class ActivityLogInterceptor(
         }
     }
 
-    private async Task<T> HandleTaskWithResultAsync<T>(Task<T> task, MethodExecutionContext context)
+    private async Task<T> HandleTaskWithResultAsync<T>(Task<T>                task,
+                                                       MethodExecutionContext context)
     {
         try
         {
             var result = await task;
+
             context.ReturnValue = result;
             context.StopTiming();
             await activityLogService.LogMethodCompletionAsync(context);
@@ -219,6 +283,7 @@ public class ActivityLogInterceptor(
         }
         catch (Exception ex)
         {
+
             context.Exception = ex;
             context.StopTiming();
             await activityLogService.LogMethodFailureAsync(context);
@@ -227,11 +292,13 @@ public class ActivityLogInterceptor(
         }
     }
 
-    private async ValueTask HandleValueTaskAsync(ValueTask task, MethodExecutionContext context)
+    private async ValueTask HandleValueTaskAsync(ValueTask              task,
+                                                 MethodExecutionContext context)
     {
         try
         {
             await task;
+
             context.StopTiming();
             await activityLogService.LogMethodCompletionAsync(context);
         }
@@ -245,11 +312,13 @@ public class ActivityLogInterceptor(
         }
     }
 
-    private async ValueTask<T> HandleValueTaskWithResultAsync<T>(ValueTask<T> task, MethodExecutionContext context)
+    private async ValueTask<T> HandleValueTaskWithResultAsync<T>(ValueTask<T>           task,
+                                                                 MethodExecutionContext context)
     {
         try
         {
             var result = await task;
+
             context.ReturnValue = result;
             context.StopTiming();
             await activityLogService.LogMethodCompletionAsync(context);
@@ -258,6 +327,7 @@ public class ActivityLogInterceptor(
         }
         catch (Exception ex)
         {
+
             context.Exception = ex;
             context.StopTiming();
             await activityLogService.LogMethodFailureAsync(context);

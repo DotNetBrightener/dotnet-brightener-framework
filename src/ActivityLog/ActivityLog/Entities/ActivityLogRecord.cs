@@ -1,10 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ActivityLog.Entities;
 
 public class ActivityLogRecord
 {
     [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.None)]
     public Guid Id { get; set; } = Guid.CreateVersion7();
 
     /// <summary>

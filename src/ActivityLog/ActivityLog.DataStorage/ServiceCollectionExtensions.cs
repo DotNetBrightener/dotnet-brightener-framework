@@ -4,7 +4,6 @@ using ActivityLog;
 using ActivityLog.DataStorage;
 using ActivityLog.Services;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -13,17 +12,17 @@ public static class ServiceCollectionExtensions
     public static ActivityLogBuilder WithStorage(this ActivityLogBuilder activityLogBuilder)
     {
         activityLogBuilder.Services.AddScoped<IActivityLogRepository, ActivityLogRepository>();
-        activityLogBuilder.Services.Replace(ServiceDescriptor.Scoped<IActivityLogRepository, ActivityLogRepository>());
 
         return activityLogBuilder;
     }
 
-    public static ActivityLogBuilder UseInMemoryDatabase(this ActivityLogBuilder activityLogBuilder, string databaseName)
+    public static ActivityLogBuilder UseInMemoryDatabase(this ActivityLogBuilder activityLogBuilder,
+                                                         string                  databaseName)
     {
         var services = activityLogBuilder.Services;
 
         services.AddDbContext<ActivityLogDbContext>(options =>
-            options.UseInMemoryDatabase(databaseName));
+                                                        options.UseInMemoryDatabase(databaseName));
 
         return activityLogBuilder;
     }

@@ -16,7 +16,7 @@ public static class ServiceCollectionExtensions
         services.UseDbContextWithMigration<ActivityLogDbContext, SqlServerMigrationDbContext>(option =>
         {
             option.UseSqlServer(connectionString,
-                               x => x.MigrationsHistoryTable("__MigrationsHistory", "ActivityLog"));
+                               x => x.MigrationsHistoryTable("__MigrationsHistory", nameof(ActivityLog)));
         });
 
         return activityLogBuilder;

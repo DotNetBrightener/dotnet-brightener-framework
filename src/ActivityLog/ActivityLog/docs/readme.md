@@ -287,7 +287,7 @@ services.AddScoped<IActivityLogContextProvider, CustomActivityLogContextProvider
 ```csharp
 public class CustomActivityLogSerializer : IActivityLogSerializer
 {
-    public string SerializeArguments(MethodInfo method, object?[] arguments)
+    public string SerializeArguments(MethodInfo method, Dictionary<string, object?> arguments)
     {
         // Custom serialization logic
         return JsonSerializer.Serialize(arguments, new JsonSerializerOptions

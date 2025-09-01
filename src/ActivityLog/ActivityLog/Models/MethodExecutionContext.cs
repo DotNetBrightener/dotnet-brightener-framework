@@ -9,11 +9,6 @@ namespace ActivityLog.Models;
 public class MethodExecutionContext
 {
     /// <summary>
-    /// Gets or sets the unique identifier for this execution context
-    /// </summary>
-    public Guid Id { get; set; } = Guid.CreateVersion7();
-
-    /// <summary>
     /// Gets or sets the correlation ID for tracking related activities
     /// </summary>
     public Guid? CorrelationId { get; set; }
@@ -31,7 +26,7 @@ public class MethodExecutionContext
     /// <summary>
     /// Gets or sets the method arguments
     /// </summary>
-    public object?[] Arguments { get; set; } = Array.Empty<object>();
+    public Dictionary<string, object?> Arguments { get; set; } = new();
 
     /// <summary>
     /// Gets or sets the method return value
@@ -52,11 +47,10 @@ public class MethodExecutionContext
     /// Gets or sets the end time of method execution
     /// </summary>
     public DateTimeOffset? EndTime { get; set; }
-
-    /// <summary>
-    /// Gets or sets the stopwatch for high-precision timing
-    /// </summary>
-    public Stopwatch Stopwatch { get; set; } = new();
+    
+    public long? StartTimestamp { get; set; }
+    
+    public long? EndTimestamp { get; set; }
 
     /// <summary>
     /// Gets or sets the activity name from the LogActivity attribute
@@ -91,11 +85,10 @@ public class MethodExecutionContext
     /// <summary>
     /// Gets the execution duration in milliseconds
     /// </summary>
-    public double? ExecutionDurationMs => EndTime.HasValue 
-        ? (EndTime.Value - StartTime).TotalMilliseconds 
-        : Stopwatch.IsRunning 
-            ? Stopwatch.Elapsed.TotalMilliseconds 
-            : null;
+    public double? ExecutionDurationMs => StartTimestamp is null || EndTimestamp is null
+                                              ? 0
+                                              : Stopwatch.GetElapsedTime(StartTimestamp!.Value, EndTimestamp!.Value)
+                                                         .TotalMilliseconds;
 
     /// <summary>
     /// Gets whether the method execution was successful
@@ -117,13 +110,14 @@ public class MethodExecutionContext
     /// </summary>
     public string? Namespace => MethodInfo.DeclaringType?.Namespace;
 
+    public string TargetEntity { get; set; }
+
     /// <summary>
     /// Starts the execution timing
     /// </summary>
     public void StartTiming()
     {
-        StartTime = DateTimeOffset.UtcNow;
-        Stopwatch.Start();
+        StartTimestamp = Stopwatch.GetTimestamp();
     }
 
     /// <summary>
@@ -131,8 +125,7 @@ public class MethodExecutionContext
     /// </summary>
     public void StopTiming()
     {
-        EndTime = DateTimeOffset.UtcNow;
-        Stopwatch.Stop();
+        EndTimestamp = Stopwatch.GetTimestamp();
     }
 }
 

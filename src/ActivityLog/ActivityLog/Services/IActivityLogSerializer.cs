@@ -15,9 +15,9 @@ public interface IActivityLogSerializer
     /// Serializes method arguments to a JSON string
     /// </summary>
     /// <param name="method">The method information</param>
-    /// <param name="arguments">The method arguments</param>
+    /// <param name="arguments">The method arguments as named parameters</param>
     /// <returns>Serialized arguments as JSON string</returns>
-    string SerializeArguments(MethodInfo method, object?[] arguments);
+    string SerializeArguments(MethodInfo method, Dictionary<string, object?> arguments);
 
     /// <summary>
     /// Serializes a return value to a JSON string
@@ -55,39 +55,42 @@ public class ActivityLogSerializer : IActivityLogSerializer
         _jsonOptions = CreateJsonSerializerOptions();
     }
 
-    public string SerializeArguments(MethodInfo method, object?[] arguments)
+    public string SerializeArguments(MethodInfo method, Dictionary<string, object?> arguments)
     {
-        if (!_config.SerializeInputParameters || arguments.Length == 0)
-            return "[]";
+        if (!_config.SerializeInputParameters || arguments.Count == 0)
+            return "{}";
 
         try
         {
             var parameters = method.GetParameters();
-            var argumentsDict = new Dictionary<string, object?>();
+            var sanitizedArguments = new Dictionary<string, object?>();
 
-            for (int i = 0; i < Math.Min(parameters.Length, arguments.Length); i++)
+            foreach (var kvp in arguments)
             {
-                var paramName = parameters[i].Name ?? $"param{i}";
-                var paramValue = arguments[i];
+                var paramName = kvp.Key;
+                var paramValue = kvp.Value;
+
+                // Find the corresponding parameter info for type checking
+                var parameterInfo = parameters.FirstOrDefault(p => p.Name == paramName);
 
                 // Check if parameter type should be excluded
-                if (ShouldExcludeType(parameters[i].ParameterType))
+                if (parameterInfo != null && ShouldExcludeType(parameterInfo.ParameterType))
                 {
-                    argumentsDict[paramName] = "[EXCLUDED]";
+                    sanitizedArguments[paramName] = "[EXCLUDED]";
                     continue;
                 }
 
                 // Check if parameter name should be excluded
                 if (ShouldExcludeProperty(paramName))
                 {
-                    argumentsDict[paramName] = "[SENSITIVE]";
+                    sanitizedArguments[paramName] = "[SENSITIVE]";
                     continue;
                 }
 
-                argumentsDict[paramName] = SanitizeValue(paramValue);
+                sanitizedArguments[paramName] = SanitizeValue(paramValue);
             }
 
-            return JsonSerializer.Serialize(argumentsDict, _jsonOptions);
+            return JsonSerializer.Serialize(sanitizedArguments, _jsonOptions);
         }
         catch (Exception ex)
         {
@@ -162,7 +165,9 @@ public class ActivityLogSerializer : IActivityLogSerializer
                 }
             }
 
-            return JsonSerializer.Serialize(sanitizedMetadata, _jsonOptions);
+            // Use metadata-specific JSON options without SafeObjectConverter to properly serialize dictionaries
+            var metadataJsonOptions = CreateMetadataJsonSerializerOptions();
+            return JsonSerializer.Serialize(sanitizedMetadata, metadataJsonOptions);
         }
         catch (Exception ex)
         {
@@ -182,6 +187,22 @@ public class ActivityLogSerializer : IActivityLogSerializer
             {
                 new JsonStringEnumConverter(),
                 new SafeObjectConverter(_config)
+            }
+        };
+    }
+
+    private JsonSerializerOptions CreateMetadataJsonSerializerOptions()
+    {
+        return new JsonSerializerOptions
+        {
+            WriteIndented = false,
+            DefaultIgnoreCondition = _config.IgnoreNullValues ? JsonIgnoreCondition.WhenWritingNull : JsonIgnoreCondition.Never,
+            MaxDepth = _config.MaxDepth,
+            ReferenceHandler = ReferenceHandler.IgnoreCycles,
+            Converters =
+            {
+                new JsonStringEnumConverter()
+                // Note: Intentionally excluding SafeObjectConverter to allow proper dictionary serialization
             }
         };
     }

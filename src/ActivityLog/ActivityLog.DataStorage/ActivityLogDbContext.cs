@@ -28,6 +28,8 @@ public class ActivityLogDbContext : AdvancedDbContext
         // Configure ActivityLogRecord entity
         modelBuilder.Entity<ActivityLogRecord>(entity =>
         {
+            entity.ToTable(nameof(ActivityLogRecord), nameof(ActivityLog));
+            
             entity.HasKey(e => e.Id);
 
             entity.Property(e => e.ActivityName)

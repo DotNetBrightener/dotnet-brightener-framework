@@ -79,7 +79,7 @@ public class ActivityLogContextProvider(
             };
 
             // Try to get user ID if available
-            if (long.TryParse(userResolver.CurrentUserId?.ToString(), out var userId))
+            if (long.TryParse(userResolver.CurrentUserId, out var userId))
             {
                 userContext.UserId = userId;
             }

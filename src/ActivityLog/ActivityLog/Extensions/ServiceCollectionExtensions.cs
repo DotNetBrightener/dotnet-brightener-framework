@@ -44,13 +44,17 @@ public static class ServiceCollectionExtensions
         services.TryAddSingleton<IProxyGenerator, ProxyGenerator>();
         services.TryAddScoped<ActivityLogInterceptor>();
         services.TryAddScoped<IActivityLogContextProvider, ActivityLogContextProvider>();
-        services.TryAddScoped<IActivityLogSerializer, ActivityLogSerializer>();
-        services.TryAddScoped<IActivityLogService, ActivityLogService>();
-        
-        // Register as hosted service for background processing
-        services.AddSingleton<IHostedService>(provider => 
-            provider.GetRequiredService<IActivityLogService>() as ActivityLogService 
-            ?? throw new InvalidOperationException("ActivityLogService must be registered"));
+        services.TryAddSingleton<IActivityLogContextAccessor, ActivityLogContextAccessor>();
+
+        services.TryAddSingleton<IActivityLogSerializer, ActivityLogSerializer>();
+        services.TryAddSingleton<IActivityLogService, ActivityLogService>();
+
+        // Register and immediately initialize the static accessor
+        services.AddSingleton<ActivityLogContextAccessorInitializer>(provider =>
+        {
+            var accessor = provider.GetRequiredService<IActivityLogContextAccessor>();
+            return new ActivityLogContextAccessorInitializer(accessor);
+        });
 
         // Create and register builder
         var builder = new ActivityLogBuilder
@@ -64,52 +68,6 @@ public static class ServiceCollectionExtensions
         RegisterInterceptedServices(services, assembliesToScan);
 
         return builder;
-    }
-
-    /// <summary>
-    /// Registers a service with activity logging interception
-    /// </summary>
-    /// <typeparam name="TService">The service interface</typeparam>
-    /// <typeparam name="TImplementation">The service implementation</typeparam>
-    /// <param name="services">The service collection</param>
-    /// <param name="lifetime">The service lifetime</param>
-    /// <returns>The service collection for chaining</returns>
-    public static IServiceCollection AddActivityLoggedService<TService, TImplementation>(
-        this IServiceCollection services,
-        ServiceLifetime lifetime = ServiceLifetime.Scoped)
-        where TService : class
-        where TImplementation : class, TService
-    {
-        switch (lifetime)
-        {
-            case ServiceLifetime.Scoped:
-                services.AddInterceptedScoped<TService, TImplementation, ActivityLogInterceptor>();
-                break;
-            case ServiceLifetime.Singleton:
-                services.AddInterceptedSingleton<TService, TImplementation, ActivityLogInterceptor>();
-                break;
-            case ServiceLifetime.Transient:
-                services.AddInterceptedTransient<TService, TImplementation, ActivityLogInterceptor>();
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(lifetime), lifetime, null);
-        }
-
-        return services;
-    }
-
-    /// <summary>
-    /// Configures activity logging options
-    /// </summary>
-    /// <param name="services">The service collection</param>
-    /// <param name="configureOptions">Action to configure options</param>
-    /// <returns>The service collection for chaining</returns>
-    public static IServiceCollection ConfigureActivityLogging(
-        this IServiceCollection services,
-        Action<ActivityLogConfiguration> configureOptions)
-    {
-        services.Configure(configureOptions);
-        return services;
     }
 
     private static void RegisterInterceptedServices(IServiceCollection services, Assembly[] assembliesToScan)
@@ -199,5 +157,16 @@ public static class ServiceCollectionExtensions
         // Only check if any methods have the LogActivity attribute (not class-level)
         return type.GetMethods(BindingFlags.Public | BindingFlags.Instance)
             .Any(m => m.GetCustomAttribute<LogActivityAttribute>() != null);
+    }
+}
+
+/// <summary>
+/// Initializes the static ActivityLogContext accessor
+/// </summary>
+internal class ActivityLogContextAccessorInitializer
+{
+    public ActivityLogContextAccessorInitializer(IActivityLogContextAccessor accessor)
+    {
+        ActivityLogContext.SetAccessor(accessor);
     }
 }

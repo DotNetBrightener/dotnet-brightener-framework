@@ -8,13 +8,6 @@ namespace ActivityLog.Services;
 public interface IActivityLogService
 {
     /// <summary>
-    /// Logs the start of a method execution
-    /// </summary>
-    /// <param name="context">The method execution context</param>
-    /// <returns>A task representing the async operation</returns>
-    Task<LoggingResult> LogMethodStartAsync(MethodExecutionContext context);
-
-    /// <summary>
     /// Logs the successful completion of a method execution
     /// </summary>
     /// <param name="context">The method execution context</param>
@@ -27,13 +20,6 @@ public interface IActivityLogService
     /// <param name="context">The method execution context</param>
     /// <returns>A task representing the async operation</returns>
     Task<LoggingResult> LogMethodFailureAsync(MethodExecutionContext context);
-
-    /// <summary>
-    /// Logs a complete method execution (start and end in one call)
-    /// </summary>
-    /// <param name="context">The method execution context</param>
-    /// <returns>A task representing the async operation</returns>
-    Task<LoggingResult> LogMethodExecutionAsync(MethodExecutionContext context);
 
     /// <summary>
     /// Flushes any pending log entries

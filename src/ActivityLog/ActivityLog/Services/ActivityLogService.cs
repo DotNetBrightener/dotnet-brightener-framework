@@ -1,23 +1,23 @@
-using System.Collections.Concurrent;
-using System.Diagnostics;
 using ActivityLog.Configuration;
 using ActivityLog.Entities;
 using ActivityLog.Internal;
 using ActivityLog.Models;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Collections.Concurrent;
+using System.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace ActivityLog.Services;
 
 /// <summary>
 /// Main implementation of IActivityLogService with async logging capabilities
 /// </summary>
-public class ActivityLogService : IActivityLogService, IHostedService, IDisposable
+public class ActivityLogService : IActivityLogService, IDisposable
 {
-    private readonly IActivityLogRepository      _repository;
-    private readonly IActivityLogSerializer      _serializer;
     private readonly ActivityLogConfiguration    _configuration;
+    private readonly IServiceScopeFactory        _serviceScopeFactory;
+    private readonly IActivityLogSerializer      _serializer;
     private readonly ILogger<ActivityLogService> _logger;
 
     private readonly ConcurrentQueue<ActivityLogRecord> _logQueue       = new();
@@ -28,15 +28,15 @@ public class ActivityLogService : IActivityLogService, IHostedService, IDisposab
     private volatile bool  _disposed;
     private          Task? _backgroundTask;
 
-    public ActivityLogService(IActivityLogRepository             repository,
+    public ActivityLogService(IServiceScopeFactory               serviceScopeFactory,
                               IActivityLogSerializer             serializer,
                               IOptions<ActivityLogConfiguration> configuration,
                               ILogger<ActivityLogService>        logger)
     {
-        _repository    = repository;
-        _serializer    = serializer;
-        _configuration = configuration.Value;
-        _logger        = logger;
+        _configuration       = configuration.Value;
+        _serviceScopeFactory = serviceScopeFactory;
+        _serializer          = serializer;
+        _logger              = logger;
 
         // Initialize flush timer if async logging is enabled
         if (_configuration.AsyncLogging.EnableAsyncLogging)
@@ -50,32 +50,6 @@ public class ActivityLogService : IActivityLogService, IHostedService, IDisposab
         else
         {
             _flushTimer = null!;
-        }
-    }
-
-    public async Task<LoggingResult> LogMethodStartAsync(MethodExecutionContext context)
-    {
-        if (!_configuration.IsEnabled ||
-            _configuration.MinimumLogLevel > ActivityLogLevel.Debug)
-            return LoggingResult.Success(TimeSpan.Zero);
-
-        var stopwatch = Stopwatch.StartNew();
-
-        try
-        {
-            var activityLog = CreateActivityLogEntity(context, isStart: true);
-            await EnqueueLogEntryAsync(activityLog);
-
-            stopwatch.Stop();
-
-            return LoggingResult.Success(stopwatch.Elapsed);
-        }
-        catch (Exception ex)
-        {
-            stopwatch.Stop();
-            _logger.LogError(ex, "Failed to log method start for {MethodName}", context.FullMethodName);
-
-            return LoggingResult.Failure("Failed to log method start", ex, stopwatch.Elapsed);
         }
     }
 
@@ -129,31 +103,6 @@ public class ActivityLogService : IActivityLogService, IHostedService, IDisposab
         }
     }
 
-    public async Task<LoggingResult> LogMethodExecutionAsync(MethodExecutionContext context)
-    {
-        if (!_configuration.IsEnabled)
-            return LoggingResult.Success(TimeSpan.Zero);
-
-        var stopwatch = Stopwatch.StartNew();
-
-        try
-        {
-            var activityLog = CreateActivityLogEntity(context, isStart: false);
-            await EnqueueLogEntryAsync(activityLog);
-
-            stopwatch.Stop();
-
-            return LoggingResult.Success(stopwatch.Elapsed);
-        }
-        catch (Exception ex)
-        {
-            stopwatch.Stop();
-            _logger.LogError(ex, "Failed to log method execution for {MethodName}", context.FullMethodName);
-
-            return LoggingResult.Failure("Failed to log method execution", ex, stopwatch.Elapsed);
-        }
-    }
-
     public async Task FlushAsync()
     {
         if (_disposed || !_configuration.AsyncLogging.EnableAsyncLogging)
@@ -171,15 +120,21 @@ public class ActivityLogService : IActivityLogService, IHostedService, IDisposab
         }
     }
 
-    private ActivityLogRecord CreateActivityLogEntity(MethodExecutionContext context, bool isStart)
+    private ActivityLogRecord CreateActivityLogEntity(MethodExecutionContext context,
+                                                      bool                   isStart)
     {
         var activityLog = new ActivityLogRecord
         {
             Id                  = Guid.CreateVersion7(),
             ActivityName        = context.ActivityName ?? context.MethodInfo.Name,
+            TargetEntity        = context.TargetEntity,
             ActivityDescription = FormatDescription(context),
-            StartTime           = context.StartTime,
-            EndTime             = isStart ? null : context.EndTime,
+            StartTime = context.StartTimestamp is null
+                            ? DateTimeOffset.Now
+                            : DateTimeOffset.FromUnixTimeMilliseconds(context.StartTimestamp!.Value),
+            EndTime = context.EndTimestamp is null
+                          ? DateTimeOffset.Now
+                          : DateTimeOffset.FromUnixTimeMilliseconds(context.EndTimestamp!.Value),
             ExecutionDurationMs = isStart ? null : context.ExecutionDurationMs,
             MethodName          = context.FullMethodName,
             ClassName           = context.ClassName,
@@ -208,7 +163,7 @@ public class ActivityLogService : IActivityLogService, IHostedService, IDisposab
         if (!isStart &&
             _configuration.Serialization.SerializeInputParameters)
         {
-            activityLog.InputParameters = _serializer.SerializeArguments(context.MethodInfo, context.Arguments);
+            activityLog.InputParameters = _serializer.SerializeMetadata(context.Arguments);
         }
 
         if (!isStart &&
@@ -243,8 +198,37 @@ public class ActivityLogService : IActivityLogService, IHostedService, IDisposab
         {
             try
             {
-                // Simple format string replacement - could be enhanced
-                return string.Format(context.DescriptionFormat, context.Arguments);
+                // Handle named arguments dictionary
+                var formatDescription = context.DescriptionFormat;
+                
+                if (context.Arguments is { } namedArguments)
+                {
+                    // Replace named placeholders (e.g., {id}, {name})
+                    foreach (var kvp in namedArguments)
+                    {
+                        var placeholder = "{" + kvp.Key + "}";
+                        var value = kvp.Value?.ToString();
+                        
+                        if (value is not null)
+                            formatDescription = formatDescription.Replace(placeholder, value);
+                    }
+                }
+                
+                if (context.Metadata is { } metadata)
+                {
+                    // Replace named placeholders (e.g., {id}, {name})
+                    foreach (var kvp in metadata)
+                    {
+                        var placeholder = "{Metadata." + kvp.Key + "}";
+                        var value = kvp.Value?.ToString();
+                        
+                        if (value is not null)
+                            formatDescription = formatDescription.Replace(placeholder, value);
+                    }
+                }
+
+
+                return formatDescription;
             }
             catch
             {
@@ -287,24 +271,16 @@ public class ActivityLogService : IActivityLogService, IHostedService, IDisposab
 
     private async Task EnqueueLogEntryAsync(ActivityLogRecord activityLogRecord)
     {
-        if (_configuration.AsyncLogging.EnableAsyncLogging)
+        // Check queue size limit
+        if (_logQueue.Count >= _configuration.AsyncLogging.MaxQueueSize)
         {
-            // Check queue size limit
-            if (_logQueue.Count >= _configuration.AsyncLogging.MaxQueueSize)
-            {
-                _logger.LogWarning("Activity log queue is full. Dropping log entry for {MethodName}",
-                                   activityLogRecord.MethodName);
+            _logger.LogWarning("Activity log queue is full. Dropping log entry for {MethodName}",
+                               activityLogRecord.MethodName);
 
-                return;
-            }
+            return;
+        }
 
-            _logQueue.Enqueue(activityLogRecord);
-        }
-        else
-        {
-            // Synchronous logging
-            await PersistLogEntryAsync(activityLogRecord);
-        }
+        _logQueue.Enqueue(activityLogRecord);
     }
 
     private async Task ProcessQueuedLogsAsync()
@@ -342,16 +318,14 @@ public class ActivityLogService : IActivityLogService, IHostedService, IDisposab
         }
     }
 
-    private async Task PersistLogEntryAsync(ActivityLogRecord activityLogRecord)
-    {
-        await _repository.InsertAsync(activityLogRecord);
-        await _repository.CommitChangesAsync();
-    }
-
     private async Task PersistLogEntriesBatchAsync(List<ActivityLogRecord> activityLogs)
     {
-        await _repository.InsertManyAsync(activityLogs);
-        await _repository.CommitChangesAsync();
+        using var scope = _serviceScopeFactory.CreateScope();
+
+        var repository = scope.ServiceProvider.GetService<IActivityLogRepository>();
+
+        await repository!.InsertManyAsync(activityLogs);
+        await repository.CommitChangesAsync();
     }
 
     private void FlushTimerCallback(object? state)

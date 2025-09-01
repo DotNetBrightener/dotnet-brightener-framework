@@ -9,14 +9,14 @@ namespace Microsoft.EntityFrameworkCore;
 public static class ServiceCollectionExtensions
 {
     public static ActivityLogBuilder UsePostgreSql(this ActivityLogBuilder activityLogBuilder,
-                                                   string connectionString)
+                                                   string                  connectionString)
     {
         var services = activityLogBuilder.Services;
 
         services.UseDbContextWithMigration<ActivityLogDbContext, PostgreSqlMigrationDbContext>(option =>
         {
             option.UseNpgsql(connectionString,
-                            x => x.MigrationsHistoryTable("__MigrationsHistory", "activity_log"));
+                             x => x.MigrationsHistoryTable("__MigrationsHistory", nameof(ActivityLog)));
         });
 
         return activityLogBuilder;
