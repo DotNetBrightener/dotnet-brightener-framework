@@ -15,7 +15,7 @@ public class CommaSeparatedArrayModelBinderProvider : IModelBinderProvider
 public class CommaSeparatedArrayModelBinder : IModelBinder
 {
     private static readonly Type[] supportedElementTypes =
-    {
+    [
         typeof(int),
         typeof(long),
         typeof(short),
@@ -24,7 +24,7 @@ public class CommaSeparatedArrayModelBinder : IModelBinder
         typeof(ulong),
         typeof(ushort),
         typeof(Guid)
-    };
+    ];
 
     private static Array CopyAndConvertArray(IReadOnlyList<string> sourceArray, Type elementType)
     {
@@ -57,10 +57,9 @@ public class CommaSeparatedArrayModelBinder : IModelBinder
         var valueProviderResult = bindingContext.ValueProvider.GetValue(bindingContext.ModelName);
 
         var stringArray = valueProviderResult.Values.FirstOrDefault()
-                                            ?.Split(new[]
-                                                    {
+                                            ?.Split([
                                                         ','
-                                                    },
+                                                    ],
                                                     StringSplitOptions.RemoveEmptyEntries);
 
         if (stringArray == null)

@@ -59,10 +59,9 @@ public class FilterParserTests
         public static (OperatorComparer, List<string>) ParseFilterCommand(string inputString)
         {
             // Splitting the input string by '(' and ')'
-            var parts = inputString.Split(new[]
-                                          {
+            var parts = inputString.Split([
                                               '(', ')'
-                                          },
+                                          ],
                                           StringSplitOptions.RemoveEmptyEntries);
 
             if (parts.Length != 2)
@@ -89,10 +88,9 @@ public class FilterParserTests
 
             // Extracting filter values
             var filterValues = valuesString
-                              .Split(new[]
-                                     {
+                              .Split([
                                          ','
-                                     },
+                                     ],
                                      StringSplitOptions.RemoveEmptyEntries)
                               .Select(value => value.Trim())
                               .ToList();

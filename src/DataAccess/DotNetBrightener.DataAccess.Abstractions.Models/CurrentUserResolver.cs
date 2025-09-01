@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+// ReSharper disable CheckNamespace
 
 namespace DotNetBrightener.DataAccess;
 
@@ -12,23 +13,16 @@ public interface ICurrentLoggedInUserResolver
     string CurrentUserId { get; }
 }
 
-public class DefaultCurrentUserResolver : ICurrentLoggedInUserResolver
+public class DefaultCurrentUserResolver(
+    IHttpContextAccessor      httpContextAccessor,
+    ScopedCurrentUserResolver scopedCurrentUserResolver)
+    : ICurrentLoggedInUserResolver
 {
-    private readonly IHttpContextAccessor      _httpContextAccessor;
-    private readonly ScopedCurrentUserResolver _scopedCurrentUserResolver;
+    public string CurrentUserName => scopedCurrentUserResolver.CurrentUserName ??
+                                     httpContextAccessor.GetCurrentUserName();
 
-    public DefaultCurrentUserResolver(IHttpContextAccessor      httpContextAccessor,
-                                      ScopedCurrentUserResolver scopedCurrentUserResolver)
-    {
-        _httpContextAccessor       = httpContextAccessor;
-        _scopedCurrentUserResolver = scopedCurrentUserResolver;
-    }
-
-    public string CurrentUserName => _scopedCurrentUserResolver.CurrentUserName ??
-                                     _httpContextAccessor.GetCurrentUserName();
-
-    public string CurrentUserId => _scopedCurrentUserResolver.CurrentUserId ??
-                                   _httpContextAccessor.GetCurrentUserId<string>();
+    public string CurrentUserId => scopedCurrentUserResolver.CurrentUserId ??
+                                   httpContextAccessor.GetCurrentUserId<string>();
 }
 
 

@@ -13,7 +13,7 @@ public interface ILookupEnumContainer
 
 internal class LookupEnumContainer : ILookupEnumContainer
 {
-    public List<Action<ModelConfigurationBuilder>> ConventionConfigureActions { get; } = new();
+    public List<Action<ModelConfigurationBuilder>> ConventionConfigureActions { get; } = [];
 
     public void RegisterEnum<TEnum>() where TEnum : struct, Enum
     {

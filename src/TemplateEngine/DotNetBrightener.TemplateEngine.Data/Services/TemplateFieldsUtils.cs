@@ -15,7 +15,7 @@ public static class TemplateFieldsUtils
                                                       int          level         = 0)
     {
         if (recursiveList == null)
-            recursiveList = new List<string>();
+            recursiveList = [];
 
         if (level > 3)
             return recursiveList;

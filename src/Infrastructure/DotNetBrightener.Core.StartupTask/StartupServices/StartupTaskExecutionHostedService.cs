@@ -60,7 +60,7 @@ internal class StartupTaskExecutionHostedService : IHostedService, IDisposable
 
     private async Task ExecuteStartupTasks(ILogger logger)
     {
-        Type[] startupTaskTypes = Array.Empty<Type>();
+        Type[] startupTaskTypes = [];
 
         try
         {

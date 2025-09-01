@@ -72,5 +72,5 @@ public abstract class AuthIdentityBasedDbContext : IdentityDbContext<User, Role,
                .HaveConversion<TimeOnlyConverter>();
     }
 
-    public List<Action<ModelConfigurationBuilder>> ConventionConfigureActions { get; } = new();
+    public List<Action<ModelConfigurationBuilder>> ConventionConfigureActions { get; } = [];
 }

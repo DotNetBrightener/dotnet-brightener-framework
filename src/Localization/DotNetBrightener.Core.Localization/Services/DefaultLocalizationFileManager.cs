@@ -28,10 +28,10 @@ public class DefaultLocalizationFileManager : ILocalizationFileManager
             File.WriteAllText(localeFile, "{}");
         }
 
-        return new[]
-        {
+        return
+        [
             new TranslationFileInfo(new FileInfo(localeFile))
-        };
+        ];
     }
 
     public virtual void SaveTranslations(TranslationDictionary translationDictionary)

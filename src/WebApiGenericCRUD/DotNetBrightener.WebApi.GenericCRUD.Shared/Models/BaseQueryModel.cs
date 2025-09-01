@@ -18,11 +18,10 @@ public class BaseQueryModel
         set
         {
             FilteredColumns = string.IsNullOrEmpty(value)
-                                  ? new List<string>()
-                                  : value.Split(new[]
-                                                {
+                                  ? []
+                                  : value.Split([
                                                     ',', ';'
-                                                },
+                                                ],
                                                 StringSplitOptions.RemoveEmptyEntries)
                                          .ToList();
         }
@@ -47,11 +46,10 @@ public class BaseQueryModel
         set
         {
             OrderedColumns = string.IsNullOrEmpty(value)
-                                 ? new List<string>()
-                                 : value.Split(new[]
-                                               {
+                                 ? []
+                                 : value.Split([
                                                    ',', ';'
-                                               },
+                                               ],
                                                StringSplitOptions.RemoveEmptyEntries)
                                         .ToList();
         }
@@ -60,12 +58,12 @@ public class BaseQueryModel
     /// <summary>
     ///     Retrieves the collection of columns (properties) of the entity to retrieve from the REST API request
     /// </summary>
-    public List<string> FilteredColumns { get; private set; } = new List<string>();
+    public List<string> FilteredColumns { get; private set; } = [];
 
     /// <summary>
     ///     Retrieves the collection of columns (properties) of the entity to retrieve from the REST API request
     /// </summary>
-    public List<string> OrderedColumns { get; private set; } = new List<string>();
+    public List<string> OrderedColumns { get; private set; } = [];
 
     public bool DeletedRecordsOnly { get; set; } = false;
 

@@ -33,7 +33,7 @@ public class DefaultAuthAudiencesContainer(
     IServiceScopeFactory                   serviceScopeFactory)
     : IAuthAudiencesContainer
 {
-    private readonly        List<string>                    _validAudiences = new();
+    private readonly        List<string>                    _validAudiences = [];
     private                 bool                            _initialized    = false;
     private static readonly Lock                            LockObject      = new();
     private readonly        ILogger                         _logger         = logger;
