@@ -78,7 +78,8 @@ internal class AuditEnabledSavingChangesInterceptor(IServiceProvider serviceProv
                                          .FindPrimaryKey()
                                         ?.Properties
                                          .Select(x => x.Name)
-                                         .ToList() ?? new();
+                                         .ToList() ??
+                              [];
 
             var isAdded   = entityEntry.State == EntityState.Added;
             var isDeleted = entityEntry.State == EntityState.Deleted;

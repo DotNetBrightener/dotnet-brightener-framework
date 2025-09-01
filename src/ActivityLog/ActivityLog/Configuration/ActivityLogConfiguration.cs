@@ -87,24 +87,24 @@ public class SerializationConfiguration
     /// <summary>
     /// Gets or sets the list of types to exclude from serialization
     /// </summary>
-    public HashSet<string> ExcludedTypes { get; set; } = new()
-    {
+    public HashSet<string> ExcludedTypes { get; set; } =
+    [
         "System.IO.Stream",
         "Microsoft.AspNetCore.Http.HttpContext",
         "Microsoft.Extensions.Logging.ILogger"
-    };
+    ];
 
     /// <summary>
     /// Gets or sets the list of property names to exclude from serialization
     /// </summary>
-    public HashSet<string> ExcludedProperties { get; set; } = new()
-    {
+    public HashSet<string> ExcludedProperties { get; set; } =
+    [
         "Password",
         "Secret",
         "Token",
         "Key",
         "ConnectionString"
-    };
+    ];
 }
 
 /// <summary>
@@ -157,6 +157,11 @@ public class ExceptionHandlingConfiguration
     /// Gets or sets the maximum exception message length
     /// </summary>
     public int MaxExceptionMessageLength { get; set; } = 5000;
+
+    /// <summary>
+    /// Gets or sets the maximum number of retry attempts for failed operations
+    /// </summary>
+    public int MaxRetryAttempts { get; set; } = 3;
 }
 
 /// <summary>
@@ -167,28 +172,28 @@ public class FilteringConfiguration
     /// <summary>
     /// Gets or sets the list of namespaces to include in logging
     /// </summary>
-    public HashSet<string> IncludedNamespaces { get; set; } = new();
+    public HashSet<string> IncludedNamespaces { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the list of namespaces to exclude from logging
     /// </summary>
-    public HashSet<string> ExcludedNamespaces { get; set; } = new()
-    {
+    public HashSet<string> ExcludedNamespaces { get; set; } =
+    [
         "System",
         "Microsoft.Extensions.Logging",
         "Microsoft.EntityFrameworkCore"
-    };
+    ];
 
     /// <summary>
     /// Gets or sets the list of method names to exclude from logging
     /// </summary>
-    public HashSet<string> ExcludedMethods { get; set; } = new()
-    {
+    public HashSet<string> ExcludedMethods { get; set; } =
+    [
         "ToString",
         "GetHashCode",
         "Equals",
         "GetType"
-    };
+    ];
 
     /// <summary>
     /// Gets or sets whether to use whitelist mode (only log included namespaces)

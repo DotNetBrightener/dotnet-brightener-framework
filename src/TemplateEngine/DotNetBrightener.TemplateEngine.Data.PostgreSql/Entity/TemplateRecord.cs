@@ -15,12 +15,12 @@ public class TemplateRecord : BaseEntityWithAuditInfo
     public List<string> Fields
     {
         get =>
-            FieldsString?.Split(new[]
-                                {
+            FieldsString?.Split([
                                     ';'
-                                },
+                                ],
                                 StringSplitOptions.RemoveEmptyEntries)
-                         .ToList() ?? new List<string>();
+                         .ToList() ??
+            [];
         set => FieldsString = string.Join(";", value);
     }
 

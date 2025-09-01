@@ -5,6 +5,4 @@ namespace ActivityLog.Services;
 /// <summary>
 /// Repository abstraction for persisting activity logs
 /// </summary>
-public interface IActivityLogRepository : IRepository
-{
-}
+public interface IActivityLogRepository : IRepository;

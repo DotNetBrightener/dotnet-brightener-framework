@@ -12,7 +12,7 @@ namespace DotNetBrightener.TemplateEngine.Tests.Data;
 
 public class TemplateEngine_PhysicalStorageTests(ITestOutputHelper testOutputHelper)
 {
-    private readonly List<string> _pathsToCleanUp = new List<string>();
+    private readonly List<string> _pathsToCleanUp = [];
 
     private IHost _testHost;
     

@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using ActivityLog.Models;
 
 namespace ActivityLog.Services;
@@ -65,6 +64,12 @@ public interface IActivityLogContextAccessor
     void SetTargetEntity(string? targetEntity);
 
     /// <summary>
+    /// Sets the target entity id for the current context
+    /// </summary>
+    /// <param name="targetEntityId">The target entity string</param>
+    void SetTargetEntityId(object? targetEntityId);
+
+    /// <summary>
     /// Checks if there is an active activity log context
     /// </summary>
     /// <returns>True if there is an active context, false otherwise</returns>
@@ -74,7 +79,7 @@ public interface IActivityLogContextAccessor
 /// <summary>
 /// Implementation of IActivityLogContextAccessor using AsyncLocal for thread-safe context storage
 /// </summary>
-public class ActivityLogContextAccessor : IActivityLogContextAccessor
+public class ActivityLogContextAccessor(IActivityLogSerializer serializer) : IActivityLogContextAccessor
 {
     private static readonly AsyncLocal<MethodExecutionContext?> _currentContext = new();
 
@@ -187,6 +192,15 @@ public class ActivityLogContextAccessor : IActivityLogContextAccessor
         context.TargetEntity = targetEntity ?? string.Empty;
     }
 
+    public void SetTargetEntityId(object? targetEntityId)
+    {
+        var context = _currentContext.Value;
+        if (context == null)
+            return; // No active context - ignore silently
+
+        context.TargetEntityId = serializer.SerializeReturnValue(targetEntityId);
+    }
+
     public bool HasActiveContext()
     {
         return _currentContext.Value != null;
@@ -271,6 +285,15 @@ public static class ActivityLogContext
     public static void SetTargetEntity(string? targetEntity)
     {
         _accessor?.SetTargetEntity(targetEntity);
+    }
+
+    /// <summary>
+    /// Sets the target entity for the current context
+    /// </summary>
+    /// <param name="targetEntityId">The target entity object</param>
+    public static void SetTargetEntityId(object? targetEntityId)
+    {
+        _accessor?.SetTargetEntityId(targetEntityId);
     }
 
     /// <summary>

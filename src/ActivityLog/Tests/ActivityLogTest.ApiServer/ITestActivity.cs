@@ -1,4 +1,5 @@
 using ActivityLog.ActionFilters;
+using ActivityLog.Services;
 
 namespace ActivityLogTest.ApiServer;
 
@@ -15,5 +16,13 @@ public class TestActivity(ILogger<TestActivity> logger) : ITestActivity
     public async Task DoSomething(long id)
     {
         logger.LogInformation("Just do nothing but logging");
+
+        ActivityLogContext.AddMetadata(new Dictionary<string, object?>
+        {
+            {"Type", "Product"},
+            {"ProductName", "Botox"}
+        });
+        ActivityLogContext.SetTargetEntityId(id);
+        ActivityLogContext.SetDescriptionFormat("Doing something with {Metadata.Type} #{TargetEntityId} {Metadata.ProductName}");
     }
 }

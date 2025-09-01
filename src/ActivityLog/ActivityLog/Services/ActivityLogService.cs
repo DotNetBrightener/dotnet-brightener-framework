@@ -6,118 +6,53 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace ActivityLog.Services;
 
-/// <summary>
-/// Main implementation of IActivityLogService with async logging capabilities
-/// </summary>
-public class ActivityLogService : IActivityLogService, IDisposable
+public class ActivityLogService(
+    IActivityLogSerializer             serializer,
+    IOptions<ActivityLogConfiguration> configuration,
+    ILogger<ActivityLogService>        logger)
+    : IActivityLogService, IActivityLogQueueAccessor, IDisposable
 {
-    private readonly ActivityLogConfiguration    _configuration;
-    private readonly IServiceScopeFactory        _serviceScopeFactory;
-    private readonly IActivityLogSerializer      _serializer;
-    private readonly ILogger<ActivityLogService> _logger;
+    private readonly ActivityLogConfiguration           _configuration = configuration.Value;
+    private readonly ConcurrentQueue<ActivityLogRecord> _logQueue      = new();
+    private volatile bool                               _disposed;
 
-    private readonly ConcurrentQueue<ActivityLogRecord> _logQueue       = new();
-    private readonly SemaphoreSlim                      _processingLock = new(1, 1);
-    private readonly Timer                              _flushTimer;
-    private readonly CancellationTokenSource            _cancellationTokenSource = new();
-
-    private volatile bool  _disposed;
-    private          Task? _backgroundTask;
-
-    public ActivityLogService(IServiceScopeFactory               serviceScopeFactory,
-                              IActivityLogSerializer             serializer,
-                              IOptions<ActivityLogConfiguration> configuration,
-                              ILogger<ActivityLogService>        logger)
-    {
-        _configuration       = configuration.Value;
-        _serviceScopeFactory = serviceScopeFactory;
-        _serializer          = serializer;
-        _logger              = logger;
-
-        // Initialize flush timer if async logging is enabled
-        if (_configuration.AsyncLogging.EnableAsyncLogging)
-        {
-            _flushTimer = new Timer(
-                                    FlushTimerCallback,
-                                    null,
-                                    TimeSpan.FromMilliseconds(_configuration.AsyncLogging.FlushIntervalMs),
-                                    TimeSpan.FromMilliseconds(_configuration.AsyncLogging.FlushIntervalMs));
-        }
-        else
-        {
-            _flushTimer = null!;
-        }
-    }
-
-    public async Task<LoggingResult> LogMethodCompletionAsync(MethodExecutionContext context)
+    public Task LogMethodCompletionAsync(MethodExecutionContext context)
     {
         if (!_configuration.IsEnabled)
-            return LoggingResult.Success(TimeSpan.Zero);
-
-        var stopwatch = Stopwatch.StartNew();
+            return Task.CompletedTask;
 
         try
         {
             var activityLog = CreateActivityLogEntity(context, isStart: false);
-            await EnqueueLogEntryAsync(activityLog);
-
-            stopwatch.Stop();
-
-            return LoggingResult.Success(stopwatch.Elapsed);
+            EnqueueLogEntry(activityLog);
         }
         catch (Exception ex)
         {
-            stopwatch.Stop();
-            _logger.LogError(ex, "Failed to log method completion for {MethodName}", context.FullMethodName);
-
-            return LoggingResult.Failure("Failed to log method completion", ex, stopwatch.Elapsed);
+            logger.LogError(ex, "Failed to log method completion for {MethodName}", context.FullMethodName);
         }
+
+        return Task.CompletedTask;
     }
 
-    public async Task<LoggingResult> LogMethodFailureAsync(MethodExecutionContext context)
+    public Task LogMethodFailureAsync(MethodExecutionContext context)
     {
         if (!_configuration.IsEnabled)
-            return LoggingResult.Success(TimeSpan.Zero);
-
-        var stopwatch = Stopwatch.StartNew();
+            return Task.CompletedTask;
 
         try
         {
             var activityLog = CreateActivityLogEntity(context, isStart: false);
-            await EnqueueLogEntryAsync(activityLog);
-
-            stopwatch.Stop();
-
-            return LoggingResult.Success(stopwatch.Elapsed);
+            EnqueueLogEntry(activityLog);
         }
         catch (Exception ex)
         {
-            stopwatch.Stop();
-            _logger.LogError(ex, "Failed to log method failure for {MethodName}", context.FullMethodName);
-
-            return LoggingResult.Failure("Failed to log method failure", ex, stopwatch.Elapsed);
+            logger.LogError(ex, "Failed to log method failure for {MethodName}", context.FullMethodName);
         }
-    }
 
-    public async Task FlushAsync()
-    {
-        if (_disposed || !_configuration.AsyncLogging.EnableAsyncLogging)
-            return;
-
-        await _processingLock.WaitAsync();
-
-        try
-        {
-            await ProcessQueuedLogsAsync();
-        }
-        finally
-        {
-            _processingLock.Release();
-        }
+        return Task.CompletedTask;
     }
 
     private ActivityLogRecord CreateActivityLogEntity(MethodExecutionContext context,
@@ -163,27 +98,27 @@ public class ActivityLogService : IActivityLogService, IDisposable
         if (!isStart &&
             _configuration.Serialization.SerializeInputParameters)
         {
-            activityLog.InputParameters = _serializer.SerializeMetadata(context.Arguments);
+            activityLog.InputParameters = serializer.SerializeMetadata(context.Arguments);
         }
 
         if (!isStart &&
             _configuration.Serialization.SerializeReturnValues &&
             context.ReturnValue != null)
         {
-            activityLog.ReturnValue = _serializer.SerializeReturnValue(context.ReturnValue);
+            activityLog.ReturnValue = serializer.SerializeReturnValue(context.ReturnValue);
         }
 
         // Handle exceptions
         if (context.Exception != null)
         {
-            activityLog.Exception     = _serializer.SerializeException(context.Exception);
+            activityLog.Exception     = serializer.SerializeException(context.Exception);
             activityLog.ExceptionType = context.Exception.GetType().FullName;
         }
 
         // Add metadata
         if (context.Metadata.Count > 0)
         {
-            activityLog.Metadata = _serializer.SerializeMetadata(context.Metadata);
+            activityLog.Metadata = serializer.SerializeMetadata(context.Metadata);
         }
 
         return activityLog;
@@ -269,12 +204,12 @@ public class ActivityLogService : IActivityLogService, IDisposable
         return string.Join(",", tags);
     }
 
-    private async Task EnqueueLogEntryAsync(ActivityLogRecord activityLogRecord)
+    private void EnqueueLogEntry(ActivityLogRecord activityLogRecord)
     {
         // Check queue size limit
         if (_logQueue.Count >= _configuration.AsyncLogging.MaxQueueSize)
         {
-            _logger.LogWarning("Activity log queue is full. Dropping log entry for {MethodName}",
+            logger.LogWarning("Activity log queue is full. Dropping log entry for {MethodName}",
                                activityLogRecord.MethodName);
 
             return;
@@ -283,111 +218,24 @@ public class ActivityLogService : IActivityLogService, IDisposable
         _logQueue.Enqueue(activityLogRecord);
     }
 
-    private async Task ProcessQueuedLogsAsync()
+    // IActivityLogQueueAccessor implementation
+    public void Enqueue(ActivityLogRecord record)
     {
-        var batch     = new List<ActivityLogRecord>();
-        var batchSize = _configuration.AsyncLogging.BatchSize;
-
-        // Dequeue items for batch processing
-        while (batch.Count < batchSize &&
-               _logQueue.TryDequeue(out var logEntry))
-        {
-            batch.Add(logEntry);
-        }
-
-        if (batch.Count == 0)
-            return;
-
-        try
-        {
-            await PersistLogEntriesBatchAsync(batch);
-            _logger.LogDebug("Successfully persisted {Count} activity log entries", batch.Count);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to persist batch of {Count} activity log entries", batch.Count);
-
-            // Re-queue failed entries if configured to do so
-            if (_configuration.ExceptionHandling.ContinueOnLoggingFailure)
-            {
-                foreach (var entry in batch)
-                {
-                    _logQueue.Enqueue(entry);
-                }
-            }
-        }
+        EnqueueLogEntry(record);
     }
 
-    private async Task PersistLogEntriesBatchAsync(List<ActivityLogRecord> activityLogs)
+    public bool TryDequeue(out ActivityLogRecord record)
     {
-        using var scope = _serviceScopeFactory.CreateScope();
-
-        var repository = scope.ServiceProvider.GetService<IActivityLogRepository>();
-
-        await repository!.InsertManyAsync(activityLogs);
-        await repository.CommitChangesAsync();
+        return _logQueue.TryDequeue(out record!);
     }
 
-    private void FlushTimerCallback(object? state)
-    {
-        if (_disposed)
-            return;
+    public int Count => _logQueue.Count;
 
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                await FlushAsync();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error during scheduled flush");
-            }
-        });
-    }
+    public bool IsEmpty => _logQueue.IsEmpty;
 
-    public Task StartAsync(CancellationToken cancellationToken)
-    {
-        if (_configuration.AsyncLogging.EnableAsyncLogging)
-        {
-            _backgroundTask = Task.Run(BackgroundProcessingAsync, cancellationToken);
-        }
 
-        return Task.CompletedTask;
-    }
 
-    public async Task StopAsync(CancellationToken cancellationToken)
-    {
-        await _cancellationTokenSource.CancelAsync();
 
-        if (_backgroundTask != null)
-        {
-            await _backgroundTask;
-        }
-
-        // Final flush
-        await FlushAsync();
-    }
-
-    private async Task BackgroundProcessingAsync()
-    {
-        while (!_cancellationTokenSource.Token.IsCancellationRequested)
-        {
-            try
-            {
-                await Task.Delay(1000, _cancellationTokenSource.Token);
-                await FlushAsync();
-            }
-            catch (OperationCanceledException)
-            {
-                break;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error in background processing");
-            }
-        }
-    }
 
     public void Dispose()
     {
@@ -395,9 +243,5 @@ public class ActivityLogService : IActivityLogService, IDisposable
             return;
 
         _disposed = true;
-        _cancellationTokenSource.Cancel();
-        _flushTimer?.Dispose();
-        _processingLock.Dispose();
-        _cancellationTokenSource.Dispose();
     }
 }

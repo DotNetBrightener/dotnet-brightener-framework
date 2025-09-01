@@ -35,14 +35,14 @@ public class ActivityLogInterceptorTests
             MinimumLogLevel = ActivityLogLevel.Information,
             Filtering = new FilteringConfiguration
             {
-                ExcludedNamespaces = new HashSet<string>(), // Clear default excluded namespaces for tests
-                ExcludedMethods = new HashSet<string>(),    // Clear default excluded methods for tests
-                UseWhitelistMode = false
+                ExcludedNamespaces = [], // Clear default excluded namespaces for tests
+                ExcludedMethods    = [], // Clear default excluded methods for tests
+                UseWhitelistMode   = false
             }
         };
 
         // Initialize the static ActivityLogContext accessor for tests
-        var contextAccessor = new ActivityLogContextAccessor();
+        var contextAccessor = new ActivityLogContextAccessor(_mockSerializer.Object);
         ActivityLogContext.SetAccessor(contextAccessor);
 
         _interceptor = new ActivityLogInterceptor(
@@ -95,7 +95,7 @@ public class ActivityLogInterceptorTests
         var proxy       = _proxyGenerator.CreateInterfaceProxyWithTarget<ITestService>(testService, _interceptor);
 
         _mockActivityLogService.Setup(x => x.LogMethodCompletionAsync(It.IsAny<MethodExecutionContext>()))
-                               .ReturnsAsync(LoggingResult.Success(TimeSpan.FromMilliseconds(1)));
+                               .Returns(Task.CompletedTask);
 
         // Act
         var result = proxy.GetValue(42);
@@ -113,7 +113,7 @@ public class ActivityLogInterceptorTests
         var proxy       = _proxyGenerator.CreateInterfaceProxyWithTarget<ITestService>(testService, _interceptor);
 
         _mockActivityLogService.Setup(x => x.LogMethodCompletionAsync(It.IsAny<MethodExecutionContext>()))
-                               .ReturnsAsync(LoggingResult.Success(TimeSpan.FromMilliseconds(1)));
+                               .Returns(Task.CompletedTask);
 
         // Act
         var result = await proxy.GetValueAsync(42);
@@ -131,7 +131,7 @@ public class ActivityLogInterceptorTests
         var proxy       = _proxyGenerator.CreateInterfaceProxyWithTarget<ITestService>(testService, _interceptor);
 
         _mockActivityLogService.Setup(x => x.LogMethodFailureAsync(It.IsAny<MethodExecutionContext>()))
-                               .ReturnsAsync(LoggingResult.Success(TimeSpan.FromMilliseconds(1)));
+                               .Returns(Task.CompletedTask);
 
         // Act & Assert
         var exception = Assert.Throws<InvalidOperationException>(() => proxy.ThrowException());
@@ -151,7 +151,7 @@ public class ActivityLogInterceptorTests
         var proxy       = _proxyGenerator.CreateInterfaceProxyWithTarget<ITestService>(testService, _interceptor);
 
         _mockActivityLogService.Setup(x => x.LogMethodFailureAsync(It.IsAny<MethodExecutionContext>()))
-                               .ReturnsAsync(LoggingResult.Success(TimeSpan.FromMilliseconds(1)));
+                               .Returns(Task.CompletedTask);
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => proxy.ThrowExceptionAsync());
@@ -170,7 +170,7 @@ public class ActivityLogInterceptorTests
         MethodExecutionContext? capturedContext = null;
         _mockActivityLogService.Setup(x => x.LogMethodCompletionAsync(It.IsAny<MethodExecutionContext>()))
                                .Callback<MethodExecutionContext>(ctx => capturedContext = ctx)
-                               .ReturnsAsync(LoggingResult.Success(TimeSpan.FromMilliseconds(1)));
+                               .Returns(Task.CompletedTask);
 
         _mockContextProvider.Setup(x => x.GetCorrelationId()).Returns(Guid.NewGuid());
 
@@ -240,7 +240,7 @@ public class ActivityLogInterceptorTests
         MethodExecutionContext? capturedContext = null;
         _mockActivityLogService.Setup(x => x.LogMethodCompletionAsync(It.IsAny<MethodExecutionContext>()))
                                .Callback<MethodExecutionContext>(ctx => capturedContext = ctx)
-                               .ReturnsAsync(LoggingResult.Success(TimeSpan.FromMilliseconds(1)));
+                               .Returns(Task.CompletedTask);
 
         // Act
         var result = proxy.ProcessWithMetadata(42);
@@ -282,7 +282,7 @@ public class ActivityLogInterceptorTests
                                        capturedContexts.Add(ctx);
                                    }
                                })
-                               .ReturnsAsync(LoggingResult.Success(TimeSpan.FromMilliseconds(1)));
+                               .Returns(Task.CompletedTask);
 
         // Act - Execute multiple methods concurrently
         var tasks = new[]
@@ -336,7 +336,7 @@ public class ActivityLogInterceptorTests
                                        capturedContexts.Add(ctx);
                                    }
                                })
-                               .ReturnsAsync(LoggingResult.Success(TimeSpan.FromMilliseconds(1)));
+                               .Returns(Task.CompletedTask);
 
         // Act - Execute method that calls other methods (direct calls, not through proxy)
         var result = proxy.OuterMethod(42);
@@ -374,7 +374,7 @@ public class ActivityLogInterceptorTests
                                        capturedContexts.Add(ctx);
                                    }
                                })
-                               .ReturnsAsync(LoggingResult.Success(TimeSpan.FromMilliseconds(1)));
+                               .Returns(Task.CompletedTask);
 
         // Act - Execute separate method calls (each gets its own context)
         var result1 = proxy.InnerMethod(100);
@@ -415,7 +415,7 @@ public class ActivityLogInterceptorTests
         MethodExecutionContext? capturedContext = null;
         _mockActivityLogService.Setup(x => x.LogMethodCompletionAsync(It.IsAny<MethodExecutionContext>()))
                                .Callback<MethodExecutionContext>(ctx => capturedContext = ctx)
-                               .ReturnsAsync(LoggingResult.Success(TimeSpan.FromMilliseconds(1)));
+                               .Returns(Task.CompletedTask);
 
         // Act
         var result = proxy.ProcessWithBatchMetadata(42);
@@ -460,7 +460,7 @@ public class ActivityLogInterceptorTests
         MethodExecutionContext? capturedContext = null;
         _mockActivityLogService.Setup(x => x.LogMethodCompletionAsync(It.IsAny<MethodExecutionContext>()))
                                .Callback<MethodExecutionContext>(ctx => capturedContext = ctx)
-                               .ReturnsAsync(LoggingResult.Success(TimeSpan.FromMilliseconds(1)));
+                               .Returns(Task.CompletedTask);
 
         // Act
         var result = proxy.ProcessWithEdgeCases(42);
@@ -494,7 +494,7 @@ public class ActivityLogInterceptorTests
         MethodExecutionContext? capturedContext = null;
         _mockActivityLogService.Setup(x => x.LogMethodCompletionAsync(It.IsAny<MethodExecutionContext>()))
                                .Callback<MethodExecutionContext>(ctx => capturedContext = ctx)
-                               .ReturnsAsync(LoggingResult.Success(TimeSpan.FromMilliseconds(1)));
+                               .Returns(Task.CompletedTask);
 
         // Act
         var result = proxy.ProcessWithContextModification(42);

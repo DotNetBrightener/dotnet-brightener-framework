@@ -5,7 +5,6 @@ using ActivityLog.Models;
 using ActivityLog.Services;
 using Castle.DynamicProxy;
 using Microsoft.Extensions.Options;
-using System.Collections.Concurrent;
 using System.Reflection;
 
 namespace ActivityLog.Interceptors;
@@ -80,8 +79,6 @@ public class ActivityLogInterceptor(
         }
         catch (Exception ex)
         {
-
-
             context.Exception = ex;
             context.StopTiming();
 
@@ -166,7 +163,6 @@ public class ActivityLogInterceptor(
         var context = new MethodExecutionContext
         {
             MethodInfo          = invocation.Method,
-            Target              = invocation.InvocationTarget,
             Arguments           = namedArguments,
             ActivityName        = attribute.Name,
             ActivityDescription = attribute.Description,
@@ -222,10 +218,9 @@ public class ActivityLogInterceptor(
                         .MakeGenericMethod(taskType);
 
             invocation.ReturnValue = method.Invoke(this,
-                                                   new[]
-                                                   {
-                                                       invocation.ReturnValue, context
-                                                   });
+            [
+                invocation.ReturnValue, context
+            ]);
         }
         else if (returnType == typeof(ValueTask))
         {
@@ -241,10 +236,9 @@ public class ActivityLogInterceptor(
                         .MakeGenericMethod(taskType);
 
             invocation.ReturnValue = method.Invoke(this,
-                                                   new[]
-                                                   {
-                                                       invocation.ReturnValue, context
-                                                   });
+            [
+                invocation.ReturnValue, context
+            ]);
         }
     }
 

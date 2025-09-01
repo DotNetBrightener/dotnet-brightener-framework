@@ -74,7 +74,7 @@ public static class AutoGenerateApiControllerSyntaxReceiver
 
         var                      members              = classDec.Members;
         string                   dataServiceNamespace = "";
-        List<CodeGenerationInfo> modelsList           = new List<CodeGenerationInfo>();
+        List<CodeGenerationInfo> modelsList           = [];
 
         foreach (var memberDeclarationSyntax in members.OfType<FieldDeclarationSyntax>())
         {

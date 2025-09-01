@@ -12,10 +12,9 @@ public class PermissionsAuthorizationRequirement : IAuthorizationRequirement
     /// </summary>
     /// <param name="permissionKeys">Keys of the permissions</param>
     public PermissionsAuthorizationRequirement(string permissionKeys)
-        : this(permissionKeys.Split(new [ ]
-                                    {
+        : this(permissionKeys.Split([
                                         ";", ","
-                                    },
+                                    ],
                                     StringSplitOptions.RemoveEmptyEntries))
     {
     }

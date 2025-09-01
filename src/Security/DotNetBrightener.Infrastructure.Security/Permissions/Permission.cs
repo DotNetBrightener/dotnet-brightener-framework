@@ -30,7 +30,7 @@ public class Permission
         PermissionKey   = permissionKey;
         Description     = description;
         PermissionGroup = permissionGroup;
-        InheritedFrom   = inheritedFrom ?? Enumerable.Empty<Permission>();
+        InheritedFrom   = inheritedFrom ?? [];
     }
 
     /// <summary>

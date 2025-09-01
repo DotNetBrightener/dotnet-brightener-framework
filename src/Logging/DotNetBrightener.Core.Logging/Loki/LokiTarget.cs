@@ -43,10 +43,9 @@ public class LokiTarget : TargetWithLayout
     {
         var @event = GetLokiEvent(logEvent);
 
-        return lazyLokiTransport.Value.WriteLogEventsAsync(new[]
-        {
+        return lazyLokiTransport.Value.WriteLogEventsAsync([
             @event
-        });
+        ]);
     }
 
     public Task WriteAsyncTask(IList<LogEventInfo> logEvents, CancellationToken cancellationToken)

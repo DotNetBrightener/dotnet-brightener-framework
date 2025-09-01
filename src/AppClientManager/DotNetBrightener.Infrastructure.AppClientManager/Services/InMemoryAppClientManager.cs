@@ -4,7 +4,7 @@ namespace DotNetBrightener.Infrastructure.AppClientManager.Services;
 
 public class InMemoryAppClientManager : IAppClientManager
 {
-    private static readonly List<AppClient> AppClients = new();
+    private static readonly List<AppClient> AppClients = [];
 
     public Task CreateAppClient(AppClient appClient)
     {

@@ -1,4 +1,3 @@
-using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using ActivityLog.Configuration;
@@ -11,14 +10,6 @@ namespace ActivityLog.Services;
 /// </summary>
 public interface IActivityLogSerializer
 {
-    /// <summary>
-    /// Serializes method arguments to a JSON string
-    /// </summary>
-    /// <param name="method">The method information</param>
-    /// <param name="arguments">The method arguments as named parameters</param>
-    /// <returns>Serialized arguments as JSON string</returns>
-    string SerializeArguments(MethodInfo method, Dictionary<string, object?> arguments);
-
     /// <summary>
     /// Serializes a return value to a JSON string
     /// </summary>
@@ -53,49 +44,6 @@ public class ActivityLogSerializer : IActivityLogSerializer
     {
         _config = configuration.Value.Serialization;
         _jsonOptions = CreateJsonSerializerOptions();
-    }
-
-    public string SerializeArguments(MethodInfo method, Dictionary<string, object?> arguments)
-    {
-        if (!_config.SerializeInputParameters || arguments.Count == 0)
-            return "{}";
-
-        try
-        {
-            var parameters = method.GetParameters();
-            var sanitizedArguments = new Dictionary<string, object?>();
-
-            foreach (var kvp in arguments)
-            {
-                var paramName = kvp.Key;
-                var paramValue = kvp.Value;
-
-                // Find the corresponding parameter info for type checking
-                var parameterInfo = parameters.FirstOrDefault(p => p.Name == paramName);
-
-                // Check if parameter type should be excluded
-                if (parameterInfo != null && ShouldExcludeType(parameterInfo.ParameterType))
-                {
-                    sanitizedArguments[paramName] = "[EXCLUDED]";
-                    continue;
-                }
-
-                // Check if parameter name should be excluded
-                if (ShouldExcludeProperty(paramName))
-                {
-                    sanitizedArguments[paramName] = "[SENSITIVE]";
-                    continue;
-                }
-
-                sanitizedArguments[paramName] = SanitizeValue(paramValue);
-            }
-
-            return JsonSerializer.Serialize(sanitizedArguments, _jsonOptions);
-        }
-        catch (Exception ex)
-        {
-            return $"[SERIALIZATION_ERROR: {ex.Message}]";
-        }
     }
 
     public string SerializeReturnValue(object? returnValue)
@@ -290,15 +238,8 @@ public class ActivityLogSerializer : IActivityLogSerializer
 /// <summary>
 /// Custom JSON converter that safely handles complex objects
 /// </summary>
-public class SafeObjectConverter : JsonConverter<object>
+public class SafeObjectConverter(SerializationConfiguration config) : JsonConverter<object>
 {
-    private readonly SerializationConfiguration _config;
-
-    public SafeObjectConverter(SerializationConfiguration config)
-    {
-        _config = config;
-    }
-
     public override bool CanConvert(Type typeToConvert)
     {
         return !typeToConvert.IsPrimitive && 
@@ -323,7 +264,7 @@ public class SafeObjectConverter : JsonConverter<object>
             }
 
             var type = value.GetType();
-            if (type.FullName != null && _config.ExcludedTypes.Any(et => type.FullName.Contains(et)))
+            if (type.FullName != null && config.ExcludedTypes.Any(et => type.FullName.Contains(et)))
             {
                 writer.WriteStringValue($"[EXCLUDED:{type.Name}]");
                 return;

@@ -19,9 +19,9 @@ public class MethodExecutionContext
     public MethodInfo MethodInfo { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets the target object instance (null for static methods)
+    /// Gets or sets the target entity id
     /// </summary>
-    public object? Target { get; set; }
+    public string? TargetEntityId { get; set; }
 
     /// <summary>
     /// Gets or sets the method arguments
@@ -37,16 +37,6 @@ public class MethodExecutionContext
     /// Gets or sets the exception that occurred during method execution
     /// </summary>
     public Exception? Exception { get; set; }
-
-    /// <summary>
-    /// Gets or sets the start time of method execution
-    /// </summary>
-    public DateTimeOffset StartTime { get; set; }
-
-    /// <summary>
-    /// Gets or sets the end time of method execution
-    /// </summary>
-    public DateTimeOffset? EndTime { get; set; }
     
     public long? StartTimestamp { get; set; }
     
@@ -181,48 +171,4 @@ public class HttpContextInfo
     public Dictionary<string, string> Headers { get; set; } = new();
 }
 
-/// <summary>
-/// Represents the result of a method execution logging operation
-/// </summary>
-public class LoggingResult
-{
-    /// <summary>
-    /// Gets or sets whether the logging operation was successful
-    /// </summary>
-    public bool IsSuccess { get; set; }
 
-    /// <summary>
-    /// Gets or sets the error message if logging failed
-    /// </summary>
-    public string? ErrorMessage { get; set; }
-
-    /// <summary>
-    /// Gets or sets the exception that occurred during logging
-    /// </summary>
-    public Exception? Exception { get; set; }
-
-    /// <summary>
-    /// Gets or sets the time taken to perform the logging operation
-    /// </summary>
-    public TimeSpan LoggingDuration { get; set; }
-
-    /// <summary>
-    /// Creates a successful logging result
-    /// </summary>
-    public static LoggingResult Success(TimeSpan duration) => new()
-    {
-        IsSuccess = true,
-        LoggingDuration = duration
-    };
-
-    /// <summary>
-    /// Creates a failed logging result
-    /// </summary>
-    public static LoggingResult Failure(string errorMessage, Exception? exception = null, TimeSpan duration = default) => new()
-    {
-        IsSuccess = false,
-        ErrorMessage = errorMessage,
-        Exception = exception,
-        LoggingDuration = duration
-    };
-}

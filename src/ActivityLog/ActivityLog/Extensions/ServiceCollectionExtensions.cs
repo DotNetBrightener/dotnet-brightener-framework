@@ -6,7 +6,6 @@ using ActivityLog.Services;
 using Castle.DynamicProxy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Hosting;
 using System.Reflection;
 using VampireCoder.SharedUtils.DependencyInjection;
 
@@ -48,6 +47,12 @@ public static class ServiceCollectionExtensions
 
         services.TryAddSingleton<IActivityLogSerializer, ActivityLogSerializer>();
         services.TryAddSingleton<IActivityLogService, ActivityLogService>();
+        services.TryAddSingleton<IActivityLogQueueAccessor>(provider =>
+            provider.GetRequiredService<IActivityLogService>() as IActivityLogQueueAccessor
+            ?? throw new InvalidOperationException("ActivityLogService must implement IActivityLogQueueAccessor"));
+
+        // Register background service for processing queued entries
+        services.AddHostedService<ActivityLogBackgroundService>();
 
         // Register and immediately initialize the static accessor
         services.AddSingleton<ActivityLogContextAccessorInitializer>(provider =>
@@ -80,13 +85,13 @@ public static class ServiceCollectionExtensions
             try
             {
                 var types = assembly.GetTypes()
-                    .Where(t => t.IsClass && !t.IsAbstract && HasLogActivityAttribute(t))
+                    .Where(t => t is { IsClass: true, IsAbstract: false } && HasLogActivityAttribute(t))
                     .ToList();
 
                 foreach (var implementationType in types)
                 {
                     var interfaces = implementationType.GetInterfaces()
-                        .Where(i => i.IsPublic && !i.IsGenericTypeDefinition)
+                        .Where(i => i is { IsPublic: true, IsGenericTypeDefinition: false })
                         .ToList();
 
                     foreach (var serviceType in interfaces)
@@ -127,7 +132,7 @@ public static class ServiceCollectionExtensions
                     .GetMethod(nameof(AddInterceptedServiceInternal), BindingFlags.NonPublic | BindingFlags.Static)!
                     .MakeGenericMethod(serviceDescriptor.ServiceType, serviceDescriptor.ImplementationType);
 
-                method.Invoke(null, new object[] { services, serviceDescriptor.Lifetime });
+                method.Invoke(null, [services, serviceDescriptor.Lifetime]);
             }
         }
     }
