@@ -1,455 +1,673 @@
-# DotNetBrightener Activity Logging Module
+# Activity Logging for .NET
 
-A comprehensive activity logging module with Aspect-Oriented Programming (AOP) capabilities for .NET applications. This module provides automatic method execution logging with performance monitoring, exception tracking, and configurable serialization using a clean repository pattern architecture.
+Automatically track and log method execution in your .NET applications with a simple attribute. Perfect for monitoring business operations, debugging issues, and maintaining audit trails.
 
-## Features
+## What It Does
 
-- **Automatic Method Logging**: Use the `[LogActivity]` attribute to automatically log method execution
-- **High-Performance Interception**: Built on Castle DynamicProxy for minimal overhead
-- **Repository Pattern Architecture**: Clean separation of concerns with pluggable storage providers
-- **Async Support**: Full support for async/await methods including Task, Task<T>, ValueTask, and ValueTask<T>
-- **Performance Monitoring**: High-precision timing with configurable slow method detection
-- **Exception Handling**: Comprehensive exception capture with full stack traces and inner exceptions
-- **Configurable Serialization**: Smart serialization with depth control and sensitive data filtering
-- **Async Logging Pipeline**: Background processing with batching for optimal performance
-- **Multiple Database Providers**: Built-in support for SQL Server, PostgreSQL, and in-memory testing
-- **Correlation Tracking**: Automatic correlation ID generation for tracking related activities
-- **Flexible Configuration**: Extensive configuration options with fluent builder API
+Activity Logging captures detailed information about your method calls including:
+- **Execution timing** - How long methods take to run
+- **Input parameters** - What data was passed to methods
+- **Return values** - What methods returned
+- **Exceptions** - Any errors that occurred
+- **User context** - Who performed the action
+- **Performance metrics** - Identify slow operations
 
-## Architecture
+## Key Benefits
 
-The Activity Logging Module follows a clean architecture pattern with separate concerns:
-
-### Core Projects
-
-- **`ActivityLog`**: Core business logic, interfaces, and configuration
-- **`ActivityLog.DataStorage`**: Repository implementation and base DbContext
-- **`ActivityLog.DataStorage.SqlServer`**: SQL Server provider with migrations
-- **`ActivityLog.DataStorage.PostgreSql`**: PostgreSQL provider with migrations
-
-### Repository Pattern
-
-The module uses the DotNetBrightener framework's repository pattern:
-
-```csharp
-public interface IActivityLogRepository : IRepository
-{
-    // Inherits standard repository methods from DotNetBrightener framework
-}
-```
+- ✅ **Zero code changes** - Just add `[LogActivity]` attributes
+- ✅ **Automatic tracking** - No manual logging code required
+- ✅ **Performance monitoring** - Built-in slow method detection
+- ✅ **Exception capture** - Comprehensive error tracking
+- ✅ **Async support** - Works with async/await methods
+- ✅ **Configurable** - Control what gets logged and how
+- ✅ **Multiple databases** - SQL Server, PostgreSQL, or in-memory
 
 ## Quick Start
 
-### 1. Installation
+### 1. Install the Package
 
 ```bash
 # Core module
 dotnet add package DotNetBrightener.ActivityLog
 
-# SQL Server provider (optional)
+# Choose a database provider (optional)
 dotnet add package DotNetBrightener.ActivityLog.DataStorage.SqlServer
-
-# PostgreSQL provider (optional)
+# OR
 dotnet add package DotNetBrightener.ActivityLog.DataStorage.PostgreSql
 ```
 
-### 2. Basic Setup (No Persistence)
+### 2. Configure Your Application
+
+Add this to your `Program.cs` or `Startup.cs`:
 
 ```csharp
-// Program.cs - Basic setup without database persistence
-services.AddActivityLogging(configuration.GetSection("ActivityLogging"));
+// Basic setup (logs to console/file only)
+services.AddActivityLogging();
+
+// With database storage
+services.AddActivityLogging()
+        .WithStorage()
+        .UseSqlServer("your-connection-string");
 ```
 
-### 3. Setup with Database Persistence
+### 3. Add Configuration (Optional)
 
-```csharp
-// SQL Server
-services.AddActivityLogging(configuration.GetSection("ActivityLogging"))
-        .WithStorage()
-        .UseSqlServer(connectionString);
-
-// PostgreSQL
-services.AddActivityLogging(configuration.GetSection("ActivityLogging"))
-        .WithStorage()
-        .UsePostgreSql(connectionString);
-
-// In-Memory (for testing)
-services.AddActivityLogging(configuration.GetSection("ActivityLogging"))
-        .WithStorage()
-        .UseInMemoryDatabase("TestDb");
-```
-
-### 4. Configuration
+Add to your `appsettings.json`:
 
 ```json
 {
   "ActivityLogging": {
     "IsEnabled": true,
     "MinimumLogLevel": "Information",
-    "Serialization": {
-      "MaxDepth": 3,
-      "MaxStringLength": 1000,
-      "SerializeInputParameters": true,
-      "SerializeReturnValues": true,
-      "ExcludedProperties": ["Password", "Secret", "Token"],
-      "ExcludedTypes": ["System.IO.Stream", "Microsoft.AspNetCore.Http.HttpContext"]
-    },
     "Performance": {
-      "EnableHighPrecisionTiming": true,
-      "SlowMethodThresholdMs": 1000,
-      "LogOnlySlowMethods": false
+      "SlowMethodThresholdMs": 1000
     },
-    "AsyncLogging": {
-      "EnableAsyncLogging": true,
-      "BatchSize": 100,
-      "FlushIntervalMs": 5000,
-      "MaxQueueSize": 10000
-    },
-    "ExceptionHandling": {
-      "CaptureFullStackTrace": true,
-      "CaptureInnerExceptions": true,
-      "ContinueOnLoggingFailure": true
+    "Serialization": {
+      "ExcludedProperties": ["Password", "Secret", "Token"]
     }
   }
 }
 ```
 
-## Usage Examples
-
-### Basic Method Logging
+### 4. Register Your Services
 
 ```csharp
-public interface IUserService
-{
-    Task<User> GetUserAsync(int userId);
-    Task<User> CreateUserAsync(CreateUserRequest request);
-}
+// Register services that should be logged
+services.AddActivityLoggedService<IUserService, UserService>();
+services.AddActivityLoggedService<IOrderService, OrderService>();
+```
 
+### 5. Start Logging
+
+Add the `[LogActivity]` attribute to methods you want to track:
+
+```csharp
 public class UserService : IUserService
 {
-    [LogActivity("GetUser", "Retrieved user with ID: {0}")]
+    [LogActivity("GetUser", "Retrieved user {userId}")]
     public async Task<User> GetUserAsync(int userId)
     {
-        // Method implementation
+        return await _repository.GetByIdAsync(userId);
+    }
+}
+```
+
+That's it! Your methods are now being logged automatically.
+
+## Basic Usage Examples
+
+### Simple Method Logging
+
+```csharp
+public class UserService : IUserService
+{
+    [LogActivity("GetUser", "Getting user {userId}")]
+    public async Task<User> GetUserAsync(int userId)
+    {
         return await _repository.GetByIdAsync(userId);
     }
 
-    [LogActivity("CreateUser", "Created new user: {0}")]
+    [LogActivity("CreateUser", "Creating user {request.Name}")]
     public async Task<User> CreateUserAsync(CreateUserRequest request)
     {
-        // Method implementation
         var user = new User { Name = request.Name, Email = request.Email };
         return await _repository.CreateAsync(user);
     }
 }
 ```
 
-### Service Registration
+### Different Logging Scenarios
 
 ```csharp
-// Register specific services with activity logging
-services.AddActivityLoggedService<IUserService, UserService>();
-services.AddActivityLoggedService<IOrderService, OrderService>(ServiceLifetime.Singleton);
+public class OrderService : IOrderService
+{
+    // Log with custom activity name
+    [LogActivity("ProcessOrder")]
+    public async Task ProcessOrderAsync(int orderId)
+    {
+        // Implementation
+    }
+
+    // Log with description template
+    [LogActivity("CancelOrder", "Cancelled order {orderId} for user {userId}")]
+    public async Task CancelOrderAsync(int orderId, int userId)
+    {
+        // Implementation
+    }
+
+    // Log synchronous methods too
+    [LogActivity("ValidateOrder", "Validating order data")]
+    public bool ValidateOrder(Order order)
+    {
+        return order.IsValid();
+    }
+}
 ```
 
-## Data Model
+## Adding Runtime Context
 
-### ActivityLogRecord Entity
-
-The `ActivityLogRecord` entity captures comprehensive method execution information:
+You can add extra information to your logs during method execution:
 
 ```csharp
-public class ActivityLogRecord
+public class OrderService : IOrderService
 {
-    public Guid Id { get; set; }                    // Primary key (Version 7 GUID)
-    public string ActivityName { get; set; }        // Method or activity name
-    public string? ActivityDescription { get; set; } // Detailed description
+    [LogActivity("ProcessPayment", "Processing payment for order {orderId}")]
+    public async Task ProcessPaymentAsync(int orderId, decimal amount)
+    {
+        // Add custom metadata during execution
+        ActivityLogContext.AddMetadata("paymentAmount", amount);
+        ActivityLogContext.AddMetadata("processingStartTime", DateTime.UtcNow);
 
-    // User Context
-    public long? UserId { get; set; }               // User identifier
-    public string? UserName { get; set; }           // User name
+        // Process payment logic here
+        var result = await _paymentService.ProcessAsync(orderId, amount);
 
-    // Target Entity (optional)
-    public string? TargetEntity { get; set; }       // Entity being operated on
-    public string? TargetEntityId { get; set; }     // Entity identifier
+        // Add more context based on results
+        ActivityLogContext.AddMetadata("paymentResult", result.Status);
+        ActivityLogContext.AddMetadata("transactionId", result.TransactionId);
 
-    // Timing Information
-    public DateTimeOffset StartTime { get; set; }   // Method start time (high precision)
-    public DateTimeOffset? EndTime { get; set; }    // Method end time
-    public double? ExecutionDurationMs { get; set; } // Duration in milliseconds
+        // You can even modify the activity details
+        if (result.IsSuccess)
+        {
+            ActivityLogContext.SetActivityDescription($"Successfully processed ${amount} payment");
+        }
+        else
+        {
+            ActivityLogContext.SetActivityDescription($"Failed to process ${amount} payment: {result.Error}");
+        }
+    }
+}
+```
 
-    // Method Information
-    public string? MethodName { get; set; }         // Full method name with class
-    public string? ClassName { get; set; }          // Class name
-    public string? Namespace { get; set; }          // Namespace
+### Batch Metadata Addition
 
-    // Execution Data
-    public string? InputParameters { get; set; }    // Serialized input parameters
-    public string? ReturnValue { get; set; }        // Serialized return value
+```csharp
+[LogActivity("AnalyzeData", "Analyzing customer data")]
+public async Task AnalyzeCustomerDataAsync(int customerId)
+{
+    // Add multiple pieces of metadata at once
+    var metadata = new Dictionary<string, object?>
+    {
+        ["customerId"] = customerId,
+        ["analysisType"] = "comprehensive",
+        ["startTime"] = DateTime.UtcNow,
+        ["version"] = "2.1"
+    };
 
-    // Exception Information
-    public string? Exception { get; set; }          // Full exception details
-    public string? ExceptionType { get; set; }      // Exception type name
-    public bool IsSuccess { get; set; }             // Success indicator
+    ActivityLogContext.AddMetadata(metadata);
 
-    // Context Information
-    public string? Metadata { get; set; }           // Additional metadata
-    public string? UserAgent { get; set; }          // HTTP User-Agent
-    public string? IpAddress { get; set; }          // Client IP address
-    public Guid? CorrelationId { get; set; }        // Correlation tracking
-    public string? LogLevel { get; set; }           // Log level
-    public string? Tags { get; set; }               // Categorization tags
+    // Your analysis logic here
 }
 ```
 
 ## Configuration Options
 
-### Core Configuration
+### Basic Configuration
 
-```csharp
-services.ConfigureActivityLogging(options =>
-{
-    options.IsEnabled = true;
-    options.MinimumLogLevel = ActivityLogLevel.Information;
-
-    // Performance settings
-    options.Performance.EnableHighPrecisionTiming = true;
-    options.Performance.SlowMethodThresholdMs = 1000;
-    options.Performance.LogOnlySlowMethods = false;
-
-    // Serialization settings
-    options.Serialization.MaxDepth = 3;
-    options.Serialization.MaxStringLength = 1000;
-    options.Serialization.SerializeInputParameters = true;
-    options.Serialization.SerializeReturnValues = true;
-    options.Serialization.ExcludedProperties.Add("Password");
-    options.Serialization.ExcludedTypes.Add("System.IO.Stream");
-
-    // Filtering settings
-    options.Filtering.ExcludedNamespaces.Add("System");
-    options.Filtering.ExcludedMethods.Add("ToString");
-
-    // Async logging settings
-    options.AsyncLogging.EnableAsyncLogging = true;
-    options.AsyncLogging.BatchSize = 100;
-    options.AsyncLogging.FlushIntervalMs = 5000;
-    options.AsyncLogging.MaxQueueSize = 10000;
-
-    // Exception handling
-    options.ExceptionHandling.CaptureFullStackTrace = true;
-    options.ExceptionHandling.CaptureInnerExceptions = true;
-    options.ExceptionHandling.ContinueOnLoggingFailure = true;
-});
-```
-
-## Advanced Usage
-
-### Custom Context Provider
-
-```csharp
-public class CustomActivityLogContextProvider : IActivityLogContextProvider
-{
-    public Guid? GetCorrelationId()
-    {
-        // Custom correlation ID logic
-        return Activity.Current?.Id != null
-            ? Guid.Parse(Activity.Current.Id)
-            : Guid.NewGuid();
-    }
-
-    public UserContext? GetUserContext()
-    {
-        // Custom user context logic
-        return new UserContext
-        {
-            UserId = GetCurrentUserId(),
-            UserName = GetCurrentUserName()
-        };
-    }
-
-    public HttpContextInfo? GetHttpContext()
-    {
-        // Custom HTTP context logic
-        return new HttpContextInfo
-        {
-            Method = HttpContext.Current?.Request.Method,
-            Url = HttpContext.Current?.Request.Url?.ToString()
-        };
-    }
-}
-
-// Register custom provider
-services.AddScoped<IActivityLogContextProvider, CustomActivityLogContextProvider>();
-```
-
-### Custom Serializer
-
-```csharp
-public class CustomActivityLogSerializer : IActivityLogSerializer
-{
-    public string SerializeArguments(MethodInfo method, Dictionary<string, object?> arguments)
-    {
-        // Custom serialization logic
-        return JsonSerializer.Serialize(arguments, new JsonSerializerOptions
-        {
-            WriteIndented = false,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-        });
-    }
-
-    // Implement other methods...
-}
-
-// Register custom serializer
-services.AddScoped<IActivityLogSerializer, CustomActivityLogSerializer>();
-```
-
-## Database Migrations
-
-### SQL Server Migrations
-
-```bash
-# Add migration
-dotnet ef migrations add InitialCreate --project ActivityLog.DataStorage.SqlServer
-
-# Update database
-dotnet ef database update --project ActivityLog.DataStorage.SqlServer
-```
-
-### PostgreSQL Migrations
-
-```bash
-# Add migration
-dotnet ef migrations add InitialCreate --project ActivityLog.DataStorage.PostgreSql
-
-# Update database
-dotnet ef database update --project ActivityLog.DataStorage.PostgreSql
-```
-
-## Testing
-
-### Repository Pattern Testing
-
-The module uses repository pattern testing for better performance and isolation:
-
-```csharp
-public class ActivityLogServiceTests
-{
-    private readonly Mock<IActivityLogRepository> _mockRepository;
-    private readonly ActivityLogService _service;
-
-    public ActivityLogServiceTests()
-    {
-        _mockRepository = new Mock<IActivityLogRepository>();
-        // Setup service with mocked repository
-    }
-
-    [Fact]
-    public async Task LogMethodExecutionAsync_ShouldPersistActivityLog_WhenValidContext()
-    {
-        // Arrange
-        ActivityLogRecord? capturedLog = null;
-        _mockRepository.Setup(x => x.InsertAsync(It.IsAny<ActivityLogRecord>()))
-                      .Callback<ActivityLogRecord>(log => capturedLog = log)
-                      .Returns(Task.CompletedTask);
-
-        // Act
-        var result = await _service.LogMethodExecutionAsync(context);
-
-        // Assert
-        result.IsSuccess.ShouldBeTrue();
-        _mockRepository.Verify(x => x.InsertAsync(It.IsAny<ActivityLogRecord>()), Times.Once);
-        capturedLog.ShouldNotBeNull();
-        capturedLog.ActivityName.ShouldBe("TestMethod");
-    }
-}
-```
-
-### Integration Testing
-
-```csharp
-// Setup for integration tests
-services.AddActivityLogging(configuration.GetSection("ActivityLogging"))
-        .WithStorage()
-        .UseInMemoryDatabase("TestDb");
-```
-
-## Performance Considerations
-
-### Minimizing Overhead
-
-1. **Disable logging in production** for non-critical methods
-2. **Use filtering** to exclude system namespaces and methods
-3. **Enable async logging** to avoid blocking the main thread
-4. **Configure appropriate batch sizes** for your workload
-5. **Limit serialization depth** for complex objects
-
-### Performance Optimization
-
-```csharp
-services.ConfigureActivityLogging(options =>
-{
-    // Only log slow methods
-    options.Performance.LogOnlySlowMethods = true;
-    options.Performance.SlowMethodThresholdMs = 500;
-
-    // Optimize serialization
-    options.Serialization.MaxDepth = 2;
-    options.Serialization.MaxStringLength = 500;
-
-    // Increase batch size for high-throughput scenarios
-    options.AsyncLogging.BatchSize = 500;
-    options.AsyncLogging.FlushIntervalMs = 2000;
-});
-```
-
-## Best Practices
-
-1. **Use meaningful activity names** that describe the business operation
-2. **Include context in descriptions** using format strings with parameters
-3. **Filter sensitive data** by configuring excluded properties and types
-4. **Monitor performance impact** and adjust configuration as needed
-5. **Use correlation IDs** to track related operations across services
-6. **Configure appropriate log levels** for different environments
-7. **Regularly clean up old logs** to maintain database performance
-8. **Use repository pattern** for testing instead of direct database access
-9. **Leverage async logging** for high-throughput scenarios
-10. **Configure proper indexes** on frequently queried fields
-
-## Troubleshooting
-
-### Common Issues
-
-1. **High memory usage**: Reduce batch size and serialization depth
-2. **Slow performance**: Enable filtering and async logging
-3. **Missing logs**: Check configuration and ensure services are properly registered
-4. **Serialization errors**: Add problematic types to excluded types list
-5. **Repository errors**: Verify database connection and migrations
-
-### Debugging
-
-Enable detailed logging to troubleshoot issues:
+Control what gets logged and how:
 
 ```json
 {
-  "Logging": {
-    "LogLevel": {
-      "ActivityLog": "Debug",
-      "ActivityLog.Services": "Debug",
-      "ActivityLog.Interceptors": "Debug"
+  "ActivityLogging": {
+    "IsEnabled": true,
+    "MinimumLogLevel": "Information"
+  }
+}
+```
+
+### Performance Settings
+
+Monitor and optimize slow methods:
+
+```json
+{
+  "ActivityLogging": {
+    "Performance": {
+      "SlowMethodThresholdMs": 1000,
+      "LogOnlySlowMethods": false,
+      "EnableHighPrecisionTiming": true
     }
   }
 }
 ```
 
-## License
+### Data Protection
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+Exclude sensitive information from logs:
 
-## Contributing
+```json
+{
+  "ActivityLogging": {
+    "Serialization": {
+      "ExcludedProperties": ["Password", "Secret", "Token", "ApiKey"],
+      "ExcludedTypes": ["System.IO.Stream", "Microsoft.AspNetCore.Http.HttpContext"],
+      "MaxDepth": 3,
+      "MaxStringLength": 1000,
+      "SerializeInputParameters": true,
+      "SerializeReturnValues": true
+    }
+  }
+}
+```
 
-Contributions are welcome! Please read our contributing guidelines and submit pull requests to our GitHub repository.
+### Filtering Options
+
+Control which methods get logged:
+
+```json
+{
+  "ActivityLogging": {
+    "Filtering": {
+      "ExcludedNamespaces": ["System", "Microsoft"],
+      "ExcludedMethods": ["ToString", "GetHashCode", "Equals"],
+      "UseWhitelistMode": false
+    }
+  }
+}
+```
+
+### Background Processing
+
+Configure async logging for better performance:
+
+```json
+{
+  "ActivityLogging": {
+    "AsyncLogging": {
+      "EnableAsyncLogging": true,
+      "BatchSize": 100,
+      "FlushIntervalMs": 5000,
+      "MaxQueueSize": 10000
+    }
+  }
+}
+```
+
+## Common Scenarios
+
+### E-commerce Application
+
+```csharp
+public class OrderService : IOrderService
+{
+    [LogActivity("CreateOrder", "Creating order for customer {customerId}")]
+    public async Task<Order> CreateOrderAsync(int customerId, List<OrderItem> items)
+    {
+        ActivityLogContext.AddMetadata("itemCount", items.Count);
+        ActivityLogContext.AddMetadata("totalAmount", items.Sum(i => i.Price * i.Quantity));
+
+        var order = await _repository.CreateAsync(new Order
+        {
+            CustomerId = customerId,
+            Items = items
+        });
+
+        ActivityLogContext.AddMetadata("orderId", order.Id);
+        return order;
+    }
+
+    [LogActivity("ProcessPayment", "Processing payment for order {orderId}")]
+    public async Task<PaymentResult> ProcessPaymentAsync(int orderId, PaymentInfo payment)
+    {
+        ActivityLogContext.AddMetadata("paymentMethod", payment.Method);
+        ActivityLogContext.AddMetadata("amount", payment.Amount);
+
+        try
+        {
+            var result = await _paymentService.ProcessAsync(payment);
+            ActivityLogContext.AddMetadata("transactionId", result.TransactionId);
+            ActivityLogContext.AddMetadata("status", result.Status);
+            return result;
+        }
+        catch (PaymentException ex)
+        {
+            ActivityLogContext.AddMetadata("paymentError", ex.Message);
+            throw;
+        }
+    }
+}
+```
+
+### User Management
+
+```csharp
+public class UserService : IUserService
+{
+    [LogActivity("RegisterUser", "Registering new user {email}")]
+    public async Task<User> RegisterUserAsync(string email, string password)
+    {
+        ActivityLogContext.AddMetadata("registrationSource", "web");
+        ActivityLogContext.AddMetadata("timestamp", DateTime.UtcNow);
+
+        var user = await _repository.CreateAsync(new User { Email = email });
+
+        ActivityLogContext.SetTargetEntity($"User:{user.Id}");
+        return user;
+    }
+
+    [LogActivity("UpdateProfile", "Updating profile for user {userId}")]
+    public async Task UpdateProfileAsync(int userId, UserProfile profile)
+    {
+        ActivityLogContext.AddMetadata("fieldsUpdated", profile.GetChangedFields());
+        ActivityLogContext.SetTargetEntity($"User:{userId}");
+
+        await _repository.UpdateAsync(userId, profile);
+    }
+}
+```
+
+## Database Setup
+
+### SQL Server
+
+```csharp
+// In Program.cs
+services.AddActivityLogging()
+        .WithStorage()
+        .UseSqlServer("Server=localhost;Database=MyApp;Trusted_Connection=true;");
+```
+
+Run migrations to create the database tables:
+
+```bash
+dotnet ef database update --project YourProject
+```
+
+### PostgreSQL
+
+```csharp
+// In Program.cs
+services.AddActivityLogging()
+        .WithStorage()
+        .UsePostgreSql("Host=localhost;Database=myapp;Username=postgres;Password=password");
+```
+
+### In-Memory (for Testing)
+
+```csharp
+// Perfect for unit tests and development
+services.AddActivityLogging()
+        .WithStorage()
+        .UseInMemoryDatabase("TestDatabase");
+```
+
+## Best Practices
+
+### 1. Use Meaningful Activity Names
+
+```csharp
+// ✅ Good - describes the business operation
+[LogActivity("ProcessRefund", "Processing refund for order {orderId}")]
+
+// ❌ Avoid - too generic
+[LogActivity("DoWork", "Doing some work")]
+```
+
+### 2. Include Important Context
+
+```csharp
+[LogActivity("SendEmail", "Sending {emailType} email to {recipientEmail}")]
+public async Task SendEmailAsync(string emailType, string recipientEmail, string content)
+{
+    // Add extra context during execution
+    ActivityLogContext.AddMetadata("emailSize", content.Length);
+    ActivityLogContext.AddMetadata("templateVersion", GetTemplateVersion(emailType));
+
+    await _emailService.SendAsync(recipientEmail, content);
+}
+```
+
+### 3. Protect Sensitive Data
+
+```json
+{
+  "ActivityLogging": {
+    "Serialization": {
+      "ExcludedProperties": [
+        "Password", "Secret", "Token", "ApiKey",
+        "CreditCardNumber", "SSN", "PersonalData"
+      ]
+    }
+  }
+}
+```
+
+### 4. Monitor Performance Impact
+
+```json
+{
+  "ActivityLogging": {
+    "Performance": {
+      "LogOnlySlowMethods": true,
+      "SlowMethodThresholdMs": 500
+    },
+    "AsyncLogging": {
+      "EnableAsyncLogging": true
+    }
+  }
+}
+```
+
+### 5. Use Appropriate Log Levels
+
+```csharp
+// Critical business operations
+[LogActivity("ProcessPayment", "Processing payment", LogLevel = ActivityLogLevel.Warning)]
+
+// Regular operations
+[LogActivity("GetUser", "Getting user data", LogLevel = ActivityLogLevel.Information)]
+
+// Detailed debugging
+[LogActivity("ValidateInput", "Validating input", LogLevel = ActivityLogLevel.Debug)]
+```
+
+## Performance Tips
+
+### For High-Traffic Applications
+
+```json
+{
+  "ActivityLogging": {
+    "Performance": {
+      "LogOnlySlowMethods": true,
+      "SlowMethodThresholdMs": 500
+    },
+    "AsyncLogging": {
+      "EnableAsyncLogging": true,
+      "BatchSize": 500,
+      "FlushIntervalMs": 2000
+    },
+    "Serialization": {
+      "MaxDepth": 2,
+      "MaxStringLength": 500
+    }
+  }
+}
+```
+
+### Exclude Noisy Methods
+
+```json
+{
+  "ActivityLogging": {
+    "Filtering": {
+      "ExcludedNamespaces": ["System", "Microsoft", "Newtonsoft"],
+      "ExcludedMethods": ["ToString", "GetHashCode", "Equals", "Dispose"]
+    }
+  }
+}
+```
+
+### Development vs Production
+
+```json
+// Development - log everything
+{
+  "ActivityLogging": {
+    "IsEnabled": true,
+    "MinimumLogLevel": "Debug",
+    "Performance": {
+      "LogOnlySlowMethods": false
+    }
+  }
+}
+
+// Production - log only important operations
+{
+  "ActivityLogging": {
+    "IsEnabled": true,
+    "MinimumLogLevel": "Information",
+    "Performance": {
+      "LogOnlySlowMethods": true,
+      "SlowMethodThresholdMs": 1000
+    }
+  }
+}
+```
+
+## Troubleshooting
+
+### Nothing is Being Logged
+
+**Check these common issues:**
+
+1. **Service registration missing**:
+   ```csharp
+   // Make sure you have this
+   services.AddActivityLogging();
+   services.AddActivityLoggedService<IYourService, YourService>();
+   ```
+
+2. **Logging is disabled**:
+   ```json
+   {
+     "ActivityLogging": {
+       "IsEnabled": true  // Make sure this is true
+     }
+   }
+   ```
+
+3. **Log level too high**:
+   ```json
+   {
+     "ActivityLogging": {
+       "MinimumLogLevel": "Debug"  // Try lowering this
+     }
+   }
+   ```
+
+### Performance Issues
+
+**If logging is slowing down your app:**
+
+1. **Enable async logging**:
+   ```json
+   {
+     "ActivityLogging": {
+       "AsyncLogging": {
+         "EnableAsyncLogging": true
+       }
+     }
+   }
+   ```
+
+2. **Log only slow methods**:
+   ```json
+   {
+     "ActivityLogging": {
+       "Performance": {
+         "LogOnlySlowMethods": true,
+         "SlowMethodThresholdMs": 1000
+       }
+     }
+   }
+   ```
+
+3. **Reduce serialization**:
+   ```json
+   {
+     "ActivityLogging": {
+       "Serialization": {
+         "MaxDepth": 1,
+         "SerializeInputParameters": false,
+         "SerializeReturnValues": false
+       }
+     }
+   }
+   ```
+
+### Serialization Errors
+
+**If you get serialization exceptions:**
+
+1. **Exclude problematic types**:
+   ```json
+   {
+     "ActivityLogging": {
+       "Serialization": {
+         "ExcludedTypes": [
+           "System.IO.Stream",
+           "Microsoft.AspNetCore.Http.HttpContext",
+           "YourApp.ProblematicType"
+         ]
+       }
+     }
+   }
+   ```
+
+2. **Exclude sensitive properties**:
+   ```json
+   {
+     "ActivityLogging": {
+       "Serialization": {
+         "ExcludedProperties": ["Password", "Secret", "InternalData"]
+       }
+     }
+   }
+   ```
+
+### Database Connection Issues
+
+**If logs aren't being saved to the database:**
+
+1. **Check connection string**:
+   ```csharp
+   services.AddActivityLogging()
+           .WithStorage()
+           .UseSqlServer("your-connection-string-here");
+   ```
+
+2. **Run database migrations**:
+   ```bash
+   dotnet ef database update
+   ```
+
+3. **Test with in-memory database first**:
+   ```csharp
+   services.AddActivityLogging()
+           .WithStorage()
+           .UseInMemoryDatabase("TestDb");
+   ```
+
+### Getting Help
+
+**Enable debug logging to see what's happening:**
+
+```json
+{
+  "Logging": {
+    "LogLevel": {
+      "ActivityLog": "Debug"
+    }
+  }
+}
+```
+
+This will show detailed information about what the activity logging system is doing, helping you identify any issues.
 
 ## Support
 
-For support and questions, please visit our GitHub repository or contact the DotNetBrightener team.
+For questions and support:
+- Check the troubleshooting section above
+- Review the configuration examples
+- Enable debug logging to see detailed information
+- Visit our GitHub repository for issues and discussions

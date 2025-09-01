@@ -35,5 +35,18 @@ app.MapGet("/test-audit-log/{testId}",
                return Results.Ok();
            });
 
+app.MapGet("/test-audit-log",
+           async (int           testId,
+                  HttpContext   httpContext,
+                  ITestActivity testActivity) =>
+           {
+               await testActivity.DoSomething2(new TestClass
+               {
+                   ProductName = "test prd"
+               });
+
+               return Results.Ok();
+           });
+
 
 app.Run();
