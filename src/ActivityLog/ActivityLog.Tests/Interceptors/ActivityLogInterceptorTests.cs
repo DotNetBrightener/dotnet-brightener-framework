@@ -88,7 +88,7 @@ public class ActivityLogInterceptorTests
     }
 
     [Fact]
-    public void Intercept_ShouldLogMethodExecution_WhenMethodHasLogActivityAttribute()
+    public async Task Intercept_ShouldLogMethodExecution_WhenMethodHasLogActivityAttribute()
     {
         // Arrange
         var testService = new TestService();
@@ -99,6 +99,9 @@ public class ActivityLogInterceptorTests
 
         // Act
         var result = proxy.GetValue(42);
+
+        // Wait a bit for the async logging to complete (fire-and-forget Task.Run)
+        await Task.Delay(100);
 
         // Assert
         result.Should().Be("Value: 42");
