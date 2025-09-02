@@ -66,10 +66,10 @@ public class ActivityLogService(
             ActivityDescription = FormatDescription(context),
             StartTime = context.StartTimestamp is null
                             ? DateTimeOffset.Now
-                            : DateTimeOffset.FromUnixTimeMilliseconds(context.StartTimestamp!.Value),
+                            : ConvertToDateTimeOffset(context.StartTimestamp.Value),
             EndTime = context.EndTimestamp is null
                           ? DateTimeOffset.Now
-                          : DateTimeOffset.FromUnixTimeMilliseconds(context.EndTimestamp!.Value),
+                          : ConvertToDateTimeOffset(context.EndTimestamp.Value),
             ExecutionDurationMs = isStart ? null : context.ExecutionDurationMs,
             MethodName          = context.FullMethodName,
             ClassName           = context.ClassName,
@@ -135,28 +135,28 @@ public class ActivityLogService(
             {
                 // Handle named arguments dictionary
                 var formatDescription = context.DescriptionFormat;
-                
+
                 if (context.Arguments is { } namedArguments)
                 {
                     // Replace named placeholders (e.g., {id}, {name})
                     foreach (var kvp in namedArguments)
                     {
                         var placeholder = "{" + kvp.Key + "}";
-                        var value = kvp.Value?.ToString();
-                        
+                        var value       = kvp.Value?.ToString();
+
                         if (value is not null)
                             formatDescription = formatDescription.Replace(placeholder, value);
                     }
                 }
-                
+
                 if (context.Metadata is { } metadata)
                 {
                     // Replace named placeholders (e.g., {id}, {name})
                     foreach (var kvp in metadata)
                     {
                         var placeholder = "{Metadata." + kvp.Key + "}";
-                        var value = kvp.Value?.ToString();
-                        
+                        var value       = kvp.Value?.ToString();
+
                         if (value is not null)
                             formatDescription = formatDescription.Replace(placeholder, value);
                     }
@@ -210,12 +210,27 @@ public class ActivityLogService(
         if (_logQueue.Count >= _configuration.AsyncLogging.MaxQueueSize)
         {
             logger.LogWarning("Activity log queue is full. Dropping log entry for {MethodName}",
-                               activityLogRecord.MethodName);
+                              activityLogRecord.MethodName);
 
             return;
         }
 
         _logQueue.Enqueue(activityLogRecord);
+    }
+
+    /// <summary>
+    /// Converts a Stopwatch timestamp to DateTimeOffset.
+    /// Since Stopwatch timestamps are relative to system start time, we calculate the actual time
+    /// by getting the elapsed time from the current timestamp and subtracting it from the current time.
+    /// </summary>
+    /// <param name="stopwatchTimestamp">The Stopwatch timestamp value</param>
+    /// <returns>The corresponding DateTimeOffset</returns>
+    private static DateTimeOffset ConvertToDateTimeOffset(long stopwatchTimestamp)
+    {
+        var currentTimestamp = Stopwatch.GetTimestamp();
+        var elapsedTime      = Stopwatch.GetElapsedTime(stopwatchTimestamp, currentTimestamp);
+
+        return DateTimeOffset.UtcNow.Subtract(elapsedTime);
     }
 
     // IActivityLogQueueAccessor implementation
@@ -232,10 +247,6 @@ public class ActivityLogService(
     public int Count => _logQueue.Count;
 
     public bool IsEmpty => _logQueue.IsEmpty;
-
-
-
-
 
     public void Dispose()
     {

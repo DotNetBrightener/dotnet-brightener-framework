@@ -4,10 +4,10 @@ using ActivityLog.Interceptors;
 using ActivityLog.Models;
 using ActivityLog.Services;
 using Castle.DynamicProxy;
-using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
+using Shouldly;
 using Xunit;
 
 namespace ActivityLog.Tests.Interceptors;
@@ -65,7 +65,7 @@ public class ActivityLogInterceptorTests
         var result = proxy.GetValue(42);
 
         // Assert
-        result.Should().Be("Value: 42");
+        result.ShouldBe("Value: 42");
         _mockActivityLogService.Verify(x => x.LogMethodCompletionAsync(It.IsAny<MethodExecutionContext>()),
                                        Times.Never);
     }
@@ -82,7 +82,7 @@ public class ActivityLogInterceptorTests
         var result = proxy.GetValue(42);
 
         // Assert
-        result.Should().Be("Value: 42");
+        result.ShouldBe("Value: 42");
         _mockActivityLogService.Verify(x => x.LogMethodCompletionAsync(It.IsAny<MethodExecutionContext>()),
                                        Times.Never);
     }
@@ -104,7 +104,7 @@ public class ActivityLogInterceptorTests
         await Task.Delay(100);
 
         // Assert
-        result.Should().Be("Value: 42");
+        result.ShouldBe("Value: 42");
         _mockActivityLogService.Verify(x => x.LogMethodCompletionAsync(It.IsAny<MethodExecutionContext>()), Times.Once);
     }
 
@@ -122,7 +122,7 @@ public class ActivityLogInterceptorTests
         var result = await proxy.GetValueAsync(42);
 
         // Assert
-        result.Should().Be("Async Value: 42");
+        result.ShouldBe("Async Value: 42");
         _mockActivityLogService.Verify(x => x.LogMethodCompletionAsync(It.IsAny<MethodExecutionContext>()), Times.Once);
     }
 
@@ -138,7 +138,7 @@ public class ActivityLogInterceptorTests
 
         // Act & Assert
         var exception = Assert.Throws<InvalidOperationException>(() => proxy.ThrowException());
-        exception.Message.Should().Be("Test exception");
+        exception.Message.ShouldBe("Test exception");
 
         // Wait a bit for the async logging to complete
         await Task.Delay(100);
@@ -158,7 +158,7 @@ public class ActivityLogInterceptorTests
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => proxy.ThrowExceptionAsync());
-        exception.Message.Should().Be("Test async exception");
+        exception.Message.ShouldBe("Test async exception");
 
         _mockActivityLogService.Verify(x => x.LogMethodFailureAsync(It.IsAny<MethodExecutionContext>()), Times.Once);
     }
@@ -184,19 +184,19 @@ public class ActivityLogInterceptorTests
         await Task.Delay(100);
 
         // Assert
-        result.Should().Be("Value: 42");
-        capturedContext.Should().NotBeNull();
-        capturedContext!.MethodInfo.Name.Should().Be("GetValue");
+        result.ShouldBe("Value: 42");
+        capturedContext.ShouldNotBeNull();
+        capturedContext!.MethodInfo.Name.ShouldBe("GetValue");
 
         // Verify named arguments structure
-        capturedContext.Arguments.Should().BeOfType<Dictionary<string, object?>>();
+        capturedContext.Arguments.ShouldBeOfType<Dictionary<string, object?>>();
         var namedArguments = (Dictionary<string, object?>)capturedContext.Arguments;
-        namedArguments.Should().HaveCount(1);
-        namedArguments.Should().ContainKey("input");
-        namedArguments["input"].Should().Be(42);
+        namedArguments.Count.ShouldBe(1);
+        namedArguments.ShouldContainKey("input");
+        namedArguments["input"].ShouldBe(42);
 
-        capturedContext.ReturnValue.Should().Be("Value: 42");
-        capturedContext.ActivityName.Should().Be("GetValue");
+        capturedContext.ReturnValue.ShouldBe("Value: 42");
+        capturedContext.ActivityName.ShouldBe("GetValue");
     }
 
     [Fact]
@@ -211,7 +211,7 @@ public class ActivityLogInterceptorTests
         var result = proxy.GetValue(42);
 
         // Assert
-        result.Should().Be("Value: 42");
+        result.ShouldBe("Value: 42");
         _mockActivityLogService.Verify(x => x.LogMethodCompletionAsync(It.IsAny<MethodExecutionContext>()),
                                        Times.Never);
     }
@@ -228,7 +228,7 @@ public class ActivityLogInterceptorTests
         var result = proxy.GetValue(42);
 
         // Assert
-        result.Should().Be("Value: 42");
+        result.ShouldBe("Value: 42");
         _mockActivityLogService.Verify(x => x.LogMethodCompletionAsync(It.IsAny<MethodExecutionContext>()),
                                        Times.Never);
     }
@@ -252,21 +252,21 @@ public class ActivityLogInterceptorTests
         await Task.Delay(100);
 
         // Assert
-        result.Should().Be("Processed: 42");
-        capturedContext.Should().NotBeNull();
+        result.ShouldBe("Processed: 42");
+        capturedContext.ShouldNotBeNull();
 
         // Verify original arguments are captured
-        capturedContext!.Arguments.Should().BeOfType<Dictionary<string, object?>>();
+        capturedContext!.Arguments.ShouldBeOfType<Dictionary<string, object?>>();
         var namedArguments = (Dictionary<string, object?>)capturedContext.Arguments;
-        namedArguments.Should().ContainKey("value");
-        namedArguments["value"].Should().Be(42);
+        namedArguments.ShouldContainKey("value");
+        namedArguments["value"].ShouldBe(42);
 
         // Verify metadata added during execution is captured
-        capturedContext.Metadata.Should().ContainKey("processingTime");
-        capturedContext.Metadata.Should().ContainKey("itemCount");
-        capturedContext.Metadata.Should().ContainKey("status");
-        capturedContext.Metadata["itemCount"].Should().Be(5);
-        capturedContext.Metadata["status"].Should().Be("completed");
+        capturedContext.Metadata.ShouldContainKey("processingTime");
+        capturedContext.Metadata.ShouldContainKey("itemCount");
+        capturedContext.Metadata.ShouldContainKey("status");
+        capturedContext.Metadata["itemCount"].ShouldBe(5);
+        capturedContext.Metadata["status"].ShouldBe("completed");
     }
 
     [Fact]
@@ -301,17 +301,17 @@ public class ActivityLogInterceptorTests
         await Task.Delay(200);
 
         // Assert
-        capturedContexts.Should().HaveCount(3);
+        capturedContexts.Count.ShouldBe(3);
 
         // Each context should have its own isolated metadata
         foreach (var context in capturedContexts)
         {
-            context.Metadata.Should().ContainKey("processingTime");
-            context.Metadata.Should().ContainKey("itemCount");
-            context.Metadata.Should().ContainKey("valueReturned");
-            context.Metadata.Should().ContainKey("status");
-            context.Metadata["itemCount"].Should().Be(5);
-            context.Metadata["status"].Should().Be("completed");
+            context.Metadata.ShouldContainKey("processingTime");
+            context.Metadata.ShouldContainKey("itemCount");
+            context.Metadata.ShouldContainKey("valueReturned");
+            context.Metadata.ShouldContainKey("status");
+            context.Metadata["itemCount"].ShouldBe(5);
+            context.Metadata["status"].ShouldBe("completed");
         }
 
         // Verify arguments are different for each call
@@ -320,7 +320,7 @@ public class ActivityLogInterceptorTests
             .OrderBy(v => v)
             .ToArray();
 
-        argumentValues.Should().BeEquivalentTo(new object[] { 100, 200, 300 });
+        argumentValues.ShouldBe(new object[] { 100, 200, 300 });
     }
 
     [Fact]
@@ -348,17 +348,17 @@ public class ActivityLogInterceptorTests
         await Task.Delay(200);
 
         // Assert
-        result.Should().Be("Outer: Inner: 42");
-        capturedContexts.Should().HaveCount(1); // Only OuterMethod is intercepted (InnerMethod is direct call)
+        result.ShouldBe("Outer: Inner: 42");
+        capturedContexts.Count.ShouldBe(1); // Only OuterMethod is intercepted (InnerMethod is direct call)
 
         var outerContext = capturedContexts.First();
-        outerContext.MethodInfo.Name.Should().Be("OuterMethod");
+        outerContext.MethodInfo.Name.ShouldBe("OuterMethod");
 
         // Verify that metadata from both outer and inner methods is captured
         // This demonstrates that context flows properly within the same execution
-        outerContext.Metadata.Should().ContainKey("outerStart");
-        outerContext.Metadata.Should().ContainKey("outerEnd");
-        outerContext.Metadata.Should().ContainKey("innerProcessed"); // Inner metadata flows to outer context
+        outerContext.Metadata.ShouldContainKey("outerStart");
+        outerContext.Metadata.ShouldContainKey("outerEnd");
+        outerContext.Metadata.ShouldContainKey("innerProcessed"); // Inner metadata flows to outer context
     }
 
     [Fact]
@@ -387,16 +387,16 @@ public class ActivityLogInterceptorTests
         await Task.Delay(200);
 
         // Assert
-        result1.Should().Be("Inner: 100");
-        result2.Should().Be("Inner: 200");
-        capturedContexts.Should().HaveCount(2); // Two separate contexts
+        result1.ShouldBe("Inner: 100");
+        result2.ShouldBe("Inner: 200");
+        capturedContexts.Count.ShouldBe(2); // Two separate contexts
 
         // Each context should have its own isolated metadata
         foreach (var context in capturedContexts)
         {
-            context.MethodInfo.Name.Should().Be("InnerMethod");
-            context.Metadata.Should().ContainKey("innerProcessed");
-            context.Metadata.Should().HaveCount(1); // Only its own metadata
+            context.MethodInfo.Name.ShouldBe("InnerMethod");
+            context.Metadata.ShouldContainKey("innerProcessed");
+            context.Metadata.Count.ShouldBe(1); // Only its own metadata
         }
 
         // Verify arguments are different for each call
@@ -405,7 +405,7 @@ public class ActivityLogInterceptorTests
             .OrderBy(v => v)
             .ToArray();
 
-        argumentValues.Should().BeEquivalentTo(new object[] { 100, 200 });
+        argumentValues.ShouldBe(new object[] { 100, 200 });
     }
 
     [Fact]
@@ -427,30 +427,30 @@ public class ActivityLogInterceptorTests
         await Task.Delay(100);
 
         // Assert
-        result.Should().Be("Batch Processed: 42");
-        capturedContext.Should().NotBeNull();
+        result.ShouldBe("Batch Processed: 42");
+        capturedContext.ShouldNotBeNull();
 
         // Verify original arguments are captured
-        capturedContext!.Arguments.Should().BeOfType<Dictionary<string, object?>>();
+        capturedContext!.Arguments.ShouldBeOfType<Dictionary<string, object?>>();
         var namedArguments = (Dictionary<string, object?>)capturedContext.Arguments;
-        namedArguments.Should().ContainKey("value");
-        namedArguments["value"].Should().Be(42);
+        namedArguments.ShouldContainKey("value");
+        namedArguments["value"].ShouldBe(42);
 
         // Verify single metadata is captured
-        capturedContext.Metadata.Should().ContainKey("startTime");
+        capturedContext.Metadata.ShouldContainKey("startTime");
 
         // Verify batch metadata is captured
-        capturedContext.Metadata.Should().ContainKey("itemCount");
-        capturedContext.Metadata.Should().ContainKey("totalAmount");
-        capturedContext.Metadata.Should().ContainKey("customerType");
-        capturedContext.Metadata.Should().ContainKey("processingMode");
-        capturedContext.Metadata.Should().ContainKey("endTime");
+        capturedContext.Metadata.ShouldContainKey("itemCount");
+        capturedContext.Metadata.ShouldContainKey("totalAmount");
+        capturedContext.Metadata.ShouldContainKey("customerType");
+        capturedContext.Metadata.ShouldContainKey("processingMode");
+        capturedContext.Metadata.ShouldContainKey("endTime");
 
         // Verify batch metadata values
-        capturedContext.Metadata["itemCount"].Should().Be(5);
-        capturedContext.Metadata["totalAmount"].Should().Be(99.99m);
-        capturedContext.Metadata["customerType"].Should().Be("premium");
-        capturedContext.Metadata["processingMode"].Should().Be("batch");
+        capturedContext.Metadata["itemCount"].ShouldBe(5);
+        capturedContext.Metadata["totalAmount"].ShouldBe(99.99m);
+        capturedContext.Metadata["customerType"].ShouldBe("premium");
+        capturedContext.Metadata["processingMode"].ShouldBe("batch");
     }
 
     [Fact]
@@ -472,19 +472,19 @@ public class ActivityLogInterceptorTests
         await Task.Delay(100);
 
         // Assert
-        result.Should().Be("Edge Cases Processed: 42");
-        capturedContext.Should().NotBeNull();
+        result.ShouldBe("Edge Cases Processed: 42");
+        capturedContext.ShouldNotBeNull();
 
         // Verify that valid entries are captured and invalid ones are skipped
-        capturedContext!.Metadata.Should().ContainKey("validKey1");
-        capturedContext.Metadata.Should().ContainKey("validKey2");
-        capturedContext.Metadata["validKey1"].Should().Be("validValue1");
-        capturedContext.Metadata["validKey2"].Should().Be("validValue2");
+        capturedContext!.Metadata.ShouldContainKey("validKey1");
+        capturedContext.Metadata.ShouldContainKey("validKey2");
+        capturedContext.Metadata["validKey1"].ShouldBe("validValue1");
+        capturedContext.Metadata["validKey2"].ShouldBe("validValue2");
 
         // Verify that null/empty keys are not present
-        capturedContext.Metadata.Should().NotContainKey("");
-        capturedContext.Metadata.Should().NotContainKey(" ");
-        capturedContext.Metadata.Keys.Should().NotContain(k => string.IsNullOrWhiteSpace(k));
+        capturedContext.Metadata.ShouldNotContainKey("");
+        capturedContext.Metadata.ShouldNotContainKey(" ");
+        capturedContext.Metadata.Keys.ShouldNotContain(k => string.IsNullOrWhiteSpace(k));
     }
 
     [Fact]
@@ -506,27 +506,27 @@ public class ActivityLogInterceptorTests
         await Task.Delay(100);
 
         // Assert
-        result.Should().Be("Context Modified: 42");
-        capturedContext.Should().NotBeNull();
+        result.ShouldBe("Context Modified: 42");
+        capturedContext.ShouldNotBeNull();
 
         // Verify original arguments are captured
-        capturedContext!.Arguments.Should().BeOfType<Dictionary<string, object?>>();
+        capturedContext!.Arguments.ShouldBeOfType<Dictionary<string, object?>>();
         var namedArguments = (Dictionary<string, object?>)capturedContext.Arguments;
-        namedArguments.Should().ContainKey("value");
-        namedArguments["value"].Should().Be(42);
+        namedArguments.ShouldContainKey("value");
+        namedArguments["value"].ShouldBe(42);
 
         // Verify context properties were modified during execution
-        capturedContext.ActivityName.Should().Be("ModifiedActivityName");
-        capturedContext.ActivityDescription.Should().Be("This activity was modified during execution");
-        capturedContext.DescriptionFormat.Should().Be("Modified format: {value}");
-        capturedContext.TargetEntity.Should().Be("ModifiedEntity");
+        capturedContext.ActivityName.ShouldBe("ModifiedActivityName");
+        capturedContext.ActivityDescription.ShouldBe("This activity was modified during execution");
+        capturedContext.DescriptionFormat.ShouldBe("Modified format: {value}");
+        capturedContext.TargetEntity.ShouldBe("ModifiedEntity");
 
         // Verify metadata was also added
-        capturedContext.Metadata.Should().ContainKey("modificationTime");
-        capturedContext.Metadata.Should().ContainKey("originalName");
-        capturedContext.Metadata.Should().ContainKey("modificationCount");
-        capturedContext.Metadata["originalName"].Should().Be("ProcessWithContextModification");
-        capturedContext.Metadata["modificationCount"].Should().Be(4);
+        capturedContext.Metadata.ShouldContainKey("modificationTime");
+        capturedContext.Metadata.ShouldContainKey("originalName");
+        capturedContext.Metadata.ShouldContainKey("modificationCount");
+        capturedContext.Metadata["originalName"].ShouldBe("ProcessWithContextModification");
+        capturedContext.Metadata["modificationCount"].ShouldBe(4);
     }
 }
 
