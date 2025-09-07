@@ -1,5 +1,5 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-	<Import Project="Directory.Build.props.user" Condition="Exists('Directory.Build.props.user')" />
+	<Import Condition="Exists('Directory.Build.props.user')" Project="Directory.Build.props.user" />
 
 	<PropertyGroup>
 		<TargetFramework>net9.0</TargetFramework>
