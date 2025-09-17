@@ -61,7 +61,8 @@ public static class ServiceCollectionExtensions
                                   });
             });
         }
-
+        
+        serviceCollection.AddProblemDetails();
 
         serviceCollection.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
         serviceCollection.TryAddSingleton<IContentTypeProvider, FileExtensionContentTypeProvider>();
@@ -83,9 +84,6 @@ public static class ServiceCollectionExtensions
         };
 
         serviceCollection.EnableBackgroundTaskServices(configuration);
-
-        serviceCollection.AddProblemDetails();
-        serviceCollection.AddExceptionHandler<UnhandledExceptionResponseHandler>();
 
         serviceCollection.ConfigureHttpJsonOptions(options =>
         {
@@ -135,8 +133,6 @@ public static class ServiceCollectionExtensions
         {
             app.UseCors("Default__AllowedOrigins");
         }
-
-        app.UseExceptionHandler();
 
         return app;
     }
