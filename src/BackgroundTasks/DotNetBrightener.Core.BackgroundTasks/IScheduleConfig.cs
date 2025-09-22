@@ -2,7 +2,8 @@
 
 public interface IScheduleConfig
 {
-
+    Guid UniqueIdentifier();
+    
     /// <summary>
     ///     Scheduled task runs every minute.
     /// </summary>
