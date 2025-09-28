@@ -63,6 +63,7 @@ public class ActivityLogService(
             Id                  = Guid.CreateVersion7(),
             ActivityName        = context.ActivityName ?? context.MethodInfo.Name,
             TargetEntity        = context.TargetEntity,
+            TargetEntityId      = context.TargetEntityId,
             ActivityDescription = FormatDescription(context),
             StartTime = context.StartTimestamp is null
                             ? DateTimeOffset.Now

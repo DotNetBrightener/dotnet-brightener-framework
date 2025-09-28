@@ -3,7 +3,7 @@
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 	</ItemGroup>
 	<ItemGroup>
 	  <ProjectReference Include="..\..\Caching\DotNetBrightener.Caching\DotNetBrightener.Caching.Abstractions.csproj" />
