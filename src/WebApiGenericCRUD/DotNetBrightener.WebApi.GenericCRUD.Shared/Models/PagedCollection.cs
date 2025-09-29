@@ -13,7 +13,7 @@ public class PagedCollection<T>
     public int ResultCount { get; set; }
 }
 
-public class PagedCollection : PagedCollection<dynamic> { }
+public class PagedCollection : PagedCollection<dynamic>;
 
 public class Pagination
 {

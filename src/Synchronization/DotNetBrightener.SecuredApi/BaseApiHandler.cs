@@ -27,14 +27,12 @@ public abstract class BaseApiHandler<TRequest, TResponse> : BaseApiHandler, IApi
 }
 
 public abstract class BaseApiHandler<TRequest> : BaseApiHandler<TRequest, TRequest>
-    where TRequest : class, new()
-{
-}
+    where TRequest : class, new();
 
 /// <summary>
 ///     Represents a request model that does not have any properties.
 /// </summary>
-public sealed class NullRequestModel {}
+public sealed class NullRequestModel;
 
 public abstract class EmptyRequestBaseApiHandler<TResponse> : BaseApiHandler<NullRequestModel, TResponse>
 {

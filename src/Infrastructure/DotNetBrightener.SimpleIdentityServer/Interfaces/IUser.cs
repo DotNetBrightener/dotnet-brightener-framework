@@ -7,7 +7,4 @@ public interface IUser
     string UserName { get; }
 }
 
-public interface IUserStore
-{
-
-}
+public interface IUserStore;
