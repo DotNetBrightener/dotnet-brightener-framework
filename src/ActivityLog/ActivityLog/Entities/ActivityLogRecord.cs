@@ -20,6 +20,12 @@ public class ActivityLogRecord
     public string ActivityDescription { get; set; }
 
     /// <summary>
+    ///     In the multi-tenant environment, identifies the tenant that the activity log is created under
+    /// </summary>
+    [MaxLength(128)]
+    public string? TenantId { get; set; }
+
+    /// <summary>
     ///     The id of user who performs the activity
     /// </summary>
     public long? UserId { get; set; }

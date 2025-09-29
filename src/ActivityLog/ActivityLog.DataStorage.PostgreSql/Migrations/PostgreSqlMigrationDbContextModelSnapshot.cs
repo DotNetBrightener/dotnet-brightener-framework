@@ -17,7 +17,7 @@ namespace ActivityLog.DataStorage.PostgreSql.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.8")
+                .HasAnnotation("ProductVersion", "9.0.9")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -98,6 +98,10 @@ namespace ActivityLog.DataStorage.PostgreSql.Migrations
                         .HasColumnType("character varying(256)");
 
                     b.Property<string>("TargetEntityId")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<string>("TenantId")
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)");
 

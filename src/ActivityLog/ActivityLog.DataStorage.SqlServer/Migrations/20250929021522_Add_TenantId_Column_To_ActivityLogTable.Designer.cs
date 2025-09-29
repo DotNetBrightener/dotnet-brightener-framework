@@ -4,6 +4,7 @@ using ActivityLog.DataStorage.SqlServer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ActivityLog.DataStorage.SqlServer.Migrations
 {
     [DbContext(typeof(SqlServerMigrationDbContext))]
-    partial class SqlServerMigrationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250929021522_Add_TenantId_Column_To_ActivityLogTable")]
+    partial class Add_TenantId_Column_To_ActivityLogTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

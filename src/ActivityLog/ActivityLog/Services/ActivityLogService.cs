@@ -77,6 +77,7 @@ public class ActivityLogService(
             Namespace           = context.Namespace,
             IsSuccess           = context.IsSuccess,
             CorrelationId       = context.CorrelationId,
+            TenantId            = context.TenantId,
             LogLevel            = DetermineLogLevel(context).ToString(),
             Tags                = GenerateTags(context)
         };

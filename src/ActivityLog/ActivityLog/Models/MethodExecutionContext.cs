@@ -24,6 +24,11 @@ public class MethodExecutionContext
     public string? TargetEntityId { get; set; }
 
     /// <summary>
+    ///     Identifies the tenant that the activity was logged under
+    /// </summary>
+    public string? TenantId { get; set; }
+
+    /// <summary>
     /// Gets or sets the method arguments
     /// </summary>
     public Dictionary<string, object?> Arguments { get; set; } = new();
@@ -125,17 +130,17 @@ public class MethodExecutionContext
 public class UserContext
 {
     /// <summary>
-    /// Gets or sets the user ID
+    ///     Gets or sets the user ID
     /// </summary>
     public long? UserId { get; set; }
 
     /// <summary>
-    /// Gets or sets the username
+    ///     Gets or sets the username
     /// </summary>
     public string? UserName { get; set; }
 
     /// <summary>
-    /// Gets or sets additional user claims
+    ///     Gets or sets additional user claims
     /// </summary>
     public Dictionary<string, string> Claims { get; set; } = new();
 }
