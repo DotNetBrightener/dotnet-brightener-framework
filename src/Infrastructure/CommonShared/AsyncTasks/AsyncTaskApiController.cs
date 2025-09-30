@@ -53,6 +53,11 @@ public abstract class AsyncTaskApiControllerBase(
     {
         var task = await taskContainer.GetTask(taskId);
 
+        if (task is not null)
+        {
+            task.ResultRetrieved = DateTimeOffset.UtcNow;
+        }
+
         return Ok(task?.Result);
     }
 }

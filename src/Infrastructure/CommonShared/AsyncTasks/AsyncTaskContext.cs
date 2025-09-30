@@ -38,6 +38,8 @@ public class AsyncTaskContext
 
     public string? Errors { get; set; }
 
+    internal DateTimeOffset? ResultRetrieved { get; set; }
+
     public TResult? GetResultAs<TResult>()
     {
         if (Result is TResult result)

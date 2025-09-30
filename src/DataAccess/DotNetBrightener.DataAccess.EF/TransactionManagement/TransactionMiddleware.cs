@@ -50,20 +50,12 @@ public class TransactionMiddlewareOptions
 /// Middleware that automatically manages database transactions for HTTP requests.
 /// Begins a transaction at the start of each request and commits or rolls back based on the outcome.
 /// </summary>
-public class TransactionMiddleware
+public class TransactionMiddleware(
+    RequestDelegate                        next,
+    ILogger<TransactionMiddleware>         logger,
+    IOptions<TransactionMiddlewareOptions> options)
 {
-    private readonly RequestDelegate                _next;
-    private readonly ILogger<TransactionMiddleware> _logger;
-    private readonly TransactionMiddlewareOptions   _options;
-
-    public TransactionMiddleware(RequestDelegate                        next,
-                                 ILogger<TransactionMiddleware>         logger,
-                                 IOptions<TransactionMiddlewareOptions> options)
-    {
-        _next    = next ?? throw new ArgumentNullException(nameof(next));
-        _logger  = logger ?? throw new ArgumentNullException(nameof(logger));
-        _options = options?.Value ?? new TransactionMiddlewareOptions();
-    }
+    private readonly TransactionMiddlewareOptions   _options = options?.Value ?? new TransactionMiddlewareOptions();
 
     /// <summary>
     /// Invokes the middleware to handle the HTTP request with automatic transaction management.
@@ -79,12 +71,12 @@ public class TransactionMiddleware
         {
             if (_options.LogTransactionLifecycle)
             {
-                _logger.LogDebug("Skipping automatic transaction management for {Method} {Path}",
+                logger.LogDebug("Skipping automatic transaction management for {Method} {Path}",
                                  context.Request.Method,
                                  context.Request.Path);
             }
 
-            await _next(context);
+            await next(context);
 
             return;
         }
@@ -97,7 +89,7 @@ public class TransactionMiddleware
         {
             if (_options.LogTransactionLifecycle)
             {
-                _logger.LogDebug("Starting automatic transaction management for request {RequestId} - {Method} {Path}",
+                logger.LogDebug("Starting automatic transaction management for request {RequestId} - {Method} {Path}",
                                  requestId,
                                  method,
                                  path);
@@ -108,11 +100,11 @@ public class TransactionMiddleware
 
             if (_options.LogTransactionLifecycle)
             {
-                _logger.LogDebug("Transaction started for request {RequestId}", requestId);
+                logger.LogDebug("Transaction started for request {RequestId}", requestId);
             }
 
             // Execute the rest of the pipeline
-            await _next(context);
+            await next(context);
 
             // If we reach here without exceptions and the response is successful,
             // commit the transaction
@@ -122,7 +114,7 @@ public class TransactionMiddleware
 
                 if (_options.LogTransactionLifecycle)
                 {
-                    _logger.LogDebug("Transaction committed successfully for request {RequestId}", requestId);
+                    logger.LogDebug("Transaction committed successfully for request {RequestId}", requestId);
                 }
             }
             else
@@ -132,7 +124,7 @@ public class TransactionMiddleware
 
                 if (_options.LogTransactionLifecycle)
                 {
-                    _logger.LogWarning("Transaction rolled back due to non-success status code {StatusCode} for request {RequestId}",
+                    logger.LogWarning("Transaction rolled back due to non-success status code {StatusCode} for request {RequestId}",
                                        context.Response.StatusCode,
                                        requestId);
                 }
@@ -141,7 +133,7 @@ public class TransactionMiddleware
         catch (Exception ex)
         {
             // Any exception should trigger a rollback
-            _logger.LogError(ex,
+            logger.LogError(ex,
                              "Exception occurred during request {RequestId} - {Method} {Path}. Rolling back transaction.",
                              requestId,
                              method,
@@ -153,12 +145,12 @@ public class TransactionMiddleware
 
                 if (_options.LogTransactionLifecycle)
                 {
-                    _logger.LogDebug("Transaction rolled back successfully for request {RequestId} due to exception", requestId);
+                    logger.LogDebug("Transaction rolled back successfully for request {RequestId} due to exception", requestId);
                 }
             }
             catch (Exception rollbackEx)
             {
-                _logger.LogError(rollbackEx, "Failed to rollback transaction for request {RequestId}", requestId);
+                logger.LogError(rollbackEx, "Failed to rollback transaction for request {RequestId}", requestId);
                 // Don't mask the original exception
             }
 

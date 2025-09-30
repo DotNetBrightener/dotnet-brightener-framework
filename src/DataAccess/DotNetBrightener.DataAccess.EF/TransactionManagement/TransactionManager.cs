@@ -12,14 +12,17 @@ namespace DotNetBrightener.DataAccess.EF.TransactionManagement;
 ///     The type of DbContext to manage transactions for.
 /// </typeparam>
 public class TransactionManager<TDbContext>(
-    TDbContext dbContext,
+    TDbContext                              dbContext,
     ILogger<TransactionManager<TDbContext>> logger)
     : ITransactionManager, IAsyncDisposable
     where TDbContext : DbContext
 {
-    private readonly TDbContext                                     _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
-    private readonly ILogger<TransactionManager<TDbContext>> _logger    = logger ?? throw new ArgumentNullException(nameof(logger));
-    private          bool                                           _disposed;
+    private readonly TDbContext _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+
+    private readonly ILogger<TransactionManager<TDbContext>> _logger =
+        logger ?? throw new ArgumentNullException(nameof(logger));
+
+    private bool _disposed;
 
     /// <inheritdoc />
     public bool HasActiveTransaction => CurrentTransaction != null && !_disposed;
@@ -75,7 +78,7 @@ public class TransactionManager<TDbContext>(
         try
         {
             _logger.LogDebug("Saving changes to database");
-            
+
             if (_dbContext.ChangeTracker.HasChanges())
             {
                 await _dbContext.SaveChangesAsync();
