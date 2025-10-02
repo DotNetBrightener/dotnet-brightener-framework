@@ -12,6 +12,8 @@ public static class ServiceCollectionExtensions
     public static ActivityLogBuilder WithStorage(this ActivityLogBuilder activityLogBuilder)
     {
         activityLogBuilder.Services.AddScoped<IActivityLogRepository, ActivityLogRepository>();
+        activityLogBuilder.Services.AddScoped<IActivityLogReadOnlyRepository, ActivityLogReadOnlyRepository>();
+        activityLogBuilder.Services.AddScoped<IActivityLogDataService, ActivityLogDataService>();
 
         return activityLogBuilder;
     }

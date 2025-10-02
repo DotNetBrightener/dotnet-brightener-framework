@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ActivityLog.DataStorage;
 
-public class ActivityLogRepository(
+internal class ActivityLogRepository(
     ActivityLogDbContext dbContext,
     IServiceProvider     serviceProvider,
     ILoggerFactory       loggerFactory) 

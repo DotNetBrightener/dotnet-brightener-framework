@@ -1,9 +1,99 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq.Expressions;
 
 namespace ActivityLog.Entities;
 
-public class ActivityLogRecord
+public class ActivityLogRecordModel : BaseActivityLogRecord
+{
+    public static Expression<Func<ActivityLogRecord, ActivityLogRecordModel>> FromEntity
+        = record => new ActivityLogRecordModel
+        {
+            Id                  = record.Id,
+            ActivityName        = record.ActivityName,
+            ActivityDescription = record.ActivityDescription,
+            TenantId            = record.TenantId,
+            UserId              = record.UserId,
+            UserName            = record.UserName,
+            TargetEntity        = record.TargetEntity,
+            TargetEntityId      = record.TargetEntityId,
+            StartTime           = record.StartTime,
+            EndTime             = record.EndTime,
+            IsSuccess           = record.IsSuccess,
+            Metadata            = record.Metadata,
+            UserAgent           = record.UserAgent,
+            IpAddress           = record.IpAddress
+        };
+}
+
+/// <summary>
+///     Represents the entity that is saved to the database
+/// </summary>
+public class ActivityLogRecord : BaseActivityLogRecord
+{
+    /// <summary>
+    ///     Method execution duration in milliseconds for performance analysis
+    /// </summary>
+    public double? ExecutionDurationMs { get; set; }
+
+    /// <summary>
+    ///     The full method name including class and namespace
+    /// </summary>
+    [MaxLength(512)]
+    public string? MethodName { get; set; }
+
+    /// <summary>
+    ///     The class name where the method is defined
+    /// </summary>
+    [MaxLength(256)]
+    public string? ClassName { get; set; }
+
+    /// <summary>
+    ///     The namespace of the class
+    /// </summary>
+    [MaxLength(256)]
+    public string? Namespace { get; set; }
+
+    /// <summary>
+    ///     Serialized input parameters of the method
+    /// </summary>
+    public string? InputParameters { get; set; }
+
+    /// <summary>
+    ///     Serialized return value of the method
+    /// </summary>
+    public string? ReturnValue { get; set; }
+
+    /// <summary>
+    ///     The exception details if the activity failed (includes full stack trace)
+    /// </summary>
+    public string? Exception { get; set; }
+
+    /// <summary>
+    ///     The exception type if the activity failed
+    /// </summary>
+    [MaxLength(256)]
+    public string? ExceptionType { get; set; }
+
+    /// <summary>
+    ///     Correlation ID for tracking related activities
+    /// </summary>
+    public Guid? CorrelationId { get; set; }
+
+    /// <summary>
+    ///     The logging level for this activity
+    /// </summary>
+    [MaxLength(32)]
+    public string? LogLevel { get; set; }
+
+    /// <summary>
+    ///     Additional tags for categorization and filtering
+    /// </summary>
+    [MaxLength(512)]
+    public string? Tags { get; set; }
+}
+
+public class BaseActivityLogRecord
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.None)]
@@ -59,50 +149,6 @@ public class ActivityLogRecord
     public DateTimeOffset? EndTime { get; set; }
 
     /// <summary>
-    ///     Method execution duration in milliseconds for performance analysis
-    /// </summary>
-    public double? ExecutionDurationMs { get; set; }
-
-    /// <summary>
-    ///     The full method name including class and namespace
-    /// </summary>
-    [MaxLength(512)]
-    public string? MethodName { get; set; }
-
-    /// <summary>
-    ///     The class name where the method is defined
-    /// </summary>
-    [MaxLength(256)]
-    public string? ClassName { get; set; }
-
-    /// <summary>
-    ///     The namespace of the class
-    /// </summary>
-    [MaxLength(256)]
-    public string? Namespace { get; set; }
-
-    /// <summary>
-    ///     Serialized input parameters of the method
-    /// </summary>
-    public string? InputParameters { get; set; }
-
-    /// <summary>
-    ///     Serialized return value of the method
-    /// </summary>
-    public string? ReturnValue { get; set; }
-
-    /// <summary>
-    ///     The exception details if the activity failed (includes full stack trace)
-    /// </summary>
-    public string? Exception { get; set; }
-
-    /// <summary>
-    ///     The exception type if the activity failed
-    /// </summary>
-    [MaxLength(256)]
-    public string? ExceptionType { get; set; }
-
-    /// <summary>
     ///     Indicates whether the method execution was successful
     /// </summary>
     public bool IsSuccess { get; set; } = true;
@@ -118,21 +164,4 @@ public class ActivityLogRecord
 
     [MaxLength(128)]
     public string? IpAddress { get; set; }
-
-    /// <summary>
-    ///     Correlation ID for tracking related activities
-    /// </summary>
-    public Guid? CorrelationId { get; set; }
-
-    /// <summary>
-    ///     The logging level for this activity
-    /// </summary>
-    [MaxLength(32)]
-    public string? LogLevel { get; set; }
-
-    /// <summary>
-    ///     Additional tags for categorization and filtering
-    /// </summary>
-    [MaxLength(512)]
-    public string? Tags { get; set; }
 }
