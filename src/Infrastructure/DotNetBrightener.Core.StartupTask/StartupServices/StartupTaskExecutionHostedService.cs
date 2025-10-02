@@ -5,26 +5,17 @@ using System.Diagnostics;
 
 namespace DotNetBrightener.Core.StartupTask.StartupServices;
 
-internal class StartupTaskExecutionHostedService : IHostedService, IDisposable
+internal class StartupTaskExecutionHostedService(
+    IServiceScopeFactory                       serviceScopeFactory,
+    ILogger<StartupTaskExecutionHostedService> logger,
+    IHostApplicationLifetime                   lifetime)
+    : IHostedService, IDisposable
 {
-    private readonly IServiceScopeFactory                       _serviceScopeFactory;
-    private readonly ILogger<StartupTaskExecutionHostedService> _logger;
-    private readonly IHostApplicationLifetime                   _lifetime;
-
     private int _attempts;
-
-    public StartupTaskExecutionHostedService(IServiceScopeFactory                       serviceScopeFactory,
-                                             ILogger<StartupTaskExecutionHostedService> logger,
-                                             IHostApplicationLifetime                   lifetime)
-    {
-        _serviceScopeFactory = serviceScopeFactory;
-        _logger              = logger;
-        _lifetime            = lifetime;
-    }
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        _lifetime.ApplicationStarted.Register(async () =>
+        lifetime.ApplicationStarted.Register(async () =>
         {
             await Execute();
         });
@@ -44,13 +35,13 @@ internal class StartupTaskExecutionHostedService : IHostedService, IDisposable
         {
             try
             {
-                await ExecuteStartupTasks(_logger);
+                await ExecuteStartupTasks(logger);
 
                 break;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex,
+                logger.LogError(ex,
                                  "Failed to resolve start up tasks after {attempts} attempts. Retrying...",
                                  _attempts);
                 _attempts++;
@@ -64,7 +55,7 @@ internal class StartupTaskExecutionHostedService : IHostedService, IDisposable
 
         try
         {
-            using (var serviceScope = _serviceScopeFactory.CreateScope())
+            using (var serviceScope = serviceScopeFactory.CreateScope())
             {
                 startupTaskTypes = serviceScope.ServiceProvider
                                                .GetServices<IStartupTask>()
@@ -134,7 +125,7 @@ internal class StartupTaskExecutionHostedService : IHostedService, IDisposable
     {
         var taskType = startupTaskType.Name;
 
-        using (var backgroundTaskScope = _serviceScopeFactory.CreateScope())
+        using (var backgroundTaskScope = serviceScopeFactory.CreateScope())
         {
             if (backgroundTaskScope.ServiceProvider
                                    .TryGet(startupTaskType) is not IStartupTask taskInstance)

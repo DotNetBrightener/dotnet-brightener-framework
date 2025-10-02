@@ -5,26 +5,20 @@ using Microsoft.Extensions.Logging;
 
 namespace DotNetBrightener.Core.Logging;
 
-public class EventLogQueueBackgroundProcessService : IHostedService, IDisposable
+public class EventLogQueueBackgroundProcessService(
+    ILogger<EventLogQueueBackgroundProcessService> logger,
+    IServiceScopeFactory                           serviceScopeFactory)
+    : IHostedService, IDisposable
 {
-    private readonly ILogger<EventLogQueueBackgroundProcessService> _logger;
-    private readonly IServiceScopeFactory                           _serviceScopeFactory;
     private          Timer?                                         _timer;
     private          bool                                           _isProcessing;
 
-    public EventLogQueueBackgroundProcessService(ILogger<EventLogQueueBackgroundProcessService> logger,
-                                                 IServiceScopeFactory                           serviceScopeFactory)
-    {
-        _logger              = logger;
-        _serviceScopeFactory = serviceScopeFactory;
-    }
-
     public Task StartAsync(CancellationToken stoppingToken)
     {
-        _logger.LogDebug("Starting Event Log Queue Collector Service.");
+        logger.LogDebug("Starting Event Log Queue Collector Service.");
 
         _timer = new Timer(DoWork,
-                           _serviceScopeFactory,
+                           serviceScopeFactory,
                            TimeSpan.FromSeconds(10),
                            TimeSpan.FromSeconds(10));
 
@@ -39,7 +33,7 @@ public class EventLogQueueBackgroundProcessService : IHostedService, IDisposable
             return;
         }
 
-        _logger.LogDebug("Prevent logger from executing until finish this execution");
+        logger.LogDebug("Prevent logger from executing until finish this execution");
         _isProcessing = _timer!.Change(Timeout.Infinite, 0);
         var shouldReEnable = true;
 
@@ -53,7 +47,7 @@ public class EventLogQueueBackgroundProcessService : IHostedService, IDisposable
 
             if (queueEventLogBackgroundProcessing is NullEventLogBackgroundProcessing)
             {
-                _logger.LogWarning("QueueEventLogBackgroundProcessing is not registered in the service provider.");
+                logger.LogWarning("QueueEventLogBackgroundProcessing is not registered in the service provider.");
                 shouldReEnable = false;
 
                 return;
@@ -66,7 +60,7 @@ public class EventLogQueueBackgroundProcessService : IHostedService, IDisposable
         {
             if (shouldReEnable)
             {
-                _logger.LogDebug("Resetting timer to processing logs after 10 seconds");
+                logger.LogDebug("Resetting timer to processing logs after 10 seconds");
                 _timer.Change(TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
                 _isProcessing = false;
             }
@@ -79,7 +73,7 @@ public class EventLogQueueBackgroundProcessService : IHostedService, IDisposable
 
     public Task StopAsync(CancellationToken stoppingToken)
     {
-        _logger.LogDebug("Event Log Queue Collector Service Stopping...");
+        logger.LogDebug("Event Log Queue Collector Service Stopping...");
 
         _timer?.Change(Timeout.Infinite, Timeout.Infinite);
 
