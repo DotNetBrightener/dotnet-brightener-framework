@@ -56,6 +56,10 @@ public class EventLogQueueBackgroundProcessService(
             queueEventLogBackgroundProcessing.Execute()
                                              .Wait();
         }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error occurred executing Event Log Queue Collector Service.");
+        }
         finally
         {
             if (shouldReEnable)
