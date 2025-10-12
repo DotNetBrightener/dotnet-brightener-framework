@@ -11,7 +11,7 @@ using System.Reflection;
 namespace ActivityLog.ActionFilters;
 
 [AttributeUsage(validOn: AttributeTargets.Method)]
-public class LogActivityAttribute(string name, string? descriptionFormat = null) : Attribute, IActionFilter
+public class LogActivityAttribute(string? name = null, string? descriptionFormat = null) : Attribute, IActionFilter
 {
     public LogActivityAttribute(string name)
         : this(name, null)
