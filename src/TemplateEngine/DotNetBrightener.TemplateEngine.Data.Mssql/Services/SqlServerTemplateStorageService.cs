@@ -13,11 +13,11 @@ public class SqlServerTemplateStorageService(
     ILogger<SqlServerTemplateStorageService> logger)
     : ITemplateStorageService
 {
-    public void SaveTemplate(string templateType, TemplateModelDto content)
+    public async Task SaveTemplateAsync(string templateType, TemplateModelDto content)
     {
         var typeName = templateType;
 
-        var templateObject = repository.Get(template => template.TemplateType == typeName);
+        var templateObject = await repository.GetAsync(template => template.TemplateType == typeName);
 
         if (templateObject == null ||
             templateObject.IsDeleted)
@@ -26,16 +26,15 @@ public class SqlServerTemplateStorageService(
             {
                 TemplateType = typeName
             };
-            repository.Insert(templateObject);
+            await repository.InsertAsync(templateObject);
         }
 
-        templateObject.TemplateTitle   = content.TemplateTitle;
-        templateObject.TemplateContent = content.TemplateContent;
-        repository.Update(templateObject);
+        templateObject.TemplateTitle               = content.TemplateTitle;
+        templateObject.TemplateContent             = content.TemplateContent;
+        templateObject.TemplateTitleEditorConfig   = content.TemplateTitleEditorConfig;
+        templateObject.TemplateContentEditorConfig = content.TemplateContentEditorConfig;
+        await repository.UpdateAsync(templateObject);
     }
-
-    public TemplateModelDto LoadTemplate(string templateModelType)
-        => LoadTemplateAsync(templateModelType).Result;
 
     public async Task<TemplateModelDto> LoadTemplateAsync(string templateModelType)
     {
@@ -52,9 +51,11 @@ public class SqlServerTemplateStorageService(
 
         return new TemplateModelDto
         {
-            TemplateContent = templateObject.TemplateContent,
-            TemplateType    = templateObject.TemplateType,
-            TemplateTitle   = templateObject.TemplateTitle,
+            TemplateContent             = templateObject.TemplateContent,
+            TemplateType                = templateObject.TemplateType,
+            TemplateTitle               = templateObject.TemplateTitle,
+            TemplateContentEditorConfig = templateObject.TemplateContentEditorConfig,
+            TemplateTitleEditorConfig   = templateObject.TemplateTitleEditorConfig
         };
     }
 }

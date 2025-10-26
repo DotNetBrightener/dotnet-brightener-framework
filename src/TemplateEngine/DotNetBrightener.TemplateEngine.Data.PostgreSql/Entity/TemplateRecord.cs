@@ -27,5 +27,7 @@ public class TemplateRecord : BaseEntityWithAuditInfo
     [Column("Fields")]
     public string FieldsString { get; set; }
 
-    public string FromAssemblyName { get; set; }
+    public string FromAssemblyName            { get; set; }
+    public string TemplateTitleEditorConfig   { get; set; }
+    public string TemplateContentEditorConfig { get; set; }
 }
