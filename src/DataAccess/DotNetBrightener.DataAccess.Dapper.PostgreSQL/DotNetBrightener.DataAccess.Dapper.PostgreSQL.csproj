@@ -1,6 +1,6 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 	<ItemGroup>
-		<PackageReference Include="Npgsql" Version="9.0.4" />
+		<PackageReference Include="Npgsql" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\DotNetBrightener.DataAccess.Dapper\DotNetBrightener.DataAccess.Dapper.csproj" />

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<RootNamespace>DotNetBrightener.DataAccess.Models</RootNamespace>
 	</PropertyGroup>
@@ -11,8 +11,8 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-		<PackageReference Include="System.Linq.Dynamic.Core" Version="1.6.9" />
+		<PackageReference Include="Newtonsoft.Json" />
+		<PackageReference Include="System.Linq.Dynamic.Core" />
 	</ItemGroup>
 
 	<ItemGroup>
