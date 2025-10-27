@@ -1657,6 +1657,7 @@ Global
 		Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{75dd4d8f-5c63-4816-804c-2490d3524887}*SharedItemsImports = 5
 		Shared\SharedExtensions.String\StringExtensions.projitems*{75dd4d8f-5c63-4816-804c-2490d3524887}*SharedItemsImports = 5
 		Shared\SharedExtensions.Tasks\SharedExtensions.Tasks.projitems*{75dd4d8f-5c63-4816-804c-2490d3524887}*SharedItemsImports = 5
+		Shared\SharedExtensions.XmlDocumentationHelper\SharedExtensions.XmlDocumentationHelper.projitems*{75dd4d8f-5c63-4816-804c-2490d3524887}*SharedItemsImports = 5
 		Shared\SharedExtensions.ObjectMethods\SharedExtensions.ObjectMethods.projitems*{7bd32457-afb2-4d06-8500-20dc58a755bb}*SharedItemsImports = 5
 		Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems*{7cd1be0c-e1b6-4d05-b4e3-f2ae1b85eff7}*SharedItemsImports = 5
 		Shared\SharedExtensions.ServiceCollection\SharedExtensions.ServiceCollectionExtensions.projitems*{7cd1be0c-e1b6-4d05-b4e3-f2ae1b85eff7}*SharedItemsImports = 5

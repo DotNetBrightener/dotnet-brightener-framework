@@ -15,4 +15,6 @@
 
 	<Import Project="..\..\Shared\SharedExtensions.Tasks\SharedExtensions.Tasks.projitems" Label="Shared" />
 
+	<Import Project="..\..\Shared\SharedExtensions.XmlDocumentationHelper\SharedExtensions.XmlDocumentationHelper.projitems" Label="Shared" />
+
 </Project>
