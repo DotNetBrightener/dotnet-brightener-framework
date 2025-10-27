@@ -193,8 +193,15 @@ internal class NpgsqlQueueEventLogBackgroundProcessing(
 
         try
         {
-            loggingDbContext = backgroundScope.ServiceProvider
+            var dbContext = backgroundScope.ServiceProvider
                                               .GetRequiredService<LoggingDbContext>();
+
+            // fake call to ensure db connection is working
+
+            var logCount = await dbContext.Set<EventLog>()
+                                          .CountAsync();
+
+            loggingDbContext = dbContext;
         }
         catch
         {

@@ -6,7 +6,6 @@ using System.Collections.Concurrent;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using DotNetBrightener.WebApi.GenericCRUD;
 
 
 namespace DotNetBrightener.GenericCRUD.Extensions;
@@ -83,6 +82,11 @@ public static class EntityMetadataExtractor
     {
         if (level >= 2)
         {
+            if (inputType == typeof(string))
+            {
+                return [prefix.Trim('.')];
+            }
+
             var jsonString = JsonConvert.SerializeObject(Activator.CreateInstance(inputType));
             var jobject    = JsonConvert.DeserializeObject<JObject>(jsonString);
 

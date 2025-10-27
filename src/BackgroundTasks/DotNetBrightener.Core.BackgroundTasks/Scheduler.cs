@@ -104,7 +104,7 @@ public class Scheduler(
                 if (scheduledTask.ShouldPreventOverlapping())
                 {
                     if (lockedTasksContainer.TryLock(scheduledTask.OverlappingUniqueIdentifier(),
-                                                      TimeSpan.FromHours(24)))
+                                                     TimeSpan.FromHours(24)))
                     {
                         try
                         {

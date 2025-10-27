@@ -15,16 +15,13 @@ public class BaseQueryModel
     public string Columns
     {
         get => string.Join(";", FilteredColumns);
-        set
-        {
-            FilteredColumns = string.IsNullOrEmpty(value)
-                                  ? []
-                                  : value.Split([
-                                                    ',', ';'
-                                                ],
-                                                StringSplitOptions.RemoveEmptyEntries)
-                                         .ToList();
-        }
+        set => FilteredColumns = string.IsNullOrEmpty(value)
+                                     ? []
+                                     : value.Split([
+                                                       ',', ';'
+                                                   ],
+                                                   StringSplitOptions.RemoveEmptyEntries)
+                                            .ToList();
     }
 
     /// <summary>
@@ -43,16 +40,13 @@ public class BaseQueryModel
     public string OrderBy
     {
         get => string.Join(";", OrderedColumns);
-        set
-        {
-            OrderedColumns = string.IsNullOrEmpty(value)
-                                 ? []
-                                 : value.Split([
-                                                   ',', ';'
-                                               ],
-                                               StringSplitOptions.RemoveEmptyEntries)
-                                        .ToList();
-        }
+        set => OrderedColumns = string.IsNullOrEmpty(value)
+                                    ? []
+                                    : value.Split([
+                                                      ',', ';'
+                                                  ],
+                                                  StringSplitOptions.RemoveEmptyEntries)
+                                           .ToList();
     }
 
     /// <summary>

@@ -6,6 +6,7 @@ using DotNetBrightener.DataAccess.EF.Internal;
 using DotNetBrightener.DataAccess.EF.Migrations;
 using DotNetBrightener.DataAccess.EF.Options;
 using DotNetBrightener.DataAccess.EF.Repositories;
+using DotNetBrightener.DataAccess.EF.TransactionManagement;
 using DotNetBrightener.DataAccess.Services;
 using LinqToDB.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -173,7 +174,11 @@ public static class ServiceCollectionExtensions
                 configure.UseLazyLoadingProxies();
         });
 
-        configurator.ServiceCollection.AddScoped<DbContext, TDbContext>();
+        configurator.ServiceCollection
+                    .AddScoped<DbContext, TDbContext>();
+
+        configurator.ServiceCollection
+                    .AddScoped<ITransactionManager, TransactionManager<TDbContext>>();
 
         return configurator;
     }

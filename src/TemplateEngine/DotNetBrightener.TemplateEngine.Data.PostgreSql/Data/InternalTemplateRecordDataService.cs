@@ -3,10 +3,7 @@ using DotNetBrightener.TemplateEngine.Data.PostgreSql.Entity;
 
 namespace DotNetBrightener.TemplateEngine.Data.PostgreSql.Data;
 
-public interface ITemplateRecordDataService : IBaseDataService<TemplateRecord>
-{
-
-}
+public interface ITemplateRecordDataService : IBaseDataService<TemplateRecord>;
 
 internal class InternalTemplateRecordDataService : BaseDataService<TemplateRecord>, ITemplateRecordDataService
 {

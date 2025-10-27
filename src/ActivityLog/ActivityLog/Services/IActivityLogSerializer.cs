@@ -155,16 +155,29 @@ public class ActivityLogSerializer : IActivityLogSerializer
         };
     }
 
-    private object? SanitizeValue(object? value)
+    private object? SanitizeValue(object? value, int depth = 0)
     {
         if (value == null)
             return null;
 
+        // Prevent infinite recursion and excessive depth
+        if (depth >= _config.MaxDepth)
+            return "[MAX_DEPTH_REACHED]";
+
         var valueType = value.GetType();
 
-        // Handle primitive types
-        if (valueType.IsPrimitive || valueType == typeof(string) || valueType == typeof(DateTime) || 
-            valueType == typeof(DateTimeOffset) || valueType == typeof(TimeSpan) || valueType == typeof(Guid))
+        // Check if type should be excluded
+        if (ShouldExcludeType(valueType))
+            return $"[EXCLUDED:{valueType.Name}]";
+
+        // Handle primitive types and common value types
+        if (valueType.IsPrimitive ||
+            valueType == typeof(string) ||
+            valueType == typeof(DateTime) ||
+            valueType == typeof(DateTimeOffset) ||
+            valueType == typeof(TimeSpan) ||
+            valueType == typeof(Guid) ||
+            valueType == typeof(decimal))
         {
             if (value is string str)
                 return TruncateString(str, _config.MaxStringLength);
@@ -183,14 +196,66 @@ public class ActivityLogSerializer : IActivityLogSerializer
                     items.Add("[TRUNCATED]");
                     break;
                 }
-                items.Add(SanitizeValue(item));
+                items.Add(SanitizeValue(item, depth + 1));
                 count++;
             }
             return items;
         }
 
-        // For complex objects, return a simplified representation
-        return $"[{valueType.Name}]";
+        // For complex objects, serialize their properties
+        return SanitizeComplexObject(value, depth);
+    }
+
+    private object? SanitizeComplexObject(object value, int depth)
+    {
+        try
+        {
+            var valueType = value.GetType();
+
+            // Create a dictionary to hold the sanitized properties
+            var sanitizedObject = new Dictionary<string, object?>();
+
+            // Get all public properties
+            var properties = valueType.GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+
+            foreach (var property in properties)
+            {
+                // Skip properties that can't be read
+                if (!property.CanRead)
+                    continue;
+
+                // Skip indexed properties (like this[int index])
+                if (property.GetIndexParameters().Length > 0)
+                    continue;
+
+                var propertyName = property.Name;
+
+                // Check if property should be excluded
+                if (ShouldExcludeProperty(propertyName))
+                {
+                    sanitizedObject[propertyName] = "[SENSITIVE]";
+                    continue;
+                }
+
+                try
+                {
+                    var propertyValue = property.GetValue(value);
+                    sanitizedObject[propertyName] = SanitizeValue(propertyValue, depth + 1);
+                }
+                catch (Exception ex)
+                {
+                    // If we can't read the property value, mark it as an error
+                    sanitizedObject[propertyName] = $"[PROPERTY_ERROR: {ex.Message}]";
+                }
+            }
+
+            return sanitizedObject;
+        }
+        catch (Exception ex)
+        {
+            // If we can't serialize the object at all, fall back to type name
+            return $"[SERIALIZATION_ERROR: {ex.Message}]";
+        }
     }
 
     private Dictionary<string, object?> SerializeInnerException(Exception exception, int depth)

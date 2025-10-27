@@ -1,4 +1,5 @@
 using ActivityLog.Models;
+using System.Text.Json;
 
 namespace ActivityLog.Services;
 
@@ -70,6 +71,12 @@ public interface IActivityLogContextAccessor
     void SetTargetEntityId(object? targetEntityId);
 
     /// <summary>
+    ///     Sets the identifier of the tenant for the current context
+    /// </summary>
+    /// <param name="tenantId">Identifier of the tenant</param>
+    void SetTenantId(string tenantId);
+
+    /// <summary>
     /// Checks if there is an active activity log context
     /// </summary>
     /// <returns>True if there is an active context, false otherwise</returns>
@@ -103,6 +110,7 @@ public class ActivityLogContextAccessor(IActivityLogSerializer serializer) : IAc
             throw new ArgumentException("Metadata key cannot be null or empty", nameof(key));
 
         var context = _currentContext.Value;
+
         if (context == null)
         {
             // No active context - this is not an error, just ignore silently
@@ -122,6 +130,7 @@ public class ActivityLogContextAccessor(IActivityLogSerializer serializer) : IAc
             return; // Silently ignore empty dictionary
 
         var context = _currentContext.Value;
+
         if (context == null)
         {
             // No active context - this is not an error, just ignore silently
@@ -146,20 +155,23 @@ public class ActivityLogContextAccessor(IActivityLogSerializer serializer) : IAc
             return null;
 
         var context = _currentContext.Value;
+
         return context?.Metadata.TryGetValue(key, out var value) == true ? value : null;
     }
 
     public Dictionary<string, object?> GetAllMetadata()
     {
         var context = _currentContext.Value;
+
         return context?.Metadata.ToDictionary(kvp => kvp.Key, kvp => kvp.Value) ?? new Dictionary<string, object?>();
     }
 
     public void SetActivityName(string activityName)
     {
         var context = _currentContext.Value;
+
         if (context == null)
-            return; // No active context - ignore silently
+            return;
 
         if (!string.IsNullOrWhiteSpace(activityName))
             context.ActivityName = activityName;
@@ -168,8 +180,9 @@ public class ActivityLogContextAccessor(IActivityLogSerializer serializer) : IAc
     public void SetActivityDescription(string activityDescription)
     {
         var context = _currentContext.Value;
+
         if (context == null)
-            return; // No active context - ignore silently
+            return;
 
         context.ActivityDescription = activityDescription;
     }
@@ -177,8 +190,9 @@ public class ActivityLogContextAccessor(IActivityLogSerializer serializer) : IAc
     public void SetDescriptionFormat(string descriptionFormat)
     {
         var context = _currentContext.Value;
+
         if (context == null)
-            return; // No active context - ignore silently
+            return;
 
         context.DescriptionFormat = descriptionFormat;
     }
@@ -186,8 +200,9 @@ public class ActivityLogContextAccessor(IActivityLogSerializer serializer) : IAc
     public void SetTargetEntity(string? targetEntity)
     {
         var context = _currentContext.Value;
+
         if (context == null)
-            return; // No active context - ignore silently
+            return;
 
         context.TargetEntity = targetEntity ?? string.Empty;
     }
@@ -195,10 +210,47 @@ public class ActivityLogContextAccessor(IActivityLogSerializer serializer) : IAc
     public void SetTargetEntityId(object? targetEntityId)
     {
         var context = _currentContext.Value;
-        if (context == null)
-            return; // No active context - ignore silently
 
-        context.TargetEntityId = serializer.SerializeReturnValue(targetEntityId);
+        if (context == null)
+            return;
+
+        // For entity IDs, we want to serialize the actual value, not use the complex object serializer
+        // that would convert primitives like long to "[Int64]"
+        if (targetEntityId == null)
+        {
+            context.TargetEntityId = "null";
+        }
+        else
+        {
+            var valueType = targetEntityId.GetType();
+
+            // Handle primitive types and common value types directly
+            if (valueType.IsPrimitive ||
+                valueType == typeof(string) ||
+                valueType == typeof(DateTime) ||
+                valueType == typeof(DateTimeOffset) ||
+                valueType == typeof(TimeSpan) ||
+                valueType == typeof(Guid) ||
+                valueType == typeof(decimal))
+            {
+                context.TargetEntityId = JsonSerializer.Serialize(targetEntityId);
+            }
+            else
+            {
+                // For complex objects, fall back to the serializer but this should be rare for entity IDs
+                context.TargetEntityId = serializer.SerializeReturnValue(targetEntityId);
+            }
+        }
+    }
+
+    public void SetTenantId(string tenantId)
+    {
+        var context = _currentContext.Value;
+
+        if (context == null)
+            return;
+
+        context.TenantId = tenantId;
     }
 
     public bool HasActiveContext()
@@ -294,6 +346,15 @@ public static class ActivityLogContext
     public static void SetTargetEntityId(object? targetEntityId)
     {
         _accessor?.SetTargetEntityId(targetEntityId);
+    }
+
+    /// <summary>
+    ///     Sets the tenantId for the current context
+    /// </summary>
+    /// <param name="tenantId">The Identifier of the tenant</param>
+    public static void SetTenantId(string tenantId)
+    {
+        _accessor?.SetTenantId(tenantId);
     }
 
     /// <summary>

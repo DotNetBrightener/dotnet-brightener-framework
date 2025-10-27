@@ -24,11 +24,6 @@ public class AppClientCorsEnableMiddleware(
                              IEnumerable<IAppBundleDetectionService> appBundleDetectionServices,
                              ILogger<AppClientCorsEnableMiddleware>  logger)
     {
-#if DEBUG
-        if (!Debugger.IsAttached)
-            Debugger.Launch();
-#endif
-
         var option = appClientConfig.Value;
 
         var defaultPolicy = corsOptions.Value.GetPolicy(corsOptions.Value.DefaultPolicyName);

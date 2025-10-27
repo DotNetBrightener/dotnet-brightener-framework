@@ -17,12 +17,12 @@ namespace DotNetBrightener.TemplateEngine.Data.Mssql.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.4")
+                .HasAnnotation("ProductVersion", "9.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("DotNetBrightener.TemplateEngine.Data.Entity.TemplateRecord", b =>
+            modelBuilder.Entity("DotNetBrightener.TemplateEngine.Data.Mssql.Entity.TemplateRecord", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -68,7 +68,13 @@ namespace DotNetBrightener.TemplateEngine.Data.Mssql.Migrations
                     b.Property<string>("TemplateContent")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("TemplateContentEditorConfig")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("TemplateTitle")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TemplateTitleEditorConfig")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("TemplateType")

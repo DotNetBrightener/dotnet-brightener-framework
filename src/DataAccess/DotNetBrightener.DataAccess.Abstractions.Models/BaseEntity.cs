@@ -2,10 +2,7 @@
 
 namespace DotNetBrightener.DataAccess.Models;
 
-public interface IBaseEntity
-{
-
-}
+public interface IBaseEntity;
 public interface IBaseEntity<TIdentifier> : IBaseEntity
 {
     TIdentifier Id { get; set; }
@@ -26,9 +23,7 @@ public abstract class BaseEntity<TIdentifier> : IBaseEntity<TIdentifier>
 /// <summary>
 ///     Represents the base entity for all entities in the system
 /// </summary>
-public abstract class BaseEntity: BaseEntity<long>
-{
-}
+public abstract class BaseEntity: BaseEntity<long>;
 
 /// <summary>
 ///     Represents the base entity for all entities in the system

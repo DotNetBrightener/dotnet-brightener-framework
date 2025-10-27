@@ -9,31 +9,22 @@ using System.Transactions;
 
 namespace DotNetBrightener.DataAccess.DataMigration;
 
-internal class DataMigrationRunner : IHostedService, IDisposable
+internal class DataMigrationRunner(
+    IServiceScopeFactory         serviceScopeFactory,
+    ILogger<DataMigrationRunner> logger,
+    IHostApplicationLifetime     lifetime)
+    : IHostedService, IDisposable
 {
-    private readonly IServiceScopeFactory         _serviceScopeFactory;
-    private readonly ILogger<DataMigrationRunner> _logger;
-    private readonly IHostApplicationLifetime     _lifetime;
-
-    public DataMigrationRunner(IServiceScopeFactory         serviceScopeFactory,
-                               ILogger<DataMigrationRunner> logger,
-                               IHostApplicationLifetime     lifetime)
-    {
-        _serviceScopeFactory = serviceScopeFactory;
-        _logger              = logger;
-        _lifetime            = lifetime;
-    }
-
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        _lifetime.ApplicationStarted.Register(InitializeAfterAppStarted);
+        lifetime.ApplicationStarted.Register(InitializeAfterAppStarted);
 
         return Task.CompletedTask;
     }
 
     private void InitializeAfterAppStarted()
     {
-        using (var scope = _serviceScopeFactory.CreateScope())
+        using (var scope = serviceScopeFactory.CreateScope())
         {
             MigrateSchemaIfNeeded(scope);
         }
@@ -45,7 +36,7 @@ internal class DataMigrationRunner : IHostedService, IDisposable
     {
         using (var dbContext = scope.ServiceProvider.GetRequiredService<DataMigrationDbContext>())
         {
-            dbContext.AutoMigrateDbSchema(_logger);
+            dbContext.AutoMigrateDbSchema(logger);
         }
     }
 
@@ -55,7 +46,7 @@ internal class DataMigrationRunner : IHostedService, IDisposable
         IOrderedEnumerable<string> allMigrationIds;
         DataMigrationMetadata      metadata;
 
-        using (var scope = _serviceScopeFactory.CreateScope())
+        using (var scope = serviceScopeFactory.CreateScope())
         {
             var serviceProvider = scope.ServiceProvider;
             metadata        = serviceProvider.GetRequiredService<DataMigrationMetadata>();
@@ -75,7 +66,7 @@ internal class DataMigrationRunner : IHostedService, IDisposable
 
         if (notAppliedMigrations.Length == 0)
         {
-            _logger.LogInformation("Data is up-to-date. No migration to be applied");
+            logger.LogInformation("Data is up-to-date. No migration to be applied");
 
             return;
         }
@@ -86,12 +77,12 @@ internal class DataMigrationRunner : IHostedService, IDisposable
         {
             foreach (var migrationId in notAppliedMigrations)
             {
-                using (var scope = _serviceScopeFactory.CreateScope())
+                using (var scope = serviceScopeFactory.CreateScope())
                 {
                     try
                     {
                         var sw = Stopwatch.StartNew();
-                        _logger.LogInformation("Applying data migration {migrationId}", migrationId);
+                        logger.LogInformation("Applying data migration {migrationId}", migrationId);
 
                         await Migrate(scope, metadata, migrationId);
 
@@ -103,13 +94,13 @@ internal class DataMigrationRunner : IHostedService, IDisposable
 
                         sw.Stop();
 
-                        _logger.LogInformation("Data migration {migrationId} applied in {elapsedTime}",
+                        logger.LogInformation("Data migration {migrationId} applied in {elapsedTime}",
                                                migrationId,
                                                sw.Elapsed);
                     }
                     catch (Exception exception)
                     {
-                        _logger.LogError(exception,
+                        logger.LogError(exception,
                                          "Error while applying migration {migrationId}. Rolling back all changes.",
                                          migrationId);
 
@@ -118,9 +109,9 @@ internal class DataMigrationRunner : IHostedService, IDisposable
                 }
             }
 
-            _logger.LogInformation("Migrations applied. Saving history records...");
+            logger.LogInformation("Migrations applied. Saving history records...");
 
-            using (var scope = _serviceScopeFactory.CreateScope())
+            using (var scope = serviceScopeFactory.CreateScope())
             {
                 var serviceProvider = scope.ServiceProvider;
 
@@ -130,7 +121,7 @@ internal class DataMigrationRunner : IHostedService, IDisposable
                 }
             }
 
-            _logger.LogInformation("Successfully applied data migrations");
+            logger.LogInformation("Successfully applied data migrations");
             transactionScope.Complete();
         }
     }

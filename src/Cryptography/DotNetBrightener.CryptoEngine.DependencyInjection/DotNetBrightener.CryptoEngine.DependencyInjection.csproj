@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<Description>A library that helps configuring DotNetBrightener.CryptoEngine in ASP.Net Core applications with minimal efforts</Description>

@@ -2,6 +2,4 @@
 
 namespace DotNetBrightener.SiteSettings.WebApp.DbContexts;
 
-public class SiteSettingsDbContext : DbContext
-{
-}
+public class SiteSettingsDbContext : DbContext;

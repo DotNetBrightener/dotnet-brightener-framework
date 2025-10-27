@@ -63,6 +63,7 @@ public class ActivityLogService(
             Id                  = Guid.CreateVersion7(),
             ActivityName        = context.ActivityName ?? context.MethodInfo.Name,
             TargetEntity        = context.TargetEntity,
+            TargetEntityId      = context.TargetEntityId,
             ActivityDescription = FormatDescription(context),
             StartTime = context.StartTimestamp is null
                             ? DateTimeOffset.Now
@@ -76,6 +77,7 @@ public class ActivityLogService(
             Namespace           = context.Namespace,
             IsSuccess           = context.IsSuccess,
             CorrelationId       = context.CorrelationId,
+            TenantId            = context.TenantId,
             LogLevel            = DetermineLogLevel(context).ToString(),
             Tags                = GenerateTags(context)
         };

@@ -1,57 +1,36 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq.Expressions;
 
 namespace ActivityLog.Entities;
 
-public class ActivityLogRecord
+public class ActivityLogRecordModel : BaseActivityLogRecord
 {
-    [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.None)]
-    public Guid Id { get; set; } = Guid.CreateVersion7();
+    public static Expression<Func<ActivityLogRecord, ActivityLogRecordModel>> FromEntity
+        = record => new ActivityLogRecordModel
+        {
+            Id                  = record.Id,
+            ActivityName        = record.ActivityName,
+            ActivityDescription = record.ActivityDescription,
+            TenantId            = record.TenantId,
+            UserId              = record.UserId,
+            UserName            = record.UserName,
+            TargetEntity        = record.TargetEntity,
+            TargetEntityId      = record.TargetEntityId,
+            StartTime           = record.StartTime,
+            EndTime             = record.EndTime,
+            IsSuccess           = record.IsSuccess,
+            Metadata            = record.Metadata,
+            UserAgent           = record.UserAgent,
+            IpAddress           = record.IpAddress
+        };
+}
 
-    /// <summary>
-    ///     The name of the activity
-    /// </summary>
-    public string ActivityName { get; set; }
-
-    /// <summary>
-    ///     The description of the activity
-    /// </summary>
-    public string ActivityDescription { get; set; }
-
-    /// <summary>
-    ///     The id of user who performs the activity
-    /// </summary>
-    public long? UserId { get; set; }
-
-    /// <summary>
-    ///     The name of user who performs the activity
-    /// </summary>
-    [MaxLength(256)]
-    public string? UserName { get; set; }
-
-    /// <summary>
-    ///     The target entity of the activity
-    /// </summary>
-    [MaxLength(256)]
-    public string? TargetEntity { get; set; }
-
-    /// <summary>
-    ///     The id of the target entity of the activity
-    /// </summary>
-    [MaxLength(128)]
-    public string? TargetEntityId { get; set; }
-
-    /// <summary>
-    ///     Start time of the activity with high precision
-    /// </summary>
-    public DateTimeOffset StartTime { get; set; }
-
-    /// <summary>
-    ///     End time of the activity with high precision
-    /// </summary>
-    public DateTimeOffset? EndTime { get; set; }
-
+/// <summary>
+///     Represents the entity that is saved to the database
+/// </summary>
+public class ActivityLogRecord : BaseActivityLogRecord
+{
     /// <summary>
     ///     Method execution duration in milliseconds for performance analysis
     /// </summary>
@@ -97,23 +76,6 @@ public class ActivityLogRecord
     public string? ExceptionType { get; set; }
 
     /// <summary>
-    ///     Indicates whether the method execution was successful
-    /// </summary>
-    public bool IsSuccess { get; set; } = true;
-
-    /// <summary>
-    ///     The metadata of the log activity
-    /// </summary>
-    [MaxLength(2048)]
-    public string? Metadata { get; set; }
-
-    [MaxLength(1024)]
-    public string? UserAgent { get; set; }
-
-    [MaxLength(128)]
-    public string? IpAddress { get; set; }
-
-    /// <summary>
     ///     Correlation ID for tracking related activities
     /// </summary>
     public Guid? CorrelationId { get; set; }
@@ -129,4 +91,77 @@ public class ActivityLogRecord
     /// </summary>
     [MaxLength(512)]
     public string? Tags { get; set; }
+}
+
+public class BaseActivityLogRecord
+{
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.None)]
+    public Guid Id { get; set; } = Guid.CreateVersion7();
+
+    /// <summary>
+    ///     The name of the activity
+    /// </summary>
+    public string ActivityName { get; set; }
+
+    /// <summary>
+    ///     The description of the activity
+    /// </summary>
+    public string ActivityDescription { get; set; }
+
+    /// <summary>
+    ///     In the multi-tenant environment, identifies the tenant that the activity log is created under
+    /// </summary>
+    [MaxLength(128)]
+    public string? TenantId { get; set; }
+
+    /// <summary>
+    ///     The id of user who performs the activity
+    /// </summary>
+    public long? UserId { get; set; }
+
+    /// <summary>
+    ///     The name of user who performs the activity
+    /// </summary>
+    [MaxLength(256)]
+    public string? UserName { get; set; }
+
+    /// <summary>
+    ///     The target entity of the activity
+    /// </summary>
+    [MaxLength(256)]
+    public string? TargetEntity { get; set; }
+
+    /// <summary>
+    ///     The id of the target entity of the activity
+    /// </summary>
+    [MaxLength(128)]
+    public string? TargetEntityId { get; set; }
+
+    /// <summary>
+    ///     Start time of the activity with high precision
+    /// </summary>
+    public DateTimeOffset StartTime { get; set; }
+
+    /// <summary>
+    ///     End time of the activity with high precision
+    /// </summary>
+    public DateTimeOffset? EndTime { get; set; }
+
+    /// <summary>
+    ///     Indicates whether the method execution was successful
+    /// </summary>
+    public bool IsSuccess { get; set; } = true;
+
+    /// <summary>
+    ///     The metadata of the log activity
+    /// </summary>
+    [MaxLength(2048)]
+    public string? Metadata { get; set; }
+
+    [MaxLength(1024)]
+    public string? UserAgent { get; set; }
+
+    [MaxLength(128)]
+    public string? IpAddress { get; set; }
 }

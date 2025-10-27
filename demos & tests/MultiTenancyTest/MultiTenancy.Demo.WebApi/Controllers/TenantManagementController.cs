@@ -8,10 +8,7 @@ namespace MultiTenancy.Demo.WebApi.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class TenantManagementController : ControllerBase
-{
-    
-}
+public class TenantManagementController : ControllerBase;
 
 
 [ApiController]
