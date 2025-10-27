@@ -9,13 +9,12 @@ namespace DotNetBrightener.FriendlyRoutingLibrary;
 /// </summary>
 public class FrontEndRouter : IRouter
 {
-    private readonly HashSet<string> Keys = new HashSet<string>(new[]
-    {
+    private readonly HashSet<string> Keys = new HashSet<string>([
         "area",
         "controller",
         "action",
         "targetType"
-    }, StringComparer.OrdinalIgnoreCase);
+    ], StringComparer.OrdinalIgnoreCase);
 
     private readonly IFrontEndRoutingEntries _entries;
     private readonly IRouter                 _target;

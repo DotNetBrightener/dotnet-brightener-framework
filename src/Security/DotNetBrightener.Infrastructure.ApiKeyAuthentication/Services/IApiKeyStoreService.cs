@@ -56,10 +56,9 @@ public abstract class BaseApiKeyStoreService : IApiKeyStoreService
                       tokenName,
                       passwords.Item1,
                       passwords.Item2,
-                      scopes.Except(new[]
-                             {
+                      scopes.Except([
                                  ApiKeyAuthPermissions.ManageApiKeys
-                             })
+                             ])
                             .ToArray(),
                       expirationInDays.HasValue ? DateTime.UtcNow.Date.AddDays(expirationInDays.Value) : null);
 
@@ -137,10 +136,9 @@ public abstract class BaseApiKeyStoreService : IApiKeyStoreService
     private TokenSegment DecryptToken(string plainToken)
     {
         var decryptedToken = _cryptoEngine.DecryptText(plainToken);
-        var tokenSegments = decryptedToken.Split(new[]
-                                                 {
+        var tokenSegments = decryptedToken.Split([
                                                      TokenJoinSeparator
-                                                 },
+                                                 ],
                                                  StringSplitOptions.None);
 
         if (tokenSegments.Length != 2)

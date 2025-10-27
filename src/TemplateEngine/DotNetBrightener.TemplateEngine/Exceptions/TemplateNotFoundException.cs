@@ -1,9 +1,6 @@
 ﻿namespace DotNetBrightener.TemplateEngine.Exceptions;
 
-public class TemplateNotFoundException: Exception
-{
-
-}
+public class TemplateNotFoundException: Exception;
 
 public class TemplateTypeNotFoundException : Exception
 {

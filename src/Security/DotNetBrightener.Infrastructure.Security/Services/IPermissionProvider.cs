@@ -22,4 +22,4 @@ public interface IPermissionProvider
 /// <summary>
 ///     Marks the class with constant values as declaration of permissions
 /// </summary>
-public interface IPermissionsDeclaration {}
+public interface IPermissionsDeclaration;

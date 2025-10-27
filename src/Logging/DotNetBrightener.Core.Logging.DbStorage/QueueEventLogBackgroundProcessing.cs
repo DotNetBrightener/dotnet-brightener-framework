@@ -20,7 +20,7 @@ internal class QueueEventLogBackgroundProcessing(
     /// <summary>
     ///     To keep track of whether the migration has executed or not.
     /// </summary>
-    private static   bool              _migrationHasExecuted;
+    private static bool _migrationHasExecuted;
 
     private readonly LoggingRetentions _loggingRetentions = loggingRetentionOptions.Value;
     private readonly ILogger           _logger            = logger;
@@ -193,8 +193,15 @@ internal class QueueEventLogBackgroundProcessing(
 
         try
         {
-            loggingDbContext = backgroundScope.ServiceProvider
-                                              .GetRequiredService<LoggingDbContext>();
+            var dbContext = backgroundScope.ServiceProvider
+                                           .GetRequiredService<LoggingDbContext>();
+
+            // fake call to ensure db connection is working
+
+            var logCount = await dbContext.Set<EventLog>()
+                                          .CountAsync();
+
+            loggingDbContext = dbContext;
         }
         catch
         {

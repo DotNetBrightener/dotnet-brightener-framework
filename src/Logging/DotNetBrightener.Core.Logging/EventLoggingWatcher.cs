@@ -86,7 +86,7 @@ public class EventLoggingWatcher : TargetWithLayout, IEventLogWatcher
         lock (Lock)
         {
             if (_queue.Count == 0)
-                return new List<EventLogBaseModel>();
+                return [];
 
             List<EventLogBaseModel> queuedEventLogRecords = [];
 

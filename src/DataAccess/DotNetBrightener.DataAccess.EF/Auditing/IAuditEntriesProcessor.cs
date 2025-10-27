@@ -15,7 +15,7 @@ internal interface IAuditEntriesProcessor
 internal class AuditEntriesProcessor(IServiceScopeFactory serviceScopeFactory, 
                                      ILogger<AuditEntriesProcessor> logger) : IAuditEntriesProcessor
 {
-    private readonly List<AuditEntity> _auditEntitiesQueue = new();
+    private readonly List<AuditEntity> _auditEntitiesQueue = [];
     private readonly TimeSpan          _delay              = TimeSpan.FromSeconds(5);
     private          Timer             _timer;
     private readonly Lock              _lock = new();

@@ -1,4 +1,6 @@
-﻿namespace DotNetBrightener.TemplateEngine.Data.Models;
+﻿using DotNetBrightener.TemplateEngine.Data.Services;
+
+namespace DotNetBrightener.TemplateEngine.Data.Models;
 
 public class TemplateListItemModel
 {
@@ -11,4 +13,6 @@ public class TemplateListItemModel
     public string TemplateDescriptionKey { get; set; }
 
     public List<string> Fields { get; internal set; }
+    
+    public List<TemplateFieldMetadata> FieldsMetadata { get; internal set; }
 }

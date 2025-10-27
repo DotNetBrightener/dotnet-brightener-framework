@@ -2,7 +2,4 @@
 
 namespace DotNetBrightener.OAuth.Models;
 
-public class OAuthResult
-{
-
-}
+public class OAuthResult;

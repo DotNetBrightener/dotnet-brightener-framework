@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Design;
 
 namespace DotNetBrightener.DataAccess.Auditing.Storage.DbContexts;
 
-internal class SqlServerDbContextDesignTimeFactory : SqlServerDbContextDesignTimeFactory<MssqlStorageAuditingDbContext> { }
+internal class SqlServerDbContextDesignTimeFactory : SqlServerDbContextDesignTimeFactory<MssqlStorageAuditingDbContext>;
 
 internal class MssqlStorageAuditingDbContext(DbContextOptions<MssqlStorageAuditingDbContext> options)
     : DbContext(options)

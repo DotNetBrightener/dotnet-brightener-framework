@@ -210,10 +210,9 @@ public abstract class OAuthController(
             throw new InvalidOperationException($"Cannot verify request");
 
         var requestId = stateQueryString.ToString()
-                                        .Split(new[]
-                                               {
+                                        .Split([
                                                    "||"
-                                               },
+                                               ],
                                                StringSplitOptions.RemoveEmptyEntries)
                                         .FirstOrDefault();
 

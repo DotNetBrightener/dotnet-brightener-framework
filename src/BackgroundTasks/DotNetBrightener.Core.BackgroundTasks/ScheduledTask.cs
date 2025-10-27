@@ -15,16 +15,21 @@ public class ScheduledTask : IScheduleConfig
 
     private CronExpression   _expression;
     private bool             _preventOverlapping;
-    private string           _eventUniqueId;
+    private Guid             _uniqueId;
+    private string           _eventUniqueId ;
     private Func<Task<bool>> _whenPredicate;
     private TimeZoneInfo     _zonedTime = TimeZoneInfo.Utc;
+    public  DateTimeOffset?  ScheduledAt { get; private set; } = DateTimeOffset.UtcNow;
+    public  DateTimeOffset?  StartedAt   { get; private set; }
+    public  DateTimeOffset?  CompletedAt { get; private set; }
     private bool             _runOnce;
     private bool             _hasExecuted;
 
     private ScheduledTask(IServiceScopeFactory scopeFactory)
     {
         _scopeFactory  = scopeFactory;
-        _eventUniqueId = Guid.NewGuid().ToString();
+        _uniqueId      = Guid.CreateVersion7();
+        _eventUniqueId = _uniqueId.ToString();
     }
 
     internal static ScheduledTask WithAction(IServiceScopeFactory scopeFactory,
@@ -58,6 +63,8 @@ public class ScheduledTask : IScheduleConfig
             return;
         }
 
+        StartedAt = DateTimeOffset.UtcNow;
+        
         if (ScheduledTaskAction is not null)
         {
             await ExecuteTaskAction(logger, cancellationToken);
@@ -170,6 +177,7 @@ public class ScheduledTask : IScheduleConfig
     private void MarkedAsExecuted()
     {
         _hasExecuted = true;
+        CompletedAt = DateTimeOffset.UtcNow;
     }
 
     private void UnscheduleIfNeeded()
@@ -201,7 +209,8 @@ public class ScheduledTask : IScheduleConfig
         return this;
     }
 
-    public string OverlappingUniqueIdentifier() => _eventUniqueId;
+    public Guid   UniqueIdentifier()            => _uniqueId;
+    public String OverlappingUniqueIdentifier() => _eventUniqueId;
 
     public IScheduleConfig Daily()
     {

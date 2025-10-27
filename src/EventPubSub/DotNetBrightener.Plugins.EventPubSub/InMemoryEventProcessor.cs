@@ -22,10 +22,9 @@ internal class InMemoryEventProcessor(IServiceScopeFactory serviceScopeFactory)
                 return;
 
             if (method.Invoke(eventProcessor,
-                              new object[]
-                              {
-                                  eventMessage
-                              }) is Task task)
+                [
+                    eventMessage
+                ]) is Task task)
             {
                 await task;
             }

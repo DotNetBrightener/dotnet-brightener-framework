@@ -103,14 +103,14 @@ public class SetPropertyBuilder<TSource>
                                                                          instance: SetPropertyCalls.Body,
                                                                          methodName: nameof(SetPropertyCalls<TSource>
                                                                                                .SetProperty),
-                                                                         typeArguments: new[]
-                                                                         {
+                                                                         typeArguments:
+                                                                         [
                                                                              typeof(TProperty)
-                                                                         },
-                                                                         arguments: new Expression[]
-                                                                         {
+                                                                         ],
+                                                                         arguments:
+                                                                         [
                                                                              propertyExpression, valueExpression
-                                                                         }
+                                                                         ]
                                                                         ),
                                                    parameters: SetPropertyCalls.Parameters
                                                   );
@@ -129,7 +129,7 @@ public class SetPropertyBuilder<TSource>
         return propertyLambda;
     }
 
-    private readonly List<AuditProperty> _auditProperties    = new();
+    private readonly List<AuditProperty> _auditProperties    = [];
     private          bool                _isDeleteOperation  = false;
     private          bool                _isRestoreOperation = false;
 

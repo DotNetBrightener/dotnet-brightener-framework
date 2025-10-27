@@ -1,6 +1,5 @@
 ﻿using DotNetBrightener.Infrastructure.Security.AuthorizationHandlers;
 using DotNetBrightener.Infrastructure.Security.HostedService;
-using DotNetBrightener.Infrastructure.Security.Providers;
 using DotNetBrightener.Infrastructure.Security.Services;
 using Microsoft.AspNetCore.Authorization;
 
@@ -18,17 +17,34 @@ public static class ServiceCollectionAuthorizationModuleExtensions
     /// </returns>
     public static IServiceCollection AddPermissionAuthorization(this IServiceCollection servicesCollection)
     {
-        servicesCollection.AddScoped<IAuthorizationHandler, AdministratorAuthorizer>();
+        servicesCollection.AddScoped<IAuthorizationHandler, SysAdminAuthorizer>();
         servicesCollection.AddScoped<IAuthorizationHandler, MultiplePermissionsAuthorizationHandler>();
 
         // permissions and securities
         servicesCollection.AddSingleton<IPermissionsContainer, PermissionsContainer>();
-
-        servicesCollection.RegisterPermissionProvider<DefaultPermissions>();
-
+        
         servicesCollection.AddHostedService<PermissionLoaderAndValidator>();
 
         return servicesCollection;
+    }
+
+    /// <summary>
+    ///     Registers the System Admin Provider to the <see cref="IServiceCollection"/>
+    /// </summary>
+    /// <typeparam name="TSysAdminProvider">
+    ///     The implementation of <seealso cref="ISysAdminRoleProvider"/> that provides roles to consider as Sys Admin
+    /// </typeparam>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection" /></param>
+    /// <returns>
+    ///     The same instance of <paramref name="servicesCollection" /> for chaining operations
+    /// </returns>
+    public static IServiceCollection AddSystemAdminProvider<TSysAdminProvider>(
+        this IServiceCollection serviceCollection)
+        where TSysAdminProvider : class, ISysAdminRoleProvider
+    {
+        serviceCollection.AddSingleton<ISysAdminRoleProvider, TSysAdminProvider>();
+
+        return serviceCollection;
     }
 
     /// <summary>

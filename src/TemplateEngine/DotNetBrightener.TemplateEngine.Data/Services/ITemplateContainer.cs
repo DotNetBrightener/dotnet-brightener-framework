@@ -83,7 +83,8 @@ public class TemplateContainer : ITemplateContainer
             templateInformation.TemplateDescriptionKey = templateDescriptionAttribute.TemplateDescriptionKey;
         }
 
-        templateInformation.Fields = TemplateFieldsUtils.RetrieveTemplateFields(templateType);
+        templateInformation.Fields         = TemplateFieldsUtils.RetrieveTemplateFields(templateType);
+        templateInformation.FieldsMetadata = TemplateFieldsUtils.RetrieveTemplateFieldsMetadata(templateType);
 
         return templateInformation;
     }

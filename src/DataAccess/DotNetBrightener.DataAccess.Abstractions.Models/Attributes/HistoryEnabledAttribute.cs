@@ -6,6 +6,4 @@
 ///     This only works with Entity Framework.
 /// </summary>
 [AttributeUsage(AttributeTargets.Class)]
-public class HistoryEnabledAttribute : Attribute
-{
-}
+public class HistoryEnabledAttribute : Attribute;

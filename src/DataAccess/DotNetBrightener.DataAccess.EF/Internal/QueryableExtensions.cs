@@ -43,7 +43,7 @@ public static class QueryableExtensions
     {
         if (conditionExpression is null)
         {
-            return new FilterInformation();
+            return [];
         }
 
         return ParseExpression(conditionExpression.Body);
