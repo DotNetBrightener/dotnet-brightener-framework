@@ -38,7 +38,7 @@ public static class OAuthServiceCollectionExtensions
         where TSettingType : class, IOAuthProviderSetting
         where TSettingImplementation : class, IOAuthProviderSettingLoader<TSettingType>
     {
-        var existingRegistration = services.FirstOrDefault(_ => _.ServiceType == typeof(IOAuthProviderSettingLoader<TSettingType>));
+        var existingRegistration = services.FirstOrDefault(d => d.ServiceType == typeof(IOAuthProviderSettingLoader<TSettingType>));
 
         if (existingRegistration is not null)
             services.RemoveAll<IOAuthProviderSettingLoader<TSettingType>>();

@@ -36,7 +36,9 @@ public class AsyncTaskContext
 
     public string? UserUuid { get; set; }
 
-    public string? Errors { get; set; }
+    public string? Errors    { get; set; }
+
+    public bool IsSuccess => !string.IsNullOrWhiteSpace(Errors);
 
     internal DateTimeOffset? ResultRetrieved { get; set; }
 
