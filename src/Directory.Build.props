@@ -2,7 +2,7 @@
 	<Import Project="Directory.Build.props.user" Condition="Exists('Directory.Build.props.user')" />
 
 	<PropertyGroup>
-		<TargetFramework>net9.0</TargetFramework>
+		<TargetFramework>net10.0</TargetFramework>
 		<Authors>Vampire Coder &lt;admin@vampirecoder.com&gt; (formerly DotNet Brightener)</Authors>
 		<Company>Vampire Coder (formerly DotNet Brightener)</Company>
 

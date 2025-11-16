@@ -29,127 +29,124 @@ public static class ServiceCollectionExtensions
         return app.UseMiddleware<AllSchemesAuthenticationMiddleware>();
     }
 
-    /// <summary>
-    ///     Registers JWT Authentication to the service collection
-    /// </summary>
     /// <param name="serviceCollection"></param>
-    /// <param name="configuration"></param>
-    /// <param name="includeCookieSupport"></param>
-    /// <returns></returns>
-    /// <exception cref="DataException"></exception>
-    public static AuthenticationBuilder AddJwtBearerAuthentication(this IServiceCollection serviceCollection,
-                                                                   IConfiguration          configuration,
-                                                                   string                  defaultScheme = JwtBearerDefaults.AuthenticationScheme,
-                                                                   bool                    includeCookieSupport = true)
+    extension(IServiceCollection serviceCollection)
     {
+        /// <summary>
+        ///     Registers JWT Authentication to the service collection
+        /// </summary>
+        /// <param name="configuration"></param>
+        /// <param name="includeCookieSupport"></param>
+        /// <returns></returns>
+        /// <exception cref="DataException"></exception>
+        public AuthenticationBuilder AddJwtBearerAuthentication(IConfiguration configuration,
+                                                                string         defaultScheme        = JwtBearerDefaults.AuthenticationScheme,
+                                                                bool           includeCookieSupport = true)
+        {
 
-        serviceCollection.AddSingleton<IAuthAudiencesContainer, DefaultAuthAudiencesContainer>();
+            serviceCollection.AddSingleton<IAuthAudiencesContainer, DefaultAuthAudiencesContainer>();
         
-        var tokenConfiguration = new JwtConfiguration
-        {
-            Issuer             = configuration.GetValue<string>("JwtTokenIssuer"),
-            ExpireAfterMinutes = configuration.GetValue<int>("JwtExpireInMinutes")
-        };
+            var tokenConfiguration = new JwtConfiguration
+            {
+                Issuer             = configuration.GetValue<string>("JwtTokenIssuer"),
+                ExpireAfterMinutes = configuration.GetValue<int>("JwtExpireInMinutes")
+            };
 
-        var jwtPrivateKey = configuration.GetValue<string>("JwtTokenPrivateKey");
+            var jwtPrivateKey = configuration.GetValue<string>("JwtTokenPrivateKey");
 
-        if (string.IsNullOrEmpty(jwtPrivateKey))
-        {
-            tokenConfiguration.SignatureVerificationKey = configuration.GetValue<string>("JwtTokenSigningKey");
+            if (string.IsNullOrEmpty(jwtPrivateKey))
+            {
+                tokenConfiguration.SignatureVerificationKey = configuration.GetValue<string>("JwtTokenSigningKey");
+            }
+            else
+            {
+                var rsa = RsaCryptoEngine.ImportPemPrivateKey(jwtPrivateKey);
+                tokenConfiguration.PrivateSigningKey        = rsa.ExportPrivateKeyToPem(true);
+                tokenConfiguration.SignatureVerificationKey = rsa.ExportPublicKeyToPem(true);
+            }
+
+            if (string.IsNullOrEmpty(tokenConfiguration.PrivateSigningKey) &&
+                string.IsNullOrEmpty(tokenConfiguration.SignatureVerificationKey))
+            {
+                var signingKeyPairs = RsaCryptoEngine.GenerateKeyPair(true);
+
+                Console.WriteLine($"JWT Private Signing Key = {signingKeyPairs.Item2}");
+
+                throw new
+                    DataException("No JWT Signing Key is configured. " +
+                                  "Please check Admin Console to obtain the generated JWT Private Signing Key " +
+                                  "and configure it in appsettings.json or Environment Variable named 'JwtTokenPrivateKey'");
+            }
+
+            serviceCollection.AddSingleton(serviceProvider =>
+            {
+                var serviceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
+
+                tokenConfiguration.ServiceScopeFactory = serviceScopeFactory;
+
+                return tokenConfiguration;
+            });
+
+            serviceCollection.AddSingleton<IJwtMessageHandler, NullJwtMessageHandler>();
+
+            serviceCollection.RegisterAuthAudienceResolver<CurrentRequestAudienceResolver>();
+            serviceCollection.RegisterAuthAudienceResolver<UserAgentBasedRequestAudienceResolver>();
+
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+            var contextAccessor = serviceProvider.GetService<IHttpContextAccessor>();
+
+            var builder = serviceCollection.AddAuthentication(defaultScheme: defaultScheme)
+                                           .AddJwtBearer(defaultScheme,
+                                                         cfg => ConfigureJwtOptions(cfg, contextAccessor!));
+
+            if (includeCookieSupport)
+                builder.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme);
+
+            return builder;
         }
-        else
+
+        /// <summary>
+        ///     Registers the audience validator for JWT to the service collection
+        /// </summary>
+        /// <typeparam name="TValidator">The type of the audience validator</typeparam>
+        /// <returns>
+        ///     The same instance of <paramref name="serviceCollection"/> for chaining operations
+        /// </returns>
+        public IServiceCollection RegisterAuthAudienceValidator<TValidator>()
+            where TValidator : class, IAuthAudienceValidator
         {
-            var rsa = RsaCryptoEngine.ImportPemPrivateKey(jwtPrivateKey);
-            tokenConfiguration.PrivateSigningKey        = rsa.ExportPrivateKeyToPem(true);
-            tokenConfiguration.SignatureVerificationKey = rsa.ExportPublicKeyToPem(true);
+            serviceCollection.AddScoped<IAuthAudienceValidator, TValidator>();
+
+            return serviceCollection;
         }
 
-        if (string.IsNullOrEmpty(tokenConfiguration.PrivateSigningKey) &&
-            string.IsNullOrEmpty(tokenConfiguration.SignatureVerificationKey))
+        /// <summary>
+        ///     Registers the audience validator for JWT to the service collection
+        /// </summary>
+        /// <typeparam name="TResolver">The type of the audience validator</typeparam>
+        /// <returns>
+        ///     The same instance of <paramref name="serviceCollection"/> for chaining operations
+        /// </returns>
+        public IServiceCollection RegisterAuthAudienceResolver<TResolver>()
+            where TResolver : class, ICurrentRequestAudienceResolver
         {
-            var signingKeyPairs = RsaCryptoEngine.GenerateKeyPair(true);
+            serviceCollection.AddScoped<ICurrentRequestAudienceResolver, TResolver>();
 
-            Console.WriteLine($"JWT Private Signing Key = {signingKeyPairs.Item2}");
-
-            throw new
-                DataException("No JWT Signing Key is configured. " +
-                              "Please check Admin Console to obtain the generated JWT Private Signing Key " +
-                              "and configure it in appsettings.json or Environment Variable named 'JwtTokenPrivateKey'");
+            return serviceCollection;
         }
 
-        serviceCollection.AddSingleton(serviceProvider =>
+        /// <summary>
+        ///     Registers the JWT message event handler to the service collection
+        /// </summary>
+        /// <typeparam name="TMessageHandler"></typeparam>
+        /// <returns></returns>
+        public IServiceCollection RegisterJwtMessageEventHandler<TMessageHandler>()
+            where TMessageHandler : class, IJwtMessageHandler
         {
-            var serviceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
+            serviceCollection.AddSingleton<IJwtMessageHandler, TMessageHandler>();
 
-            tokenConfiguration.ServiceScopeFactory = serviceScopeFactory;
-
-            return tokenConfiguration;
-        });
-
-        serviceCollection.AddSingleton<IJwtMessageHandler, NullJwtMessageHandler>();
-
-        serviceCollection.RegisterAuthAudienceResolver<CurrentRequestAudienceResolver>();
-        serviceCollection.RegisterAuthAudienceResolver<UserAgentBasedRequestAudienceResolver>();
-
-        var serviceProvider = serviceCollection.BuildServiceProvider();
-        var contextAccessor = serviceProvider.GetService<IHttpContextAccessor>();
-
-        var builder = serviceCollection.AddAuthentication(defaultScheme: defaultScheme)
-                                       .AddJwtBearer(defaultScheme,
-                                                     cfg => ConfigureJwtOptions(cfg, contextAccessor!));
-
-        if (includeCookieSupport)
-            builder.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme);
-
-        return builder;
-    }
-
-    /// <summary>
-    ///     Registers the audience validator for JWT to the service collection
-    /// </summary>
-    /// <typeparam name="TValidator">The type of the audience validator</typeparam>
-    /// <param name="serviceCollection">The <see cref="IServiceCollection"/></param>
-    /// <returns>
-    ///     The same instance of <paramref name="serviceCollection"/> for chaining operations
-    /// </returns>
-    public static IServiceCollection RegisterAuthAudienceValidator<TValidator>(
-        this IServiceCollection serviceCollection)
-        where TValidator : class, IAuthAudienceValidator
-    {
-        serviceCollection.AddScoped<IAuthAudienceValidator, TValidator>();
-
-        return serviceCollection;
-    }
-
-    /// <summary>
-    ///     Registers the audience validator for JWT to the service collection
-    /// </summary>
-    /// <typeparam name="TResolver">The type of the audience validator</typeparam>
-    /// <param name="serviceCollection">The <see cref="IServiceCollection"/></param>
-    /// <returns>
-    ///     The same instance of <paramref name="serviceCollection"/> for chaining operations
-    /// </returns>
-    public static IServiceCollection RegisterAuthAudienceResolver<TResolver>(this IServiceCollection serviceCollection)
-        where TResolver : class, ICurrentRequestAudienceResolver
-    {
-        serviceCollection.AddScoped<ICurrentRequestAudienceResolver, TResolver>();
-
-        return serviceCollection;
-    }
-
-    /// <summary>
-    ///     Registers the JWT message event handler to the service collection
-    /// </summary>
-    /// <typeparam name="TMessageHandler"></typeparam>
-    /// <param name="serviceCollection"></param>
-    /// <returns></returns>
-    public static IServiceCollection RegisterJwtMessageEventHandler<TMessageHandler>(
-        this IServiceCollection serviceCollection)
-        where TMessageHandler : class, IJwtMessageHandler
-    {
-        serviceCollection.AddSingleton<IJwtMessageHandler, TMessageHandler>();
-
-        return serviceCollection;
+            return serviceCollection;
+        }
     }
 
     private static void ConfigureJwtOptions(JwtBearerOptions     cfg,
