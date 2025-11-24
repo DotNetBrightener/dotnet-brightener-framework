@@ -1,4 +1,5 @@
-﻿using DotNetBrightener.DataAccess;
+﻿#nullable enable
+using DotNetBrightener.DataAccess;
 using DotNetBrightener.DataAccess.EF.Conventions;
 using DotNetBrightener.DataAccess.EF.EnumLookup;
 using DotNetBrightener.DataAccess.EF.Interceptors;

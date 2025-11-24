@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿#nullable enable
+using System.Linq.Expressions;
 using Newtonsoft.Json;
 
 namespace DotNetBrightener.DataAccess.EF.Internal;

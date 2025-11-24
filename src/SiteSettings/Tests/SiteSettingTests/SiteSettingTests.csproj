@@ -1,10 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		
 		<ImplicitUsings>enable</ImplicitUsings>
-		
-
 		<IsPackable>false</IsPackable>
 		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
 		<IsTestProject>true</IsTestProject>
@@ -26,7 +23,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\..\src\SiteSettings\DotNetBrightener.SiteSettings\DotNetBrightener.SiteSettings.csproj" />
+	  <ProjectReference Include="..\..\DotNetBrightener.SiteSettings\DotNetBrightener.SiteSettings.csproj" />
 	</ItemGroup>
 
 </Project>

@@ -1,3 +1,4 @@
+#nullable enable
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace DotNetBrightener.DataAccess.EF.TransactionManagement;
