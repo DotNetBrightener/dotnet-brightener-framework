@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<RootNamespace>DotNetBrightener.DataAccess</RootNamespace>
+		<IsPackable>true</IsPackable>
 	</PropertyGroup>
 
 	<ItemGroup>

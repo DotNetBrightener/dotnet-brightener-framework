@@ -96,8 +96,6 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SharedExtensions.MvcBuilder
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApp.CommonShared", "Infrastructure\CommonShared\WebApp.CommonShared.csproj", "{955D542A-3924-4336-A903-C9D94C12B35A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.SimpleIdentityServer", "Infrastructure\DotNetBrightener.SimpleIdentityServer\DotNetBrightener.SimpleIdentityServer.csproj", "{E7088F1B-434A-42F3-A025-5EE967A62214}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Infrastructure.JwtAuthentication", "Security\DotNetBrightener.Infrastructure.JwtAuthentication\DotNetBrightener.Infrastructure.JwtAuthentication.csproj", "{7103C447-DB31-4128-9E7A-47872CE5DF58}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.Infrastructure.ApiKeyAuthentication", "Security\DotNetBrightener.Infrastructure.ApiKeyAuthentication\DotNetBrightener.Infrastructure.ApiKeyAuthentication.csproj", "{F1B6F426-1EA7-4571-8F9A-2FC5CCE1DCC5}"
@@ -263,10 +261,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.PushNotification", "PushNotification\DotNetBrightener.PushNotification\DotNetBrightener.PushNotification.csproj", "{5E112CC1-FF93-43EA-9DC6-E3233D61E6EB}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.TestHelpers", "TestHelpers\DotNetBrightener.TestHelpers\DotNetBrightener.TestHelpers.csproj", "{2BF808D4-C815-494A-ADBD-CD32B3A27C70}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Identity", "Identity", "{613A898C-EF71-4A57-8E90-62133AF2CCFF}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.IdentityAuth", "Identity\DotNetBrightener.IdentityAuth\DotNetBrightener.IdentityAuth.csproj", "{00C4996B-9BCF-40F1-8986-0D66D761C1C8}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBrightener.CryptoEngine.Tests", "Cryptography\DotNetBrightener.CryptoEngine.Tests\DotNetBrightener.CryptoEngine.Tests.csproj", "{792FD445-FBA7-408C-9C3A-A9E997EF9654}"
 EndProject
@@ -538,14 +532,6 @@ Global
 		{955D542A-3924-4336-A903-C9D94C12B35A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{955D542A-3924-4336-A903-C9D94C12B35A}.Release|ARM64.ActiveCfg = Release|Any CPU
 		{955D542A-3924-4336-A903-C9D94C12B35A}.Release|ARM64.Build.0 = Release|Any CPU
-		{E7088F1B-434A-42F3-A025-5EE967A62214}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E7088F1B-434A-42F3-A025-5EE967A62214}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E7088F1B-434A-42F3-A025-5EE967A62214}.Debug|ARM64.ActiveCfg = Debug|Any CPU
-		{E7088F1B-434A-42F3-A025-5EE967A62214}.Debug|ARM64.Build.0 = Debug|Any CPU
-		{E7088F1B-434A-42F3-A025-5EE967A62214}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E7088F1B-434A-42F3-A025-5EE967A62214}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E7088F1B-434A-42F3-A025-5EE967A62214}.Release|ARM64.ActiveCfg = Release|Any CPU
-		{E7088F1B-434A-42F3-A025-5EE967A62214}.Release|ARM64.Build.0 = Release|Any CPU
 		{7103C447-DB31-4128-9E7A-47872CE5DF58}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7103C447-DB31-4128-9E7A-47872CE5DF58}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7103C447-DB31-4128-9E7A-47872CE5DF58}.Debug|ARM64.ActiveCfg = Debug|ARM64
@@ -1026,14 +1012,6 @@ Global
 		{2BF808D4-C815-494A-ADBD-CD32B3A27C70}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2BF808D4-C815-494A-ADBD-CD32B3A27C70}.Release|ARM64.ActiveCfg = Release|Any CPU
 		{2BF808D4-C815-494A-ADBD-CD32B3A27C70}.Release|ARM64.Build.0 = Release|Any CPU
-		{00C4996B-9BCF-40F1-8986-0D66D761C1C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{00C4996B-9BCF-40F1-8986-0D66D761C1C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{00C4996B-9BCF-40F1-8986-0D66D761C1C8}.Debug|ARM64.ActiveCfg = Debug|Any CPU
-		{00C4996B-9BCF-40F1-8986-0D66D761C1C8}.Debug|ARM64.Build.0 = Debug|Any CPU
-		{00C4996B-9BCF-40F1-8986-0D66D761C1C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{00C4996B-9BCF-40F1-8986-0D66D761C1C8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{00C4996B-9BCF-40F1-8986-0D66D761C1C8}.Release|ARM64.ActiveCfg = Release|Any CPU
-		{00C4996B-9BCF-40F1-8986-0D66D761C1C8}.Release|ARM64.Build.0 = Release|Any CPU
 		{792FD445-FBA7-408C-9C3A-A9E997EF9654}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{792FD445-FBA7-408C-9C3A-A9E997EF9654}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{792FD445-FBA7-408C-9C3A-A9E997EF9654}.Debug|ARM64.ActiveCfg = Debug|Any CPU
@@ -1304,7 +1282,6 @@ Global
 		{EB78590D-83BE-404A-B554-1E436ECD64F7} = {7205287C-4CD6-4E4D-830D-46F0BBEBB605}
 		{FF19BE9F-9E7F-4B69-AC0C-F80EE2218228} = {7205287C-4CD6-4E4D-830D-46F0BBEBB605}
 		{955D542A-3924-4336-A903-C9D94C12B35A} = {8BCFD1A4-6EB1-422B-8A50-E3CB83C8F600}
-		{E7088F1B-434A-42F3-A025-5EE967A62214} = {8BCFD1A4-6EB1-422B-8A50-E3CB83C8F600}
 		{7103C447-DB31-4128-9E7A-47872CE5DF58} = {A8260E20-A153-47F4-AD48-3C711C1C1796}
 		{F1B6F426-1EA7-4571-8F9A-2FC5CCE1DCC5} = {A8260E20-A153-47F4-AD48-3C711C1C1796}
 		{1BDF655B-BBED-41AF-8957-62EAAF2253C1} = {A8260E20-A153-47F4-AD48-3C711C1C1796}
@@ -1376,7 +1353,6 @@ Global
 		{77763076-2587-4FCB-ABF5-3EB0E108A1B4} = {85480262-4B08-4286-ABE9-5C7609ACA593}
 		{5E112CC1-FF93-43EA-9DC6-E3233D61E6EB} = {85480262-4B08-4286-ABE9-5C7609ACA593}
 		{2BF808D4-C815-494A-ADBD-CD32B3A27C70} = {17CF6FFF-1966-4534-8B68-6AAE4AE440BD}
-		{00C4996B-9BCF-40F1-8986-0D66D761C1C8} = {613A898C-EF71-4A57-8E90-62133AF2CCFF}
 		{792FD445-FBA7-408C-9C3A-A9E997EF9654} = {5B5FD3D4-5CBA-4C04-AA53-FA09BE52BE54}
 		{65D2C590-81A7-43CF-9845-661DEBF58566} = {0BF749BF-71CF-4FA8-9589-D29F5A34EC18}
 		{C8FC4F8C-561F-4482-B792-90F0DB7CD871} = {78E05890-1EE2-4E9D-A0E1-21CC7F0ECA37}
@@ -1570,8 +1546,6 @@ Global
 		Shared\SharedExtensions.Dictionary\SharedExtensions.Dictionary.projitems*{e4358d5e-109b-4050-a5b9-d4ff094754a4}*SharedItemsImports = 13
 		Shared\SharedExtensions.Exception\SharedExtensions.Exception.projitems*{e622b744-935a-4809-8f6d-7b0919d863c5}*SharedItemsImports = 5
 		Shared\SharedExtensions.MvcBuilder\SharedExtensions.MvcBuilder.projitems*{e622b744-935a-4809-8f6d-7b0919d863c5}*SharedItemsImports = 5
-		Shared\SharedExtensions.Exception\SharedExtensions.Exception.projitems*{e7088f1b-434a-42f3-a025-5ee967a62214}*SharedItemsImports = 5
-		Shared\SharedExtensions.HttpContext\SharedExtensions.HttpContext.projitems*{e7088f1b-434a-42f3-a025-5ee967a62214}*SharedItemsImports = 5
 		Shared\SharedExtensions.HttpContext\SharedExtensions.HttpContext.projitems*{eb78590d-83be-404a-b554-1e436ecd64f7}*SharedItemsImports = 13
 		Shared\SharedExtensions.ObjectMethods\SharedExtensions.ObjectMethods.projitems*{eda17464-72bb-485e-b43b-a62af402559b}*SharedItemsImports = 13
 		Shared\SharedExtensions.Exception\SharedExtensions.Exception.projitems*{ef16f907-7da4-4816-b0e3-f3097a46d66b}*SharedItemsImports = 5

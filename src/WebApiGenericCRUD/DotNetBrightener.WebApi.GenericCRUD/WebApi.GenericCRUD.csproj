@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<RootNamespace>DotNetBrightener.WebApi.GenericCRUD</RootNamespace>
+		<IsPackable>true</IsPackable>
 	</PropertyGroup>
 	<ItemGroup>
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />

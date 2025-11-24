@@ -1,4 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<IsPackable>true</IsPackable>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<PackageReference Include="linq2db.EntityFrameworkCore" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore" />

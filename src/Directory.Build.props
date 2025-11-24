@@ -11,6 +11,11 @@
 		<LangVersion>14</LangVersion>
 		<IncludeSymbols>true</IncludeSymbols>
 		<ImplicitUsings>enable</ImplicitUsings>
+		
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<PackageId Condition="!$(MSBuildProjectName.StartsWith('DotNetBrightener.')) AND !$(MSBuildProjectName.StartsWith('VampireCoder.'))">DotNetBrightener.$(MSBuildProjectName)</PackageId>
+		<PackageTags>DotNetBrightener; VampireCoder;</PackageTags>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 
 		<RepositoryUrl>https://github.com/dotnetbrightener/dotnet-brightener-framework</RepositoryUrl>
@@ -19,14 +24,6 @@
 
 		<PackageReadmeFile Condition="Exists('docs\readme.md') OR Exists('readme.md')">readme.md</PackageReadmeFile>
 	</PropertyGroup>
-
-	<PropertyGroup Condition="!$(MSBuildProjectName.EndsWith('.Tests'))">
-		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<PackageId Condition="!$(MSBuildProjectName.StartsWith('DotNetBrightener.')) AND !$(MSBuildProjectName.StartsWith('VampireCoder.'))">DotNetBrightener.$(MSBuildProjectName)</PackageId>
-		<PackageTags>DotNetBrightener; VampireCoder;</PackageTags>
-	</PropertyGroup>
-
 
 	<PropertyGroup Condition="'$(Configuration)'=='Release'">
 		<PackageIcon Condition="Exists('$(SolutionDir)\..\vampire-coder-logo.jpg')">vampire-coder-logo.jpg</PackageIcon>
@@ -37,12 +34,13 @@
 		<InternalsVisibleTo Include="$(AssemblyName).Tests" />
 	</ItemGroup>
 
-	<ItemGroup Condition="'$(IsPackable)' == 'true' AND Exists('$(OutputPath)\$(AssemblyName).xml')">
-		<Content Include="$(OutputPath)\$(AssemblyName).xml"
-				 Pack="true"
-				 PackagePath="contentFiles\any\any"
-				 PackageCopyToOutput="true"
-				 CopyToOutputDirectory="PreserveNewest" />
+	<ItemGroup Condition="'$(IsPackable)' == 'true' and '$(DocumentationFile)' != ''">
+		<None Include="$(DocumentationFile)"
+			  Condition="Exists('$(DocumentationFile)')"
+			  Pack="true"
+			  PackagePath="contentFiles\any\any"
+			  PackageCopyToOutput="true"
+			  CopyToOutputDirectory="PreserveNewest" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(IsPackable)' == 'true'">

@@ -1,8 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<PackageDescription>
-			A Simple Upload API for ASP.NET Core Applications
-		</PackageDescription>
+		<IsPackable>true</IsPackable>
+		<PackageDescription>A Simple Upload API for ASP.NET Core Applications</PackageDescription>
 	</PropertyGroup>
 	<ItemGroup>
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />

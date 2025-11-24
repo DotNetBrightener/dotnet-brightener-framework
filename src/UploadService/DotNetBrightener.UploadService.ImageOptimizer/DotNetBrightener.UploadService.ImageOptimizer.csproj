@@ -1,8 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<PackageDescription>
-			An Image Resizer used with DotNetBrightener.SimpleUploadService package
-		</PackageDescription>
+		<IsPackable>true</IsPackable>
+		<PackageDescription>An Image Resizer used with DotNetBrightener.SimpleUploadService package</PackageDescription>
 	</PropertyGroup>
 	<ItemGroup>
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
