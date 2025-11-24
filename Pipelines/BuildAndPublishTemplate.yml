@@ -20,7 +20,7 @@ steps:
   - task: UseDotNet@2
     displayName: Ensure .NET Core SDK Installed
     inputs:
-      version: 9.x
+      version: 10.x
       performMultiLevelLookup: true
 
   - task: DotNetCoreCLI@2
