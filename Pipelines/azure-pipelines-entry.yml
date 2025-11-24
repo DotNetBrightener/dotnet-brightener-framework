@@ -1,13 +1,18 @@
 trigger:
   branches:
     include:
+      - '*'
+
+pr:
+  branches:
+    include:
       - master
   paths:
     include:
       - /src/*
+      - /Pipelines/*
     exclude:
       - version.json
-      - Pipelines/*
       - benchmarks/*
       - demos & tests/*
       - '**/README.md'
