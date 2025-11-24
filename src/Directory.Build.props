@@ -11,18 +11,18 @@
 		<LangVersion>14</LangVersion>
 		<IncludeSymbols>true</IncludeSymbols>
 		<ImplicitUsings>enable</ImplicitUsings>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 
 		<RepositoryUrl>https://github.com/dotnetbrightener/dotnet-brightener-framework</RepositoryUrl>
 
 		<NoWarn>$(NoWarn);0168;1701;1702;1591;1574;1723;1998;1573;RCS1194;CS8618;IDE0063;</NoWarn>
-		
+
 		<PackageReadmeFile Condition="Exists('docs\readme.md') OR Exists('readme.md')">readme.md</PackageReadmeFile>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="!$(MSBuildProjectName.EndsWith('.Tests'))">
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<PackageId Condition="!$(MSBuildProjectName.StartsWith('DotNetBrightener.')) AND !$(MSBuildProjectName.StartsWith('VampireCoder.'))">DotNetBrightener.$(MSBuildProjectName)</PackageId>
 		<PackageTags>DotNetBrightener; VampireCoder;</PackageTags>
 	</PropertyGroup>
@@ -37,7 +37,15 @@
 		<InternalsVisibleTo Include="$(AssemblyName).Tests" />
 	</ItemGroup>
 
-	<ItemGroup>
+	<ItemGroup Condition="'$(IsPackable)' == 'true' AND Exists('$(OutputPath)\$(AssemblyName).xml')">
+		<Content Include="$(OutputPath)\$(AssemblyName).xml"
+				 Pack="true"
+				 PackagePath="contentFiles\any\any"
+				 PackageCopyToOutput="true"
+				 CopyToOutputDirectory="PreserveNewest" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(IsPackable)' == 'true'">
 		<None Condition="Exists('$(SolutionDir)\..\vampire-coder-logo.jpg')"
 		      Include="$(SolutionDir)\..\vampire-coder-logo.jpg"
 		      Pack="true"

@@ -10,7 +10,6 @@
 	<PropertyGroup>
 		<PackageReleaseNotes>Basic infrastructure provided for authorizing User with given permission</PackageReleaseNotes>
 		<Description>A library that provides the abilities to authorize the users with given permissions</Description>
-		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 	</PropertyGroup>
 
 	<ItemGroup>
