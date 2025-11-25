@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DotNetBrightener.Core.Logging.PostgreSqlDbStorage.Migrations
 {
     [DbContext(typeof(LoggingDbContext))]
-    [Migration("20251125040116_Add_Id_Column_To_EventLog_Table")]
-    partial class Add_Id_Column_To_EventLog_Table
+    [Migration("20251125053750_Reinitialize_Logging_Database_Schema")]
+    partial class Reinitialize_Logging_Database_Schema
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,8 +27,11 @@ namespace DotNetBrightener.Core.Logging.PostgreSqlDbStorage.Migrations
 
             modelBuilder.Entity("DotNetBrightener.Core.Logging.EventLog", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<string>("FormattedMessage")
                         .HasColumnType("text");

@@ -6,7 +6,7 @@ namespace DotNetBrightener.Core.Logging;
 public class EventLog : EventLogModel
 {
     [Key]
-    public Guid Id { get; set; } = Guid.CreateVersion7();
+    public long Id { get; set; }
 
     public EventLog()
     {

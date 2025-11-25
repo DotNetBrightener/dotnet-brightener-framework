@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DotNetBrightener.Core.Logging.DbStorage.Migrations
 {
     /// <inheritdoc />
-    public partial class InitLogTable : Migration
+    public partial class Reinitialize_Logging_Database_Schema : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -42,30 +42,31 @@ BEGIN
 END
 ");
 
-            migrationBuilder.Sql($@"
-CREATE TABLE [Log].[EventLog](
-	        [Id] [BIGINT] IDENTITY(1,1) NOT NULL,
-	        [LoggerName] [NVARCHAR](1024) NULL,
-	        [Level] [NVARCHAR](32) NULL,
-	        [FormattedMessage] [NVARCHAR](MAX) NULL,
-	        [Message] [NVARCHAR](MAX) NULL,
-	        [TimeStamp] [DATETIME2](7) NOT NULL,
-	        [RequestUrl] [NVARCHAR](MAX) NULL,
-	        [RemoteIpAddress] [NVARCHAR](64) NULL,
-	        [RequestId] [NVARCHAR](512) NULL,
-	        [UserAgent] [NVARCHAR](MAX) NULL,
-	        [TenantIds] [NVARCHAR](MAX) NULL,
-	        [FullMessage] [NVARCHAR](MAX) NULL,
-	        [StackTrace] [NVARCHAR](MAX) NULL,
-	        [PropertiesDictionary] [NVARCHAR](MAX) NULL,
- CONSTRAINT [PK_EventLog] PRIMARY KEY CLUSTERED 
-(
-	[Id] ASC
-)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-GO
-
-");
+            migrationBuilder.CreateTable(
+                name: "EventLog",
+                schema: "Log",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    LoggerName = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    Level = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    FormattedMessage = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Message = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TimeStamp = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    RequestUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    RemoteIpAddress = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    RequestId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    UserAgent = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TenantIds = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    FullMessage = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    StackTrace = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PropertiesDictionary = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EventLog", x => x.Id);
+                });
 
             migrationBuilder.CreateIndex(
                 name: "IX_EventLog_Level",

@@ -12,21 +12,27 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DotNetBrightener.Core.Logging.DbStorage.Migrations
 {
     [DbContext(typeof(LoggingDbContext))]
-    [Migration("20240506134907_Remove_Key_From_Log_Table")]
-    partial class Remove_Key_From_Log_Table
+    [Migration("20251125053817_Reinitialize_Logging_Database_Schema")]
+    partial class Reinitialize_Logging_Database_Schema
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.4")
+                .HasAnnotation("ProductVersion", "10.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
             modelBuilder.Entity("DotNetBrightener.Core.Logging.EventLog", b =>
                 {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
                     b.Property<string>("FormattedMessage")
                         .HasColumnType("nvarchar(max)");
 
@@ -65,6 +71,8 @@ namespace DotNetBrightener.Core.Logging.DbStorage.Migrations
 
                     b.Property<string>("UserAgent")
                         .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
 
                     b.HasIndex("Level");
 

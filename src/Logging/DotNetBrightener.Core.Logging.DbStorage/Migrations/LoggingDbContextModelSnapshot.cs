@@ -24,8 +24,11 @@ namespace DotNetBrightener.Core.Logging.DbStorage.Migrations
 
             modelBuilder.Entity("DotNetBrightener.Core.Logging.EventLog", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<string>("FormattedMessage")
                         .HasColumnType("nvarchar(max)");

@@ -24,8 +24,11 @@ namespace DotNetBrightener.Core.Logging.PostgreSqlDbStorage.Migrations
 
             modelBuilder.Entity("DotNetBrightener.Core.Logging.EventLog", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<string>("FormattedMessage")
                         .HasColumnType("text");

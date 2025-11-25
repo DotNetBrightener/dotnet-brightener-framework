@@ -23,9 +23,6 @@ public class LoggingDbContext(DbContextOptions<LoggingDbContext> options) : DbCo
 
         eventLogEntity.HasKey(x => x.Id);
 
-        eventLogEntity.Property(e => e.Id)
-                      .ValueGeneratedNever();
-
         // single indexes
         eventLogEntity.HasIndex(el => el.Level);
         eventLogEntity.HasIndex(el => el.TimeStamp);
