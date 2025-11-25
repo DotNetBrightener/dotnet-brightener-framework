@@ -21,8 +21,11 @@ public class LoggingDbContext(DbContextOptions<LoggingDbContext> options) : DbCo
 
         eventLogEntity.ToTable(nameof(EventLog), SchemaName);
 
-        eventLogEntity.HasNoKey();
-        
+        eventLogEntity.HasKey(x => x.Id);
+
+        eventLogEntity.Property(e => e.Id)
+                      .ValueGeneratedNever();
+
         // single indexes
         eventLogEntity.HasIndex(el => el.Level);
         eventLogEntity.HasIndex(el => el.TimeStamp);

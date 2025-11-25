@@ -4,6 +4,7 @@ using DotNetBrightener.Core.Logging.DbStorage.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DotNetBrightener.Core.Logging.DbStorage.Migrations
 {
     [DbContext(typeof(LoggingDbContext))]
-    partial class LoggingDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251125040107_Add_Id_Column_To_EventLog_Table")]
+    partial class Add_Id_Column_To_EventLog_Table
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

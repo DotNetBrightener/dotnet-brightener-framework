@@ -114,9 +114,9 @@ internal class QueueEventLogBackgroundProcessing(
                      .ExecuteDeleteAsync();
     }
 
-    private async Task CleanUpLogsByLevel(LoggingDbContext context,
-                                          TimeSpan         retentions,
-                                          params string[]  logLevelsToDelete)
+    private async Task CleanUpLogsByLevel(LoggingDbContext    context,
+                                          TimeSpan            retentions,
+                                          params List<string> logLevelsToDelete)
     {
         var retentionStartDate = DateTime.UtcNow.Subtract(retentions);
 
