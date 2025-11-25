@@ -1,5 +1,6 @@
 using NLog;
 
+// ReSharper disable CheckNamespace
 namespace Microsoft.Extensions.DependencyInjection;
 
 internal static class MsLogLevelConverter
@@ -8,13 +9,13 @@ internal static class MsLogLevelConverter
     {
         return logLevel switch
         {
-            Microsoft.Extensions.Logging.LogLevel.Trace       => LogLevel.Trace,
-            Microsoft.Extensions.Logging.LogLevel.Debug       => LogLevel.Debug,
-            Microsoft.Extensions.Logging.LogLevel.Information => LogLevel.Info,
-            Microsoft.Extensions.Logging.LogLevel.Warning     => LogLevel.Warn,
-            Microsoft.Extensions.Logging.LogLevel.Error       => LogLevel.Error,
-            Microsoft.Extensions.Logging.LogLevel.Critical    => LogLevel.Fatal,
-            _                                                 => LogLevel.Info
+            Logging.LogLevel.Trace       => LogLevel.Trace,
+            Logging.LogLevel.Debug       => LogLevel.Debug,
+            Logging.LogLevel.Information => LogLevel.Info,
+            Logging.LogLevel.Warning     => LogLevel.Warn,
+            Logging.LogLevel.Error       => LogLevel.Error,
+            Logging.LogLevel.Critical    => LogLevel.Fatal,
+            _                            => LogLevel.Info
         };
     }
 }

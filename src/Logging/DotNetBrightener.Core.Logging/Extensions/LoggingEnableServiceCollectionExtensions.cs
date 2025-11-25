@@ -13,32 +13,34 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class LoggingEnableServiceCollectionExtensions
 {
-    /// <summary>
-    ///     Configure logging services to the service collection
-    /// </summary>
     /// <param name="serviceCollection"></param>
-    /// <param name="configuration"></param>
-    /// <returns></returns>
-    public static IServiceCollection ConfigureLogging(this IServiceCollection serviceCollection,
-                                                      IConfiguration          configuration)
+    extension(IServiceCollection serviceCollection)
     {
-        serviceCollection.AddLogging();
-        
-        serviceCollection.AddScoped<IQueueEventLogBackgroundProcessing, NullEventLogBackgroundProcessing>();
-
-        serviceCollection.Configure<LoggingRetentions>(configuration.GetSection(nameof(LoggingRetentions)));
-
-        serviceCollection.AddSingleton<IEventLogWatcher>((provider) =>
+        /// <summary>
+        ///     Configure logging services to the service collection
+        /// </summary>
+        /// <param name="configuration"></param>
+        /// <returns></returns>
+        public IServiceCollection ConfigureLogging(IConfiguration configuration)
         {
-            var eventLogWatcher = EventLoggingWatcher.Instance;
-            eventLogWatcher.SetServiceScopeFactory(provider.GetService<IServiceScopeFactory>()!);
+            serviceCollection.AddLogging();
 
-            return eventLogWatcher;
-        });
+            serviceCollection.AddScoped<IQueueEventLogBackgroundProcessing, NullEventLogBackgroundProcessing>();
 
-        serviceCollection.AddHostedService<EventLogQueueBackgroundProcessService>();
+            serviceCollection.Configure<LoggingRetentions>(configuration.GetSection(nameof(LoggingRetentions)));
 
-        return serviceCollection;
+            serviceCollection.AddSingleton<IEventLogWatcher>((provider) =>
+            {
+                var eventLogWatcher = EventLoggingWatcher.Instance;
+                eventLogWatcher.SetServiceScopeFactory(provider.GetService<IServiceScopeFactory>()!);
+
+                return eventLogWatcher;
+            });
+
+            serviceCollection.AddHostedService<EventLogQueueBackgroundProcessService>();
+
+            return serviceCollection;
+        }
     }
 
     public static IHostBuilder UseNLogLogging(this IHostBuilder hostBuilder)
@@ -81,14 +83,15 @@ public static class LoggingEnableServiceCollectionExtensions
         var logSettings = configuration
                          .GetSection("Logging:LogLevel")
                          .Get<Dictionary<string, Microsoft.Extensions.Logging.LogLevel>>();
-        
+
         LogLevel defaultLevel = null;
-        
+
         foreach (var setting in logSettings)
         {
             if (setting.Key == "Default")
             {
                 defaultLevel = setting.Value.ToNLogLevel();
+
                 continue;
             }
 
