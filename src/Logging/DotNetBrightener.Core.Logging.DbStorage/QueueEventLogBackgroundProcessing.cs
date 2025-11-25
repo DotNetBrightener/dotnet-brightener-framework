@@ -1,6 +1,5 @@
 ﻿using DotNetBrightener.Core.Logging.DbStorage.Data;
 using DotNetBrightener.Core.Logging.Options;
-using LinqToDB.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -164,25 +163,12 @@ internal class QueueEventLogBackgroundProcessing(
 
         try
         {
-            await loggingDbContext!.BulkCopyAsync(dataToLog);
+            await loggingDbContext.Set<EventLog>()
+                                  .AddRangeAsync(dataToLog);
         }
         catch (Exception ex)
         {
-            try
-            {
-                _logger.LogWarning(ex,
-                                   "BulkInsert failed to insert {numberOfRecords} records entities of type {Type}. " +
-                                   "Retrying with slow insert...",
-                                   dataToLog.Count,
-                                   nameof(EventLog));
-
-                await loggingDbContext.Set<EventLog>()
-                                      .AddRangeAsync(dataToLog);
-            }
-            catch
-            {
-                // just ignore
-            }
+            _logger.LogWarning(ex, "Error while saving logs");
         }
     }
 

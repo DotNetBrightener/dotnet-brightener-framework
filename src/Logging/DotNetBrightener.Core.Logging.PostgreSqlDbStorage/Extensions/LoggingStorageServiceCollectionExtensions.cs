@@ -1,7 +1,6 @@
 ﻿using DotNetBrightener.Core.Logging;
 using DotNetBrightener.Core.Logging.PostgreSqlDbStorage;
 using DotNetBrightener.Core.Logging.PostgreSqlDbStorage.Data;
-using LinqToDB.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -26,9 +25,7 @@ public static class LoggingStorageServiceCollectionExtensions
 
             optionBuilder.UseLazyLoadingProxies();
         });
-
-        LinqToDBForEFTools.Initialize();
-
+        
         return serviceCollection;
     }
 }

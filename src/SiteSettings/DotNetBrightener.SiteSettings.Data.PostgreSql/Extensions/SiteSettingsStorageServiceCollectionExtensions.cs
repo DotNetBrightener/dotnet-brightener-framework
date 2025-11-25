@@ -1,8 +1,6 @@
 ﻿using DotNetBrightener.SiteSettings;
-using DotNetBrightener.SiteSettings.Data.PostgreSql;
 using DotNetBrightener.SiteSettings.Data.PostgreSql.Data;
 using DotNetBrightener.SiteSettings.Data.PostgreSql.Extensions;
-using LinqToDB.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -32,9 +30,7 @@ public static class SiteSettingsStorageServiceCollectionExtensions
                                      .Scoped<ISiteSettingDataService, PostgreSqlStorageSiteSettingDataService>());
 
         serviceCollection.AddAutoMigrationForDbContextAfterAppStarted<PostgreSqlStorageSiteSettingDbContext>();
-
-        LinqToDBForEFTools.Initialize();
-
+        
         return serviceCollection;
     }
 }

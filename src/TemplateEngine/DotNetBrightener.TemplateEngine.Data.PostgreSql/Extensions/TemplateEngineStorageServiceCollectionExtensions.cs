@@ -2,7 +2,6 @@
 using DotNetBrightener.TemplateEngine.Data.PostgreSql.Data;
 using DotNetBrightener.TemplateEngine.Data.PostgreSql.Services;
 using DotNetBrightener.TemplateEngine.Data.Services;
-using LinqToDB.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -33,9 +32,7 @@ public static class TemplateEngineStorageServiceCollectionExtensions
 
         serviceCollection.AddScoped<TemplateEngineRepository>();
         serviceCollection.AddScoped<ITemplateRecordDataService, InternalTemplateRecordDataService>();
-
-        LinqToDBForEFTools.Initialize();
-
+        
         return serviceCollection;
     }
 }
