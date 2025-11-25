@@ -1,12 +1,11 @@
-﻿using System.Diagnostics;
-using System.Linq.Expressions;
-using DotNetBrightener.Core.Logging.Options;
+﻿using DotNetBrightener.Core.Logging.Options;
 using DotNetBrightener.Core.Logging.PostgreSqlDbStorage.Data;
-using LinqToDB.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Diagnostics;
+using System.Linq.Expressions;
 
 namespace DotNetBrightener.Core.Logging.PostgreSqlDbStorage;
 
@@ -164,25 +163,12 @@ internal class NpgsqlQueueEventLogBackgroundProcessing(
 
         try
         {
-            await loggingDbContext!.BulkCopyAsync(dataToLog);
+            await loggingDbContext.Set<EventLog>()
+                                  .AddRangeAsync(dataToLog);
         }
         catch (Exception ex)
         {
-            try
-            {
-                _logger.LogWarning(ex,
-                                   "BulkInsert failed to insert {numberOfRecords} records entities of type {Type}. " +
-                                   "Retrying with slow insert...",
-                                   dataToLog.Count,
-                                   nameof(EventLog));
-
-                await loggingDbContext.Set<EventLog>()
-                                      .AddRangeAsync(dataToLog);
-            }
-            catch
-            {
-                // just ignore
-            }
+            _logger.LogWarning(ex, "Error while saving logs");
         }
     }
 

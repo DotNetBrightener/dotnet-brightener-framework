@@ -1,5 +1,4 @@
 ﻿using DotNetBrightener.DataAccess.DataMigration.Extensions;
-using LinqToDB.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -117,7 +116,8 @@ internal class DataMigrationRunner(
 
                 await using (var dbContext = serviceProvider.GetRequiredService<DataMigrationDbContext>())
                 {
-                    await dbContext.BulkCopyAsync(appliedMigrations);
+                    await dbContext.AddRangeAsync(appliedMigrations);
+                    await dbContext.SaveChangesAsync();
                 }
             }
 

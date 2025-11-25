@@ -1,6 +1,9 @@
-﻿public class PredicateBuilderTests
+﻿using Shouldly;
+using Xunit;
+
+public class PredicateBuilderTests
 {
-    [Test]
+    [Fact]
     public void TestRepositoryUpdate_ShouldBeAbleToUpdateWithoutRetrievingData()
     {
         // Example usage:
@@ -99,7 +102,7 @@ public class FilterParserTests
         }
     }
 
-    [Test]
+    [Fact]
     public void TestRepositoryUpdate_ShouldBeAbleToUpdateWithoutRetrievingData()
     {
 
@@ -118,13 +121,12 @@ public class FilterParserTests
 
         Console.WriteLine($"Actual Operator: {actualOperator}");
         Console.WriteLine("Actual Filter Values:");
-
-        Assert.That(actualOperator, Is.EqualTo(expectedOperator));
+        actualOperator.ShouldBe(expectedOperator);
 
         foreach (var value in filterValues)
         {
             Console.WriteLine(value);
-            Assert.That(expectedFilterValues.Contains(value), Is.True);
+            expectedFilterValues.ShouldContain(value);
         }
     }
 }

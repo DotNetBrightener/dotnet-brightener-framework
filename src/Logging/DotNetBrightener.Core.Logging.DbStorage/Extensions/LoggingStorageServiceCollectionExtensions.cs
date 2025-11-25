@@ -1,7 +1,6 @@
 ﻿using DotNetBrightener.Core.Logging;
 using DotNetBrightener.Core.Logging.DbStorage;
 using DotNetBrightener.Core.Logging.DbStorage.Data;
-using LinqToDB.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -25,8 +24,6 @@ public static class LoggingStorageServiceCollectionExtensions
 
             optionBuilder.UseLazyLoadingProxies();
         });
-
-        LinqToDBForEFTools.Initialize();
 
         return serviceCollection;
     }

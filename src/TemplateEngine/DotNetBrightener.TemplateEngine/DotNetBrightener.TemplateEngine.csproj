@@ -2,8 +2,6 @@
 	<ItemGroup>
 		<PackageReference Include="Handlebars.Net" />
 		<PackageReference Include="Handlebars.Net.Helpers" />
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
 	</ItemGroup>
 	<ItemGroup>
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />

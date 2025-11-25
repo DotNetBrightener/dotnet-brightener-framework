@@ -7,55 +7,57 @@ namespace DotNetBrightener.Core.Logging.Internals;
 
 internal static class DataTransferObjectUtils
 {
-    /// <summary>
-    ///     Updates the given <see cref="entityObject"/> by the values provided in the <seealso cref="dataTransferObject"/>
-    /// </summary>
-    /// <typeparam name="T">
-    ///     The type of the <see cref="entityObject"/>
-    /// </typeparam>
     /// <param name="entityObject">
     ///     The object to be updated
     /// </param>
-    /// <param name="dataTransferObject">
-    ///     The object contains the data to apply updates to <see cref="entityObject"/>
-    /// </param>
-    /// <param name="ignoreProperties">
-    ///     The properties that should not be updated by this method
-    /// </param>
-    /// <returns>
-    ///     The <see cref="entityObject"/> itself
-    /// </returns>
-    public static T UpdateFromDto<T>(this T               entityObject,
-                                     object               dataTransferObject,
-                                     params string[]      ignoreProperties) where T : class
+    /// <typeparam name="T">
+    ///     The type of the <see cref="entityObject"/>
+    /// </typeparam>
+    extension<T>(T entityObject) where T : class
     {
-        Type entityType = typeof(T);
-
-        var jobject           = JObject.FromObject(dataTransferObject);
-        var propertiesFromDto = jobject.Properties();
-
-        foreach (var propertyInfo in propertiesFromDto)
+        /// <summary>
+        ///     Updates the given <see cref="entityObject"/> by the values provided in the <seealso cref="dataTransferObject"/>
+        /// </summary>
+        /// <param name="dataTransferObject">
+        ///     The object contains the data to apply updates to <see cref="entityObject"/>
+        /// </param>
+        /// <param name="ignoreProperties">
+        ///     The properties that should not be updated by this method
+        /// </param>
+        /// <returns>
+        ///     The <see cref="entityObject"/> itself
+        /// </returns>
+        public T UpdateFromDto(object          dataTransferObject,
+                               params string[] ignoreProperties)
         {
-            if (ignoreProperties.Contains(propertyInfo.Name))
-                continue;
+            Type entityType = typeof(T);
 
-            var csConventionName = propertyInfo.Name[0].ToString().ToUpper() + propertyInfo.Name.Substring(1);
+            var jobject           = JObject.FromObject(dataTransferObject);
+            var propertiesFromDto = jobject.Properties();
 
-            if (ignoreProperties.Contains(csConventionName))
-                continue;
+            foreach (var propertyInfo in propertiesFromDto)
+            {
+                if (ignoreProperties.Contains(propertyInfo.Name))
+                    continue;
 
-            if (!TryPickPropAndValue(entityType, propertyInfo, out var destinationProp, out var value))
-                continue;
+                var csConventionName = propertyInfo.Name[0].ToString().ToUpper() + propertyInfo.Name.Substring(1);
 
-            var oldValue = destinationProp.GetValue(entityObject);
+                if (ignoreProperties.Contains(csConventionName))
+                    continue;
 
-            if (oldValue?.Equals(value) == true)
-                continue;
-            
-            destinationProp.SetValue(entityObject, value);
+                if (!TryPickPropAndValue(entityType, propertyInfo, out var destinationProp, out var value))
+                    continue;
+
+                var oldValue = destinationProp.GetValue(entityObject);
+
+                if (oldValue?.Equals(value) == true)
+                    continue;
+
+                destinationProp.SetValue(entityObject, value);
+            }
+
+            return entityObject;
         }
-
-        return entityObject;
     }
 
     private static bool TryPickPropAndValue(Type             entityType,

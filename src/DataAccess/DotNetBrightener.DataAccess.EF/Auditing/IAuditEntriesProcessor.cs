@@ -1,4 +1,5 @@
-﻿using DotNetBrightener.Plugins.EventPubSub;
+﻿#nullable enable
+using DotNetBrightener.Plugins.EventPubSub;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;

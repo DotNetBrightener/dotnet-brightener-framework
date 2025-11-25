@@ -1,6 +1,5 @@
 ﻿using DotNetBrightener.DataAccess.EF.Auditing;
 using EntityFramework.Exceptions.SqlServer;
-using LinqToDB.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
@@ -16,7 +15,6 @@ internal class MssqlStorageAuditingDbContext(DbContextOptions<MssqlStorageAuditi
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.UseExceptionProcessor();
-        LinqToDBForEFTools.Initialize();
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

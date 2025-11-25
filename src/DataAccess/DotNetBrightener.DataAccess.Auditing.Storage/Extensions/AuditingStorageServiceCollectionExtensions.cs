@@ -1,7 +1,6 @@
 ﻿using DotNetBrightener.DataAccess.Auditing.Storage.DbContexts;
 using DotNetBrightener.DataAccess.Auditing.Storage.EventHandlers;
 using DotNetBrightener.Plugins.EventPubSub;
-using LinqToDB.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 // ReSharper disable CheckNamespace
@@ -26,8 +25,6 @@ public static class AuditingStorageServiceCollectionExtensions
         });
 
         serviceCollection.AddScoped<IEventHandler, SaveAuditTrailService>();
-
-        LinqToDBForEFTools.Initialize();
 
         return serviceCollection;
     }

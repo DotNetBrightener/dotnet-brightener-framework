@@ -1,12 +1,13 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
 namespace DotNetBrightener.Core.Logging.PostgreSqlDbStorage.Migrations
 {
     /// <inheritdoc />
-    public partial class Initialize_DbSchema : Migration
+    public partial class Reinitialize_Logging_Database_Schema : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -14,11 +15,17 @@ namespace DotNetBrightener.Core.Logging.PostgreSqlDbStorage.Migrations
             migrationBuilder.EnsureSchema(
                 name: "Log");
 
+            migrationBuilder.Sql(@"
+                DROP TABLE IF EXISTS ""Log"".""EventLog"" CASCADE;
+            ");
+
             migrationBuilder.CreateTable(
                 name: "EventLog",
                 schema: "Log",
                 columns: table => new
                 {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     LoggerName = table.Column<string>(type: "text", nullable: true),
                     Level = table.Column<string>(type: "text", nullable: true),
                     FormattedMessage = table.Column<string>(type: "text", nullable: true),
@@ -35,6 +42,7 @@ namespace DotNetBrightener.Core.Logging.PostgreSqlDbStorage.Migrations
                 },
                 constraints: table =>
                 {
+                    table.PrimaryKey("PK_EventLog", x => x.Id);
                 });
 
             migrationBuilder.CreateIndex(

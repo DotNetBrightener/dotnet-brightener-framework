@@ -1,6 +1,5 @@
 ﻿using DotNetBrightener.DataAccess.DataMigration;
 using DotNetBrightener.DataAccess.DataMigration.Extensions;
-using LinqToDB.EntityFrameworkCore;
 using System.Reflection;
 
 // ReSharper disable CheckNamespace
@@ -26,8 +25,6 @@ public static class DataMigrationsServiceCollectionExtensions
         };
 
         serviceCollection.AddHostedService<DataMigrationRunner>();
-
-        LinqToDBForEFTools.Initialize();
 
         var metadata = new DataMigrationMetadata();
 

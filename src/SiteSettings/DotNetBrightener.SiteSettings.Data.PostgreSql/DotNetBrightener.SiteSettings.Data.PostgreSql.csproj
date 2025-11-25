@@ -1,9 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<IsPackable>true</IsPackable>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<InternalsVisibleTo Include="DotNetBrightener.SiteSettings.WebApp.Tests" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="linq2db.EntityFrameworkCore" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />

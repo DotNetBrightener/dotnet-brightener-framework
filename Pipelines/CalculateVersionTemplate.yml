@@ -54,7 +54,26 @@ steps:
           $major = $parts[0]
           $minor = $parts[1]
           $patch = [int]$parts[2] + 1
-          $version = "$major.$minor.$patch-preview-$(Build.BuildId)"
+
+          $baseVersion = "$major.$minor.$patch-preview"
+          $branchName = "$(Build.SourceBranchName)"
+
+          if (-not [string]::IsNullOrWhiteSpace($branchName) -and
+              $branchName -ne "master" -and
+              $branchName -ne "release") {
+
+              # Sanitize branch name for use in version (only allow 0-9, A-Z, a-z and '-')
+              $safeBranchName = $branchName -replace '[^0-9A-Za-z\-]', '-'
+              $safeBranchName = $safeBranchName.Trim('-')
+
+              if (-not [string]::IsNullOrWhiteSpace($safeBranchName)) {
+                  $version = "$baseVersion-$safeBranchName-$(Build.BuildId)"
+              } else {
+                  $version = "$baseVersion-$(Build.BuildId)"
+              }
+          } else {
+              $version = "$baseVersion-$(Build.BuildId)"
+          }
       }
 
       Write-Host "Setting version to: $($version)"

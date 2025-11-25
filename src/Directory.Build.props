@@ -2,27 +2,26 @@
 	<Import Project="Directory.Build.props.user" Condition="Exists('Directory.Build.props.user')" />
 
 	<PropertyGroup>
-		<TargetFramework>net9.0</TargetFramework>
+		<TargetFramework>net10.0</TargetFramework>
 		<Authors>Vampire Coder &lt;admin@vampirecoder.com&gt; (formerly DotNet Brightener)</Authors>
 		<Company>Vampire Coder (formerly DotNet Brightener)</Company>
 
 		<Copyright>© 2017 - $([System.DateTime]::Now.ToString(yyyy)) $(Company)</Copyright>
 
-		<LangVersion>13</LangVersion>
+		<LangVersion>14</LangVersion>
 		<IncludeSymbols>true</IncludeSymbols>
 		<ImplicitUsings>enable</ImplicitUsings>
-
+		
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<RepositoryUrl>https://github.com/dotnetbrightener/dotnet-brightener-framework</RepositoryUrl>
+		<PackageId Condition="!$(MSBuildProjectName.StartsWith('DotNetBrightener.')) AND !$(MSBuildProjectName.StartsWith('VampireCoder.'))">DotNetBrightener.$(MSBuildProjectName)</PackageId>
+		<PackageTags>DotNetBrightener; VampireCoder;</PackageTags>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 
-		<PackageId Condition="!$(MSBuildProjectName.StartsWith('DotNetBrightener.')) AND !$(MSBuildProjectName.StartsWith('VampireCoder.'))">DotNetBrightener.$(MSBuildProjectName)</PackageId>
-
-		<PackageTags>DotNetBrightener; VampireCoder;</PackageTags>
+		<RepositoryUrl>https://github.com/dotnetbrightener/dotnet-brightener-framework</RepositoryUrl>
 
 		<NoWarn>$(NoWarn);0168;1701;1702;1591;1574;1723;1998;1573;RCS1194;CS8618;IDE0063;</NoWarn>
-		
+
 		<PackageReadmeFile Condition="Exists('docs\readme.md') OR Exists('readme.md')">readme.md</PackageReadmeFile>
 	</PropertyGroup>
 
@@ -35,7 +34,16 @@
 		<InternalsVisibleTo Include="$(AssemblyName).Tests" />
 	</ItemGroup>
 
-	<ItemGroup>
+	<ItemGroup Condition="'$(IsPackable)' == 'true' and '$(DocumentationFile)' != ''">
+		<None Include="$(DocumentationFile)"
+			  Condition="Exists('$(DocumentationFile)')"
+			  Pack="true"
+			  PackagePath="contentFiles\any\any"
+			  PackageCopyToOutput="true"
+			  CopyToOutputDirectory="PreserveNewest" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(IsPackable)' == 'true'">
 		<None Condition="Exists('$(SolutionDir)\..\vampire-coder-logo.jpg')"
 		      Include="$(SolutionDir)\..\vampire-coder-logo.jpg"
 		      Pack="true"

@@ -1,15 +1,28 @@
-using System.Collections.Immutable;
-using System.Linq.Expressions;
 using DotNetBrightener.DataAccess.Models;
 using DotNetBrightener.DataAccess.Models.Auditing;
 using Microsoft.EntityFrameworkCore.Query;
+using System.Collections.Immutable;
+using System.Linq.Expressions;
 
 namespace DotNetBrightener.DataAccess.EF.Extensions;
 
 public class SetPropertyBuilder<TSource>
 {
-    public Expression<Func<SetPropertyCalls<TSource>, SetPropertyCalls<TSource>>>
-        SetPropertyCalls { get; private set; } = b => b;
+    private readonly List<Action<UpdateSettersBuilder<TSource>>> _setPropertyActions = [];
+
+    public Action<UpdateSettersBuilder<TSource>> SetPropertyCalls
+    {
+        get
+        {
+            return builder =>
+            {
+                foreach (var action in _setPropertyActions)
+                {
+                    action(builder);
+                }
+            };
+        }
+    }
 
     /// <summary>
     ///     Executes setting given value to the property from the given expression
@@ -60,63 +73,63 @@ public class SetPropertyBuilder<TSource>
 
     private SetPropertyBuilder<TSource> SetProperty<TProperty>(Expression<Func<TSource, TProperty>> propertyExpression,
                                                                Expression<Func<TSource, TProperty>> valueExpression)
-    { 
-        var memberExpression = propertyExpression.Body as MemberExpression;
-        if (propertyExpression.Body is UnaryExpression unaryExpression)
+    {
+        // Add an action that calls SetProperty on the UpdateSettersBuilder
+        _setPropertyActions.Add(builder =>
         {
-            memberExpression = unaryExpression.Operand as MemberExpression;
-        }
+            var memberExpression = propertyExpression.Body as MemberExpression;
 
-        if (memberExpression != null)
-        {
-            object newValue          = ExtractActualValue(valueExpression.Body);
-            string changeDescription = GetChangeDescription(valueExpression.Body);
-
-            if (!string.IsNullOrEmpty(changeDescription) &&
-                !changeDescription.Equals("value"))
+            if (propertyExpression.Body is UnaryExpression unaryExpression)
             {
-                newValue = changeDescription;
+                memberExpression = unaryExpression.Operand as MemberExpression;
             }
 
-            if (memberExpression.Member.Name == nameof(IAuditableEntity.IsDeleted))
+            if (memberExpression != null)
             {
-                if (newValue is bool isDeletedValue || 
-                    bool.TryParse(newValue.ToString(), out isDeletedValue))
+                object newValue          = ExtractActualValue(valueExpression.Body);
+                string changeDescription = GetChangeDescription(valueExpression.Body);
+
+                if (!string.IsNullOrEmpty(changeDescription) &&
+                    !changeDescription.Equals("value"))
                 {
-                    _isDeleteOperation  = isDeletedValue;
-                    _isRestoreOperation = !isDeletedValue;
+                    newValue = changeDescription;
                 }
+
+                if (memberExpression.Member.Name == nameof(IAuditableEntity.IsDeleted))
+                {
+                    if (newValue is bool isDeletedValue ||
+                        bool.TryParse(newValue.ToString(), out isDeletedValue))
+                    {
+                        _isDeleteOperation  = isDeletedValue;
+                        _isRestoreOperation = !isDeletedValue;
+                    }
+                }
+                else
+                {
+                    _auditProperties.Add(new AuditProperty
+                    {
+                        PropertyName = memberExpression.Member.Name,
+                        OldValue     = "Not Tracked",
+                        NewValue     = newValue
+                    });
+                }
+            }
+
+            if (ExtractActualValue(valueExpression.Body) is TProperty extractActualValue)
+            {
+                builder.SetProperty(propertyExpression, extractActualValue);
+            }
+            else if (ExtractActualValue(valueExpression.Body) is null)
+            {
+                builder.SetProperty(propertyExpression, default(TProperty));
             }
             else
             {
-                _auditProperties.Add(new AuditProperty
-                {
-                    PropertyName = memberExpression.Member.Name,
-                    OldValue     = "Not Tracked",
-                    NewValue     = newValue
-                });
             }
-        }
-
-        SetPropertyCalls = SetPropertyCalls.Update(
-                                                   body: Expression.Call(
-                                                                         instance: SetPropertyCalls.Body,
-                                                                         methodName: nameof(SetPropertyCalls<TSource>
-                                                                                               .SetProperty),
-                                                                         typeArguments:
-                                                                         [
-                                                                             typeof(TProperty)
-                                                                         ],
-                                                                         arguments:
-                                                                         [
-                                                                             propertyExpression, valueExpression
-                                                                         ]
-                                                                        ),
-                                                   parameters: SetPropertyCalls.Parameters
-                                                  );
+        });
 
         return this;
-    }
+    } 
 
     private static Expression<Func<TSource, TProperty>> GetPropertyExpression<TProperty>(string propertyName)
     {

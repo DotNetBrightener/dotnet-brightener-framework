@@ -1,4 +1,5 @@
-﻿using DotNetBrightener.DataAccess;
+﻿#nullable enable
+using DotNetBrightener.DataAccess;
 using DotNetBrightener.DataAccess.EF.Conventions;
 using DotNetBrightener.DataAccess.EF.EnumLookup;
 using DotNetBrightener.DataAccess.EF.Interceptors;
@@ -8,7 +9,6 @@ using DotNetBrightener.DataAccess.EF.Options;
 using DotNetBrightener.DataAccess.EF.Repositories;
 using DotNetBrightener.DataAccess.EF.TransactionManagement;
 using DotNetBrightener.DataAccess.Services;
-using LinqToDB.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -130,9 +130,7 @@ public static class ServiceCollectionExtensions
         {
             serviceCollection.AddSingleton(dbConfiguration);
         }
-
-        LinqToDBForEFTools.Initialize();
-
+        
         var configurator = new EfDataServiceConfigurator
         {
             ServiceCollection = serviceCollection,

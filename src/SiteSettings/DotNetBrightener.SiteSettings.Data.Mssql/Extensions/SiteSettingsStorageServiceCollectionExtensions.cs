@@ -1,8 +1,6 @@
 ﻿using DotNetBrightener.SiteSettings;
-using DotNetBrightener.SiteSettings.Data.Mssql;
 using DotNetBrightener.SiteSettings.Data.Mssql.Data;
 using DotNetBrightener.SiteSettings.Data.Mssql.Extensions;
-using LinqToDB.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -32,9 +30,7 @@ public static class SiteSettingsStorageServiceCollectionExtensions
                                      .Scoped<ISiteSettingDataService, SqlServerStorageSiteSettingDataService>());
         
         serviceCollection.AddAutoMigrationForDbContextAfterAppStarted<MssqlStorageSiteSettingDbContext>();
-
-        LinqToDBForEFTools.Initialize();
-
+        
         return serviceCollection;
     }
 }

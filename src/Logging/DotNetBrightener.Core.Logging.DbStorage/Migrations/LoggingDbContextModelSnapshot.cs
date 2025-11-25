@@ -17,13 +17,19 @@ namespace DotNetBrightener.Core.Logging.DbStorage.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.4")
+                .HasAnnotation("ProductVersion", "10.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
             modelBuilder.Entity("DotNetBrightener.Core.Logging.EventLog", b =>
                 {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
                     b.Property<string>("FormattedMessage")
                         .HasColumnType("nvarchar(max)");
 
@@ -62,6 +68,8 @@ namespace DotNetBrightener.Core.Logging.DbStorage.Migrations
 
                     b.Property<string>("UserAgent")
                         .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
 
                     b.HasIndex("Level");
 

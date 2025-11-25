@@ -11,7 +11,6 @@ using DotNetBrightener.DataAccess.Models.Auditing;
 using DotNetBrightener.DataAccess.Models.Guards;
 using DotNetBrightener.DataAccess.Services;
 using DotNetBrightener.DataAccess.Utils;
-using LinqToDB.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -98,25 +97,9 @@ public class Repository(
                 });
             });
         }
-
-        try
-        {
-            Logger.LogInformation("BulkInserting {records} records of type {entityType}...",
-                                  entitiesToInserts.Count,
-                                  typeof(T).Name);
-
-            await DbContext.BulkCopyAsync(entitiesToInserts);
-        }
-        catch (Exception e)
-        {
-            Logger.LogWarning(e,
-                              "BulkInsert failed to insert {numberOfRecords} records entities of type {Type}. Retrying with slow insert...",
-                              entitiesToInserts.Count,
-                              typeof(T).Name);
-
-            await DbContext.Set<T>()
-                           .AddRangeAsync(entitiesToInserts);
-        }
+        
+        await DbContext.Set<T>()
+                       .AddRangeAsync(entitiesToInserts);
     }
 
     private T TransformExpression<T>(T entity)
@@ -145,9 +128,10 @@ public class Repository(
     {
         var query = Fetch(conditionExpression);
 
-        return await LinqToDB.LinqExtensions.InsertAsync(query,
-                                                         DbContext.Set<TTarget>().ToLinqToDBTable(),
-                                                         copyExpression);
+        throw new NotImplementedException();
+        //return await LinqToDB.LinqExtensions.InsertAsync(query,
+        //                                                 DbContext.Set<TTarget>().ToLinqToDBTable(),
+        //                                                 copyExpression);
     }
 
     public virtual void Update<T>(T entity) where T : class => UpdateAsync(entity).Wait();
