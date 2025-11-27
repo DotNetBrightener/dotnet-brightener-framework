@@ -10,67 +10,64 @@ namespace DotNetBrightener.SiteSettings.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class SiteSettingsController : Controller
+public class SiteSettingsController(
+    ISiteSettingService                      siteSettingService,
+    IStringLocalizer<SiteSettingsController> stringLocalizer)
+    : Controller
 {
-    private readonly ISiteSettingService _siteSettingService;
-    private readonly IStringLocalizer    T;
-
-    public SiteSettingsController(ISiteSettingService                      siteSettingService,
-                                  IStringLocalizer<SiteSettingsController> stringLocalizer)
-    {
-        _siteSettingService = siteSettingService;
-        T                   = stringLocalizer;
-    }
+    private readonly IStringLocalizer T = stringLocalizer;
 
     [HttpGet("allSettings")]
     public virtual IActionResult GetAllSettings()
     {
-        var siteSettings = _siteSettingService.GetAllAvailableSettings();
+        var siteSettings = siteSettingService.GetAllAvailableSettings();
 
         return Ok(siteSettings);
     }
 
     [HttpGet("{settingKey}")]
     [AllowAnonymous]
-    public virtual IActionResult GetSetting(string settingKey)
+    public virtual async Task<IActionResult> GetSetting(string settingKey)
     {
-        if (!TryGetSettingInstance(settingKey, out var siteSettingInstance, out IActionResult returnAction))
+        if (!TryGetSettingInstance(settingKey, out var siteSettingInstance, out var returnAction))
             return returnAction;
 
-        var siteSettingValue = _siteSettingService.GetSetting(siteSettingInstance.GetType());
+        var siteSettingValue = await siteSettingService.GetSettingAsync(siteSettingInstance.GetType());
 
         return Ok(siteSettingValue);
     }
 
     [HttpGet("{settingKey}/default")]
-    public virtual IActionResult GetDefaultSetting(string settingKey)
+    public virtual async Task<IActionResult> GetDefaultSetting(string settingKey)
     {
-        if (!TryGetSettingInstance(settingKey, out var siteSettingInstance, out IActionResult returnAction))
+        if (!TryGetSettingInstance(settingKey, out var siteSettingInstance, out var returnAction))
             return returnAction;
 
-        var siteSettingValue = _siteSettingService.GetSetting(siteSettingInstance.GetType(), true);
+        var siteSettingValue = await siteSettingService.GetSettingAsync(siteSettingInstance.GetType(), true);
 
         return Ok(siteSettingValue);
     }
 
     [HttpPost("{settingKey}")]
     [SettingJsonBodyReader]
-    public virtual IActionResult SaveSetting(string settingKey)
+    public virtual async Task<IActionResult> SaveSetting(string settingKey)
     {
         try
         {
             if (!TryGetSettingInstance(settingKey, 
                                        out var siteSettingInstance, 
-                                       out IActionResult returnAction))
+                                       out var returnAction))
                 return returnAction;
 
-            var body = Request.HttpContext.Items[SettingJsonBodyReader.RequestBodyKey].ToString()!;
+            var body = Request.HttpContext
+                              .Items[SettingJsonBodyReader.RequestBodyKey]
+                              .ToString()!;
 
             var settingType = siteSettingInstance.GetType();
 
             var formModel = JsonConvert.DeserializeObject(body, settingType) as SiteSettingBase;
 
-            _siteSettingService.SaveSetting(formModel, settingType);
+            await siteSettingService.SaveSettingAsync(formModel, settingType);
 
             return Ok();
         }
@@ -84,7 +81,7 @@ public class SiteSettingsController : Controller
                                        out SiteSettingBase siteSettingInstance,
                                        out IActionResult   returnAction)
     {
-        siteSettingInstance = _siteSettingService.GetSettingInstance(settingKey);
+        siteSettingInstance = siteSettingService.GetSettingInstance(settingKey);
 
         if (siteSettingInstance == null)
         {

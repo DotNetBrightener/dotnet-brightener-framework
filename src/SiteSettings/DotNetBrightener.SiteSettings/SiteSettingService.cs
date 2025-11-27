@@ -8,35 +8,24 @@ using Newtonsoft.Json;
 
 namespace DotNetBrightener.SiteSettings;
 
-public class SiteSettingService : ISiteSettingService
+public class SiteSettingService(
+    IEnumerable<SiteSettingBase>         siteSettingInstances,
+    ISiteSettingDataService              dataService,
+    IServiceProvider                     serviceProvider,
+    IStringLocalizer<SiteSettingService> stringLocalizer,
+    ICacheManager                        cacheManager)
+    : ISiteSettingService
 {
-    private readonly ISiteSettingDataService      _dataService;
-    private readonly IEnumerable<SiteSettingBase> _siteSettingInstances;
-    private readonly IStringLocalizer             _stringLocalizer;
-    private readonly ICacheManager                _cacheManager;
-    private readonly IServiceProvider             _serviceProvider;
-
-    public SiteSettingService(IEnumerable<SiteSettingBase>         siteSettingInstances,
-                              ISiteSettingDataService              dataService,
-                              IServiceProvider                     serviceProvider,
-                              IStringLocalizer<SiteSettingService> stringLocalizer,
-                              ICacheManager                        cacheManager)
-    {
-        _siteSettingInstances = siteSettingInstances;
-        _dataService          = dataService;
-        _serviceProvider      = serviceProvider;
-        _stringLocalizer      = stringLocalizer;
-        _cacheManager         = cacheManager;
-    }
+    private readonly IStringLocalizer _stringLocalizer = stringLocalizer;
 
     public IEnumerable<SettingDescriptorModel> GetAllAvailableSettings()
     {
-        return _siteSettingInstances.Select(_ => _.ToDescriptorModel());
+        return siteSettingInstances.Select(x => x.ToDescriptorModel());
     }
 
     public SiteSettingBase GetSettingInstance(string settingTypeName)
     {
-        return _siteSettingInstances.FirstOrDefault(_ => _.SettingType == settingTypeName);
+        return siteSettingInstances.FirstOrDefault(x => x.SettingType == settingTypeName);
     }
 
     public T GetSetting<T>() where T : SiteSettingBase
@@ -44,22 +33,36 @@ public class SiteSettingService : ISiteSettingService
         return GetSetting(typeof(T));
     }
 
+    public async Task<T> GetSettingAsync<T>() where T : SiteSettingBase
+    {
+        var settingResult = await GetSettingAsync(typeof(T));
+
+        if (settingResult is T tSetting)
+            return tSetting;
+
+        return null;
+    }
+
     public dynamic GetSetting(Type type, bool isGetDefault = false)
+        => GetSettingAsync(type, isGetDefault).Result;
+
+    public async Task<dynamic> GetSettingAsync(Type type, bool isGetDefault = false)
     {
         ValidateSettingType(type);
 
-        var defaultValue = _serviceProvider.TryGet(type);
+        var defaultValue = serviceProvider.TryGet(type);
 
         if (isGetDefault)
             return defaultValue;
 
         var settingKey = type.FullName;
 
-        var setting = GetSiteSettingRecord(settingKey);
+        var setting = await GetSiteSettingRecordAsync(settingKey);
 
-        if (setting == null || setting.Id == 0)
+        if (setting == null ||
+            setting.Id == 0)
         {
-            SaveSetting((SiteSettingBase)defaultValue, type);
+            await SaveSettingAsync((SiteSettingBase)defaultValue, type);
 
             return defaultValue;
         }
@@ -68,45 +71,52 @@ public class SiteSettingService : ISiteSettingService
     }
 
     public void SaveSetting<T>(T value) where T : SiteSettingBase
-    {
-        SaveSetting(value, typeof(T));
-    }
+        => SaveSettingAsync(value).Wait();
+
+    public Task SaveSettingAsync<T>(T value) where T : SiteSettingBase
+        => SaveSettingAsync(value, typeof(T));
 
     public void SaveSetting(SiteSettingBase value, Type settingType)
+        => SaveSettingAsync(value, settingType).Wait();
+
+    public async Task SaveSettingAsync(SiteSettingBase value, Type settingType)
     {
         ValidateSettingType(settingType);
 
         var settingKey = settingType.FullName;
 
-        var setting = GetSiteSettingRecord(settingKey, false);
+        var setting = await GetSiteSettingRecordAsync(settingKey, false);
 
         value.UpdateSetting(setting);
 
         if (setting.Id == 0)
         {
-            _dataService.Insert(setting);
+            await dataService.InsertAsync(setting);
         }
         else
         {
-            _dataService.Update(setting);
+            await dataService.UpdateAsync(setting);
         }
 
-        _cacheManager.Remove(GetCacheKey(settingKey));
+        cacheManager.Remove(GetCacheKey(settingKey));
     }
 
     public void SaveSetting(Type settingType, Dictionary<string, object> value)
+        => SaveSettingAsync(settingType, value).Wait();
+
+    public async Task SaveSettingAsync(Type settingType, Dictionary<string, object> value)
     {
         if (!typeof(SiteSettingBase).IsAssignableFrom(settingType))
             throw new ArgumentException(string.Format(
                                                       $"{_stringLocalizer["SiteSettings.MsgError.SettingIsNotInherit"]}",
                                                       typeof(SiteSettingBase).FullName));
-        
+
         var serializeObject = JsonConvert.SerializeObject(value);
         var settingValue    = JsonConvert.DeserializeObject(serializeObject, settingType);
 
         if (settingValue is SiteSettingBase setting)
         {
-            SaveSetting(setting, settingType);
+            await SaveSettingAsync(setting, settingType);
         }
         else
         {
@@ -115,12 +125,12 @@ public class SiteSettingService : ISiteSettingService
         }
     }
 
-    private SiteSettingRecord GetSiteSettingRecord(string settingKey, bool fromCache = true)
+    private async Task<SiteSettingRecord> GetSiteSettingRecordAsync(string settingKey, bool fromCache = true)
     {
         var siteSettingRecord = fromCache
-                                    ? _cacheManager.Get(GetCacheKey(settingKey),
-                                                        () => InternalGetSiteSettingRecord(settingKey))
-                                    : InternalGetSiteSettingRecord(settingKey);
+                                    ? await cacheManager.GetAsync(GetCacheKey(settingKey),
+                                                                  () => InternalGetSiteSettingRecordAsync(settingKey))
+                                    : await InternalGetSiteSettingRecordAsync(settingKey);
 
         siteSettingRecord ??= new SiteSettingRecord
         {
@@ -130,9 +140,9 @@ public class SiteSettingService : ISiteSettingService
         return siteSettingRecord;
     }
 
-    private SiteSettingRecord InternalGetSiteSettingRecord(string settingKey)
+    private async Task<SiteSettingRecord> InternalGetSiteSettingRecordAsync(string settingKey)
     {
-        return _dataService.Get(settingRecord => settingRecord.SettingType == settingKey);
+        return await dataService.GetAsync(settingRecord => settingRecord.SettingType == settingKey);
     }
 
 
