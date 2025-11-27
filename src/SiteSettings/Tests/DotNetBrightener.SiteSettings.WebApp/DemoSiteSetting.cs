@@ -12,5 +12,5 @@ public class DemoSiteSetting : SiteSettingWrapper<DemoSiteSetting>
 
     public override string SettingName => "Demo Site Settings";
 
-    public override string Description => "Demo Site Settings";
+    public override string SettingDescription => "Demo Site Settings";
 }

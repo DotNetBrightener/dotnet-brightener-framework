@@ -29,7 +29,7 @@ public abstract class SiteSettingBase : SettingDescriptor
 
     public SettingDescriptorModel ToDescriptorModel()
     {
-        return new SettingDescriptorModel(SettingName, Description)
+        return new SettingDescriptorModel(SettingName, SettingDescription)
         {
             SettingType = SettingType
         };

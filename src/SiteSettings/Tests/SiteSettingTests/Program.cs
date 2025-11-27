@@ -11,7 +11,7 @@ internal class TestSetting : SiteSettingWrapper<TestSetting>
 
     public          int    TestInt     { get; set; } = 2;
     public override string SettingName => "";
-    public override string Description => "";
+    public override string SettingDescription => "";
 }
 
 public class TestSiteSettingObject

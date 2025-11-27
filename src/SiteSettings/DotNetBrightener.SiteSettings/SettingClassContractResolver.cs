@@ -10,7 +10,7 @@ internal class SiteSettingsContractResolver : DefaultContractResolver
     private static readonly List<string> IgnoreProperties =
     [
         nameof(SiteSettingBase.SettingName),
-        nameof(SiteSettingBase.Description),
+        nameof(SiteSettingBase.SettingDescription),
     ];
 
     public static SiteSettingsContractResolver Instance { get; } = new();
