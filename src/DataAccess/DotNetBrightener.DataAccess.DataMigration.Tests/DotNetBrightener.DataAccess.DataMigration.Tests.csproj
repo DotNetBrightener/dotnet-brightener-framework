@@ -44,4 +44,8 @@
 		<ProjectReference Include="..\DotNetBrightener.DataAccess.DataMigration\DotNetBrightener.DataAccess.DataMigration.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+	</ItemGroup>
+
 </Project>
