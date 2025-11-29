@@ -13,6 +13,7 @@
     <!-- Performance and benchmarking -->
     <PackageVersion Include="BenchmarkDotNet" Version="0.15.6" />
     <!-- Core libraries -->
+    <PackageVersion Include="Bogus" Version="35.6.5" />
     <PackageVersion Include="Castle.Core" Version="5.2.1" />
     <PackageVersion Include="CommandLineParser" Version="2.9.1" />
     <PackageVersion Include="CronExpressionDescriptor" Version="2.44.0" />

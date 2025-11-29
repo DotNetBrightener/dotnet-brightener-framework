@@ -43,7 +43,6 @@ internal sealed class InfisicalSecretsConfigurationProvider(IConfiguration origi
                                .UniversalAuth()
                                .LoginAsync(vaultClientId, vaultClientSecret).Result;
 
-
         var options = new ListSecretsOptions
         {
             ProjectId                        = vaultProjectId,
