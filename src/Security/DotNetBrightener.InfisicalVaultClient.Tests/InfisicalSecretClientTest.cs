@@ -21,7 +21,8 @@ public class InfisicalSecretClientTest(ITestOutputHelper testOutputHelper)
             ["Infisical:Environment"]   = "dev",
             ["Infisical:VaultClientID"] = "d90475b4-144d-444e-9fde-15461c21e4b1",
             ["Infisical:VaultClientSecret"] =
-                "d41ba8e700cea53dc4b78d609fd24b01c4cafa426dc7e0d1b23fe003d81b1023"
+                "d41ba8e700cea53dc4b78d609fd24b01c4cafa426dc7e0d1b23fe003d81b1023",
+            ["ParentKey:ChildKey"] = "Secret:ConnectionStrings_TestValueSecret"
         });
 
         // Act
@@ -34,6 +35,11 @@ public class InfisicalSecretClientTest(ITestOutputHelper testOutputHelper)
         configValues.ShouldContain(v => v.Key == "ConnectionStrings:DefaultConnectionStringForTesting");
 
         configValues.ShouldContain(v => v.Key == "ConnectionStrings:DefaultConnectionStringForTesting" && v.Value == "test_value(should_be_found)");
+
+        configValues.ShouldContain(v => v.Key == "ParentKey:ChildKey");
+
+        configValues.ShouldContain(v => v.Key == "ParentKey:ChildKey" &&
+                                        v.Value == "ValueData");
     }
     [Fact]
     public void TestInfisicalSecretsProvider_ShouldLoadSecretsFor_Production()

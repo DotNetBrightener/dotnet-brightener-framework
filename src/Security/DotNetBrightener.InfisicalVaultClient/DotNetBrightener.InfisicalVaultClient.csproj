@@ -12,4 +12,5 @@
 		<PackageReference Include="Infisical.Sdk" />
 	</ItemGroup>
 
+	<Import Project="..\..\Shared\SharedExtensions.Tasks\SharedExtensions.Tasks.projitems" Label="Shared" />
 </Project>

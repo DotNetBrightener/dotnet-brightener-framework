@@ -1,10 +1,12 @@
 ﻿using Infisical.Sdk;
 using Infisical.Sdk.Model;
 using Microsoft.Extensions.Configuration;
+using System.Collections.Concurrent;
 
 namespace DotNetBrightener.InfisicalVaultClient;
 
-internal sealed class InfisicalSecretsConfigurationProvider(IConfiguration originalConfiguration)
+internal sealed class InfisicalSecretsConfigurationProvider(IConfiguration originalConfiguration,
+                                                            string         vaultSecretKeyIdentifierPrefix = "Secret:")
     : ConfigurationProvider
 {
     public override void Load()
@@ -54,10 +56,35 @@ internal sealed class InfisicalSecretsConfigurationProvider(IConfiguration origi
 
         var secrets = infisicalClient.Secrets().ListAsync(options).Result;
 
+
+        var configuration = originalConfiguration.AsEnumerable()
+                                                 .Where(c => c.Value?.StartsWith(vaultSecretKeyIdentifierPrefix) ==
+                                                             true)
+                                                 .ToArray();
+
         foreach (var secretInformation in secrets)
         {
             var confKey = secretInformation.SecretKey.Replace("__", ":");
             Data[confKey] = secretInformation.SecretValue;
+        }
+
+        var concurrentData = new ConcurrentDictionary<string, string>();
+
+        configuration.ParallelForEachAsync(async keyPair =>
+                      {
+                          var secretKey = keyPair.Value.Substring(vaultSecretKeyIdentifierPrefix.Length);
+                          var secretInformation =
+                              secrets.FirstOrDefault(s => s.SecretKey == secretKey);
+                          if (secretInformation is not null)
+                          {
+                              concurrentData.TryAdd(keyPair.Key, secretInformation.SecretValue);
+                          }
+                      })
+                     .Wait();
+
+        foreach (var (key, value) in concurrentData)
+        {
+            Data[key] = value;
         }
     }
 }
