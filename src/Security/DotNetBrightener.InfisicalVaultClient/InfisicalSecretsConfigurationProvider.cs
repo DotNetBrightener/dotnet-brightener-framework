@@ -9,18 +9,18 @@ internal sealed class InfisicalSecretsConfigurationProvider(IConfiguration origi
 {
     public override void Load()
     {
-        var secretManagementEnabled = originalConfiguration.GetValue<bool>("SecretsManagement:Enabled");
+        var secretManagementEnabled = originalConfiguration.GetValue<bool>("Infisical:Enabled");
 
         if (!secretManagementEnabled)
         {
             return;
         }
 
-        var vaultUrl          = originalConfiguration.GetValue<string>("SecretsManagement:VaultUrl") ?? null;
-        var vaultClientId     = originalConfiguration.GetValue<string>("SecretsManagement:VaultClientID");
-        var vaultClientSecret = originalConfiguration.GetValue<string>("SecretsManagement:VaultClientSecret");
-        var vaultProjectId    = originalConfiguration.GetValue<string>("SecretsManagement:ProjectID");
-        var vaultEnvironment  = originalConfiguration.GetValue<string>("SecretsManagement:Environment") ?? "dev";
+        var vaultUrl          = originalConfiguration.GetValue<string>("Infisical:VaultUrl");
+        var vaultClientId     = originalConfiguration.GetValue<string>("Infisical:VaultClientID");
+        var vaultClientSecret = originalConfiguration.GetValue<string>("Infisical:VaultClientSecret");
+        var vaultProjectId    = originalConfiguration.GetValue<string>("Infisical:ProjectID");
+        var vaultEnvironment  = originalConfiguration.GetValue<string>("Infisical:Environment") ?? "dev";
 
         if (string.IsNullOrEmpty(vaultClientId) ||
             string.IsNullOrEmpty(vaultClientSecret))
@@ -30,7 +30,7 @@ internal sealed class InfisicalSecretsConfigurationProvider(IConfiguration origi
 
         var settingsBuilder = new InfisicalSdkSettingsBuilder();
 
-        if (!string.IsNullOrEmpty(vaultUrl))
+        if (!string.IsNullOrWhiteSpace(vaultUrl))
         {
             settingsBuilder.WithHostUri(vaultUrl);
         }
@@ -41,7 +41,8 @@ internal sealed class InfisicalSecretsConfigurationProvider(IConfiguration origi
 
         var _ = infisicalClient.Auth()
                                .UniversalAuth()
-                               .LoginAsync(vaultClientId, vaultClientSecret).Result;
+                               .LoginAsync(vaultClientId, vaultClientSecret)
+                               .Result;
 
         var options = new ListSecretsOptions
         {

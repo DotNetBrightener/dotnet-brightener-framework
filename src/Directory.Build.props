@@ -9,10 +9,8 @@
 		<Copyright>© 2017 - $([System.DateTime]::Now.ToString(yyyy)) $(Company)</Copyright>
 
 		<LangVersion>14</LangVersion>
-		<IncludeSymbols>true</IncludeSymbols>
 		<ImplicitUsings>enable</ImplicitUsings>
-		
-		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<PackageId Condition="!$(MSBuildProjectName.StartsWith('DotNetBrightener.')) AND !$(MSBuildProjectName.StartsWith('VampireCoder.'))">DotNetBrightener.$(MSBuildProjectName)</PackageId>
 		<PackageTags>DotNetBrightener; VampireCoder;</PackageTags>
@@ -26,6 +24,8 @@
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)'=='Release'">
+		<IncludeSymbols>true</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<PackageIcon Condition="Exists('$(SolutionDir)\..\vampire-coder-logo.jpg')">vampire-coder-logo.jpg</PackageIcon>
 		<PackageLicenseFile Condition="Exists('$(SolutionDir)\..\LICENSE')">LICENSE</PackageLicenseFile>
 	</PropertyGroup>
