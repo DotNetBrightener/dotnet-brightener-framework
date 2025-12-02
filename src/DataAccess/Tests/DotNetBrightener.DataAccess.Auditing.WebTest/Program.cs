@@ -34,7 +34,7 @@ var dbConfiguration = new DatabaseConfiguration
     DatabaseProvider = DatabaseProvider.MsSql
 };
 
-Action<DbContextOptionsBuilder> configureDatabase = optionsBuilder =>
+Action<IServiceProvider, DbContextOptionsBuilder> configureDatabase = (serviceProvider, optionsBuilder) =>
 {
     optionsBuilder.UseSqlServer(dbConfiguration.ConnectionString);
 };

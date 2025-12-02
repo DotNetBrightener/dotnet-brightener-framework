@@ -21,12 +21,11 @@ var dbConfiguration = new DatabaseConfiguration
 
 builder.Services.AddEFCentralizedDataServices<MainDbContext>(dbConfiguration,
                                                              builder.Configuration,
-                                                             optionBuilder =>
+                                                             (serviceProvider, options) =>
                                                              {
-                                                                 optionBuilder.UseNpgsql(dbConfiguration
-                                                                                            .ConnectionString,
-                                                                                         s =>
-                                                                                             s.EnableRetryOnFailure(10));
+                                                                 options.UseNpgsql(dbConfiguration
+                                                                                      .ConnectionString,
+                                                                                   s => s.EnableRetryOnFailure(10));
                                                              })
        .UseCentralizedMigrationDbContext<MigrationDbContext>();
 

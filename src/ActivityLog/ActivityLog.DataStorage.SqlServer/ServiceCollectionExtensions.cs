@@ -9,14 +9,33 @@ namespace Microsoft.EntityFrameworkCore;
 public static class ServiceCollectionExtensions
 {
     public static ActivityLogBuilder UseSqlServer(this ActivityLogBuilder activityLogBuilder,
-                                                  string connectionString)
+                                                  string                  connectionString)
     {
         var services = activityLogBuilder.Services;
 
-        services.UseDbContextWithMigration<ActivityLogDbContext, SqlServerMigrationDbContext>(option =>
+        services.UseDbContextWithMigration<ActivityLogDbContext, SqlServerMigrationDbContext>((serviceProvider,
+                                                                                               options) =>
         {
-            option.UseSqlServer(connectionString,
-                               x => x.MigrationsHistoryTable("__MigrationsHistory", nameof(ActivityLog)));
+            options.UseSqlServer(connectionString,
+                                 x => x.MigrationsHistoryTable("__MigrationsHistory", nameof(ActivityLog)));
+        });
+
+        return activityLogBuilder;
+    }
+
+    public static ActivityLogBuilder UseSqlServer(this ActivityLogBuilder activityLogBuilder,
+                                                  Func<IServiceProvider, DbContextOptionsBuilder, string>
+                                                      connectionStringResolver)
+    {
+        var services = activityLogBuilder.Services;
+
+        services.UseDbContextWithMigration<ActivityLogDbContext, SqlServerMigrationDbContext>((serviceProvider,
+                                                                                               options) =>
+        {
+            var connectionString = connectionStringResolver.Invoke(serviceProvider, options);
+
+            options.UseSqlServer(connectionString,
+                                 x => x.MigrationsHistoryTable("__MigrationsHistory", nameof(ActivityLog)));
         });
 
         return activityLogBuilder;

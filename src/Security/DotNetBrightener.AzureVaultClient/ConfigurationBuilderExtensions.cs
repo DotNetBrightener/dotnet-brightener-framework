@@ -16,15 +16,16 @@ public static class ConfigurationBuilderExtensions
 
 
     internal static async Task<string?> GetSecretValueIfNeeded(this SecretClient secretClient,
-                                                              string            secretIdentifierPrefix,
-                                                              string            originalValue)
+                                                               string            secretIdentifierPrefix,
+                                                               string            originalValue)
     {
         if (originalValue?.StartsWith(secretIdentifierPrefix, StringComparison.OrdinalIgnoreCase) == true)
         {
             try
             {
 
-                var secretAsync = await secretClient.GetSecretAsync(originalValue.Substring(secretIdentifierPrefix.Length));
+                var secretAsync =
+                    await secretClient.GetSecretAsync(originalValue.Substring(secretIdentifierPrefix.Length));
 
                 return secretAsync.Value.Value;
             }

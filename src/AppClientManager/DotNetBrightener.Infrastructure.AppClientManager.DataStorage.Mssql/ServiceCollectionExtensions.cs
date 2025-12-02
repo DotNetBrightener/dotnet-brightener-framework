@@ -13,12 +13,32 @@ public static class ServiceCollectionExtensions
     {
         var services = appClientManagerBuilder.Services;
 
-        services.UseDbContextWithMigration<AppClientDbContext, SqlServerMigrationDbContext>(option =>
+        services.UseDbContextWithMigration<AppClientDbContext, SqlServerMigrationDbContext>((serviceProvider,
+                                                                                             options) =>
         {
-            option.UseSqlServer(connectionString,
-                                x => x.MigrationsHistoryTable("__MigrationsHistory",
-                                                              AppClientDataDefaults
-                                                                 .AppClientSchemaName));
+            options.UseSqlServer(connectionString,
+                                 x => x.MigrationsHistoryTable("__MigrationsHistory",
+                                                               AppClientDataDefaults
+                                                                  .AppClientSchemaName));
+        });
+
+        return appClientManagerBuilder;
+    }
+
+    public static AppClientManagerBuilder UseSqlServer(this AppClientManagerBuilder appClientManagerBuilder,
+                                                       Func<IServiceProvider, DbContextOptionsBuilder, string>
+                                                           connectionStringResolver)
+    {
+        var services = appClientManagerBuilder.Services;
+
+        services.UseDbContextWithMigration<AppClientDbContext, SqlServerMigrationDbContext>((serviceProvider,
+                                                                                             options) =>
+        {
+            var connectionString = connectionStringResolver.Invoke(serviceProvider, options);
+            options.UseSqlServer(connectionString,
+                                 x => x.MigrationsHistoryTable("__MigrationsHistory",
+                                                               AppClientDataDefaults
+                                                                  .AppClientSchemaName));
         });
 
         return appClientManagerBuilder;
