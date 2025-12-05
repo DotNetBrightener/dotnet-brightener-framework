@@ -21,11 +21,6 @@ pool:
   vmImage:
     "ubuntu-latest"
 
-    # pool:
-    #   name: dotnetbrightener-selfhosted
-    #   demands:
-    #   - agent.name -equals self-hosted
-
 variables:
 - group: dotnet-brightener
 
