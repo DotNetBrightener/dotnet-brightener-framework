@@ -14,7 +14,7 @@ namespace DotNetBrightener.DataAccess.EF.Repositories;
 
 public class ReadOnlyRepository : IReadOnlyRepository
 {
-    protected readonly DbContext                     DbContext;
+    protected virtual  DbContext                     DbContext { get; }
     protected readonly ICurrentLoggedInUserResolver? CurrentLoggedInUserResolver;
     protected readonly IEventPublisher?              EventPublisher;
     protected readonly IDateTimeProvider?            DateTimeProvider;

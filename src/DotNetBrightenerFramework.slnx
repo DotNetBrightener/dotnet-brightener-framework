@@ -89,6 +89,10 @@
   <Folder Name="/DataAccess/Auditing/">
     <Project Path="DataAccess/DotNetBrightener.DataAccess.Auditing.Storage/DotNetBrightener.DataAccess.Auditing.Storage.csproj" />
   </Folder>
+  <Folder Name="/DataAccess/Auditing/Tests/">
+    <Project Path="DataAccess/DotNetBrightener.DataAccess.Auditing.Tests/DotNetBrightener.DataAccess.Auditing.Tests.csproj" />
+    <Project Path="DataAccess/Tests/DotNetBrightener.DataAccess.Auditing.WebTest/DotNetBrightener.DataAccess.Auditing.WebTest.csproj" />
+  </Folder>
   <Folder Name="/DataAccess/DataMigrations/">
     <Project Path="DataAccess/DotNetBrightener.DataAccess.DataMigration.Cli/DotNetBrightener.DataAccess.DataMigration.Cli.csproj" />
     <Project Path="DataAccess/DotNetBrightener.DataAccess.DataMigration.Mssql/DotNetBrightener.DataAccess.DataMigration.Mssql.csproj" />
@@ -99,9 +103,7 @@
     <Project Path="DataAccess/DotNetBrightener.DataAccess.DataMigration.Tests/DotNetBrightener.DataAccess.DataMigration.Tests.csproj" />
   </Folder>
   <Folder Name="/DataAccess/Tests/">
-    <Project Path="DataAccess/DotNetBrightener.DataAccess.Auditing.Tests/DotNetBrightener.DataAccess.Auditing.Tests.csproj" />
     <Project Path="DataAccess/DotNetBrightener.DataAccess.EF.Tests/DotNetBrightener.DataAccess.EF.Tests.csproj" />
-    <Project Path="DataAccess/Tests/DotNetBrightener.DataAccess.Auditing.WebTest/DotNetBrightener.DataAccess.Auditing.WebTest.csproj" />
   </Folder>
   <Folder Name="/DataAccess/Tests/PostgreSqlMigrationTest/">
     <Project Path="DataAccess/Tests/DataAccess_PostgreMigrations_Test.Db/DataAccess_PostgreMigrations_Test.Db.csproj" />
@@ -166,6 +168,12 @@
   </Folder>
   <Folder Name="/Modules/" />
   <Folder Name="/Modules/OAuth/" />
+  <Folder Name="/NotificationService/">
+    <Project Path="NotificationService/NotificationService.Persistent.PostgreSQL/NotificationService.Persistent.PostgreSQL.csproj" />
+    <Project Path="NotificationService/NotificationService.Persistent.SqlServer/NotificationService.Persistent.SqlServer.csproj" Id="e97e5799-2646-475e-bf04-c3dcfeb05b06" />
+    <Project Path="NotificationService/NotificationService.Provider.Sendgrid/NotificationService.Provider.Sendgrid.csproj" />
+    <Project Path="NotificationService/NotificationService/NotificationService.csproj" />
+  </Folder>
   <Folder Name="/OAuthLibrary/">
     <Project Path="OAuthLibrary/DotNetBrightener.OAuth.Integration.Apple/DotNetBrightener.OAuth.Integration.Apple.csproj" />
     <Project Path="OAuthLibrary/DotNetBrightener.OAuth.Integration.Google/DotNetBrightener.OAuth.Integration.Google.csproj" />

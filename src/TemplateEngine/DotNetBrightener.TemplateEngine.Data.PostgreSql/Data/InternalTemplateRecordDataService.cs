@@ -5,10 +5,5 @@ namespace DotNetBrightener.TemplateEngine.Data.PostgreSql.Data;
 
 public interface ITemplateRecordDataService : IBaseDataService<TemplateRecord>;
 
-internal class InternalTemplateRecordDataService : BaseDataService<TemplateRecord>, ITemplateRecordDataService
-{
-    public InternalTemplateRecordDataService(TemplateEngineRepository repository)
-        : base(repository)
-    {
-    }
-}
+internal class InternalTemplateRecordDataService(TemplateEngineRepository repository)
+    : BaseDataService<TemplateRecord>(repository), ITemplateRecordDataService;

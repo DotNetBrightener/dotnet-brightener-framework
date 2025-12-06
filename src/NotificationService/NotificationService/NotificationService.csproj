@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<IsPackable>true</IsPackable>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="MailKit" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
+		<PackageReference Include="Newtonsoft.Json" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="$(AssemblyName).Tests" />
+		<InternalsVisibleTo Include="$(AssemblyName).Persistent.PostgreSQL" />
+		<InternalsVisibleTo Include="$(AssemblyName).Persistent.SqlServer" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\BackgroundTasks\DotNetBrightener.Core.BackgroundTasks.DependencyInjection\DotNetBrightener.Core.BackgroundTasks.DependencyInjection.csproj" />
+		<ProjectReference Include="..\..\DataAccess\DotNetBrightener.DataAccess.Abstractions\DotNetBrightener.DataAccess.Abstractions.csproj" />
+		<ProjectReference Include="..\..\DataAccess\DotNetBrightener.DataAccess.EF\DotNetBrightener.DataAccess.EF.csproj" />
+		<ProjectReference Include="..\..\OTPGenerator\DotNetBrightener.TimeBasedOtp\DotNetBrightener.TimeBasedOtp.csproj" />
+	</ItemGroup>
+	<Import Project="..\..\Shared\SharedExtensions.Object\SharedExtensions.ObjectExtensions.projitems" Label="Shared" />
+	<Import Project="..\..\Shared\SharedExtensions.Expression\SharedExtensions.Expression.projitems" Label="Shared" />
+	<Import Project="..\..\Shared\SharedExtensions.Reflection\SharedExtensions.ReflectionExtensions.projitems" Label="Shared" />
+	<Import Project="..\..\Shared\SharedExtensions.String\StringExtensions.projitems" Label="Shared" />
+	<Import Project="..\..\Shared\SharedExtensions.Exception\SharedExtensions.Exception.projitems" Label="Shared" />
+	<Import Project="..\..\Shared\SharedExtensions.ObjectMethods\SharedExtensions.ObjectMethods.projitems" Label="Shared" />
+</Project>
