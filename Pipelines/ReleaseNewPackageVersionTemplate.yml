@@ -15,9 +15,9 @@ stages:
           - powershell: |
               if ('${{ parameters.projectFolder }}' -ne '')
               {
-                $projectFile = "${{ parameters.projectFolder }}/${{ parameters.projectName }}.sln"
+                $projectFile = "${{ parameters.projectFolder }}/${{ parameters.projectName }}.slnx"
               } else {
-                $projectFile = "${{ parameters.projectName }}.sln"
+                $projectFile = "${{ parameters.projectName }}.slnx"
               }
 
               Write-Host "Setting projectFile to: $($projectFile)"

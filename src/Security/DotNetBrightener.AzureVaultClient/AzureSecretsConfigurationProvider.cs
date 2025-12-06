@@ -56,7 +56,7 @@ internal class AzureSecretsConfigurationProvider : ConfigurationProvider
 
         var secrets = GetSecretsWithThrottlingAsync(_secretClient).Result;
 
-        var concurrentData = new ConcurrentDictionary<string, string>();
+        var secretBasedConfigEntries = new ConcurrentDictionary<string, string>();
 
         configuration.ParallelForEachAsync(async (keyPair) =>
                       {
@@ -67,13 +67,13 @@ internal class AzureSecretsConfigurationProvider : ConfigurationProvider
 
                           if (!string.IsNullOrWhiteSpace(secretValue))
                           {
-                              concurrentData.TryAdd(keyPair.Key, secretValue);
+                              secretBasedConfigEntries.TryAdd(keyPair.Key, secretValue);
                               secrets.Remove(secretKey);
                           }
                       })
                      .Wait();
 
-        foreach (var (key, value) in concurrentData)
+        foreach (var (key, value) in secretBasedConfigEntries)
         {
             Data[key] = value;
         }

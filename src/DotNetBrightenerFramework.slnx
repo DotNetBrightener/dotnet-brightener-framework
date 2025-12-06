@@ -1,0 +1,276 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="ARM64" />
+  </Configurations>
+  <Folder Name="/.benchmarks/" />
+  <Folder Name="/.builds/">
+    <File Path="../.gitignore" />
+    <File Path="../LICENSE" />
+    <File Path="../version.json" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+  </Folder>
+  <Folder Name="/.Pipelines/">
+    <File Path="../Pipelines/azure-pipelines-entry.yml" />
+    <File Path="../Pipelines/BuildAndPublishTemplate.yml" />
+    <File Path="../Pipelines/CalculateVersionTemplate.yml" />
+    <File Path="../Pipelines/MirrorProjectToGithub.yml" />
+    <File Path="../Pipelines/PersistVersionTemplate.yml" />
+    <File Path="../Pipelines/ReleaseNewPackageVersionTemplate.yml" />
+  </Folder>
+  <Folder Name="/ActivityLog/">
+    <Project Path="ActivityLog/ActivityLog.DataStorage.PostgreSql/ActivityLog.DataStorage.PostgreSql.csproj" />
+    <Project Path="ActivityLog/ActivityLog.DataStorage.SqlServer/ActivityLog.DataStorage.SqlServer.csproj" />
+    <Project Path="ActivityLog/ActivityLog.DataStorage/ActivityLog.DataStorage.csproj" />
+    <Project Path="ActivityLog/ActivityLog.Tests/ActivityLog.Tests.csproj" />
+    <Project Path="ActivityLog/ActivityLog/ActivityLog.csproj" />
+  </Folder>
+  <Folder Name="/ActivityLog/Tests/">
+    <Project Path="ActivityLog/Tests/ActivityLogTest.ApiServer/ActivityLogTest.ApiServer.csproj" />
+  </Folder>
+  <Folder Name="/AppClientManager/">
+    <Project Path="AppClientManager/DotNetBrightener.Infrastructure.AppClientManager.DataStorage.Mssql/DotNetBrightener.Infrastructure.AppClientManager.DataStorage.Mssql.csproj" />
+    <Project Path="AppClientManager/DotNetBrightener.Infrastructure.AppClientManager.DataStorage.PostgreSql/DotNetBrightener.Infrastructure.AppClientManager.DataStorage.PostgreSql.csproj" />
+    <Project Path="AppClientManager/DotNetBrightener.Infrastructure.AppClientManager.DataStorage/DotNetBrightener.Infrastructure.AppClientManager.DataStorage.csproj" />
+    <Project Path="AppClientManager/DotNetBrightener.Infrastructure.AppClientManager.JwtAuthentication/DotNetBrightener.Infrastructure.AppClientManager.JwtAuthentication.csproj" />
+    <Project Path="AppClientManager/DotNetBrightener.Infrastructure.AppClientManager/DotNetBrightener.Infrastructure.AppClientManager.csproj" />
+  </Folder>
+  <Folder Name="/AppClientManager/Tests/">
+    <Project Path="AppClientManager/Tests/AppClientTest.ApiServer/AppClientTest.ApiServer.csproj" />
+  </Folder>
+  <Folder Name="/BackgroundTasks/">
+    <Project Path="BackgroundTasks/DotNetBrightener.Core.BackgroundTasks.Data/DotNetBrightener.Core.BackgroundTasks.Data.csproj" />
+    <Project Path="BackgroundTasks/DotNetBrightener.Core.BackgroundTasks.DependencyInjection/DotNetBrightener.Core.BackgroundTasks.DependencyInjection.csproj" />
+    <Project Path="BackgroundTasks/DotNetBrightener.Core.BackgroundTasks.Tests/DotNetBrightener.Core.BackgroundTasks.Tests.csproj" />
+    <Project Path="BackgroundTasks/DotNetBrightener.Core.BackgroundTasks/DotNetBrightener.Core.BackgroundTasks.csproj" />
+  </Folder>
+  <Folder Name="/BackgroundTasks/Tests/">
+    <Project Path="BackgroundTasks/Tests/BackgroundScheduleTest/BackgroundSchedule.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Caching/">
+    <Project Path="Caching/DotNetBrightener.Caching.Memory/DotNetBrightener.Caching.Memory.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+    </Project>
+    <Project Path="Caching/DotNetBrightener.Caching.Redis/DotNetBrightener.Caching.Redis.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+    </Project>
+    <Project Path="Caching/DotNetBrightener.Caching/DotNetBrightener.Caching.Abstractions.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+    </Project>
+  </Folder>
+  <Folder Name="/Cryptography/">
+    <Project Path="Cryptography/DotNetBrightener.CryptoEngine.DependencyInjection/DotNetBrightener.CryptoEngine.DependencyInjection.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+    </Project>
+    <Project Path="Cryptography/DotNetBrightener.CryptoEngine.Tests/DotNetBrightener.CryptoEngine.Tests.csproj" />
+    <Project Path="Cryptography/DotNetBrightener.CryptoEngine/DotNetBrightener.CryptoEngine.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+    </Project>
+  </Folder>
+  <Folder Name="/DataAccess/">
+    <Project Path="DataAccess/DotNetBrightener.DataAccess.Abstractions.Models/DotNetBrightener.DataAccess.Abstractions.Models.csproj" />
+    <Project Path="DataAccess/DotNetBrightener.DataAccess.Abstractions/DotNetBrightener.DataAccess.Abstractions.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+    </Project>
+    <Project Path="DataAccess/DotNetBrightener.DataAccess.Dapper.PostgreSQL/DotNetBrightener.DataAccess.Dapper.PostgreSQL.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+    </Project>
+    <Project Path="DataAccess/DotNetBrightener.DataAccess.Dapper/DotNetBrightener.DataAccess.Dapper.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+    </Project>
+    <Project Path="DataAccess/DotNetBrightener.DataAccess.EF.PostgreSQL/DotNetBrightener.DataAccess.EF.PostgreSQL.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+    </Project>
+    <Project Path="DataAccess/DotNetBrightener.DataAccess.EF/DotNetBrightener.DataAccess.EF.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+    </Project>
+  </Folder>
+  <Folder Name="/DataAccess/Auditing/">
+    <Project Path="DataAccess/DotNetBrightener.DataAccess.Auditing.Storage/DotNetBrightener.DataAccess.Auditing.Storage.csproj" />
+  </Folder>
+  <Folder Name="/DataAccess/DataMigrations/">
+    <Project Path="DataAccess/DotNetBrightener.DataAccess.DataMigration.Cli/DotNetBrightener.DataAccess.DataMigration.Cli.csproj" />
+    <Project Path="DataAccess/DotNetBrightener.DataAccess.DataMigration.Mssql/DotNetBrightener.DataAccess.DataMigration.Mssql.csproj" />
+    <Project Path="DataAccess/DotNetBrightener.DataAccess.DataMigration.PostgreSql/DotNetBrightener.DataAccess.DataMigration.PostgreSql.csproj" />
+    <Project Path="DataAccess/DotNetBrightener.DataAccess.DataMigration/DotNetBrightener.DataAccess.DataMigration.csproj" />
+  </Folder>
+  <Folder Name="/DataAccess/DataMigrations/Tests/">
+    <Project Path="DataAccess/DotNetBrightener.DataAccess.DataMigration.Tests/DotNetBrightener.DataAccess.DataMigration.Tests.csproj" />
+  </Folder>
+  <Folder Name="/DataAccess/Tests/">
+    <Project Path="DataAccess/DotNetBrightener.DataAccess.Auditing.Tests/DotNetBrightener.DataAccess.Auditing.Tests.csproj" />
+    <Project Path="DataAccess/DotNetBrightener.DataAccess.EF.Tests/DotNetBrightener.DataAccess.EF.Tests.csproj" />
+    <Project Path="DataAccess/Tests/DotNetBrightener.DataAccess.Auditing.WebTest/DotNetBrightener.DataAccess.Auditing.WebTest.csproj" />
+  </Folder>
+  <Folder Name="/DataAccess/Tests/PostgreSqlMigrationTest/">
+    <Project Path="DataAccess/Tests/DataAccess_PostgreMigrations_Test.Db/DataAccess_PostgreMigrations_Test.Db.csproj" />
+    <Project Path="DataAccess/Tests/DataAccess_PostgreMigrations_Test.Migrations/DataAccess_PostgreMigrations_Test.Migrations.csproj" />
+    <Project Path="DataAccess/Tests/DataAccess_PostgreMigrations_Test/DataAccess_PostgreMigrations_Test.csproj" />
+  </Folder>
+  <Folder Name="/EventPubSub/">
+    <Project Path="EventPubSub/DotNetBrightener.Plugins.EventPubSub.Abstractions/DotNetBrightener.Plugins.EventPubSub.Abstractions.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+    </Project>
+    <Project Path="EventPubSub/DotNetBrightener.Plugins.EventPubSub.AzureServiceBus/DotNetBrightener.Plugins.EventPubSub.AzureServiceBus.csproj" />
+    <Project Path="EventPubSub/DotNetBrightener.Plugins.EventPubSub.DependencyInjection/DotNetBrightener.Plugins.EventPubSub.DependencyInjection.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+    </Project>
+    <Project Path="EventPubSub/DotNetBrightener.Plugins.EventPubSub.Distributed/DotNetBrightener.Plugins.EventPubSub.Distributed.csproj" />
+    <Project Path="EventPubSub/DotNetBrightener.Plugins.EventPubSub/DotNetBrightener.Plugins.EventPubSub.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+    </Project>
+  </Folder>
+  <Folder Name="/EventPubSub/Tests/">
+    <Project Path="EventPubSub/Tests/DotNetBrightener.Plugins.EventPubSub.Tests/DotNetBrightener.Plugins.EventPubSub.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Infrastructure/">
+    <Project Path="Core/DotNetBrightener.WebSocketExt/DotNetBrightener.WebSocketExt.csproj" />
+    <Project Path="Infrastructure/AspNet.Extensions.SelfDocumentedProblemResult.UI/AspNet.Extensions.SelfDocumentedProblemResult.UI.csproj" />
+    <Project Path="Infrastructure/AspNet.Extensions.SelfDocumentedProblemResult/AspNet.Extensions.SelfDocumentedProblemResult.csproj" />
+    <Project Path="Infrastructure/CommonShared/WebApp.CommonShared.csproj" />
+    <Project Path="Infrastructure/DotNetBrightener.Core.StartupTask/DotNetBrightener.Core.StartupTask.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+    </Project>
+    <Project Path="Infrastructure/DotNetBrightener.FriendlyRoutingLibrary/DotNetBrightener.FriendlyRoutingLibrary.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+    </Project>
+    <Project Path="Infrastructure/DotNetBrightener.MultiTenancy/DotNetBrightener.MultiTenancy.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+    </Project>
+  </Folder>
+  <Folder Name="/Infrastructure/Tests/">
+    <Project Path="Infrastructure/Tests/WebAppCommonShared.Demo/WebAppCommonShared.Demo.csproj" />
+  </Folder>
+  <Folder Name="/LinQToSqlBuilder/">
+    <Project Path="LinQToSqlBuilder/LinQToSqlBuilder.Mssql.Tests/LinQToSqlBuilder.Mssql.Tests.csproj" />
+    <Project Path="LinQToSqlBuilder/LinQToSqlBuilder.Mssql/LinQToSqlBuilder.Mssql.csproj" />
+    <Project Path="LinQToSqlBuilder/LinQToSqlBuilder.Npgsql.Tests/LinQToSqlBuilder.Npgsql.Tests.csproj" />
+    <Project Path="LinQToSqlBuilder/LinQToSqlBuilder.Npgsql/LinQToSqlBuilder.Npgsql.csproj" />
+    <Project Path="LinQToSqlBuilder/LinQToSqlBuilder/LinQToSqlBuilder.csproj" />
+  </Folder>
+  <Folder Name="/Localization/">
+    <Project Path="Localization/DotNetBrightener.Core.Localization/DotNetBrightener.Core.Localization.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+    </Project>
+    <Project Path="Localization/DotNetBrightener.LocaleManagement.Tests/LocaleManagement.Tests.csproj" />
+    <Project Path="Localization/DotNetBrightener.LocaleManagement.WebApi/LocaleManagement.WebApi.csproj" />
+    <Project Path="Localization/DotNetBrightener.LocaleManagement/LocaleManagement.csproj" />
+  </Folder>
+  <Folder Name="/Logging/">
+    <Project Path="Logging/DotNetBrightener.Core.Logging.DbStorage/DotNetBrightener.Core.Logging.DbStorage.csproj" />
+    <Project Path="Logging/DotNetBrightener.Core.Logging.OpenTelemetryEnabled.ApplicationInsights/DotNetBrightener.Core.Logging.OpenTelemetryEnabled.ApplicationInsights.csproj" />
+    <Project Path="Logging/DotNetBrightener.Core.Logging.OpenTelemetryEnabled/DotNetBrightener.Core.Logging.OpenTelemetryEnabled.csproj" />
+    <Project Path="Logging/DotNetBrightener.Core.Logging.PostgreSqlDbStorage/DotNetBrightener.Core.Logging.PostgreSqlDbStorage.csproj" />
+    <Project Path="Logging/DotNetBrightener.Core.Logging/DotNetBrightener.Core.Logging.csproj" />
+  </Folder>
+  <Folder Name="/Modules/" />
+  <Folder Name="/Modules/OAuth/" />
+  <Folder Name="/OAuthLibrary/">
+    <Project Path="OAuthLibrary/DotNetBrightener.OAuth.Integration.Apple/DotNetBrightener.OAuth.Integration.Apple.csproj" />
+    <Project Path="OAuthLibrary/DotNetBrightener.OAuth.Integration.Google/DotNetBrightener.OAuth.Integration.Google.csproj" />
+    <Project Path="OAuthLibrary/DotNetBrightener.OAuth.Shared.UrlBuilderExtensions/DotNetBrightener.OAuth.Shared.UrlBuilderExtensions.shproj" />
+    <Project Path="OAuthLibrary/DotNetBrightener.OAuth/DotNetBrightener.OAuth.csproj" />
+  </Folder>
+  <Folder Name="/OAuthLibrary/Tests/">
+    <Project Path="OAuthLibrary/DotNetBrightener.OAuth.DemoWebApi/DotNetBrightener.OAuth.DemoWebApi.csproj" />
+  </Folder>
+  <Folder Name="/OTPGenerator/">
+    <Project Path="OTPGenerator/DotNetBrightener.TimeBasedOtp.Tests/DotNetBrightener.TimeBasedOtp.Tests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+    </Project>
+    <Project Path="OTPGenerator/DotNetBrightener.TimeBasedOtp/DotNetBrightener.TimeBasedOtp.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+    </Project>
+  </Folder>
+  <Folder Name="/PushNotification/">
+    <Project Path="PushNotification/DotNetBrightener.PushNotification.APN/DotNetBrightener.PushNotification.APN.csproj" />
+    <Project Path="PushNotification/DotNetBrightener.PushNotification.DependencyInjection/DotNetBrightener.PushNotification.DependencyInjection.csproj" />
+    <Project Path="PushNotification/DotNetBrightener.PushNotification.FirebaseIntegration/DotNetBrightener.PushNotification.FirebaseIntegration.csproj" />
+    <Project Path="PushNotification/DotNetBrightener.PushNotification/DotNetBrightener.PushNotification.csproj" />
+  </Folder>
+  <Folder Name="/Security/">
+    <Project Path="Security/DotNetBrightener.AzureVaultClient/DotNetBrightener.AzureVaultClient.csproj" />
+    <Project Path="Security/DotNetBrightener.InfisicalVaultClient.Tests/DotNetBrightener.InfisicalVaultClient.Tests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+    </Project>
+    <Project Path="Security/DotNetBrightener.InfisicalVaultClient/DotNetBrightener.InfisicalVaultClient.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+    </Project>
+    <Project Path="Security/DotNetBrightener.Infrastructure.ApiKeyAuthentication/DotNetBrightener.Infrastructure.ApiKeyAuthentication.csproj" />
+    <Project Path="Security/DotNetBrightener.Infrastructure.JwtAuthentication/DotNetBrightener.Infrastructure.JwtAuthentication.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+    </Project>
+    <Project Path="Security/DotNetBrightener.Infrastructure.Security.Tests/DotNetBrightener.Infrastructure.Security.Tests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+    </Project>
+    <Project Path="Security/DotNetBrightener.Infrastructure.Security/DotNetBrightener.Infrastructure.Security.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+    </Project>
+  </Folder>
+  <Folder Name="/Shared/">
+    <Project Path="Shared/SharedExtensions.DateTime/SharedExtensions.DateTime.shproj" />
+    <Project Path="Shared/SharedExtensions.DateTimeProvider/SharedExtensions.DateTimeProvider.shproj" />
+    <Project Path="Shared/SharedExtensions.DbContext/SharedExtensions.DbContext.shproj" />
+    <Project Path="Shared/SharedExtensions.Dictionary/SharedExtensions.Dictionary.shproj" />
+    <Project Path="Shared/SharedExtensions.Exception/SharedExtensions.Exception.shproj" />
+    <Project Path="Shared/SharedExtensions.Expression/SharedExtensions.Expression.shproj" />
+    <Project Path="Shared/SharedExtensions.HttpContext/SharedExtensions.HttpContext.shproj" />
+    <Project Path="Shared/SharedExtensions.MessageCompression/SharedExtensions.MessageCompression.shproj" />
+    <Project Path="Shared/SharedExtensions.MvcBuilder/SharedExtensions.MvcBuilder.shproj" />
+    <Project Path="Shared/SharedExtensions.Object/SharedExtensions.Object.shproj" />
+    <Project Path="Shared/SharedExtensions.ObjectMethods/SharedExtensions.ObjectMethods.shproj" />
+    <Project Path="Shared/SharedExtensions.Reflection/SharedExtensions.Reflection.shproj" />
+    <Project Path="Shared/SharedExtensions.ServiceCollection/SharedExtensions.ServiceCollection.shproj" />
+    <Project Path="Shared/SharedExtensions.String/SharedExtensions.String.shproj" />
+    <Project Path="Shared/SharedExtensions.Tasks/SharedExtensions.Tasks.shproj" />
+    <Project Path="Shared/SharedExtensions.UI.Core/SharedExtensions.UI.Core.shproj" />
+    <Project Path="Shared/SharedExtensions.XmlDocumentationHelper/SharedExtensions.XmlDocumentationHelper.shproj" />
+  </Folder>
+  <Folder Name="/SharedUtils/">
+    <Project Path="Core/LanguageExts/LanguageExts.csproj" />
+    <Project Path="Core/VampireCoder.SharedUtils.Tests/VampireCoder.SharedUtils.Tests.csproj" />
+    <Project Path="Core/VampireCoder.SharedUtils/VampireCoder.SharedUtils.csproj" />
+    <Project Path="TestHelpers/DotNetBrightener.TestHelpers.PostgreSql/DotNetBrightener.TestHelpers.PostgreSql.csproj" />
+    <Project Path="TestHelpers/DotNetBrightener.TestHelpers/DotNetBrightener.TestHelpers.csproj" />
+  </Folder>
+  <Folder Name="/SiteSettings/">
+    <Project Path="SiteSettings/DotNetBrightener.SiteSettings.Data.Mssql/DotNetBrightener.SiteSettings.Data.Mssql.csproj" />
+    <Project Path="SiteSettings/DotNetBrightener.SiteSettings.Data.PostgreSql/DotNetBrightener.SiteSettings.Data.PostgreSql.csproj" />
+    <Project Path="SiteSettings/DotNetBrightener.SiteSettings/DotNetBrightener.SiteSettings.csproj" />
+  </Folder>
+  <Folder Name="/SiteSettings/Tests/">
+    <Project Path="SiteSettings/Tests/DotNetBrightener.SiteSettings.WebApp.Tests/DotNetBrightener.SiteSettings.WebApp.Tests.csproj" />
+    <Project Path="SiteSettings/Tests/DotNetBrightener.SiteSettings.WebApp/DotNetBrightener.SiteSettings.WebApp.csproj" />
+    <Project Path="SiteSettings/Tests/SiteSettingTests/SiteSettingTests.csproj" />
+  </Folder>
+  <Folder Name="/Synchronization/">
+    <Project Path="Synchronization/DotNetBrightener.SecuredApi.Tests/DotNetBrightener.SecuredApi.Tests.csproj" />
+    <Project Path="Synchronization/DotNetBrightener.SecuredApi/DotNetBrightener.SecuredApi.csproj" />
+    <Project Path="Synchronization/DotNetBrightener.SyncServer/DotNetBrightener.SyncServer.csproj" />
+  </Folder>
+  <Folder Name="/TemplateEngine/">
+    <Project Path="TemplateEngine/DotNetBrightener.TemplateEngine.Data.Mssql/DotNetBrightener.TemplateEngine.Data.Mssql.csproj" />
+    <Project Path="TemplateEngine/DotNetBrightener.TemplateEngine.Data.PostgreSql/DotNetBrightener.TemplateEngine.Data.PostgreSql.csproj" />
+    <Project Path="TemplateEngine/DotNetBrightener.TemplateEngine.Data/DotNetBrightener.TemplateEngine.Data.csproj" />
+    <Project Path="TemplateEngine/DotNetBrightener.TemplateEngine/DotNetBrightener.TemplateEngine.csproj" />
+  </Folder>
+  <Folder Name="/TemplateEngine/Tests/">
+    <Project Path="TemplateEngine/DotNetBrightener.TemplateEngine.Tests.Data.Mssql/DotNetBrightener.TemplateEngine.Tests.Data.Mssql.csproj" />
+    <Project Path="TemplateEngine/DotNetBrightener.TemplateEngine.Tests.Data.PostgreSql/DotNetBrightener.TemplateEngine.Tests.Data.PostgreSql.csproj" />
+    <Project Path="TemplateEngine/DotNetBrightener.TemplateEngine.Tests.Data/DotNetBrightener.TemplateEngine.Tests.Data.csproj" />
+    <Project Path="TemplateEngine/DotNetBrightener.TemplateEngine.Tests/DotNetBrightener.TemplateEngine.Tests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+    </Project>
+  </Folder>
+  <Folder Name="/UploadService/">
+    <Project Path="UploadService/DotNetBrightener.SimpleUploadService/DotNetBrightener.SimpleUploadService.csproj" />
+    <Project Path="UploadService/DotNetBrightener.UploadService.AzureBlobStorage/DotNetBrightener.UploadService.AzureBlobStorage.csproj" />
+    <Project Path="UploadService/DotNetBrightener.UploadService.ImageOptimizer/DotNetBrightener.UploadService.ImageOptimizer.csproj" />
+  </Folder>
+  <Folder Name="/WebApiGenericCRUD/">
+    <Project Path="WebApiGenericCRUD/DotNetBrightener.WebApi.GenericCRUD.Generator/WebApi.GenericCRUD.Generator.csproj" />
+    <Project Path="WebApiGenericCRUD/DotNetBrightener.WebApi.GenericCRUD.Shared/GenericCRUD.Shared.shproj" />
+    <Project Path="WebApiGenericCRUD/DotNetBrightener.WebApi.GenericCRUD/WebApi.GenericCRUD.csproj" />
+  </Folder>
+</Solution>
