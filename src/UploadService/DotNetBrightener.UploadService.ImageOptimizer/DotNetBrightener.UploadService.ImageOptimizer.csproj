@@ -1,14 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<IsPackable>true</IsPackable>
-		<PackageDescription>An Image Resizer used with DotNetBrightener.SimpleUploadService package</PackageDescription>
+		<PackageDescription>An Image Resizer used with DotNetBrightener.SimpleUploadService package. Migrated to SkiaSharp for improved security and performance.</PackageDescription>
 	</PropertyGroup>
 	<ItemGroup>
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Magick.NET-Q16-AnyCPU" />
-		<PackageReference Include="Magick.NET.Core" />
+		<PackageReference Include="SkiaSharp" />
 	</ItemGroup>
 	<ItemGroup>
 	  <ProjectReference Include="..\DotNetBrightener.SimpleUploadService\DotNetBrightener.SimpleUploadService.csproj" />
