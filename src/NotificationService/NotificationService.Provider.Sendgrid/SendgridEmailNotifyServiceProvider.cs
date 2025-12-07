@@ -1,55 +1,41 @@
-﻿using MailKit.Net.Smtp;
+﻿using System.Net;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using MimeKit;
-using MimeKit.Text;
 using NotificationService.Entity;
 using NotificationService.Options;
 using NotificationService.Providers;
 using NotificationService.Services;
 using NotificationService.Types;
+using SendGrid;
+using SendGrid.Helpers.Mail;
 
 namespace NotificationService.Provider.Sendgrid;
 
 public class SendgridEmailNotifyServiceProvider(
-    INotificationMessageQueueDataService notificationMessageQueueDataService,
-    ILogger<SendgridEmailNotifyServiceProvider>  logger,
-    IOptions<EmailSmtpSetting>           emailSmtpSetting,
-    IDateTimeProvider                    dateTimeProvider,
-    IOptions<EmailNotificationSettings>  emailNotificationSettings)
+    INotificationMessageQueueDataService        notificationMessageQueueDataService,
+    ILogger<SendgridEmailNotifyServiceProvider> logger,
+    IOptions<SendgridApiSettings>               sendgridApiSettings,
+    IDateTimeProvider                           dateTimeProvider,
+    IOptions<EmailNotificationSettings>         emailNotificationSettings)
     : BaseNotifyServiceProvider<EmailNotificationMessage>(
                                                           notificationMessageQueueDataService,
                                                           dateTimeProvider,
                                                           logger)
 {
-    private readonly EmailSmtpSetting          _emailSmtpSetting          = emailSmtpSetting.Value;
-    private readonly EmailNotificationSettings _emailNotificationSettings = emailNotificationSettings.Value;
+    private readonly SendgridApiSettings        _sendgridApiSettings       = sendgridApiSettings.Value;
+    private readonly EmailNotificationSettings  _emailNotificationSettings = emailNotificationSettings.Value;
 
     protected override async Task DeliverSingleNotification(EmailNotificationMessage notificationMessage)
     {
-        await DeliverEmails(_emailSmtpSetting,
-                            smtpClient =>
-                                DeliverNotification(notificationMessage, smtpClient)
-                           );
+        await DeliverNotification(notificationMessage);
     }
 
     protected override async Task DeliverManyNotifications(IEnumerable<EmailNotificationMessage> notificationMessages)
     {
-        await Task.WhenAll(
-                           notificationMessages.Select(notificationMessage =>
-                                                           DeliverEmails(_emailSmtpSetting,
-                                                                         async smtpClient =>
-                                                                         {
-                                                                             await
-                                                                                 DeliverNotification(notificationMessage,
-                                                                                                     smtpClient);
-                                                                         })
-                                                      )
-                          );
+        await Task.WhenAll(notificationMessages.Select(DeliverNotification));
     }
 
-    private async Task DeliverNotification(EmailNotificationMessage notificationMessage,
-                                           SmtpClient               smtpClient)
+    private async Task DeliverNotification(EmailNotificationMessage notificationMessage)
     {
         var now = DateTimeProvider.UtcNowWithOffset;
 
@@ -77,7 +63,6 @@ public class SendgridEmailNotifyServiceProvider(
 
         try
         {
-
             var deliveryTarget = new List<string>
             {
                 notificationMessage.DeliveryTarget
@@ -109,16 +94,16 @@ public class SendgridEmailNotifyServiceProvider(
             await SendEmail(deliveryTarget,
                             notificationMessage.MessageTitle,
                             notificationMessage.MessageBody,
-                            smtpClient,
-                            from: _emailSmtpSetting.FromAddress,
-                            displayName: _emailSmtpSetting.FromDisplayName,
+                            from: _sendgridApiSettings.FromAddress,
+                            displayName: _sendgridApiSettings.FromDisplayName,
+                            replyTo: _sendgridApiSettings.ReplyTo,
                             cc: ccTargets,
-                            bcc: bccTargets
-                           );
+                            bcc: bccTargets);
         }
         catch (Exception exception)
         {
             errorMessage = exception.GetFullExceptionMessage();
+            logger.LogError(exception, "Error while trying to deliver email via SendGrid API");
         }
 
         if (!string.IsNullOrEmpty(errorMessage))
@@ -126,7 +111,7 @@ public class SendgridEmailNotifyServiceProvider(
             await NotificationMessageQueueDataService.UpdateOne(q => q.Id == notificationMessage.Id,
                                                                 _ => new NotificationMessageQueue
                                                                 {
-                                                                    LastAttemptUtc = DateTimeProvider.UtcNowWithOffset,
+                                                                    LastAttemptUtc       = DateTimeProvider.UtcNowWithOffset,
                                                                     LastAttemptException = errorMessage
                                                                 });
 
@@ -136,136 +121,120 @@ public class SendgridEmailNotifyServiceProvider(
         await NotificationMessageQueueDataService.UpdateOne(q => q.Id == notificationMessage.Id,
                                                             _ => new NotificationMessageQueue
                                                             {
-                                                                SentAtUtc = DateTimeProvider.UtcNowWithOffset,
-                                                                SenderEntityId = notificationMessage
-                                                                   .SenderEntityId
+                                                                SentAtUtc      = DateTimeProvider.UtcNowWithOffset,
+                                                                SenderEntityId = notificationMessage.SenderEntityId
                                                             });
-
     }
 
-    private static async Task SendEmail(IEnumerable<string> to,
-                                        string              subject,
-                                        string              body,
-                                        SmtpClient          smtpClient,
-                                        bool                isHtml      = true,
-                                        IEnumerable<string> cc          = null,
-                                        IEnumerable<string> bcc         = null,
-                                        string              from        = "",
-                                        string              displayName = "",
-                                        string              replyTo     = "")
+    private async Task SendEmail(IEnumerable<string> to,
+                                 string              subject,
+                                 string              body,
+                                 bool                isHtml      = true,
+                                 IEnumerable<string> cc          = null,
+                                 IEnumerable<string> bcc         = null,
+                                 string              from        = "",
+                                 string              displayName = "",
+                                 string              replyTo     = "")
     {
-        var mail = new MimeMessage
+        var client = new SendGridClient(_sendgridApiSettings.ApiKey);
+        var msg    = new SendGridMessage
         {
-            Subject = subject,
-            Body = new TextPart(isHtml ? TextFormat.Html : TextFormat.Plain)
-            {
-                Text = body
-            }
+            From    = new EmailAddress(from, displayName),
+            Subject = subject
         };
 
-        mail.From.Add(new MailboxAddress(displayName, from));
+        // Add content based on type
+        if (isHtml)
+        {
+            msg.AddContent(MimeType.Html, body);
+        }
+        else
+        {
+            msg.AddContent(MimeType.Text, body);
+        }
 
-        var mailsReplyTo = new List<string>();
+        // Add To recipients
+        var toList = to.Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
 
+        foreach (var recipient in toList)
+        {
+            try
+            {
+                msg.AddTo(new EmailAddress(recipient.Trim()));
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "Failed to add recipient: {Recipient}", recipient);
+            }
+        }
+
+        // Add CC recipients
+        if (cc != null)
+        {
+            foreach (var ccEmail in cc.Where(s => !string.IsNullOrWhiteSpace(s)))
+            {
+                try
+                {
+                    msg.AddCc(new EmailAddress(ccEmail.Trim()));
+                }
+                catch (Exception ex)
+                {
+                    logger.LogWarning(ex, "Failed to add CC recipient: {CcEmail}", ccEmail);
+                }
+            }
+        }
+
+        // Add BCC recipients
+        if (bcc != null)
+        {
+            foreach (var bccEmail in bcc.Where(s => !string.IsNullOrWhiteSpace(s)))
+            {
+                try
+                {
+                    msg.AddBcc(new EmailAddress(bccEmail.Trim()));
+                }
+                catch (Exception ex)
+                {
+                    logger.LogWarning(ex, "Failed to add BCC recipient: {BccEmail}", bccEmail);
+                }
+            }
+        }
+
+        // Add Reply-To if specified
         if (!string.IsNullOrEmpty(replyTo))
         {
-            mailsReplyTo.AddRange(replyTo.Split([
-                                                    ",", ";"
-                                                ],
-                                                StringSplitOptions.RemoveEmptyEntries));
+            var replyToAddresses = replyTo.Split([",", ";"], StringSplitOptions.RemoveEmptyEntries);
+
+            if (replyToAddresses.Length > 0)
+            {
+                // SendGrid only supports a single reply-to address
+                msg.ReplyTo = new EmailAddress(replyToAddresses[0].Trim());
+            }
         }
 
-        foreach (var mailAdd in mailsReplyTo)
+        var response = await client.SendEmailAsync(msg);
+
+        if (response.StatusCode != HttpStatusCode.OK &&
+            response.StatusCode != HttpStatusCode.Accepted)
         {
-            try
-            {
-                mail.ReplyTo.Add(new MailboxAddress(mailAdd, mailAdd));
-            }
-            catch
-            {
-            }
+            var responseBody = await response.Body.ReadAsStringAsync();
+
+            throw new SendGridApiException(
+                $"SendGrid API returned status {(int)response.StatusCode} ({response.StatusCode}): {responseBody}",
+                response.StatusCode,
+                responseBody);
         }
 
-        if (cc != null &&
-            cc.Any())
-        {
-            mail.Cc.Clear();
-
-            foreach (var s in cc)
-            {
-                try
-                {
-                    mail.Cc.Add(new MailboxAddress(s, s));
-                }
-                catch
-                {
-                }
-            }
-        }
-
-        if (bcc != null &&
-            bcc.Any())
-        {
-            mail.Bcc.Clear();
-
-            foreach (var s in bcc)
-            {
-                try
-                {
-                    mail.Bcc.Add(new MailboxAddress(s, s));
-                }
-                catch
-                {
-                }
-            }
-        }
-
-        var errors = new Dictionary<string, Exception>();
-
-        foreach (var s in to)
-        {
-            try
-            {
-                mail.To.Add(new MailboxAddress(s, s));
-                await smtpClient.SendAsync(mail);
-                mail.To.Clear();
-            }
-            catch (Exception exception)
-            {
-                errors.Add(s, exception);
-            }
-        }
-
-        if (errors.Any())
-        {
-            throw new AggregateException(errors.Select((p => p.Value)));
-        }
+        logger.LogDebug("Email sent successfully via SendGrid API. Status: {StatusCode}", response.StatusCode);
     }
+}
 
-    private async Task DeliverEmails(EmailSmtpSetting       emailAccount,
-                                     Func<SmtpClient, Task> deliverAction)
-    {
-        using (var smtpClient = new SmtpClient())
-        {
-            smtpClient.Timeout    = (emailAccount.Timeout ?? 120) * 1000;
-            smtpClient.RequireTLS = emailAccount.EnableSsl;
-
-            try
-            {
-
-                await smtpClient.ConnectAsync(emailAccount.Host, emailAccount.Port);
-                await smtpClient.AuthenticateAsync(emailAccount.User, emailAccount.Password);
-
-                await deliverAction.Invoke(smtpClient);
-            }
-            catch (Exception exception)
-            {
-                logger.LogError(exception, "Error while trying to deliver email");
-            }
-            finally
-            {
-                await smtpClient.DisconnectAsync(true);
-            }
-        }
-    }
+/// <summary>
+///     Exception thrown when SendGrid API returns an error response
+/// </summary>
+public class SendGridApiException(string message, HttpStatusCode statusCode, string responseBody)
+    : Exception(message)
+{
+    public HttpStatusCode StatusCode   { get; } = statusCode;
+    public string         ResponseBody { get; } = responseBody;
 }
