@@ -260,6 +260,7 @@
   <Folder Name="/TemplateEngine/">
     <Project Path="TemplateEngine/DotNetBrightener.TemplateEngine.Data.Mssql/DotNetBrightener.TemplateEngine.Data.Mssql.csproj" />
     <Project Path="TemplateEngine/DotNetBrightener.TemplateEngine.Data.PostgreSql/DotNetBrightener.TemplateEngine.Data.PostgreSql.csproj" />
+    <Project Path="TemplateEngine/DotNetBrightener.TemplateEngine.Data.SendgridTemplateProvider/DotNetBrightener.TemplateEngine.Data.SendgridTemplateProvider.csproj" />
     <Project Path="TemplateEngine/DotNetBrightener.TemplateEngine.Data/DotNetBrightener.TemplateEngine.Data.csproj" />
     <Project Path="TemplateEngine/DotNetBrightener.TemplateEngine/DotNetBrightener.TemplateEngine.csproj" />
   </Folder>

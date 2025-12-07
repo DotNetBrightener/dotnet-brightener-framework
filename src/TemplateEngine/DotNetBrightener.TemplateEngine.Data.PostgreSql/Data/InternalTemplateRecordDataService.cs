@@ -1,5 +1,5 @@
 ﻿using DotNetBrightener.DataAccess.Services;
-using DotNetBrightener.TemplateEngine.Data.PostgreSql.Entity;
+using DotNetBrightener.TemplateEngine.Data.Entity;
 
 namespace DotNetBrightener.TemplateEngine.Data.PostgreSql.Data;
 
