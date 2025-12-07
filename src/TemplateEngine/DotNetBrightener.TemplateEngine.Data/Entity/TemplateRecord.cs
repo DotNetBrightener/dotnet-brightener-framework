@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using DotNetBrightener.DataAccess.Models;
 
-namespace DotNetBrightener.TemplateEngine.Data.PostgreSql.Entity;
+namespace DotNetBrightener.TemplateEngine.Data.Entity;
 
 public class TemplateRecord : BaseEntityWithAuditInfo
 {

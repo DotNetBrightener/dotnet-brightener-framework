@@ -1,6 +1,6 @@
-﻿using DotNetBrightener.TemplateEngine.Data.Models;
+﻿using DotNetBrightener.TemplateEngine.Data.Entity;
+using DotNetBrightener.TemplateEngine.Data.Models;
 using DotNetBrightener.TemplateEngine.Data.PostgreSql.Data;
-using DotNetBrightener.TemplateEngine.Data.PostgreSql.Entity;
 using DotNetBrightener.TemplateEngine.Data.Services;
 using DotNetBrightener.TemplateEngine.Exceptions;
 using Microsoft.EntityFrameworkCore;

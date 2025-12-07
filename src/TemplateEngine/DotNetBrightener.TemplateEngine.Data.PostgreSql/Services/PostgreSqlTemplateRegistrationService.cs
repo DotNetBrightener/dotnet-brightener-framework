@@ -1,5 +1,5 @@
-﻿using DotNetBrightener.TemplateEngine.Data.PostgreSql.Data;
-using DotNetBrightener.TemplateEngine.Data.PostgreSql.Entity;
+﻿using DotNetBrightener.TemplateEngine.Data.Entity;
+using DotNetBrightener.TemplateEngine.Data.PostgreSql.Data;
 using DotNetBrightener.TemplateEngine.Data.Services;
 using DotNetBrightener.TemplateEngine.Models;
 using Microsoft.Extensions.Logging;

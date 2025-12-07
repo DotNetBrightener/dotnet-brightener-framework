@@ -34,11 +34,6 @@
 		<ProjectReference Include="..\DotNetBrightener.DataAccess.Abstractions\DotNetBrightener.DataAccess.Abstractions.csproj" />
 	</ItemGroup>
 
-
-	<ItemGroup>
-	  <Folder Include="Configurators\" />
-	</ItemGroup>
-
 	<Import Project="..\..\Shared\SharedExtensions.String\StringExtensions.projitems" Label="Shared" />
 
 	<Import Project="..\..\Shared\SharedExtensions.DbContext\SharedExtensions.DbContext.projitems" Label="Shared" />

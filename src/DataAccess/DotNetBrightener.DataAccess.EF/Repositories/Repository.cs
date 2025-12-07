@@ -20,6 +20,15 @@ using System.Reflection;
 
 namespace DotNetBrightener.DataAccess.EF.Repositories;
 
+public abstract class Repository<TDbContext>(
+    TDbContext       dbContext,
+    IServiceProvider serviceProvider,
+    ILoggerFactory   loggerFactory)
+    : Repository(dbContext, serviceProvider, loggerFactory)
+    where TDbContext : DbContext
+{
+}
+
 public class Repository(
     DbContext        dbContext,
     IServiceProvider serviceProvider,
@@ -30,6 +39,8 @@ public class Repository(
         serviceProvider.TryGet<IgnoreAuditingEntitiesContainer>();
 
     private readonly IAuditEntriesProcessor? _auditEntriesProcessor = serviceProvider.TryGet<IAuditEntriesProcessor>();
+
+    protected DbContext DbContext { get; } = dbContext;
 
     public virtual void Insert<T>(T entity)
         where T : class => InsertAsync(entity).Wait();
