@@ -1,3 +1,0 @@
-﻿using DotNetBrightener.SimpleUploadService;
-
-namespace DotNetBrightener.UploadService.ImageOptimizer;

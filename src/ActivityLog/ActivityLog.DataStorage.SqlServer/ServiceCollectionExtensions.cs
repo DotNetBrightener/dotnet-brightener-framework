@@ -1,43 +1,55 @@
 using ActivityLog;
 using ActivityLog.DataStorage;
 using ActivityLog.DataStorage.SqlServer;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using System;
+using System.Data.Common;
 
 // ReSharper disable CheckNamespace
 namespace Microsoft.EntityFrameworkCore;
 
 public static class ServiceCollectionExtensions
 {
-    public static ActivityLogBuilder UseSqlServer(this ActivityLogBuilder activityLogBuilder,
-                                                  string                  connectionString)
+    extension(ActivityLogBuilder activityLogBuilder)
     {
-        var services = activityLogBuilder.Services;
-
-        services.UseDbContextWithMigration<ActivityLogDbContext, SqlServerMigrationDbContext>((serviceProvider,
-                                                                                               options) =>
+        public ActivityLogBuilder UseSqlServer(string connectionString)
         {
-            options.UseSqlServer(connectionString,
-                                 x => x.MigrationsHistoryTable("__MigrationsHistory", nameof(ActivityLog)));
-        });
+            activityLogBuilder.UseSqlServer(((serviceProvider, options) => new SqlConnection(connectionString)));
 
-        return activityLogBuilder;
-    }
+            return activityLogBuilder;
+        }
 
-    public static ActivityLogBuilder UseSqlServer(this ActivityLogBuilder activityLogBuilder,
-                                                  Func<IServiceProvider, DbContextOptionsBuilder, string>
-                                                      connectionStringResolver)
-    {
-        var services = activityLogBuilder.Services;
-
-        services.UseDbContextWithMigration<ActivityLogDbContext, SqlServerMigrationDbContext>((serviceProvider,
-                                                                                               options) =>
+        public ActivityLogBuilder UseSqlServer(Func<IServiceProvider, DbContextOptionsBuilder, string>
+                                                   connectionStringResolver)
         {
-            var connectionString = connectionStringResolver.Invoke(serviceProvider, options);
+            activityLogBuilder.UseSqlServer((serviceProvider, options) =>
+            {
+                var connectionString =
+                    connectionStringResolver.Invoke(serviceProvider, options);
 
-            options.UseSqlServer(connectionString,
-                                 x => x.MigrationsHistoryTable("__MigrationsHistory", nameof(ActivityLog)));
-        });
+                return new SqlConnection(connectionString);
+            });
 
-        return activityLogBuilder;
+            return activityLogBuilder;
+        }
+
+        public ActivityLogBuilder UseSqlServer(Func<IServiceProvider, DbContextOptionsBuilder, DbConnection>
+                                                   connectionStringResolver)
+        {
+            var services = activityLogBuilder.Services;
+
+            services.UseDbContextWithMigration<ActivityLogDbContext, SqlServerMigrationDbContext>((serviceProvider,
+                                                                                                   options) =>
+            {
+                var connection = connectionStringResolver.Invoke(serviceProvider, options);
+
+                options.UseSqlServer(connection,
+                                     x => x.MigrationsHistoryTable("__MigrationsHistory", nameof(ActivityLog)));
+            });
+
+            return activityLogBuilder;
+        }
     }
 }

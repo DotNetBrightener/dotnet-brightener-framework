@@ -1,6 +1,8 @@
-﻿using DotNetBrightener.Infrastructure.AppClientManager;
+﻿using System.Data.Common;
+using DotNetBrightener.Infrastructure.AppClientManager;
 using DotNetBrightener.Infrastructure.AppClientManager.DataStorage;
 using DotNetBrightener.Infrastructure.AppClientManager.DataStorage.Mssql;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 // ReSharper disable CheckNamespace
 
@@ -8,39 +10,45 @@ namespace Microsoft.EntityFrameworkCore;
 
 public static class ServiceCollectionExtensions
 {
-    public static AppClientManagerBuilder UseSqlServer(this AppClientManagerBuilder appClientManagerBuilder,
-                                                       string                       connectionString)
+    extension(AppClientManagerBuilder appClientManagerBuilder)
     {
-        var services = appClientManagerBuilder.Services;
-
-        services.UseDbContextWithMigration<AppClientDbContext, SqlServerMigrationDbContext>((serviceProvider,
-                                                                                             options) =>
+        public AppClientManagerBuilder UseSqlServer(string connectionString)
         {
-            options.UseSqlServer(connectionString,
-                                 x => x.MigrationsHistoryTable("__MigrationsHistory",
-                                                               AppClientDataDefaults
-                                                                  .AppClientSchemaName));
-        });
+            appClientManagerBuilder.UseSqlServer((provider, builder) => new SqlConnection(connectionString));
 
-        return appClientManagerBuilder;
-    }
+            return appClientManagerBuilder;
+        }
 
-    public static AppClientManagerBuilder UseSqlServer(this AppClientManagerBuilder appClientManagerBuilder,
-                                                       Func<IServiceProvider, DbContextOptionsBuilder, string>
-                                                           connectionStringResolver)
-    {
-        var services = appClientManagerBuilder.Services;
-
-        services.UseDbContextWithMigration<AppClientDbContext, SqlServerMigrationDbContext>((serviceProvider,
-                                                                                             options) =>
+        public AppClientManagerBuilder UseSqlServer(Func<IServiceProvider, DbContextOptionsBuilder, DbConnection>
+                                                        connectionStringResolver)
         {
-            var connectionString = connectionStringResolver.Invoke(serviceProvider, options);
-            options.UseSqlServer(connectionString,
-                                 x => x.MigrationsHistoryTable("__MigrationsHistory",
-                                                               AppClientDataDefaults
-                                                                  .AppClientSchemaName));
-        });
+            var services = appClientManagerBuilder.Services;
 
-        return appClientManagerBuilder;
+            services.UseDbContextWithMigration<AppClientDbContext, SqlServerMigrationDbContext>((serviceProvider,
+                                                                                                 options) =>
+            {
+                var connection = connectionStringResolver.Invoke(serviceProvider, options);
+
+                options.UseSqlServer(connection,
+                                     x => x.MigrationsHistoryTable("__MigrationsHistory",
+                                                                   AppClientDataDefaults
+                                                                      .AppClientSchemaName));
+            });
+
+            return appClientManagerBuilder;
+        }
+
+        public AppClientManagerBuilder UseSqlServer(Func<IServiceProvider, DbContextOptionsBuilder, string>
+                                                        connectionStringResolver)
+        {
+            appClientManagerBuilder.UseSqlServer((provider, builder) =>
+            {
+                var connectionString = connectionStringResolver.Invoke(provider, builder);
+
+                return new SqlConnection(connectionString);
+            });
+
+            return appClientManagerBuilder;
+        }
     }
 }
