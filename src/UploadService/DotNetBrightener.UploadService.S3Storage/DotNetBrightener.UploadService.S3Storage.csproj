@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<IsPackable>true</IsPackable>
+		<PackageDescription>S3-Compatible Storage Upload Service Provider for ASP.NET Core Applications. Supports AWS S3, Digital Ocean Spaces, Wasabi, MinIO, Backblaze B2, and other S3-compatible storage providers.</PackageDescription>
+	</PropertyGroup>
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="AWSSDK.S3" />
+		<PackageReference Include="Newtonsoft.Json" />
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\..\BackgroundTasks\DotNetBrightener.Core.BackgroundTasks.DependencyInjection\DotNetBrightener.Core.BackgroundTasks.DependencyInjection.csproj" />
+		<ProjectReference Include="..\..\EventPubSub\DotNetBrightener.Plugins.EventPubSub\DotNetBrightener.Plugins.EventPubSub.csproj" />
+		<ProjectReference Include="..\DotNetBrightener.SimpleUploadService\DotNetBrightener.SimpleUploadService.csproj" />
+	</ItemGroup>
+	<Import Project="..\..\Shared\SharedExtensions.Exception\SharedExtensions.Exception.projitems" Label="Shared" />
+	<Import Project="..\..\Shared\SharedExtensions.HttpContext\SharedExtensions.HttpContext.projitems" Label="Shared" />
+	<Import Project="..\..\Shared\SharedExtensions.ObjectMethods\SharedExtensions.ObjectMethods.projitems" Label="Shared" />
+
+
+</Project>

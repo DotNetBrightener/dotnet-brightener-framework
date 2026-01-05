@@ -276,6 +276,7 @@
     <Project Path="UploadService/DotNetBrightener.SimpleUploadService/DotNetBrightener.SimpleUploadService.csproj" />
     <Project Path="UploadService/DotNetBrightener.UploadService.AzureBlobStorage/DotNetBrightener.UploadService.AzureBlobStorage.csproj" />
     <Project Path="UploadService/DotNetBrightener.UploadService.ImageOptimizer/DotNetBrightener.UploadService.ImageOptimizer.csproj" />
+    <Project Path="UploadService/DotNetBrightener.UploadService.S3Storage/DotNetBrightener.UploadService.S3Storage.csproj" />
   </Folder>
   <Folder Name="/WebApiGenericCRUD/">
     <Project Path="WebApiGenericCRUD/DotNetBrightener.WebApi.GenericCRUD.Generator/WebApi.GenericCRUD.Generator.csproj" />

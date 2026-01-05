@@ -4,7 +4,7 @@ namespace Testcontainers.MsSql;
 
 public static class MsSqlContainerExtensions
 {
-    public static string GetConnectionString(this MsSqlContainer container, string databaseName = "TestDb")
+    public static string GetConnectionStringForDb(this MsSqlContainer container, string databaseName = "TestDb")
     {
         return container.GetConnectionString()
                         .Replace("Database=master", $"Database={databaseName}");

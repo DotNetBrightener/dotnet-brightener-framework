@@ -29,4 +29,5 @@
 	  <ProjectReference Include="..\DotNetBrightener.TemplateEngine.Data.PostgreSql\DotNetBrightener.TemplateEngine.Data.PostgreSql.csproj" />
 	  <ProjectReference Include="..\DotNetBrightener.TemplateEngine.Tests.Data\DotNetBrightener.TemplateEngine.Tests.Data.csproj" />
 	</ItemGroup>
+
 </Project>
