@@ -6,17 +6,13 @@ using Microsoft.Extensions.Logging;
 
 namespace DotNetBrightener.SimpleUploadService.Controllers;
 
-public abstract class FileUploadController : ControllerBase
+public abstract class FileUploadController(
+    IUploadService uploadService,
+    ILogger        logger)
+    : ControllerBase
 {
-    protected readonly ILogger        Logger;
-    protected readonly IUploadService UploadService;
-
-    protected FileUploadController(IUploadService uploadService,
-                                   ILogger        logger)
-    {
-        Logger        = logger;
-        UploadService = uploadService;
-    }
+    protected readonly ILogger        Logger        = logger;
+    protected readonly IUploadService UploadService = uploadService;
 
     protected async Task<List<FileObjectModel>> ProcessUploadFile(UploadRequestModel model)
     {

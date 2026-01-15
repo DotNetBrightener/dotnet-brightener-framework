@@ -4,6 +4,10 @@
 		<PackageDescription>A Simple Upload API for ASP.NET Core Applications</PackageDescription>
 	</PropertyGroup>
 	<ItemGroup>
+		<InternalsVisibleTo Include="DotNetBrightener.UploadService.AzureBlobStorage" />
+		<InternalsVisibleTo Include="DotNetBrightener.UploadService.S3Storage" />
+	</ItemGroup>
+	<ItemGroup>
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
 	</ItemGroup>
 	<ItemGroup>

@@ -4,6 +4,7 @@ using Amazon.S3.Model;
 using Amazon.Runtime;
 using DotNetBrightener.SimpleUploadService.Models;
 using DotNetBrightener.SimpleUploadService.Services;
+using DotNetBrightener.SimpleUploadService.Utils;
 using DotNetBrightener.UploadService.S3Storage.Providers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -85,36 +86,25 @@ public static class S3StorageFileEndpoints
         // Check local cache first
         var tmpLocalFile = Path.Combine(environment.ContentRootPath, cfg.TempDownloadFolder, fileName);
 
-        if (File.Exists(tmpLocalFile))
+        if (FileCacheManager.IsCacheValid(tmpLocalFile, cfg.CacheExpiration))
         {
-            var fileInfo = new FileInfo(tmpLocalFile);
+            contentTypeProvider.TryGetContentType(tmpLocalFile, out var contentType);
+            logger.LogInformation("Response from cached local file {fileName}", fileName);
 
-            // Check if cache is still valid
-            if (DateTime.UtcNow - fileInfo.LastWriteTimeUtc < cfg.CacheExpiration)
-            {
-                contentTypeProvider.TryGetContentType(tmpLocalFile, out var contentType);
-                logger.LogInformation("Response from cached local file {fileName}", fileName);
-
-                return Results.File(tmpLocalFile, contentType ?? "application/octet-stream");
-            }
+            return Results.File(tmpLocalFile, contentType ?? "application/octet-stream");
         }
 
         if (fileName != originalFileName)
         {
             tmpLocalFile = Path.Combine(environment.ContentRootPath, cfg.TempDownloadFolder, originalFileName);
 
-            if (File.Exists(tmpLocalFile))
+            if (FileCacheManager.IsCacheValid(tmpLocalFile, cfg.CacheExpiration))
             {
-                var fileInfo = new FileInfo(tmpLocalFile);
+                contentTypeProvider.TryGetContentType(tmpLocalFile, out var contentType);
 
-                if (DateTime.UtcNow - fileInfo.LastWriteTimeUtc < cfg.CacheExpiration)
-                {
-                    contentTypeProvider.TryGetContentType(tmpLocalFile, out var contentType);
+                logger.LogInformation("Response from cached local file {fileName}", originalFileName);
 
-                    logger.LogInformation("Response from cached local file {fileName}", originalFileName);
-
-                    return Results.File(tmpLocalFile, contentType ?? "application/octet-stream");
-                }
+                return Results.File(tmpLocalFile, contentType ?? "application/octet-stream");
             }
         }
 
@@ -194,6 +184,19 @@ public static class S3StorageFileEndpoints
                 await response.ResponseStream.CopyToAsync(memoryStream);
                 memoryStream.Position = 0;
 
+                // Cache original file
+                var cacheDir = Path.Combine(environment.ContentRootPath, cfg.TempDownloadFolder);
+                var originalCacheFilePath = Path.Combine(cacheDir, originalFileName);
+
+                await FileCacheManager.TrySaveToCacheAsync(
+                    memoryStream,
+                    originalCacheFilePath,
+                    cacheDir,
+                    logger);
+
+                // Reset stream for thumbnail upload
+                memoryStream.Position = 0;
+
                 await uploadService.Upload(memoryStream,
                                            new UploadRequestModel
                                            {
@@ -217,7 +220,38 @@ public static class S3StorageFileEndpoints
                 return Results.File(memoryStream, response.Headers.ContentType);
             }
 
-            return Results.Stream(response.ResponseStream, response.Headers.ContentType);
+            // Normal download path - cache before serving
+            var normalCacheDir = Path.Combine(environment.ContentRootPath, cfg.TempDownloadFolder);
+            var normalCacheFilePath = Path.Combine(normalCacheDir, fileName);
+
+            var cached = await FileCacheManager.TrySaveToCacheAsync(
+                response.ResponseStream,
+                normalCacheFilePath,
+                normalCacheDir,
+                logger);
+
+            response.Dispose();
+
+            if (cached)
+            {
+                // Serve from cache
+                contentTypeProvider.TryGetContentType(normalCacheFilePath, out var contentType);
+                return Results.File(normalCacheFilePath, contentType ?? response.Headers.ContentType);
+            }
+            else
+            {
+                // Cache failed, re-download and stream directly (fallback)
+                logger.LogWarning("Serving file {fileName} without caching due to cache failure", fileName);
+
+                var retryRequest = new GetObjectRequest
+                {
+                    BucketName = cfg.BucketName,
+                    Key = key
+                };
+
+                var retryResponse = await s3Client.GetObjectAsync(retryRequest);
+                return Results.Stream(retryResponse.ResponseStream, retryResponse.Headers.ContentType);
+            }
         }
         catch (AmazonS3Exception ex)
         {

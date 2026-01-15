@@ -15,8 +15,6 @@
 		<ProjectReference Include="..\..\EventPubSub\DotNetBrightener.Plugins.EventPubSub\DotNetBrightener.Plugins.EventPubSub.csproj" />
 		<ProjectReference Include="..\DotNetBrightener.SimpleUploadService\DotNetBrightener.SimpleUploadService.csproj" />
 	</ItemGroup>
-	<Import Project="..\..\Shared\SharedExtensions.Exception\SharedExtensions.Exception.projitems" Label="Shared" />
-	<Import Project="..\..\Shared\SharedExtensions.HttpContext\SharedExtensions.HttpContext.projitems" Label="Shared" />
 	<Import Project="..\..\Shared\SharedExtensions.ObjectMethods\SharedExtensions.ObjectMethods.projitems" Label="Shared" />
 
 
