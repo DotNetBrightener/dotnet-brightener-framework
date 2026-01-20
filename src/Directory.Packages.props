@@ -4,7 +4,7 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- Azure packages -->
-    <PackageVersion Include="AWSSDK.S3" Version="4.0.17.1" />
+    <PackageVersion Include="AWSSDK.S3" Version="4.0.17.2" />
     <PackageVersion Include="Azure.Identity" Version="1.17.1" />
     <PackageVersion Include="Azure.Messaging.ServiceBus" Version="7.20.1" />
     <PackageVersion Include="Azure.Monitor.OpenTelemetry.AspNetCore" Version="1.4.0" />
