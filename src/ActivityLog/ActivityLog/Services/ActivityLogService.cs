@@ -173,7 +173,7 @@ public class ActivityLogService(
             }
         }
 
-        return $"Executed method {context.FullMethodName}";
+        return string.Empty;
     }
 
     private ActivityLogLevel DetermineLogLevel(MethodExecutionContext context)

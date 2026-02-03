@@ -5,13 +5,18 @@ using Microsoft.Data.SqlClient;
 
 namespace DotNetBrightener.DataAccess.Dapper;
 
-public class MsSqlDapperRepository : IDapperRepository
+public class MsSqlDapperRepository(
+    IServiceProvider      serviceProvider,
+    DatabaseConfiguration databaseConfiguration) : IDapperRepository
 {
-    private readonly DatabaseConfiguration _databaseConfiguration;
+    private readonly Func<IServiceProvider, string, IDbConnection> _connectionFactory = InitializeConnection;
 
-    public MsSqlDapperRepository(DatabaseConfiguration databaseConfiguration)
+    public MsSqlDapperRepository(IServiceProvider                              serviceProvider,
+                                 DatabaseConfiguration                         databaseConfiguration,
+                                 Func<IServiceProvider, string, IDbConnection> connectionFactory)
+        : this(serviceProvider, databaseConfiguration)
     {
-        _databaseConfiguration = databaseConfiguration;
+        _connectionFactory = connectionFactory;
     }
 
     public async Task<IQueryable<TEntity>> FetchEntities<TEntity>(string sqlQuery, object param = null)
@@ -36,7 +41,6 @@ public class MsSqlDapperRepository : IDapperRepository
 
     public async Task<TEntity> ExecuteScalar<TEntity>(string sqlQuery, object param = null)
     {
-
         using (var connection = await NewConnection())
         {
             var result = await connection.ExecuteScalarAsync<TEntity>(sqlQuery, param);
@@ -45,16 +49,27 @@ public class MsSqlDapperRepository : IDapperRepository
         }
     }
 
-    private Task<IDbConnection> NewConnection()
+    private async Task<IDbConnection> NewConnection()
     {
-        return NewConnection(_databaseConfiguration.ConnectionString);
+        var connection = _connectionFactory(serviceProvider,
+                                            databaseConfiguration.ConnectionString);
+
+        if (connection is SqlConnection sqlConnection)
+        {
+            await sqlConnection.OpenAsync();
+        }
+        else
+        {
+            connection.Open();
+        }
+
+        return connection;
     }
 
-    private static async Task<IDbConnection> NewConnection(string connectionString)
+    private static IDbConnection InitializeConnection(IServiceProvider serviceProvider,
+                                                      string           baseConnectionString)
     {
-        var connection = new SqlConnection(connectionString);
-
-        connection.Open();
+        var connection = new SqlConnection(baseConnectionString);
 
         return connection;
     }
