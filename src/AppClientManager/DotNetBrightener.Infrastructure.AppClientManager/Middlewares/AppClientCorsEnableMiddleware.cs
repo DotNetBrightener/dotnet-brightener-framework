@@ -157,8 +157,8 @@ public class AppClientCorsEnableMiddleware(
             !string.IsNullOrEmpty(requestDomainName))
         {
             if (associatedApp.AllowedOrigins is null ||
-                associatedApp.AllowedOrigins != "*" ||
-                !associatedApp.AllowedOrigins.Contains(requestDomainName))
+                (associatedApp.AllowedOrigins != "*" &&
+                 !associatedApp.AllowedOrigins.Contains(requestDomainName)))
             {
                 return appClientIdentifyingResult;
             }
