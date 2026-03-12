@@ -12,17 +12,17 @@ namespace DotNetBrightener.DataAccess.EF.PostgreSQL.Interceptors;
 /// Interceptor that ensures history triggers are created for PostgreSQL history-enabled entities
 /// </summary>
 internal class PostgreSqlHistoryInterceptor(
-    ILogger<PostgreSqlHistoryInterceptor> logger,
-    PostgreSqlHistoryTableManager         historyTableManager)
+    ILogger                       logger,
+    PostgreSqlHistoryTableManager historyTableManager)
     : DbConnectionInterceptor
 {
-    private readonly HashSet<string>                       _processedContexts   = new();
+    private readonly HashSet<string> _processedContexts = new();
 
-    public override async ValueTask<InterceptionResult> ConnectionOpeningAsync(
-        DbConnection connection,
-        ConnectionEventData eventData,
-        InterceptionResult result,
-        CancellationToken cancellationToken = default)
+    public override async ValueTask<InterceptionResult> ConnectionOpeningAsync(DbConnection        connection,
+                                                                               ConnectionEventData eventData,
+                                                                               InterceptionResult  result,
+                                                                               CancellationToken cancellationToken =
+                                                                                   default)
     {
         if (eventData.Context != null)
         {
@@ -32,10 +32,9 @@ internal class PostgreSqlHistoryInterceptor(
         return await base.ConnectionOpeningAsync(connection, eventData, result, cancellationToken);
     }
 
-    public override InterceptionResult ConnectionOpening(
-        DbConnection connection,
-        ConnectionEventData eventData,
-        InterceptionResult result)
+    public override InterceptionResult ConnectionOpening(DbConnection        connection,
+                                                         ConnectionEventData eventData,
+                                                         InterceptionResult  result)
     {
         if (eventData.Context != null)
         {
@@ -45,13 +44,12 @@ internal class PostgreSqlHistoryInterceptor(
         return base.ConnectionOpening(connection, eventData, result);
     }
 
-    private async Task EnsureHistoryTriggersExist(
-        DbContext context,
-        DbConnection connection,
-        CancellationToken cancellationToken)
+    private async Task EnsureHistoryTriggersExist(DbContext         context,
+                                                  DbConnection      connection,
+                                                  CancellationToken cancellationToken)
     {
         var contextKey = context.GetType().FullName ?? context.GetType().Name;
-        
+
         // Avoid processing the same context type multiple times
         if (_processedContexts.Contains(contextKey))
             return;
@@ -60,17 +58,21 @@ internal class PostgreSqlHistoryInterceptor(
         {
             var model = context.Model;
             var historyEnabledEntities = model.GetEntityTypes()
-                .Where(e => e.ClrType.GetCustomAttributes(typeof(HistoryEnabledAttribute), true).Any())
-                .ToList();
+                                              .Where(e => e.ClrType
+                                                           .GetCustomAttributes(typeof(HistoryEnabledAttribute), true)
+                                                           .Any())
+                                              .ToList();
 
             if (!historyEnabledEntities.Any())
             {
                 _processedContexts.Add(contextKey);
+
                 return;
             }
 
             logger.LogDebug("Creating history triggers for {Count} entities in context {ContextType}",
-                historyEnabledEntities.Count, contextKey);
+                            historyEnabledEntities.Count,
+                            contextKey);
 
             foreach (var entityType in historyEnabledEntities)
             {
@@ -86,16 +88,15 @@ internal class PostgreSqlHistoryInterceptor(
         }
     }
 
-    private async Task CreateHistoryTriggerIfNotExists(
-        DbConnection connection,
-        Microsoft.EntityFrameworkCore.Metadata.IEntityType entityType,
-        CancellationToken cancellationToken)
+    private async Task CreateHistoryTriggerIfNotExists(DbConnection connection,
+                                                       Microsoft.EntityFrameworkCore.Metadata.IEntityType entityType,
+                                                       CancellationToken cancellationToken)
     {
         try
         {
-            var tableName = entityType.GetTableName();
-            var schema = entityType.GetSchema();
-            var triggerName = $"{tableName}_history_trigger";
+            var tableName    = entityType.GetTableName();
+            var schema       = entityType.GetSchema();
+            var triggerName  = $"{tableName}_history_trigger";
             var functionName = $"{tableName}_history_function";
 
             // Check if trigger already exists
@@ -108,13 +109,14 @@ internal class PostgreSqlHistoryInterceptor(
 
             using var checkCommand = connection.CreateCommand();
             checkCommand.CommandText = checkTriggerSql;
-            
+
             var triggerExists = Convert.ToInt32(await checkCommand.ExecuteScalarAsync(cancellationToken)) > 0;
 
             if (!triggerExists)
             {
                 logger.LogDebug("Creating history trigger {TriggerName} for table {TableName}",
-                    triggerName, tableName);
+                                triggerName,
+                                tableName);
 
                 var triggerSql = historyTableManager.GenerateHistoryTriggerSql(entityType);
 
@@ -123,18 +125,21 @@ internal class PostgreSqlHistoryInterceptor(
                 await createCommand.ExecuteNonQueryAsync(cancellationToken);
 
                 logger.LogInformation("Successfully created history trigger {TriggerName} for table {TableName}",
-                    triggerName, tableName);
+                                      triggerName,
+                                      tableName);
             }
             else
             {
                 logger.LogDebug("History trigger {TriggerName} already exists for table {TableName}",
-                    triggerName, tableName);
+                                triggerName,
+                                tableName);
             }
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to create history trigger for entity {EntityName}",
-                entityType.ClrType.Name);
+            logger.LogError(ex,
+                            "Failed to create history trigger for entity {EntityName}",
+                            entityType.ClrType.Name);
             // Continue with other entities
         }
     }

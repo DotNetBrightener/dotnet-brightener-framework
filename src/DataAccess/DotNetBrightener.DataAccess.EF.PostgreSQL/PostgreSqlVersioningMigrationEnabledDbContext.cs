@@ -2,6 +2,7 @@
 using DotNetBrightener.DataAccess.EF.Migrations;
 using DotNetBrightener.DataAccess.EF.PostgreSQL.Extensions;
 using DotNetBrightener.DataAccess.EF.PostgreSQL.History;
+using EntityFramework.Exceptions.PostgreSQL;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -26,6 +27,9 @@ public abstract class PostgreSqlVersioningMigrationEnabledDbContext
         base.OnConfiguring(optionsBuilder);
 
         optionsBuilder.UseExceptionProcessor();
+
+        // Add PostgreSQL history interceptor to automatically create triggers
+        optionsBuilder.AddPostgreSqlHistoryInterceptor(ServiceProvider);
     }
 
     protected sealed override void OnModelCreating(ModelBuilder modelBuilder)
@@ -35,15 +39,7 @@ public abstract class PostgreSqlVersioningMigrationEnabledDbContext
         ConfigureHistoryTables(modelBuilder);
 
         modelBuilder.ApplyUuidV7DefaultForGuidKeys();
-    }
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        base.OnConfiguring(optionsBuilder);
-
-        // Add PostgreSQL history interceptor to automatically create triggers
-        optionsBuilder.AddPostgreSqlHistoryInterceptor(ServiceProvider);
-    }
+    } 
 
     /// <summary>
     ///     Registers the entities to the <see cref="ModelBuilder"/>
