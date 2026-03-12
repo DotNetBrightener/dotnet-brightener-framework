@@ -94,16 +94,25 @@ internal class PostgreSqlHistoryInterceptor(
     {
         try
         {
-            var tableName    = entityType.GetTableName();
-            var schema       = entityType.GetSchema();
-            var triggerName  = $"{tableName}_history_trigger";
-            var functionName = $"{tableName}_history_function";
+            var tableName   = entityType.GetTableName();
+            var schema      = entityType.GetSchema();
+            var triggerName = $"{tableName}_history_trigger";
 
-            // Check if trigger already exists
+            // Ensure the history table exists before we check / create the trigger.
+            // CREATE TABLE IF NOT EXISTS is idempotent, so this is safe to run every time
+            // the application starts (when the processed-context cache is cold).
+            logger.LogDebug("Ensuring history table exists for {TableName}", tableName);
+            var tableCreationSql = historyTableManager.GenerateHistoryTableSql(entityType);
+
+            using var tableCommand = connection.CreateCommand();
+            tableCommand.CommandText = tableCreationSql;
+            await tableCommand.ExecuteNonQueryAsync(cancellationToken);
+
+            // Check if the trigger already exists
             var checkTriggerSql = $@"
-                SELECT COUNT(*) 
-                FROM information_schema.triggers 
-                WHERE trigger_name = '{triggerName}' 
+                SELECT COUNT(*)
+                FROM information_schema.triggers
+                WHERE trigger_name = '{triggerName}'
                 AND event_object_table = '{tableName}'
                 {(string.IsNullOrEmpty(schema) ? "" : $"AND event_object_schema = '{schema}'")}";
 
@@ -138,7 +147,7 @@ internal class PostgreSqlHistoryInterceptor(
         catch (Exception ex)
         {
             logger.LogError(ex,
-                            "Failed to create history trigger for entity {EntityName}",
+                            "Failed to ensure history infrastructure for entity {EntityName}",
                             entityType.ClrType.Name);
             // Continue with other entities
         }

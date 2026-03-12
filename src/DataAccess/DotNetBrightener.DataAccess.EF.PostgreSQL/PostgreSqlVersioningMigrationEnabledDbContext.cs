@@ -1,10 +1,7 @@
-﻿using DotNetBrightener.DataAccess.Attributes;
-using DotNetBrightener.DataAccess.EF.Migrations;
-using DotNetBrightener.DataAccess.EF.PostgreSQL.Extensions;
+﻿using DotNetBrightener.DataAccess.EF.Migrations;
 using DotNetBrightener.DataAccess.EF.PostgreSQL.History;
 using EntityFramework.Exceptions.PostgreSQL;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 
 namespace DotNetBrightener.DataAccess.EF.PostgreSQL;
 
@@ -24,12 +21,15 @@ public abstract class PostgreSqlVersioningMigrationEnabledDbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        base.OnConfiguring(optionsBuilder);
+        if (Configurators is { Count: > 0 })
+        {
+            foreach (var configurator in Configurators)
+            {
+                configurator.OnConfiguring(optionsBuilder);
+            }
+        }
 
         optionsBuilder.UseExceptionProcessor();
-
-        // Add PostgreSQL history interceptor to automatically create triggers
-        optionsBuilder.AddPostgreSqlHistoryInterceptor(ServiceProvider);
     }
 
     protected sealed override void OnModelCreating(ModelBuilder modelBuilder)

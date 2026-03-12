@@ -110,9 +110,11 @@ internal class PostgreSqlHistoryTableManager
     }
 
     /// <summary>
-    ///     Maps EF property types to PostgreSQL column types
+    ///     Maps EF property types to PostgreSQL column types.
+    ///     Accepts the read-only base interface so it works for both mutable
+    ///     (model building) and immutable (trigger/table SQL generation) contexts.
     /// </summary>
-    private string GetPostgreSqlColumnType(IMutableProperty property)
+    private string GetPostgreSqlColumnType(IReadOnlyProperty property)
     {
         var clrType        = property.ClrType;
         var underlyingType = Nullable.GetUnderlyingType(clrType) ?? clrType;
@@ -188,6 +190,56 @@ DROP TRIGGER IF EXISTS {triggerName} ON {fullTableName};
 CREATE TRIGGER {triggerName}
     BEFORE UPDATE OR DELETE ON {fullTableName}
     FOR EACH ROW EXECUTE FUNCTION {functionName}();");
+
+        return sql.ToString();
+    }
+
+    /// <summary>
+    ///     Generates SQL for creating the history table itself (idempotent — uses IF NOT EXISTS).
+    ///     This must be executed before the trigger SQL so that the trigger function has a table
+    ///     to insert into.
+    /// </summary>
+    public string GenerateHistoryTableSql(IEntityType entityType)
+    {
+        var tableName        = entityType.GetTableName();
+        var schema           = entityType.GetSchema();
+        var historyTableName = $"{tableName}_History";
+
+        var fullHistoryTableName = string.IsNullOrEmpty(schema)
+            ? $"\"{historyTableName}\""
+            : $"\"{schema}\".\"{historyTableName}\"";
+
+        var sql = new StringBuilder();
+
+        sql.AppendLine($"CREATE TABLE IF NOT EXISTS {fullHistoryTableName} (");
+
+        var properties = entityType.GetProperties()
+                                   .Where(p => !p.IsShadowProperty())
+                                   .ToList();
+
+        foreach (var property in properties)
+        {
+            var columnName = property.Name;
+            var columnType = GetPostgreSqlColumnType(property);
+
+            if (string.IsNullOrEmpty(columnType))
+                columnType = "text"; // safe fallback for unmapped types
+
+            var nullability = property.IsNullable ? "NULL" : "NOT NULL";
+            sql.AppendLine($"    \"{columnName}\" {columnType} {nullability},");
+        }
+
+        // Period columns — always NOT NULL
+        sql.AppendLine("    \"PeriodStart\" timestamptz NOT NULL,");
+        sql.AppendLine("    \"PeriodEnd\"   timestamptz NOT NULL");
+        sql.AppendLine(");");
+
+        // Indexes for efficient temporal queries
+        var idxPrefix = string.IsNullOrEmpty(schema) ? string.Empty : $"{schema}_";
+        sql.AppendLine($"CREATE INDEX IF NOT EXISTS \"idx_{idxPrefix}{historyTableName}_period_start\" " +
+                       $"ON {fullHistoryTableName} (\"PeriodStart\");");
+        sql.AppendLine($"CREATE INDEX IF NOT EXISTS \"idx_{idxPrefix}{historyTableName}_period_end\" " +
+                       $"ON {fullHistoryTableName} (\"PeriodEnd\");");
 
         return sql.ToString();
     }

@@ -38,12 +38,16 @@ public class PostgreSqlRepository(
 
         // Build the SQL query to fetch history data
         var sql = BuildHistoryQuery<T>(entityType, historyTableName, historyTableSchema,
-                                     mainTableName, mainTableSchema, expression, from, to);
+                                      mainTableName, mainTableSchema, from, to);
 
         Logger.LogDebug("Executing PostgreSQL history query: {Sql}", sql);
 
-        // Execute raw SQL query and return as queryable
-        return DbContext.Set<T>().FromSqlRaw(sql);
+        // Execute raw SQL query, use AsNoTracking so that multiple historical snapshots
+        // with the same primary key are not collapsed by EF's identity map.
+        // Then apply the caller's LINQ filter on top of the raw result set.
+        var query = DbContext.Set<T>().FromSqlRaw(sql).AsNoTracking();
+
+        return expression is not null ? query.Where(expression) : query;
     }
 
     private string BuildHistoryQuery<T>(
@@ -52,7 +56,6 @@ public class PostgreSqlRepository(
         string? historyTableSchema,
         string? mainTableName,
         string? mainTableSchema,
-        Expression<Func<T, bool>>? expression,
         DateTimeOffset? from,
         DateTimeOffset? to) where T : class, new()
     {
