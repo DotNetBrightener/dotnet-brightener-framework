@@ -17,7 +17,7 @@ namespace DotNetBrightener.TemplateEngine.Data.PostgreSql.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.4")
+                .HasAnnotation("ProductVersion", "9.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -68,7 +68,13 @@ namespace DotNetBrightener.TemplateEngine.Data.PostgreSql.Migrations
                     b.Property<string>("TemplateContent")
                         .HasColumnType("text");
 
+                    b.Property<string>("TemplateContentEditorConfig")
+                        .HasColumnType("text");
+
                     b.Property<string>("TemplateTitle")
+                        .HasColumnType("text");
+
+                    b.Property<string>("TemplateTitleEditorConfig")
                         .HasColumnType("text");
 
                     b.Property<string>("TemplateType")

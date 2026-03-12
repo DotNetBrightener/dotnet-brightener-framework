@@ -4,7 +4,8 @@
 ///     Describes the exception that will be thrown when a requested entity record cannot be found
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public class RecordNotFoundException<T>(string message, Exception innerException) : Exception(message, innerException)
+public class RecordNotFoundException<T>(string message, Exception innerException)
+    : Exception(message, innerException)
     where T : class
 {
     public RecordNotFoundException()

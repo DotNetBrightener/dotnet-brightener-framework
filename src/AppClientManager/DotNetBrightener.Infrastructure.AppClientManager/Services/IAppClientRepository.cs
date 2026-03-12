@@ -2,6 +2,4 @@
 
 namespace DotNetBrightener.Infrastructure.AppClientManager.Services;
 
-public interface IAppClientRepository : IRepository
-{
-}
+public interface IAppClientRepository : IRepository;

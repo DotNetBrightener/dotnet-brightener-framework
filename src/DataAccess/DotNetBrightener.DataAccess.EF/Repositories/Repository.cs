@@ -11,168 +11,36 @@ using DotNetBrightener.DataAccess.Models.Auditing;
 using DotNetBrightener.DataAccess.Models.Guards;
 using DotNetBrightener.DataAccess.Services;
 using DotNetBrightener.DataAccess.Utils;
-using DotNetBrightener.Plugins.EventPubSub;
-using LinqToDB.EntityFrameworkCore;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using System.Reflection;
 
 namespace DotNetBrightener.DataAccess.EF.Repositories;
 
-public class Repository : IRepository
+public abstract class Repository<TDbContext>(
+    TDbContext       dbContext,
+    IServiceProvider serviceProvider,
+    ILoggerFactory   loggerFactory)
+    : Repository(dbContext, serviceProvider, loggerFactory)
+    where TDbContext : DbContext
 {
-    protected readonly DbContext                     DbContext;
-    protected readonly ICurrentLoggedInUserResolver? CurrentLoggedInUserResolver;
-    protected readonly IEventPublisher?              EventPublisher;
-    protected readonly IDateTimeProvider?            DateTimeProvider;
-    protected readonly IHttpContextAccessor?         HttpContextAccessor;
+}
 
-    private readonly IgnoreAuditingEntitiesContainer? _ignoreAuditingEntitiesContainer;
-    private readonly IAuditEntriesProcessor?          _auditEntriesProcessor;
-    protected        ILogger                          Logger { get; init; }
-    private readonly Guid                             _scopeId = Guid.CreateVersion7();
+public class Repository(
+    DbContext        dbContext,
+    IServiceProvider serviceProvider,
+    ILoggerFactory   loggerFactory)
+    : ReadOnlyRepository(dbContext, serviceProvider, loggerFactory), IRepository
+{
+    private readonly IgnoreAuditingEntitiesContainer? _ignoreAuditingEntitiesContainer =
+        serviceProvider.TryGet<IgnoreAuditingEntitiesContainer>();
 
-    public Repository(DbContext        dbContext,
-                      IServiceProvider serviceProvider,
-                      ILoggerFactory   loggerFactory)
-    {
-        DbContext                        = dbContext;
-        CurrentLoggedInUserResolver      = serviceProvider.TryGet<ICurrentLoggedInUserResolver>();
-        EventPublisher                   = serviceProvider.TryGet<IEventPublisher>();
-        DateTimeProvider                 = serviceProvider.TryGet<IDateTimeProvider>();
-        HttpContextAccessor              = serviceProvider.TryGet<HttpContextAccessor>();
-        _ignoreAuditingEntitiesContainer = serviceProvider.TryGet<IgnoreAuditingEntitiesContainer>();
-        _auditEntriesProcessor           = serviceProvider.TryGet<IAuditEntriesProcessor>();
-        Logger                           = loggerFactory.CreateLogger(GetType());
-    }
+    private readonly IAuditEntriesProcessor? _auditEntriesProcessor = serviceProvider.TryGet<IAuditEntriesProcessor>();
 
-    public virtual T? Get<T>(Expression<Func<T, bool>> expression)
-        where T : class => GetAsync(expression).Result;
-
-    public virtual async Task<T?> GetAsync<T>(Expression<Func<T, bool>> expression) where T : class
-    {
-        return await Fetch(expression).SingleOrDefaultAsync();
-    }
-
-    public virtual T? GetFirst<T>(Expression<Func<T, bool>> expression)
-        where T : class => GetFirstAsync(expression).Result;
-
-    public virtual async Task<T?> GetFirstAsync<T>(Expression<Func<T, bool>> expression) where T : class
-    {
-        return await Fetch(expression).FirstOrDefaultAsync();
-    }
-
-    public virtual TResult? Get<T, TResult>(Expression<Func<T, bool>>?   expression,
-                                            Expression<Func<T, TResult>> propertiesPickupExpression)
-        where T : class
-    {
-        return Fetch(expression, propertiesPickupExpression).SingleOrDefault();
-    }
-
-    public virtual TResult? GetFirst<T, TResult>(Expression<Func<T, bool>>?   expression,
-                                                 Expression<Func<T, TResult>> propertiesPickupExpression)
-        where T : class
-    {
-        return Fetch(expression, propertiesPickupExpression).FirstOrDefault();
-    }
-
-    public virtual IQueryable<T> Fetch<T>(Expression<Func<T, bool>>? expression = null)
-        where T : class
-    {
-        if (expression == null)
-            return DbContext.Set<T>().AsQueryable();
-
-        return DbContext.Set<T>().Where(expression);
-    }
-
-    public virtual IQueryable<T> FetchHistory<T>(Expression<Func<T, bool>>? expression,
-                                                 DateTimeOffset?            from,
-                                                 DateTimeOffset?            to)
-        where T : class, new()
-    {
-        if (!typeof(T).HasAttribute<HistoryEnabledAttribute>())
-        {
-            throw new VersioningNotSupportedException<T>();
-        }
-
-        var initialQuery = DbContext.Set<T>();
-
-        var temporalQuery = initialQuery.TemporalAll();
-
-        if (from is not null ||
-            to is not null)
-        {
-            from ??= DateTimeOffset.UnixEpoch;
-
-            to ??= DateTimeOffset.UtcNow;
-
-            temporalQuery = initialQuery.TemporalFromTo(from.Value.UtcDateTime, to.Value.UtcDateTime)
-                                        .OrderBy(entry =>
-                                                     Microsoft.EntityFrameworkCore.EF.Property<DateTime>(entry,
-                                                                                                         "PeriodStart"));
-        }
-
-        if (expression is not null)
-        {
-            temporalQuery = temporalQuery.Where(expression);
-        }
-
-        return temporalQuery;
-    }
-
-    public virtual IQueryable<TResult> Fetch<T, TResult>(Expression<Func<T, bool>>?   expression,
-                                                         Expression<Func<T, TResult>> propertiesPickupExpression)
-        where T : class
-    {
-        if (propertiesPickupExpression == null)
-            throw new ArgumentNullException(nameof(propertiesPickupExpression));
-
-        var query = Fetch(expression);
-
-        return query.Select(propertiesPickupExpression);
-    }
-
-    public virtual int Count<T>(Expression<Func<T, bool>>? expression = null)
-        where T : class => CountAsync(expression).Result;
-
-    public virtual async Task<int> CountAsync<T>(Expression<Func<T, bool>>? expression = null)
-        where T : class
-    {
-        return expression is null
-                   ? await DbContext.Set<T>().CountAsync()
-                   : await DbContext.Set<T>().CountAsync(expression);
-    }
-
-    public virtual async Task<int> CountNonDeletedAsync<T>(Expression<Func<T, bool>>? expression = null) where T : class
-    {
-        if (!typeof(T).HasProperty<bool>(nameof(IAuditableEntity.IsDeleted)))
-        {
-            throw
-                new InvalidOperationException($"Entity of type {typeof(T).Name} does not have soft-delete capability");
-        }
-
-        var query = DbContext.Set<T>().Where($"{nameof(IAuditableEntity.IsDeleted)} != True");
-
-        return expression is null
-                   ? await query.CountAsync()
-                   : await query.CountAsync(expression);
-    }
-
-    public bool Any<T>(Expression<Func<T, bool>>? expression = null)
-        where T : class => AnyAsync(expression).Result;
-
-    public virtual async Task<bool> AnyAsync<T>(Expression<Func<T, bool>>? expression = null)
-        where T : class
-    {
-        return expression is null
-                   ? await DbContext.Set<T>().AnyAsync()
-                   : await DbContext.Set<T>().AnyAsync(expression);
-    }
+    protected DbContext DbContext { get; } = dbContext;
 
     public virtual void Insert<T>(T entity)
         where T : class => InsertAsync(entity).Wait();
@@ -240,25 +108,9 @@ public class Repository : IRepository
                 });
             });
         }
-
-        try
-        {
-            Logger.LogInformation("BulkInserting {records} records of type {entityType}...",
-                                  entitiesToInserts.Count,
-                                  typeof(T).Name);
-
-            await DbContext.BulkCopyAsync(entitiesToInserts);
-        }
-        catch (Exception e)
-        {
-            Logger.LogWarning(e,
-                              "BulkInsert failed to insert {numberOfRecords} records entities of type {Type}. Retrying with slow insert...",
-                              entitiesToInserts.Count,
-                              typeof(T).Name);
-
-            await DbContext.Set<T>()
-                           .AddRangeAsync(entitiesToInserts);
-        }
+        
+        await DbContext.Set<T>()
+                       .AddRangeAsync(entitiesToInserts);
     }
 
     private T TransformExpression<T>(T entity)
@@ -287,9 +139,10 @@ public class Repository : IRepository
     {
         var query = Fetch(conditionExpression);
 
-        return await LinqToDB.LinqExtensions.InsertAsync(query,
-                                                         DbContext.Set<TTarget>().ToLinqToDBTable(),
-                                                         copyExpression);
+        throw new NotImplementedException();
+        //return await LinqToDB.LinqExtensions.InsertAsync(query,
+        //                                                 DbContext.Set<TTarget>().ToLinqToDBTable(),
+        //                                                 copyExpression);
     }
 
     public virtual void Update<T>(T entity) where T : class => UpdateAsync(entity).Wait();
@@ -471,7 +324,7 @@ public class Repository : IRepository
             var extractAuditProperties = updateQueryBuilder.ExtractAuditProperties();
             var auditEntity = new AuditEntity
             {
-                ScopeId         = _scopeId,
+                ScopeId         = ScopeId,
                 StartTime       = start,
                 EndTime         = now,
                 Duration        = now.Subtract(start),
@@ -497,7 +350,7 @@ public class Repository : IRepository
             {
 
             }
-            
+
             await _auditEntriesProcessor.QueueAuditEntries(auditEntity);
         }
 
@@ -556,7 +409,7 @@ public class Repository : IRepository
                 var now = DateTimeOffset.UtcNow;
                 var auditEntity = new AuditEntity
                 {
-                    ScopeId          = _scopeId,
+                    ScopeId          = ScopeId,
                     StartTime        = start,
                     EndTime          = now,
                     Duration         = now.Subtract(start),
@@ -624,7 +477,7 @@ public class Repository : IRepository
                 var now = DateTimeOffset.UtcNow;
                 var auditEntity = new AuditEntity
                 {
-                    ScopeId          = _scopeId,
+                    ScopeId          = ScopeId,
                     StartTime        = start,
                     EndTime          = now,
                     Duration         = now.Subtract(start),
@@ -787,13 +640,9 @@ public class Repository : IRepository
         return setPropBuilder;
     }
 
-    public void Dispose()
-    {
-        DbContext.Dispose();
-    }
-    
-    private class RepositoryUnitOfWork(DbContext dbContext,
-                                       ILogger   logger) : IAsyncDisposable
+    private class RepositoryUnitOfWork(
+        DbContext dbContext,
+        ILogger   logger) : IAsyncDisposable
     {
         public async ValueTask DisposeAsync()
         {

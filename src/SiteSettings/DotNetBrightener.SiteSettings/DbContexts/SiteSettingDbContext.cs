@@ -3,14 +3,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DotNetBrightener.SiteSettings.DbContexts;
 
-public class SiteSettingDbContext : DbContext
+public class SiteSettingDbContext(DbContextOptions<SiteSettingDbContext> options) : DbContext(options)
 {
-    public SiteSettingDbContext(DbContextOptions<SiteSettingDbContext> options)
-        : base(options)
-    {
-
-    }
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigureModel(modelBuilder);

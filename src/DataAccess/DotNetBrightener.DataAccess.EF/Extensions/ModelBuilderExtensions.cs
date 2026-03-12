@@ -1,3 +1,4 @@
+#nullable enable
 using DotNetBrightener.DataAccess.Attributes;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System.ComponentModel.DataAnnotations.Schema;

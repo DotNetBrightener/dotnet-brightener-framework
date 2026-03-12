@@ -2,14 +2,9 @@
 
 namespace DotNetBrightener.Core.Logging.DbStorage.Data;
 
-public class LoggingDbContext : DbContext
+public class LoggingDbContext(DbContextOptions<LoggingDbContext> options) : DbContext(options)
 {
     internal const string SchemaName = "Log";
-
-    public LoggingDbContext(DbContextOptions<LoggingDbContext> options)
-        : base(options)
-    {
-    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -17,7 +12,7 @@ public class LoggingDbContext : DbContext
 
         eventLogEntity.ToTable(nameof(EventLog), SchemaName);
 
-        eventLogEntity.HasNoKey();
+        eventLogEntity.HasKey(x => x.Id);
         
         // single indexes
         eventLogEntity.HasIndex(el => el.Level);

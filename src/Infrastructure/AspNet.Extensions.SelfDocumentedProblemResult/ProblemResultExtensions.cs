@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using System.Collections;
 using System.Net;
+using System.Resources;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.AspNetCore.Mvc;
@@ -16,11 +17,22 @@ public static class ProblemResultExtensions
     ///     Creates an <see cref="ObjectResult"/> that produces a <see cref="ProblemDetails"/> response.
     /// </summary>
     /// <param name="problemResult">The <see cref="IProblemResult" /></param>
+    /// <returns></returns>
+    public static ProblemDetailResult ToProblemResult(this IProblemResult problemResult)
+    {
+        return new ProblemDetailResult(problemResult, reason: "", instance: "");
+    }
+
+
+    /// <summary>
+    ///     Creates an <see cref="ObjectResult"/> that produces a <see cref="ProblemDetails"/> response.
+    /// </summary>
+    /// <param name="problemResult">The <see cref="IProblemResult" /></param>
     /// <param name="reason">The reason of why the problem / error occured</param>
     /// <param name="instance">The value for <see cref="ProblemDetails.Instance" /></param>
     /// <returns></returns>
     public static ProblemDetailResult ToProblemResult(this IProblemResult problemResult,
-                                                      string              reason   = null,
+                                                      string              reason,
                                                       string              instance = null)
     {
         return new ProblemDetailResult(problemResult, reason, instance);
@@ -75,8 +87,9 @@ public static class ProblemResultExtensions
     /// <param name="instance">The value for <see cref="ProblemDetails.Instance" /></param>
     /// <returns></returns>
     public static ProblemDetails ToProblemDetails(this IProblemResult problemResult,
-                                                  string              reason   = null,
-                                                  string              instance = null)
+                                                  string              reason     = null,
+                                                  string              instance   = null,
+                                                  HttpStatusCode?     statusCode = null)
     {
         var extensionDictionary = new Dictionary<string, object>();
 
@@ -127,11 +140,15 @@ public static class ProblemResultExtensions
 
         return new ProblemDetails
         {
-            Type = type,
+            Type  = type,
             Title = problemResult.Title,
-            Status = problemResult.StatusCode != 0 ? problemResult.StatusCode : (int)HttpStatusCode.InternalServerError,
-            Detail = (reason ?? problemResult.DetailReason)?.Replace("`", ""),
-            Instance = instance ?? HttpContextAccessor?.HttpContext?.Request.Path,
+            Status = problemResult.StatusCode != 0
+                         ? problemResult.StatusCode
+                         : statusCode is not null
+                             ? (int)statusCode
+                             : (int)HttpStatusCode.InternalServerError,
+            Detail     = (reason ?? problemResult.DetailReason)?.Replace("`", ""),
+            Instance   = instance ?? HttpContextAccessor?.HttpContext?.Request.Path,
             Extensions = extensionDictionary
         };
     }

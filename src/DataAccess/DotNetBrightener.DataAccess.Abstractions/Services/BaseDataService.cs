@@ -57,7 +57,7 @@ public abstract class BaseDataService<TEntity>(IRepository repository) : IBaseDa
             throw new
                 InvalidOperationException($"Entity of type {typeof(TEntity).Name} does not have soft-delete capability");
         }
-        
+
         return Repository.Fetch(expression)
                          .Where($"{nameof(IAuditableEntity.IsDeleted)} == True");
     }
@@ -115,7 +115,7 @@ public abstract class BaseDataService<TEntity>(IRepository repository) : IBaseDa
         await Repository.CommitChangesAsync();
     }
 
-    public void UpdateMany(params TEntity[] entities) 
+    public void UpdateMany(params TEntity[] entities)
         => UpdateManyAsync(entities).Wait();
 
     public virtual async Task UpdateManyAsync(params TEntity[] entities)
@@ -138,8 +138,15 @@ public abstract class BaseDataService<TEntity>(IRepository repository) : IBaseDa
         return affectedRecords;
     }
 
+    public void Delete(TEntity entity, bool forceHardDelete = false)
+        => DeleteAsync(entity, forceHardDelete).Wait();
+
     public void Delete(TEntity entity, string reason, bool forceHardDelete = false)
         => DeleteAsync(entity, reason, forceHardDelete).Wait();
+
+    public virtual async Task DeleteAsync(TEntity entity, bool forceHardDelete = false)
+        => await DeleteAsync(entity, "", forceHardDelete);
+
 
     public virtual async Task DeleteAsync(TEntity entity, string reason, bool forceHardDelete = false)
     {

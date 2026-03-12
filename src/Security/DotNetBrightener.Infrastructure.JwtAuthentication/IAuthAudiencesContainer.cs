@@ -33,7 +33,7 @@ public class DefaultAuthAudiencesContainer(
     IServiceScopeFactory                   serviceScopeFactory)
     : IAuthAudiencesContainer
 {
-    private readonly        List<string>                    _validAudiences = new();
+    private readonly        List<string>                    _validAudiences = [];
     private                 bool                            _initialized    = false;
     private static readonly Lock                            LockObject      = new();
     private readonly        ILogger                         _logger         = logger;
@@ -69,7 +69,7 @@ public class DefaultAuthAudiencesContainer(
 
     public void RegisterValidAudiences(params string[] validAudiences)
     {
-        foreach (string validAudience in validAudiences)
+        foreach (var validAudience in validAudiences)
         {
             if (!_validAudiences.Contains(validAudience))
                 _validAudiences.Add(validAudience);
@@ -112,7 +112,7 @@ public class DefaultAuthAudiencesContainer(
         var       serviceProvider    = scope.ServiceProvider;
         var       audienceValidators = serviceProvider.GetServices<IAuthAudienceValidator>();
 
-        foreach (IAuthAudienceValidator validator in audienceValidators)
+        foreach (var validator in audienceValidators)
         {
             var validAudiences = validator.GetValidAudiences();
 
@@ -133,7 +133,8 @@ public class DefaultAuthAudiencesContainer(
 
         var isValidAudience = _validAudiences.Any(validAudience => audiences.Contains(validAudience));
 
-        _logger.LogInformation("Provided audience is {audienceValidity}.",
+        _logger.LogInformation("Provided audience {providedAudience} is {audienceValidity}.",
+                               audienceString,
                                isValidAudience ? "valid" : "not valid");
 
         return isValidAudience;

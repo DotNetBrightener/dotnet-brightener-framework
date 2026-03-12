@@ -7,10 +7,7 @@ namespace DotNetBrightener.DataAccess.Attributes;
 ///     The value for the property came from Data Transfer Object will not be copied over to the entity
 /// </summary>
 [AttributeUsage(AttributeTargets.Property)]
-public class NoClientSideUpdateAttribute: Attribute
-{
-        
-}
+public class NoClientSideUpdateAttribute: Attribute;
 
 public static class NoClientSideUpdateHelper
 {

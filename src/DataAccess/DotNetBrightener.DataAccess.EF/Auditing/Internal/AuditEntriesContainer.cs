@@ -2,5 +2,5 @@
 
 internal class AuditEntriesContainer : IAuditEntriesContainer
 {
-    public List<AuditEntity> AuditEntries { get; } = new();
+    public List<AuditEntity> AuditEntries { get; } = [];
 }

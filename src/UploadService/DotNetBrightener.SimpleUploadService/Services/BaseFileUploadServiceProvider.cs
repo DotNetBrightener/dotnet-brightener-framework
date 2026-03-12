@@ -110,10 +110,9 @@ public abstract class BaseFileUploadServiceProvider : IUploadServiceProvider
     protected static string SanitizeFileName(string fileName)
     {
         char[] invalidChars = Path.GetInvalidFileNameChars()
-                                  .Concat(new[]
-                                   {
+                                  .Concat([
                                        ' '
-                                   })
+                                   ])
                                   .ToArray();
 
         return string.Join("_", fileName.Split(invalidChars, StringSplitOptions.RemoveEmptyEntries));

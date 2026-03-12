@@ -1,10 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<PackageDescription>
-			A library that adds supports for friendly routing ASP.Net Core Application
-		</PackageDescription>
+		<PackageDescription>A library that adds supports for friendly routing ASP.Net Core Application</PackageDescription>
 		<RepositoryUrl>https://github.com/dotnetbrightener/dotnet-brightener-framework</RepositoryUrl>
-		<Platforms>AnyCPU;ARM64</Platforms>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -12,8 +9,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Extensions.DependencyModel" Version="9.0.7" />
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+		<PackageReference Include="Microsoft.Extensions.DependencyModel" />
+		<PackageReference Include="Newtonsoft.Json" />
 	</ItemGroup>
 
 	<PropertyGroup>

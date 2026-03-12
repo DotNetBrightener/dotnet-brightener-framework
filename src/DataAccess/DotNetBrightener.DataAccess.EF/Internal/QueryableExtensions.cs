@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿#nullable enable
+using System.Linq.Expressions;
 using Newtonsoft.Json;
 
 namespace DotNetBrightener.DataAccess.EF.Internal;
@@ -43,7 +44,7 @@ public static class QueryableExtensions
     {
         if (conditionExpression is null)
         {
-            return new FilterInformation();
+            return [];
         }
 
         return ParseExpression(conditionExpression.Body);

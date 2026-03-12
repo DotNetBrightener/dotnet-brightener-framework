@@ -7,9 +7,7 @@ namespace DotNetBrightener.TemplateEngine.Data.Services;
 
 public interface ITemplateStorageService
 {
-    void SaveTemplate(string templateType, TemplateModelDto content);
-
-    TemplateModelDto       LoadTemplate(string      templateModelType);
+    Task SaveTemplateAsync(string templateType, TemplateModelDto content);
 
     Task<TemplateModelDto> LoadTemplateAsync(string templateModelType);
 }
@@ -38,7 +36,7 @@ public class PhysicalTemplateStorageService : ITemplateStorageService
         _templatesFileProvider = new PhysicalFileProvider(templatePath);
     }
 
-    public void SaveTemplate(string templateType, TemplateModelDto content)
+    public async Task SaveTemplateAsync(string templateType, TemplateModelDto content)
     {
         var typeName = templateType;
 
@@ -54,9 +52,6 @@ public class PhysicalTemplateStorageService : ITemplateStorageService
 
         TplParser.WriteTemplate(content, templateFile);
     }
-
-    public TemplateModelDto LoadTemplate(string templateModelType)
-        => LoadTemplateAsync(templateModelType).Result;
 
     public async Task<TemplateModelDto> LoadTemplateAsync(string templateModelType)
     {

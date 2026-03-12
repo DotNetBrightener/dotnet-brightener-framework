@@ -146,10 +146,9 @@ public static class RsaCryptoEngine
             {
                 var innerWriter = new BinaryWriter(innerStream);
                 EncodeIntegerBigEndian(innerWriter,
-                                       new byte[]
-                                       {
-                                           0x00
-                                       }); // Version
+                [
+                    0x00
+                ]); // Version
                 EncodeIntegerBigEndian(innerWriter, parameters.Modulus);
                 EncodeIntegerBigEndian(innerWriter, parameters.Exponent);
                 EncodeIntegerBigEndian(innerWriter, parameters.D);

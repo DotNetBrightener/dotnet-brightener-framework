@@ -37,18 +37,18 @@ public class TemplateRegistrationService : ITemplateRegistrationService, ITempla
         where TTemplate : ITemplateModel
     {
         _templateContainer.RegisterTemplate<TTemplate>();
-        
+
         if (!string.IsNullOrEmpty(templateTitle) ||
             !string.IsNullOrEmpty(templateContent))
         {
             var templateType = typeof(TTemplate).FullName;
 
-            _templateStorageService.SaveTemplate(templateType!,
-                                                 new TemplateModelDto
-                                                 {
-                                                     TemplateContent = templateContent,
-                                                     TemplateTitle   = templateTitle
-                                                 });
+            await _templateStorageService.SaveTemplateAsync(templateType!,
+                                                            new TemplateModelDto
+                                                            {
+                                                                TemplateContent = templateContent,
+                                                                TemplateTitle   = templateTitle
+                                                            });
         }
     }
 }

@@ -26,6 +26,17 @@ public interface ITemplateService
     void SaveTemplate(string templateType, TemplateModelDto content);
 
     /// <summary>
+    ///    Saves the specified template with the given type
+    /// </summary>
+    /// <param name="templateType">
+    ///     The template type
+    /// </param>
+    /// <param name="content">
+    ///     The model represents the template data, e.g. title, content, etc.
+    /// </param>
+    Task SaveTemplateAsync(string templateType, TemplateModelDto content);
+
+    /// <summary>
     ///     Loads the template for specified type <seealso cref="TTemplate"/>
     /// </summary>
     /// <typeparam name="TTemplate">
@@ -37,6 +48,17 @@ public interface ITemplateService
     TemplateModelDto LoadTemplate<TTemplate>() where TTemplate : ITemplateModel;
 
     /// <summary>
+    ///     Loads the template for specified type <seealso cref="TTemplate"/>
+    /// </summary>
+    /// <typeparam name="TTemplate">
+    ///     The type of the template to load
+    /// </typeparam>
+    /// <returns>
+    ///     The template model
+    /// </returns>
+    Task<TemplateModelDto> LoadTemplateAsync<TTemplate>() where TTemplate : ITemplateModel;
+
+    /// <summary>
     ///    Loads the template for specified type <see cref="templateModelType"/>
     /// </summary>
     /// <param name="templateModelType">
@@ -46,6 +68,17 @@ public interface ITemplateService
     ///     The template model
     /// </returns>
     TemplateModelDto LoadTemplate(string templateModelType);
+
+    /// <summary>
+    ///    Loads the template for specified type <see cref="templateModelType"/>
+    /// </summary>
+    /// <param name="templateModelType">
+    ///     The full name of the template type to load 
+    /// </param>
+    /// <returns>
+    ///     The template model
+    /// </returns>
+    Task<TemplateModelDto> LoadTemplateAsync(string templateModelType);
 
     /// <summary>
     ///     Loads the template from storage and then parse it with the provided model instance

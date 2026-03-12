@@ -13,10 +13,7 @@ public class ExtendedServiceFactory : IServiceProviderFactory<IServiceCollection
         host.UseServiceProviderFactory(new ExtendedServiceFactory());
     }
 
-    private ExtendedServiceFactory()
-    {
-        
-    }
+    private ExtendedServiceFactory() { }
 
     public IServiceCollection CreateBuilder(IServiceCollection services)
     {

@@ -33,7 +33,7 @@ public class TranslationDictionaryMiddleware
                                .AcceptLanguage?
                                .OrderByDescending(x => x.Quality ?? 1)
                                .Select(x => x.Value.ToString())
-                               .ToArray() ?? Array.Empty<string>();
+                               .ToArray() ?? [];
         }
 
         if (languages.Length > 0)

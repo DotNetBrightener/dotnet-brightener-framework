@@ -38,7 +38,7 @@ public static class AuditingEnableServiceCollectionExtensions
 
         if (ignoreAuditingEntitiesContainer is null)
         {
-            ignoreAuditingEntitiesContainer = new IgnoreAuditingEntitiesContainer();
+            ignoreAuditingEntitiesContainer = [];
 
             services.TryAddSingleton(ignoreAuditingEntitiesContainer);
         }
@@ -58,7 +58,7 @@ public static class AuditingEnableServiceCollectionExtensions
 
         if (ignoreAuditingEntitiesContainer is null)
         {
-            ignoreAuditingEntitiesContainer = new IgnoreAuditingEntitiesContainer();
+            ignoreAuditingEntitiesContainer = [];
 
             services.TryAddSingleton(ignoreAuditingEntitiesContainer);
         }

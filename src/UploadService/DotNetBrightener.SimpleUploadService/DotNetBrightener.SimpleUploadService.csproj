@@ -1,14 +1,17 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<PackageDescription>
-			A Simple Upload API for ASP.NET Core Applications
-		</PackageDescription>
+		<IsPackable>true</IsPackable>
+		<PackageDescription>A Simple Upload API for ASP.NET Core Applications</PackageDescription>
 	</PropertyGroup>
+	<ItemGroup>
+		<InternalsVisibleTo Include="DotNetBrightener.UploadService.AzureBlobStorage" />
+		<InternalsVisibleTo Include="DotNetBrightener.UploadService.S3Storage" />
+	</ItemGroup>
 	<ItemGroup>
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+		<PackageReference Include="Newtonsoft.Json" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\..\EventPubSub\DotNetBrightener.Plugins.EventPubSub\DotNetBrightener.Plugins.EventPubSub.csproj" />

@@ -10,15 +10,31 @@ namespace DotNetBrightener.DataAccess.EF.PostgreSQL;
 /// <summary>
 ///    Represents the <see cref="DbContext" /> that defines the entities, has migrations applied and versioning enabled
 /// </summary>
-public abstract class PostgreSqlVersioningMigrationEnabledDbContext(
-    DbContextOptions options)
-    : AdvancedDbContext(options)
+public abstract class PostgreSqlVersioningMigrationEnabledDbContext
+    : AdvancedDbContext
 {
+    /// <summary>
+    ///    Represents the <see cref="DbContext" /> that defines the entities, has migrations applied and versioning enabled
+    /// </summary>
+    protected PostgreSqlVersioningMigrationEnabledDbContext(DbContextOptions options)
+        : base(options)
+    {
+    }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        base.OnConfiguring(optionsBuilder);
+
+        optionsBuilder.UseExceptionProcessor();
+    }
+
     protected sealed override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigureModelBuilder(modelBuilder);
 
         ConfigureHistoryTables(modelBuilder);
+
+        modelBuilder.ApplyUuidV7DefaultForGuidKeys();
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

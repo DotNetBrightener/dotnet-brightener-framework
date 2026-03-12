@@ -4,9 +4,7 @@ using Microsoft.Extensions.Logging;
 
 namespace DotNetBrightener.SimpleUploadService.IO;
 
-public interface IMediaFileProvider : ISystemFileProvider
-{
-}
+public interface IMediaFileProvider : ISystemFileProvider;
 
 public class MediaFileProvider : SystemFileProvider, IMediaFileProvider
 {

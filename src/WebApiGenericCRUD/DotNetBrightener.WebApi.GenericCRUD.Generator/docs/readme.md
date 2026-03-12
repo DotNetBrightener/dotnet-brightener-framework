@@ -2,7 +2,7 @@
 
 # Code Generator for Centralized CRUD WebAPI in ASP.NET Core Applications
  
-&copy; 2024 DotNet Brightener. <admin@dotnetbrightener.com>
+&copy; 2025 DotNet Brightener. <admin@dotnetbrightener.com>
  
 # Instruction
  
@@ -116,15 +116,16 @@ The Entity/Core project should only contain the entities without any other logic
 ### Define auto-generate entities registration class
  
 At the root of Service project, create a class `CRUDDataServiceGeneratorRegistration.cs` with the following content
- 
+
 ```csharp
 using CRUDWebApiWithGeneratorDemo.Core.Entities;
- 
+using DotNetBrightener.WebApi.GenericCRUD.Contracts;
+
 namespace CRUDWebApiWithGeneratorDemo.Services;
- 
-public class CRUDDataServiceGeneratorRegistration
+
+public class CRUDDataServiceGeneratorRegistration : ICRUDDataServiceGeneratorRegistration
 {
-    public List<Type> Entities =
+    public List<Type> Entities { get; } =
     [
 		// provide all entities that need to generate CRUD data service for
         typeof(Product),
@@ -132,8 +133,8 @@ public class CRUDDataServiceGeneratorRegistration
     ];
 }
 ```
- 
-The class name `CRUDDataServiceGeneratorRegistration` is vital as the generator library relies on it to discern what needs generating. 
+
+The class must implement the `ICRUDDataServiceGeneratorRegistration` interface as the generator library relies on this contract to discern what needs generating.
  
 In the `Entities` property of this class, ensure to include all entities for which CRUD data service interfaces and classes are required.
  
@@ -142,14 +143,18 @@ In the `Entities` property of this class, ensure to include all entities for whi
 ### Define auto-generate entities registration class
  
 At the root of WebAPI project, create a class `CRUDWebApiGeneratorRegistration.cs` with the following content
- 
+
 ```csharp
-public class CRUDWebApiGeneratorRegistration
+using CRUDWebApiWithGeneratorDemo.Core.Entities;
+using CRUDWebApiWithGeneratorDemo.Services;
+using DotNetBrightener.WebApi.GenericCRUD.Contracts;
+
+public class CRUDWebApiGeneratorRegistration : ICRUDWebApiGeneratorRegistration
 {
 	// reference the CRUDDataServiceGeneratorRegistration from Service project
-    Type DataServiceRegistrationType = typeof(CRUDDataServiceGeneratorRegistration);
- 
-    public List<Type> Entities =
+    public Type DataServiceRegistrationType { get; } = typeof(CRUDDataServiceGeneratorRegistration);
+
+    public List<Type> Entities { get; } =
     [
 		// provide all entities that need to generate CRUD API Controllers for
 		// Some entities related to Authorization / Authentication / Security should be ignored
@@ -158,8 +163,8 @@ public class CRUDWebApiGeneratorRegistration
     ];
 }
 ```
- 
-The class name `CRUDWebApiGeneratorRegistration` is vital as the generator library relies on it to discern what needs generating. 
+
+The class must implement the `ICRUDWebApiGeneratorRegistration` interface as the generator library relies on this contract to discern what needs generating.
  
 In the `Entities` property of this class, ensure to include all entities for which CRUD Web API Controllers are required.
  

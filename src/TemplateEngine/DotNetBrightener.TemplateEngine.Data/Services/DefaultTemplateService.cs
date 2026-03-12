@@ -39,17 +39,22 @@ public class DefaultTemplateService : ITemplateService
     }
 
     public virtual void SaveTemplate(string templateType, TemplateModelDto content)
-        => TemplateStorageService.SaveTemplate(templateType, content);
+        => SaveTemplateAsync(templateType, content).Wait();
+
+    public virtual async Task SaveTemplateAsync(string templateType, TemplateModelDto content) =>
+        await TemplateStorageService.SaveTemplateAsync(templateType, content);
 
     public virtual TemplateModelDto LoadTemplate<TTemplate>() where TTemplate : ITemplateModel
-    {
-        return TemplateStorageService.LoadTemplate(typeof(TTemplate).FullName);
-    }
+        => LoadTemplateAsync<TTemplate>().Result;
+
+    public virtual async Task<TemplateModelDto> LoadTemplateAsync<TTemplate>() where TTemplate : ITemplateModel
+        => await TemplateStorageService.LoadTemplateAsync(typeof(TTemplate).FullName);
 
     public TemplateModelDto LoadTemplate(string templateModelType)
-    {
-        return TemplateStorageService.LoadTemplate(templateModelType);
-    }
+        => LoadTemplateAsync(templateModelType).Result;
+
+    public async Task<TemplateModelDto> LoadTemplateAsync(string templateModelType)
+        => await TemplateStorageService.LoadTemplateAsync(templateModelType);
 
     public virtual TemplateModelDto LoadAndParseTemplate<TTemplate>(TTemplate instance, bool isHtml = true)
         where TTemplate : ITemplateModel

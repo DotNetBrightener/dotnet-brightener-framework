@@ -1,40 +1,54 @@
 ﻿using DotNetBrightener.SiteSettings;
-using DotNetBrightener.SiteSettings.Data.Mssql;
 using DotNetBrightener.SiteSettings.Data.Mssql.Data;
 using DotNetBrightener.SiteSettings.Data.Mssql.Extensions;
-using LinqToDB.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
+using System;
+using System.Data.Common;
+using Microsoft.Data.SqlClient;
 
 // ReSharper disable CheckNamespace
 namespace Microsoft.Extensions.DependencyInjection;
 
 public static class SiteSettingsStorageServiceCollectionExtensions
 {
-    public static IServiceCollection AddSiteSettingsSqlServerStorage(this IServiceCollection serviceCollection,
-                                                                     string                  connectionString)
+    extension(IServiceCollection serviceCollection)
     {
-        serviceCollection.AddDbContext<MssqlStorageSiteSettingDbContext>((optionBuilder) =>
+        public IServiceCollection AddSiteSettingsSqlServerStorage(string connectionString)
         {
-            optionBuilder.UseSqlServer(connectionString,
-                                       contextOptionsBuilder =>
-                                       {
-                                           contextOptionsBuilder
-                                              .MigrationsHistoryTable("__MigrationsHistory",
-                                                                      MssqlStorageSiteSettingDbContext.SchemaName);
-                                       })
-                         .UseLazyLoadingProxies();
-        });
+            serviceCollection.AddSiteSettingsSqlServerStorage(((provider, builder) =>
+                                                                      new SqlConnection(connectionString)));
 
-        serviceCollection.AddScoped<ISiteSettingRepository, SiteSettingRepository>();
+            return serviceCollection;
+        }
 
-        serviceCollection.Replace(ServiceDescriptor
-                                     .Scoped<ISiteSettingDataService, SqlServerStorageSiteSettingDataService>());
-        
-        serviceCollection.AddAutoMigrationForDbContextAfterAppStarted<MssqlStorageSiteSettingDbContext>();
+        public IServiceCollection AddSiteSettingsSqlServerStorage(Func<IServiceProvider, DbContextOptionsBuilder,
+                                                                          DbConnection>
+                                                                      connectionStringResolver)
+        {
+            serviceCollection.AddDbContext<MssqlStorageSiteSettingDbContext>((serviceProvider, options) =>
+            {
+                var connection = connectionStringResolver.Invoke(serviceProvider, options);
 
-        LinqToDBForEFTools.Initialize();
+                options.UseSqlServer(connection,
+                                     contextOptionsBuilder =>
+                                     {
+                                         contextOptionsBuilder
+                                            .MigrationsHistoryTable("__MigrationsHistory",
+                                                                    MssqlStorageSiteSettingDbContext.SchemaName);
+                                     })
+                       .UseLazyLoadingProxies();
+            });
 
-        return serviceCollection;
+            serviceCollection.AddScoped<ISiteSettingRepository, SiteSettingRepository>();
+
+            serviceCollection.Replace(ServiceDescriptor
+                                         .Scoped<ISiteSettingDataService, SqlServerStorageSiteSettingDataService>());
+
+            serviceCollection.AddAutoMigrationForDbContextAfterAppStarted<MssqlStorageSiteSettingDbContext>();
+
+            return serviceCollection;
+        }
     }
 }

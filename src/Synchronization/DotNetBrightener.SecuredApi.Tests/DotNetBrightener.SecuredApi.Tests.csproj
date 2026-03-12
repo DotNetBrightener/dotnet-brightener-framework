@@ -1,32 +1,44 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
 		<IsPackable>false</IsPackable>
+		<IsTestProject>true</IsTestProject>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.7" />
-		<PackageReference Include="Microsoft.Identity.Client" Version="4.73.1" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+		<PackageReference Include="Microsoft.Identity.Client" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Dapper" Version="2.1.66" />
-		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
-		<PackageReference Include="MSTest.TestAdapter" Version="3.9.3" />
-		<PackageReference Include="MSTest.TestFramework" Version="3.9.3" />
-		<PackageReference Include="coverlet.collector" Version="6.0.4">
+		<PackageReference Include="Dapper" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" />
+
+		<PackageReference Include="coverlet.collector">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="NUnit" Version="4.3.2" />
-		<PackageReference Include="NUnit3TestAdapter" Version="5.0.0">
+		<PackageReference Include="NUnit" />
+		<PackageReference Include="NUnit3TestAdapter">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
+		<PackageReference Include="xunit" />
+		<PackageReference Include="xunit.runner.visualstudio">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Shouldly" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <ProjectReference Include="..\DotNetBrightener.SecuredApi\DotNetBrightener.SecuredApi.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
 	</ItemGroup>
 
 </Project>

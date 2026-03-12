@@ -99,10 +99,29 @@ public static class JwtConfigurationExtensions
             }
         }
 
+        var validAudiencesAdded = false;
+
         foreach (var audience in audiences.Distinct())
         {
             if (audiencesContainer!.IsValidAudience(audience).Result)
+            {
+                logger?.LogInformation("Audience {audiences} is valid", audience);
                 claims.Add(new Claim(JwtRegisteredClaimNames.Aud, audience));
+                validAudiencesAdded = true;
+            }
+            else
+            {
+                logger?.LogInformation("Audience {audiences} is invalid", audience);
+            }
+        }
+
+        // If no valid audiences were added, use the issuer as the default audience
+        // This ensures the "aud" claim is always present in the token
+        if (!validAudiencesAdded)
+        {
+            logger?.LogWarning("No valid audiences found. Using issuer '{issuer}' as default audience",
+                              jwtConfiguration.Issuer);
+            claims.Add(new Claim(JwtRegisteredClaimNames.Aud, jwtConfiguration.Issuer!));
         }
 
         var token = new JwtSecurityToken(jwtConfiguration.Issuer,

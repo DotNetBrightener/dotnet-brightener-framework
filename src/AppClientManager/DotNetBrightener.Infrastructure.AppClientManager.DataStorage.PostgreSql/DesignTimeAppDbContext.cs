@@ -2,6 +2,4 @@
 
 namespace DotNetBrightener.Infrastructure.AppClientManager.DataStorage.PostgreSql;
 
-internal class DesignTimeAppDbContext : PostgreSqlDbContextDesignTimeFactory<MigrationPostgreSqlDbContext>
-{
-}
+internal class DesignTimeAppDbContext : PostgreSqlDbContextDesignTimeFactory<MigrationPostgreSqlDbContext>;

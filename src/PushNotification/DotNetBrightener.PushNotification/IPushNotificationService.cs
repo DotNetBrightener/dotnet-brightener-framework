@@ -5,6 +5,12 @@ public interface IPushNotificationService
     Task DeliverNotificationToAllUsers(PushNotificationPayload pushNotification);
 
     Task DeliverNotificationToUsers(long[] userIds, PushNotificationPayload pushNotification);
+
+    Task RegisterSubscriptionAsync(PushNotificationSubscription subscription);
+
+    Task UnregisterSubscriptionAsync(long userId, string deviceToken);
+
+    Task UnregisterAllSubscriptionsForUserAsync(long userId);
 }
 
 

@@ -10,6 +10,6 @@ internal interface IInterceptorsEntriesContainer
 
 internal class InterceptorEntriesContainer : IInterceptorsEntriesContainer
 {
-    public List<EntityEntry> InsertedEntityEntries { get; } = new();
-    public List<EntityEntry> ModifiedEntityEntries { get; } = new();
+    public List<EntityEntry> InsertedEntityEntries { get; } = [];
+    public List<EntityEntry> ModifiedEntityEntries { get; } = [];
 }

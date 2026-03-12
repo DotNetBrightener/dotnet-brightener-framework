@@ -5,7 +5,7 @@ namespace DotNetBrightener.Plugins.EventPubSub;
 
 internal class GenericEventHandlersContainer
 {
-    public List<Type> GenericEventHandlerTypes { get; init; } = new();
+    public List<Type> GenericEventHandlerTypes { get; init; } = [];
 
     public ConcurrentDictionary<Type, List<Type>> MappedMessageTypeAndHandlers { get; } = new();
 }
@@ -67,7 +67,7 @@ internal class GenericEventHandler : IGenericEventHandler
         if (!_container.MappedMessageTypeAndHandlers
                        .TryGetValue(genericTypeDef, out var foundEventHandlerTypes))
         {
-            foundEventHandlerTypes = new List<Type>();
+            foundEventHandlerTypes = [];
 
             foreach (var t in _container.GenericEventHandlerTypes)
             {
@@ -101,7 +101,7 @@ internal class GenericEventHandler : IGenericEventHandler
         if (!_container.MappedMessageTypeAndHandlers
                        .TryGetValue(expectingEventHandlerType, out var otherHandlers))
         {
-            otherHandlers = new List<Type>();
+            otherHandlers = [];
             var allEventHandlers = _serviceProvider.GetServices<IEventHandler>();
 
             foreach (var eventHandler in allEventHandlers)

@@ -1,34 +1,47 @@
 ﻿using DotNetBrightener.DataAccess.Auditing.Storage.DbContexts;
 using DotNetBrightener.DataAccess.Auditing.Storage.EventHandlers;
 using DotNetBrightener.Plugins.EventPubSub;
-using LinqToDB.EntityFrameworkCore;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using System;
+using System.Data.Common;
 
 // ReSharper disable CheckNamespace
 namespace Microsoft.Extensions.DependencyInjection;
 
 public static class AuditingStorageServiceCollectionExtensions
 {
-    public static IServiceCollection AddAuditingSqlServerStorage(this IServiceCollection serviceCollection,
-                                                                 string                  connectionString)
+    extension(IServiceCollection serviceCollection)
     {
-        serviceCollection.AddDbContext<MssqlStorageAuditingDbContext>((optionBuilder) =>
+        public IServiceCollection AddAuditingSqlServerStorage(string             connectionString)
         {
-            optionBuilder.UseSqlServer(connectionString,
-                                       contextOptionsBuilder =>
-                                       {
-                                           contextOptionsBuilder
-                                              .MigrationsHistoryTable("__MigrationsHistory",
-                                                                      MssqlStorageAuditingDbContext.SchemaName);
+            return serviceCollection.AddAuditingSqlServerStorage((provider, builder) =>
+                                                                     new SqlConnection(connectionString));
+        }
 
-                                           contextOptionsBuilder.EnableRetryOnFailure(20);
-                                       });
-        });
+        public IServiceCollection AddAuditingSqlServerStorage(Func<IServiceProvider, DbContextOptionsBuilder,
+                                                                      DbConnection>
+                                                                  connectionStringResolver)
+        {
+            serviceCollection.AddDbContext<MssqlStorageAuditingDbContext>((serviceProvider, options) =>
+            {
+                var connection = connectionStringResolver.Invoke(serviceProvider, options);
 
-        serviceCollection.AddScoped<IEventHandler, SaveAuditTrailService>();
+                options.UseSqlServer(connection,
+                                     contextOptionsBuilder =>
+                                     {
+                                         contextOptionsBuilder
+                                            .MigrationsHistoryTable("__MigrationsHistory",
+                                                                    MssqlStorageAuditingDbContext.SchemaName);
 
-        LinqToDBForEFTools.Initialize();
+                                         contextOptionsBuilder.EnableRetryOnFailure(20);
+                                     });
+            });
 
-        return serviceCollection;
+            serviceCollection.AddScoped<IEventHandler, SaveAuditTrailService>();
+
+            return serviceCollection;
+        }
     }
 }

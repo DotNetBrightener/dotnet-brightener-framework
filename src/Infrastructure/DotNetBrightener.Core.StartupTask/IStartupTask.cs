@@ -20,4 +20,4 @@ public interface IStartupTask
 /// <summary>
 ///    Represents a task that is executed at the application startup synchronously
 /// </summary>
-public interface ISynchronousStartupTask : IStartupTask { }
+public interface ISynchronousStartupTask : IStartupTask;

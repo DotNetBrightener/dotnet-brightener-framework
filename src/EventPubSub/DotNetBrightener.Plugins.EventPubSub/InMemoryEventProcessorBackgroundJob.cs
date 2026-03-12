@@ -13,11 +13,20 @@ internal class InMemoryEventProcessorBackgroundJob(
     {
         await foreach (var eventMessage in eventMessageQueue.ReadAllAsync(stoppingToken))
         {
-            logger.LogDebug("Processing event message {messageType}", eventMessage.GetType().Name);
-            
-            await eventProcessor.ProcessEventMessage(eventMessage);
+            try
+            {
+                logger.LogDebug("Processing event message {messageType}", eventMessage.GetType().Name);
 
-            logger.LogDebug("Processed event message {messageType}", eventMessage.GetType().Name);
+                await eventProcessor.ProcessEventMessage(eventMessage);
+
+                logger.LogDebug("Processed event message {messageType}", eventMessage.GetType().Name);
+            }
+            catch (Exception exception)
+            {
+                logger.LogError(exception,
+                                "Error while processing event message {messageType}",
+                                eventMessage.GetType().Name);
+            }
         }
     }
 }

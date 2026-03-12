@@ -1,3 +1,4 @@
+
 using CRUDWebApiWithGeneratorDemo.Core.Entities;
 
 namespace CRUDWebApiWithGeneratorDemo.Services.Data;

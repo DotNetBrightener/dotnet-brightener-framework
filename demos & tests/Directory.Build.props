@@ -1,6 +1,6 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<PropertyGroup>
-		<TargetFramework>net9.0</TargetFramework>
+		<TargetFramework>net10.0</TargetFramework>
 		<Authors>DotNet Brightener &lt;admin@dotnetbrightener.com&gt;</Authors>
 		<Company>DotNet Brightener</Company>
 

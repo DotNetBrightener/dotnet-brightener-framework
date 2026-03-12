@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<PackageDescription>
 			A library that provides the abilities to authorize the users with given permissions
@@ -10,7 +10,6 @@
 	<PropertyGroup>
 		<PackageReleaseNotes>Basic infrastructure provided for authorizing User with given permission</PackageReleaseNotes>
 		<Description>A library that provides the abilities to authorize the users with given permissions</Description>
-		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -18,7 +17,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+	  <PackageReference Include="Newtonsoft.Json" />
 	</ItemGroup>
 
 	<ItemGroup>

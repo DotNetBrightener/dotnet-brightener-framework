@@ -5,12 +5,15 @@ namespace DotNetBrightener.SiteSettings.Extensions;
 
 public static class SiteSettingModuleEnableServiceCollectionExtensions
 {
-    public static IServiceCollection RegisterSettingType<TSettingType>(this IServiceCollection serviceCollection)
-        where TSettingType : SiteSettingBase, new()
+    extension(IServiceCollection serviceCollection)
     {
-        serviceCollection.AddSingleton<SiteSettingBase, TSettingType>();
-        serviceCollection.AddSingleton<TSettingType, TSettingType>();
+        public IServiceCollection RegisterSettingType<TSettingType>()
+            where TSettingType : SiteSettingBase, new()
+        {
+            serviceCollection.AddSingleton<SiteSettingBase, TSettingType>();
+            serviceCollection.AddSingleton<TSettingType, TSettingType>();
 
-        return serviceCollection;
+            return serviceCollection;
+        }
     }
 }

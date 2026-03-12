@@ -7,7 +7,7 @@ public class MultiTenantConfiguration(IServiceCollection serviceCollection)
 {
     internal readonly IServiceCollection ServiceCollection = serviceCollection;
 
-    internal static readonly HashSet<Type> TenantMappableEntityTypes = new();
+    internal static readonly HashSet<Type> TenantMappableEntityTypes = [];
 
     public MultiTenantConfiguration RegisterTenantMappableType<TType>() where TType : IBaseEntity
     {

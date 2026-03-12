@@ -6,5 +6,5 @@ public class EventPubSubServiceBuilder
 {
     public IServiceCollection Services { get; init; }
 
-    public List<Type> EventMessageTypes { get; } = new();
+    public List<Type> EventMessageTypes { get; } = [];
 }

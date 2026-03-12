@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Design;
 
 namespace DotNetBrightener.SiteSettings.Data.Mssql.Data;
 
-internal class SqlServerDbContextDesignTimeFactory : SqlServerDbContextDesignTimeFactory<MssqlStorageSiteSettingDbContext> { }
+internal class SqlServerDbContextDesignTimeFactory : SqlServerDbContextDesignTimeFactory<MssqlStorageSiteSettingDbContext>;
 
 internal class MssqlStorageSiteSettingDbContext(DbContextOptions<MssqlStorageSiteSettingDbContext> options)
     : AdvancedDbContext(options)

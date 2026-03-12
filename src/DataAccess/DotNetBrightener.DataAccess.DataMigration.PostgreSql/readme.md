@@ -1,6 +1,6 @@
 # PostgreSQL Storage for [`Data Migration`](https://www.nuget.org/packages/DotNetBrightener.DataAccess.DataMigration) Package
 
-&copy; 2024 [DotNet Brightener](mailto:admin@dotnetbrightener.com)
+&copy; 2025 [DotNet Brightener](mailto:admin@dotnetbrightener.com)
 
 ![NuGet Version](https://img.shields.io/nuget/v/DotNetBrightener.DataAccess.DataMigration.PostgreSql)
 

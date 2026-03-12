@@ -1,6 +1,3 @@
 ﻿namespace DotNetBrightener.Caching;
 
-public interface ICacheManager : IBaseCacheService
-{
-
-}
+public interface ICacheManager : IBaseCacheService;

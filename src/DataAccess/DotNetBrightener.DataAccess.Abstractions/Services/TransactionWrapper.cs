@@ -2,21 +2,14 @@
 
 namespace DotNetBrightener.DataAccess.Services;
 
-public class TransactionWrapper : ITransactionWrapper
+public class TransactionWrapper(
+    IServiceProvider            serviceProvider,
+    ILogger<TransactionWrapper> logger)
+    : ITransactionWrapper
 {
-    private readonly IServiceProvider _serviceProvider;
-    private readonly ILogger          _logger;
-
-    public TransactionWrapper(IServiceProvider            serviceProvider,
-                              ILogger<TransactionWrapper> logger)
-    {
-        _serviceProvider = serviceProvider;
-        _logger          = logger;
-    }
-
     public ITransactionalUnitOfWork BeginTransaction()
     {
-        var transactionManager = _serviceProvider.TryGet<TransactionalUnitOfWork>();
+        var transactionManager = serviceProvider.TryGet<TransactionalUnitOfWork>();
 
         return transactionManager;
     }
@@ -24,21 +17,22 @@ public class TransactionWrapper : ITransactionWrapper
 
     public async Task<T> ExecuteWithTransaction<T>(Func<T> action) where T : struct
     {
-        _logger.LogInformation("Initiating new transaction...");
+        logger.LogInformation("Initiating new transaction...");
         using var transaction = BeginTransaction();
 
         try
         {
-            _logger.LogInformation("Executing the task...");
+            logger.LogInformation("Executing the task...");
 
             var result = action();
 
-            _logger.LogInformation("Task executed successfully...");
+            logger.LogInformation("Task executed successfully...");
+
             return result;
         }
         catch (Exception e)
         {
-            _logger.LogWarning(e, "Error occured while executing the task. Rolling back the changes...");
+            logger.LogWarning(e, "Error occured while executing the task. Rolling back the changes...");
             transaction.Rollback();
 
             throw;
@@ -47,20 +41,20 @@ public class TransactionWrapper : ITransactionWrapper
 
     public async Task ExecuteWithTransaction(Action action)
     {
-        _logger.LogInformation("Initiating new transaction...");
+        logger.LogInformation("Initiating new transaction...");
         using var transaction = BeginTransaction();
 
         try
         {
-            _logger.LogInformation("Executing the task...");
+            logger.LogInformation("Executing the task...");
 
             action();
 
-            _logger.LogInformation("Task executed successfully...");
+            logger.LogInformation("Task executed successfully...");
         }
         catch (Exception e)
         {
-            _logger.LogWarning(e, "Error occured while executing the task. Rolling back the changes...");
+            logger.LogWarning(e, "Error occured while executing the task. Rolling back the changes...");
             transaction.Rollback();
 
             throw;

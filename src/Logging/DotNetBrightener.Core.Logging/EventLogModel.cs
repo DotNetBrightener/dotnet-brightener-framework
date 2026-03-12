@@ -1,9 +1,5 @@
 ﻿namespace DotNetBrightener.Core.Logging;
 
-public class EventLogModel : EventLogBaseModel
-{
-}
+public class EventLogModel : EventLogBaseModel;
 
-public class ClientTelemetryLogModel : EventLogBaseModel
-{
-}
+public class ClientTelemetryLogModel : EventLogBaseModel;

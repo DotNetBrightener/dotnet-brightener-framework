@@ -17,13 +17,19 @@ namespace DotNetBrightener.Core.Logging.PostgreSqlDbStorage.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.5")
+                .HasAnnotation("ProductVersion", "10.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("DotNetBrightener.Core.Logging.EventLog", b =>
                 {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
                     b.Property<string>("FormattedMessage")
                         .HasColumnType("text");
 
@@ -62,6 +68,8 @@ namespace DotNetBrightener.Core.Logging.PostgreSqlDbStorage.Migrations
 
                     b.Property<string>("UserAgent")
                         .HasColumnType("text");
+
+                    b.HasKey("Id");
 
                     b.HasIndex("Level");
 

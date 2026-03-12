@@ -13,7 +13,7 @@ public class LokiLabels : IEquatable<LokiLabels>
 
     public LokiLabels(IEnumerable<LokiLabel> labels)
     {
-        Labels = new HashSet<LokiLabel>(labels ?? Enumerable.Empty<LokiLabel>());
+        Labels = new HashSet<LokiLabel>(labels ?? []);
 
         unchecked
         {

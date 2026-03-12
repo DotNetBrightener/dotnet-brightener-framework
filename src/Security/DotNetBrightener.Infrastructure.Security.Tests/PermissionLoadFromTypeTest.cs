@@ -1,31 +1,25 @@
 using DotNetBrightener.Infrastructure.Security.Services;
-using NUnit.Framework;
+using Shouldly;
+using Xunit;
 
 namespace DotNetBrightener.Infrastructure.Security.Tests;
 
-[TestFixture]
 public class PermissionLoadFromTypeTest
 {
-    [SetUp]
-    public void Setup()
-    {
-
-    }
-
-    [Test]
+    [Fact]
     public void TestLoadPermissionFromType()
     {
         var loadedPermissions = new SomePermissionsList().GetPermissions()
                                                          .ToArray();
 
-        Assert.That(SomePermissionsList.Permission1, Is.EqualTo(loadedPermissions[0].PermissionKey));
-        Assert.That("Description for Permission 1", Is.EqualTo(loadedPermissions[0].Description));
+        loadedPermissions[0].PermissionKey.ShouldBe(SomePermissionsList.Permission1);
+        loadedPermissions[0].Description.ShouldBe("Description for Permission 1");
 
-        Assert.That(SomePermissionsList.Permission2, Is.EqualTo(loadedPermissions[1].PermissionKey));
-        Assert.That("Description for Permission 2", Is.EqualTo(loadedPermissions[1].Description));
+        loadedPermissions[1].PermissionKey.ShouldBe(SomePermissionsList.Permission2);
+        loadedPermissions[1].Description.ShouldBe("Description for Permission 2");
     }
 
-    private class SomePermissionsList: AutomaticPermissionProvider
+    private class SomePermissionsList : AutomaticPermissionProvider
     {
         /// <summary>
         ///     Description for Permission 1

@@ -3,10 +3,7 @@ using Microsoft.Extensions.Options;
 
 namespace DotNetBrightener.OAuth.Settings;
 
-public interface IOAuthProviderSetting
-{
-
-}
+public interface IOAuthProviderSetting;
 
 public interface IOAuthProviderSettingLoader<TSetting>
     where TSetting : class, IOAuthProviderSetting

@@ -13,19 +13,29 @@ public abstract class MsSqlServerBaseXUnitTest(ITestOutputHelper testOutputHelpe
 
     public async Task InitializeAsync()
     {
-        var currentTestingType = GetType().Name;
+        try
+        {
+            var currentTestingType = GetType().Name;
 
-        var containerName = string.Concat("sqlserver-2022-", currentTestingType, $"-{Guid.NewGuid()}");
+            var containerName = string.Concat("sqlserver-2022-", currentTestingType, $"-{Guid.NewGuid()}");
 
-        testOutputHelper.WriteLine($"Spinning up container with Name: {containerName}");
-        
-        MsSqlContainer = MsSqlContainerGenerator.CreateContainer(containerName);
+            testOutputHelper.WriteLine($"Spinning up container with Name: {containerName}");
 
-        await MsSqlContainer.StartAsync();
+            MsSqlContainer = MsSqlContainerGenerator.CreateContainer(containerName);
 
-        testOutputHelper.WriteLine($"Container {containerName} started");
+            await MsSqlContainer.StartAsync();
 
-        ConnectionString = MsSqlContainer.GetConnectionString("MsSqlServerBaseTest");
+            testOutputHelper.WriteLine($"Container {containerName} started");
+
+            ConnectionString = MsSqlContainer.GetConnectionStringForDb("MsSqlServerBaseTest");
+        }
+        catch (Exception)
+        {
+            if (MsSqlContainer is not null)
+                await MsSqlContainer.DisposeAsync();
+
+            throw;
+        }
     }
 
     async Task IAsyncLifetime.DisposeAsync()

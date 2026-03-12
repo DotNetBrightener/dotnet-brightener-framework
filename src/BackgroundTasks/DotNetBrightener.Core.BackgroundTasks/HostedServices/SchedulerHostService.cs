@@ -4,30 +4,19 @@ using Microsoft.Extensions.Logging;
 
 namespace DotNetBrightener.Core.BackgroundTasks.HostedServices;
 
-internal class SchedulerHostedService : IHostedService, IDisposable
+internal class SchedulerHostedService(
+    IScheduler                      scheduler,
+    ILogger<SchedulerHostedService> logger,
+    IHostApplicationLifetime        lifetime,
+    IDateTimeProvider               dateTimeProvider)
+    : IHostedService, IDisposable
 {
-    private readonly IScheduler                      _scheduler;
-    private readonly ILogger<SchedulerHostedService> _logger;
-    private readonly IHostApplicationLifetime        _lifetime;
-    private readonly IDateTimeProvider               _dateTimeProvider;
-
     private Timer _timer;
     private bool  _schedulerEnabled = true;
 
-    public SchedulerHostedService(IScheduler                      scheduler,
-                                  ILogger<SchedulerHostedService> logger,
-                                  IHostApplicationLifetime        lifetime,
-                                  IDateTimeProvider               dateTimeProvider)
-    {
-        _scheduler        = scheduler;
-        _logger           = logger;
-        _lifetime         = lifetime;
-        _dateTimeProvider = dateTimeProvider;
-    }
-
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        _lifetime.ApplicationStarted.Register(InitializeAfterAppStarted);
+        lifetime.ApplicationStarted.Register(InitializeAfterAppStarted);
 
         return Task.CompletedTask;
     }
@@ -43,47 +32,50 @@ internal class SchedulerHostedService : IHostedService, IDisposable
         if (!_schedulerEnabled)
             return;
 
-        var now = _dateTimeProvider.UtcNow;
+        var now = dateTimeProvider.UtcNow;
 
-        _logger.LogDebug("Scheduler is running at {now}", now);
 
+        logger.LogDebug("Temporarily disabling scheduler at {now} to execute tasks", now);
         _schedulerEnabled = false;
 
         _timer?.Change(Timeout.Infinite, 0);
 
-        await _scheduler.RunAt(now);
+        logger.LogDebug("Scheduler is running at {now}", dateTimeProvider.UtcNow);
+        await scheduler.RunAt(now);
 
         _timer?.Change(TimeSpan.Zero, TimeSpan.FromSeconds(1));
+
+        logger.LogDebug("Re-enabling scheduler at {now} to allow tasks coming", dateTimeProvider.UtcNow);
         _schedulerEnabled = true;
     }
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Signalling Scheduler Host Service to stop...");
+        logger.LogInformation("Signalling Scheduler Host Service to stop...");
 
         // stop the scheduler so there will be no more task 
         _schedulerEnabled = false;
 
         _timer?.Change(Timeout.Infinite, 0);
 
-        await _scheduler.CancelAllCancellableTasks();
+        await scheduler.CancelAllCancellableTasks();
 
-        if (_scheduler.IsRunning)
+        if (scheduler.IsRunning)
         {
-            _logger.LogWarning("There are still running tasks...");
+            logger.LogWarning("There are still running tasks...");
         }
 
-        while (_scheduler.IsRunning)
+        while (scheduler.IsRunning)
         {
             await Task.Delay(50, CancellationToken.None);
         }
 
-        _logger.LogInformation("Scheduler Host Service is stopping...");
+        logger.LogInformation("Scheduler Host Service is stopping...");
     }
 
     public void Dispose()
     {
         _timer?.Dispose();
-        _logger.LogInformation("Scheduler Host Service is now stopped.");
+        logger.LogInformation("Scheduler Host Service is now stopped.");
     }
 }

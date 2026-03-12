@@ -49,9 +49,7 @@ public interface IAuditableEntity: IBaseEntity
 /// <summary>
 ///     Represents the entities with auditable information fields, and has the primary key type of <see cref="long"/>
 /// </summary>
-public abstract class BaseEntityWithAuditInfo : BaseEntityWithAuditInfo<long>
-{
-}
+public abstract class BaseEntityWithAuditInfo : BaseEntityWithAuditInfo<long>;
 
 
 /// <summary>

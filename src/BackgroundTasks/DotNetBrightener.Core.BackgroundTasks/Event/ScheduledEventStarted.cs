@@ -2,36 +2,17 @@
 
 namespace DotNetBrightener.Core.BackgroundTasks.Event;
 
-public abstract class ScheduledEventMessage : IEventMessage
+public abstract class ScheduledEventMessage(ScheduledTask scheduledTask) : IEventMessage
 {
-    public readonly ScheduledTask ScheduledTask;
-
-    protected ScheduledEventMessage(ScheduledTask scheduledTask)
-    {
-        ScheduledTask = scheduledTask;
-    }
+    public readonly ScheduledTask ScheduledTask = scheduledTask;
 }
 
-public class ScheduledEventStarted : ScheduledEventMessage
-{
-    public ScheduledEventStarted(ScheduledTask scheduledTask): base(scheduledTask)
-    {
-    }
-}
+public class ScheduledEventStarted(ScheduledTask scheduledTask) : ScheduledEventMessage(scheduledTask);
 
-public class ScheduledEventEnded : ScheduledEventMessage
-{
-    public ScheduledEventEnded(ScheduledTask scheduledTask): base(scheduledTask)
-    {
-    }
-}
+public class ScheduledEventEnded(ScheduledTask scheduledTask) : ScheduledEventMessage(scheduledTask);
 
-public class ScheduledEventFailed : ScheduledEventMessage
+public class ScheduledEventFailed(ScheduledTask scheduledTask, Exception exception)
+    : ScheduledEventMessage(scheduledTask)
 {
-    public readonly Exception Exception;
-
-    public ScheduledEventFailed(ScheduledTask scheduledTask, Exception exception): base(scheduledTask)
-    {
-        Exception = exception;
-    }
+    public readonly Exception Exception = exception;
 }

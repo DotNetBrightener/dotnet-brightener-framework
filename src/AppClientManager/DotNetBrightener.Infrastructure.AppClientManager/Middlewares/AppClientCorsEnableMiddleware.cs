@@ -1,4 +1,5 @@
-﻿using DotNetBrightener.Infrastructure.AppClientManager.Options;
+﻿using System.Diagnostics;
+using DotNetBrightener.Infrastructure.AppClientManager.Options;
 using DotNetBrightener.Infrastructure.AppClientManager.Services;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Http;
@@ -59,13 +60,6 @@ public class AppClientCorsEnableMiddleware(
                                                                option,
                                                                defaultPolicy);
 
-        if (!result.IsSuccess)
-        {
-            await next.Invoke(context);
-
-            return;
-        }
-
         foreach (var appBundleDetectionService in appBundleDetectionServices)
         {
             var appBundleId = appBundleDetectionService.GetBundleIdFromRequest(context);
@@ -78,6 +72,14 @@ public class AppClientCorsEnableMiddleware(
 
                 break;
             }
+        }
+
+
+        if (!result.IsSuccess)
+        {
+            await next.Invoke(context);
+
+            return;
         }
 
         if (result.ShortCircuit)
@@ -155,8 +157,8 @@ public class AppClientCorsEnableMiddleware(
             !string.IsNullOrEmpty(requestDomainName))
         {
             if (associatedApp.AllowedOrigins is null ||
-                associatedApp.AllowedOrigins != "*" ||
-                !associatedApp.AllowedOrigins.Contains(requestDomainName))
+                (associatedApp.AllowedOrigins != "*" &&
+                 !associatedApp.AllowedOrigins.Contains(requestDomainName)))
             {
                 return appClientIdentifyingResult;
             }

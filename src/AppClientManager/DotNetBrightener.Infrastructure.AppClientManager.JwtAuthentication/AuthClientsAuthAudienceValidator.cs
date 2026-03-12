@@ -9,38 +9,32 @@ public class AuthClientsAuthAudienceValidator(IServiceScopeFactory serviceScopeF
 {
     public string[] GetValidAudiences()
     {
-        using var scope = serviceScopeFactory.CreateScope();
-        var serviceProvider = scope.ServiceProvider;
+        using var scope           = serviceScopeFactory.CreateScope();
+        var       serviceProvider = scope.ServiceProvider;
 
         var appClientDataService = serviceProvider.GetService<IAppClientManager>();
 
-        var authClientAppUrls = appClientDataService!.GetAllAppClients()
-                                                     .Where(appClient =>
-                                                                appClient is
-                                                                {
-                                                                    IsDeleted: false,
-                                                                    ClientStatus: AppClientStatus.Active
-                                                                })
-                                                     .Select(a => new
-                                                     {
-                                                         a.AllowedOrigins,
-                                                         a.AllowedAppBundleIds
-                                                     })
-                                                     .ToArray();
+        var appClientOriginsAndBundles = appClientDataService!.GetAllAppClients()
+                                                              .Where(appClient =>
+                                                                         appClient is
+                                                                         {
+                                                                             IsDeleted   : false,
+                                                                             ClientStatus: AppClientStatus.Active
+                                                                         })
+                                                              .Select(a => string.Join(";",
+                                                               [
+                                                                   a.AllowedOrigins,
+                                                                   a.AllowedAppBundleIds
+                                                               ]));
 
-        var validAudiences = authClientAppUrls.SelectMany(_ => _.AllowedOrigins.Split([
-                                                                                          ";", ","
-                                                                                      ],
-                                                                                      StringSplitOptions
-                                                                                         .RemoveEmptyEntries))
-                                              .Concat(authClientAppUrls.SelectMany(_ => _.AllowedAppBundleIds
-                                                                                         .Split([
-                                                                                                    ";", ","
-                                                                                                ],
-                                                                                                StringSplitOptions
-                                                                                                   .RemoveEmptyEntries)))
-                                              .Distinct()
-                                              .ToArray();
+        var validAudiences = appClientOriginsAndBundles.SelectMany(originOrBundleId => originOrBundleId.Split([
+                                                                                                                  ";",
+                                                                                                                  ","
+                                                                                                              ],
+                                                                                                              StringSplitOptions
+                                                                                                                 .RemoveEmptyEntries))
+                                                       .Distinct()
+                                                       .ToArray();
 
         return validAudiences;
     }

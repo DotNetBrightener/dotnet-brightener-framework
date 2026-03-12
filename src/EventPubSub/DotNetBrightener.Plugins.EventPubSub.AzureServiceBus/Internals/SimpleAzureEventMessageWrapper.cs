@@ -1,5 +1,3 @@
 ﻿namespace DotNetBrightener.Plugins.EventPubSub.AzureServiceBus.Internals;
 
-internal class SimpleAzureEventMessageWrapper : EventMessageWrapper
-{
-}
+internal class SimpleAzureEventMessageWrapper : EventMessageWrapper;

@@ -2,6 +2,4 @@
 
 namespace DotNetBrightener.Infrastructure.AppClientManager.DataStorage.Mssql;
 
-internal class DesignTimeAppDbContext : SqlServerDbContextDesignTimeFactory<SqlServerMigrationDbContext>
-{
-}
+internal class DesignTimeAppDbContext : SqlServerDbContextDesignTimeFactory<SqlServerMigrationDbContext>;

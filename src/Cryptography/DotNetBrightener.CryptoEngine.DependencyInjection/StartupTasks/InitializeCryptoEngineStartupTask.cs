@@ -9,8 +9,6 @@ internal class InitializeCryptoEngineStartupTask(
     ILogger<InitializeCryptoEngineStartupTask> logger)
     : IHostedService
 {
-    private readonly ILogger              _logger              = logger;
-
     public int Order => 0;
 
     public Task StartAsync(CancellationToken cancellationToken)

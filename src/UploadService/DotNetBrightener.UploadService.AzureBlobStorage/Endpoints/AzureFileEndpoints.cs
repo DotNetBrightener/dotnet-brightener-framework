@@ -1,6 +1,7 @@
 ﻿using Azure.Storage.Blobs;
 using DotNetBrightener.SimpleUploadService.Models;
 using DotNetBrightener.SimpleUploadService.Services;
+using DotNetBrightener.SimpleUploadService.Utils;
 using DotNetBrightener.UploadService.AzureBlobStorage.Providers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -82,10 +83,10 @@ public static class AzureFileEndpoints
 
         var tmpLocalFile = Path.Combine(environment.ContentRootPath, cfg.TempDownloadFolder, blobName);
 
-        if (File.Exists(tmpLocalFile))
+        if (FileCacheManager.IsCacheValid(tmpLocalFile, cfg.CacheExpiration))
         {
             contentTypeProvider.TryGetContentType(tmpLocalFile, out var contentType);
-            logger.LogInformation("Response from local file {blocName}", blobName);
+            logger.LogInformation("Response from cached local file {blobName}", blobName);
 
             return Results.File(tmpLocalFile, contentType ?? "application/octet-stream");
         }
@@ -94,11 +95,11 @@ public static class AzureFileEndpoints
         {
             tmpLocalFile = Path.Combine(environment.ContentRootPath, cfg.TempDownloadFolder, originalBlobName);
 
-            if (File.Exists(tmpLocalFile))
+            if (FileCacheManager.IsCacheValid(tmpLocalFile, cfg.CacheExpiration))
             {
                 contentTypeProvider.TryGetContentType(tmpLocalFile, out var contentType);
 
-                logger.LogInformation("Response from local file {blocName}", originalBlobName);
+                logger.LogInformation("Response from cached local file {blobName}", originalBlobName);
 
                 return Results.File(tmpLocalFile, contentType ?? "application/octet-stream");
             }
@@ -161,7 +162,25 @@ public static class AzureFileEndpoints
 
         if (needResize && needReupload)
         {
-            await uploadService.Upload(streamResponse.Value.Content.ToStream(),
+            var contentStream = streamResponse.Value.Content.ToStream();
+            var memoryStream = new MemoryStream();
+            await contentStream.CopyToAsync(memoryStream);
+            memoryStream.Position = 0;
+
+            // Cache original file
+            var cacheDir = Path.Combine(environment.ContentRootPath, cfg.TempDownloadFolder);
+            var originalCacheFilePath = Path.Combine(cacheDir, originalBlobName);
+
+            await FileCacheManager.TrySaveToCacheAsync(
+                memoryStream,
+                originalCacheFilePath,
+                cacheDir,
+                logger);
+
+            // Reset stream for thumbnail upload
+            memoryStream.Position = 0;
+
+            await uploadService.Upload(memoryStream,
                                        new UploadRequestModel
                                        {
                                            ContentType = streamResponse.Value.Details.ContentType,
@@ -179,9 +198,37 @@ public static class AzureFileEndpoints
                                        },
                                        originalBlobName,
                                        null);
+
+            memoryStream.Position = 0;
+            return Results.File(memoryStream, streamResponse.Value.Details.ContentType);
         }
 
-        return Results.File(streamResponse.Value.Content.ToStream(), streamResponse.Value.Details.ContentType);
+        // Normal download path - cache before serving
+        var normalCacheDir = Path.Combine(environment.ContentRootPath, cfg.TempDownloadFolder);
+        var normalCacheFilePath = Path.Combine(normalCacheDir, blobName);
+
+        var normalContentStream = streamResponse.Value.Content.ToStream();
+
+        var cached = await FileCacheManager.TrySaveToCacheAsync(
+            normalContentStream,
+            normalCacheFilePath,
+            normalCacheDir,
+            logger);
+
+        if (cached)
+        {
+            // Serve from cache
+            contentTypeProvider.TryGetContentType(normalCacheFilePath, out var contentType);
+            return Results.File(normalCacheFilePath, contentType ?? streamResponse.Value.Details.ContentType);
+        }
+        else
+        {
+            // Cache failed, re-download and serve directly (fallback)
+            logger.LogWarning("Serving blob {blobName} without caching due to cache failure", blobName);
+
+            var retryResponse = await blob.DownloadContentAsync();
+            return Results.File(retryResponse.Value.Content.ToStream(), retryResponse.Value.Details.ContentType);
+        }
 
     }
 }

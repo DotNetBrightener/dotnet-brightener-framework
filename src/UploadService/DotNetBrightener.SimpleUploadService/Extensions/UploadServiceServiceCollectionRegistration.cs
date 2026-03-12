@@ -39,45 +39,44 @@ public static class UploadServiceServiceCollectionRegistration
         return builder;
     }
 
-    /// <summary>
-    ///     Adds a provider for handling upload request
-    /// </summary>
-    /// <typeparam name="TUploadServiceProvider"></typeparam>
     /// <param name="builder"></param>
-    /// <returns></returns>
-    public static UploadServiceConfigurationBuilder AddUploadServiceProvider<TUploadServiceProvider>(
-        this UploadServiceConfigurationBuilder builder)
-        where TUploadServiceProvider : class, IUploadServiceProvider
+    extension(UploadServiceConfigurationBuilder builder)
     {
-        var serviceDescriptor = ServiceDescriptor.Scoped<IUploadServiceProvider, TUploadServiceProvider>();
-        builder.ServiceCollection.Add(serviceDescriptor);
+        /// <summary>
+        ///     Adds a provider for handling upload request
+        /// </summary>
+        /// <typeparam name="TUploadServiceProvider"></typeparam>
+        /// <returns></returns>
+        public UploadServiceConfigurationBuilder AddUploadServiceProvider<TUploadServiceProvider>()
+            where TUploadServiceProvider : class, IUploadServiceProvider
+        {
+            var serviceDescriptor = ServiceDescriptor.Scoped<IUploadServiceProvider, TUploadServiceProvider>();
+            builder.ServiceCollection.Add(serviceDescriptor);
 
-        return builder;
-    }
+            return builder;
+        }
 
-    /// <summary>
-    ///     Change the implementation of <see cref="IUploadRootPathProvider"/> service
-    /// </summary>
-    /// <typeparam name="TUploadPathResolver"></typeparam>
-    /// <param name="builder"></param>
-    /// <returns></returns>
-    public static UploadServiceConfigurationBuilder UseUploadRootPath<TUploadPathResolver>(
-        this UploadServiceConfigurationBuilder builder)
-        where TUploadPathResolver : class, IUploadRootPathProvider
-    {
-        var serviceDescriptor = ServiceDescriptor.Scoped<IUploadRootPathProvider, TUploadPathResolver>();
-        builder.ServiceCollection.Replace(serviceDescriptor);
+        /// <summary>
+        ///     Change the implementation of <see cref="IUploadRootPathProvider"/> service
+        /// </summary>
+        /// <typeparam name="TUploadPathResolver"></typeparam>
+        /// <returns></returns>
+        public UploadServiceConfigurationBuilder UseUploadRootPath<TUploadPathResolver>()
+            where TUploadPathResolver : class, IUploadRootPathProvider
+        {
+            var serviceDescriptor = ServiceDescriptor.Scoped<IUploadRootPathProvider, TUploadPathResolver>();
+            builder.ServiceCollection.Replace(serviceDescriptor);
 
-        return builder;
-    }
+            return builder;
+        }
 
-    public static UploadServiceConfigurationBuilder UseImageResizer<TImageResizer>(
-        this UploadServiceConfigurationBuilder builder)
-        where TImageResizer : class, IImageResizer
-    {
-        var serviceDescriptor = ServiceDescriptor.Scoped<IImageResizer, TImageResizer>();
-        builder.ServiceCollection.Replace(serviceDescriptor);
+        public UploadServiceConfigurationBuilder UseImageResizer<TImageResizer>()
+            where TImageResizer : class, IImageResizer
+        {
+            var serviceDescriptor = ServiceDescriptor.Scoped<IImageResizer, TImageResizer>();
+            builder.ServiceCollection.Replace(serviceDescriptor);
 
-        return builder;
+            return builder;
+        }
     }
 }

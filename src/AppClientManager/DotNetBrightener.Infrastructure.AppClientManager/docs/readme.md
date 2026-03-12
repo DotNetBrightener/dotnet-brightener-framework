@@ -3,7 +3,7 @@
 > Manage your ASP.NET Core Applications' clients with ease.
 
 
-&copy; 2024 DotNetBrightener. All rights reserved.
+&copy; 2025 DotNetBrightener. All rights reserved.
 
 ## Introduction
 

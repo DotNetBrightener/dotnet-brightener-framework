@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<IsPackable>true</IsPackable>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="SendGrid" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\NotificationService\NotificationService.csproj" />
+	</ItemGroup>
+
+	<Import Project="..\..\Shared\SharedExtensions.Exception\SharedExtensions.Exception.projitems" Label="Shared" />
+</Project>

@@ -20,7 +20,7 @@ public class AuditTrail
 
     public string Action { get; set; }
 
-    public List<AuditProperty> AuditProperties { get; set; } = new List<AuditProperty>();
+    public List<AuditProperty> AuditProperties { get; set; } = [];
 }
 
 public class AuditTrail<T>: AuditTrail

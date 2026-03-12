@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿#nullable enable
+using System.Linq.Expressions;
 
 namespace DotNetBrightener.DataAccess.Services;
 
@@ -39,9 +40,6 @@ public interface IBaseDataService<TEntity>: IDisposable, IAsyncDisposable
     /// <summary>
     ///     Generates a fetch query to the given entity table, and map it to a DTO using <see cref="propertiesPickupExpression"/>
     /// </summary>
-    /// <typeparam name="T">
-    ///     The type of the entity
-    /// </typeparam>
     /// <typeparam name="TResult">
     ///     The type of the DTO
     /// </typeparam>
@@ -59,9 +57,8 @@ public interface IBaseDataService<TEntity>: IDisposable, IAsyncDisposable
 
 
     /// <summary>
-    ///     Retrieves the number of records of <typeparamref name="T"/> that satisfies the <paramref name="expression"/>
+    ///     Retrieves the number of records of <typeparamref name="TEntity"/> that satisfies the <paramref name="expression"/>
     /// </summary>
-    /// <typeparam name="T">The type of entity</typeparam>
     /// <param name="expression">The expression describes how to pick/filter the records</param>
     /// <returns>
     /// The number of records that satisfies the <paramref name="expression"/>
@@ -69,9 +66,8 @@ public interface IBaseDataService<TEntity>: IDisposable, IAsyncDisposable
     Task<int> CountAsync(Expression<Func<TEntity, bool>>? expression = null);
 
     /// <summary>
-    ///     Retrieves the number of records of <typeparamref name="T"/> that satisfies the <paramref name="expression"/>
+    ///     Retrieves the number of records of <typeparamref name="TEntity"/> that satisfies the <paramref name="expression"/>
     /// </summary>
-    /// <typeparam name="T">The type of entity</typeparam>
     /// <param name="expression">The expression describes how to pick/filter the records</param>
     /// <returns>
     /// The number of records that satisfies the <paramref name="expression"/>
@@ -202,7 +198,19 @@ public interface IBaseDataService<TEntity>: IDisposable, IAsyncDisposable
     ///     Deletes a record of the entity to the database
     /// </summary>
     /// <param name="entity">The record to update</param>
+    void Delete(TEntity entity, bool forceHardDelete = false);
+
+    /// <summary>
+    ///     Deletes a record of the entity to the database
+    /// </summary>
+    /// <param name="entity">The record to update</param>
     void Delete(TEntity entity, string reason, bool forceHardDelete = false);
+
+    /// <summary>
+    ///     Deletes a record of the entity to the database
+    /// </summary>
+    /// <param name="entity">The record to update</param>
+    Task DeleteAsync(TEntity entity, bool forceHardDelete = false);
 
     /// <summary>
     ///     Deletes a record of the entity to the database
@@ -220,7 +228,9 @@ public interface IBaseDataService<TEntity>: IDisposable, IAsyncDisposable
     /// <param name="forceHardDelete">
     ///     Indicates whether the deletion is permanent. Default is <c>False</c> which marks the record as deleted
     /// </param>
-    Task DeleteOne(Expression<Func<TEntity, bool>>? filterExpression, string reason = null, bool forceHardDelete = false);
+    Task DeleteOne(Expression<Func<TEntity, bool>>? filterExpression,
+                   string?                          reason          = null,
+                   bool                             forceHardDelete = false);
 
     /// <summary>
     ///     Restore the matched deleted record with the given filter expression, expected only one record affected
@@ -242,7 +252,7 @@ public interface IBaseDataService<TEntity>: IDisposable, IAsyncDisposable
     ///     Indicates whether the deletion is permanent. Default is <c>False</c> which marks the records as deleted
     /// </param>
     Task<int> DeleteMany(Expression<Func<TEntity, bool>>? filterExpression,
-                         string                           reason          = null,
+                         string?                          reason          = null,
                          bool                             forceHardDelete = false);
 
     /// <summary>

@@ -13,7 +13,7 @@ public class ETagFilterAttribute : Attribute, IActionFilter
     public ETagFilterAttribute(params int[] statusCodes)
     {
         _statusCodes = statusCodes;
-        if (statusCodes.Length == 0) _statusCodes = new[] { 200 };
+        if (statusCodes.Length == 0) _statusCodes = [200];
     }
 
     public void OnActionExecuting(ActionExecutingContext context)

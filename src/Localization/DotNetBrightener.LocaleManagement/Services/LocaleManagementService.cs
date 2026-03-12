@@ -470,10 +470,9 @@ public class LocaleManagementService : ILocaleManagementService
 
     private static (CultureInfo, RegionInfo) GetCultureAndRegion(string cultureName)
     {
-        var splitStrings = cultureName.Split(new[]
-                                             {
+        var splitStrings = cultureName.Split([
                                                  '-', '_'
-                                             },
+                                             ],
                                              StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         if (splitStrings.Length != 2)

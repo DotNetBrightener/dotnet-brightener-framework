@@ -1,6 +1,5 @@
 ﻿using DotNetBrightener.Core.Logging.DbStorage.Data;
 using DotNetBrightener.Core.Logging.Options;
-using LinqToDB.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -20,7 +19,7 @@ internal class QueueEventLogBackgroundProcessing(
     /// <summary>
     ///     To keep track of whether the migration has executed or not.
     /// </summary>
-    private static   bool              _migrationHasExecuted;
+    private static bool _migrationHasExecuted;
 
     private readonly LoggingRetentions _loggingRetentions = loggingRetentionOptions.Value;
     private readonly ILogger           _logger            = logger;
@@ -115,9 +114,9 @@ internal class QueueEventLogBackgroundProcessing(
                      .ExecuteDeleteAsync();
     }
 
-    private async Task CleanUpLogsByLevel(LoggingDbContext context,
-                                          TimeSpan         retentions,
-                                          params string[]  logLevelsToDelete)
+    private async Task CleanUpLogsByLevel(LoggingDbContext    context,
+                                          TimeSpan            retentions,
+                                          params List<string> logLevelsToDelete)
     {
         var retentionStartDate = DateTime.UtcNow.Subtract(retentions);
 
@@ -164,25 +163,12 @@ internal class QueueEventLogBackgroundProcessing(
 
         try
         {
-            await loggingDbContext!.BulkCopyAsync(dataToLog);
+            await loggingDbContext.Set<EventLog>()
+                                  .AddRangeAsync(dataToLog);
         }
         catch (Exception ex)
         {
-            try
-            {
-                _logger.LogWarning(ex,
-                                   "BulkInsert failed to insert {numberOfRecords} records entities of type {Type}. " +
-                                   "Retrying with slow insert...",
-                                   dataToLog.Count,
-                                   nameof(EventLog));
-
-                await loggingDbContext.Set<EventLog>()
-                                      .AddRangeAsync(dataToLog);
-            }
-            catch
-            {
-                // just ignore
-            }
+            _logger.LogWarning(ex, "Error while saving logs");
         }
     }
 
@@ -193,8 +179,15 @@ internal class QueueEventLogBackgroundProcessing(
 
         try
         {
-            loggingDbContext = backgroundScope.ServiceProvider
-                                              .GetRequiredService<LoggingDbContext>();
+            var dbContext = backgroundScope.ServiceProvider
+                                           .GetRequiredService<LoggingDbContext>();
+
+            // fake call to ensure db connection is working
+
+            var logCount = await dbContext.Set<EventLog>()
+                                          .CountAsync();
+
+            loggingDbContext = dbContext;
         }
         catch
         {

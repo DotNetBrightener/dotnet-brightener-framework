@@ -163,7 +163,7 @@ public class Auditing_DbContext_Tests : MsSqlServerBaseXUnitTest
                                            ConnectionString = ConnectionString
                                        },
                                        hostContext.Configuration,
-                                       options =>
+                                       (servicesProvider, options) =>
                                        {
                                            options.UseSqlServer(ConnectionString,
                                                                 s => s.EnableRetryOnFailure(20));

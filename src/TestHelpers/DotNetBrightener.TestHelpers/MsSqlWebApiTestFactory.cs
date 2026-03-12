@@ -42,15 +42,26 @@ public class MsSqlWebApiTestFactory<TEndpoint> : WebApplicationFactory<TEndpoint
 
     public virtual async Task InitializeAsync()
     {
-        var currentTestingType = GetType().Name;
+        try
+        {
+            var currentTestingType = GetType().Name;
 
-        var containerName = String.Concat("sqlserver-2022-", currentTestingType, $"-{Guid.NewGuid()}");
+            var containerName = String.Concat("sqlserver-2022-", currentTestingType, $"-{Guid.NewGuid()}");
 
-        MsSqlContainer = MsSqlContainerGenerator.CreateContainer(containerName);
+            MsSqlContainer = MsSqlContainerGenerator.CreateContainer(containerName);
 
-        await MsSqlContainer.StartAsync();
-        
-        ConnectionString = MsSqlContainer.GetConnectionString(DatabaseName);
+            await MsSqlContainer.StartAsync();
+
+            ConnectionString = MsSqlContainer.GetConnectionStringForDb(DatabaseName);
+        }
+        catch (Exception)
+        {
+            if (MsSqlContainer is not null)
+            {
+                await MsSqlContainer.StopAsync();
+            }
+            throw;
+        }
     }
 
     public new virtual async Task DisposeAsync()
@@ -90,24 +101,37 @@ public class MsSqlWebApiTestFactory<TEndpoint, TDbContext> : WebApplicationFacto
                                                                a.ServiceType));
         serviceCollection.AddDbContext<TDbContextType>(options =>
         {
-            options.UseSqlServer(ConnectionString, c=>
-            {
-                c.EnableRetryOnFailure(3);
-            });
+            options.UseSqlServer(ConnectionString,
+                                 c =>
+                                 {
+                                     c.EnableRetryOnFailure(3);
+                                 });
         });
     }
 
     public virtual async Task InitializeAsync()
     {
-        var currentTestingType = GetType().Name;
+        try
+        {
+            var currentTestingType = GetType().Name;
 
-        var containerName = String.Concat("sqlserver-2022-", currentTestingType, $"-{Guid.NewGuid()}");
+            var containerName = String.Concat("sqlserver-2022-", currentTestingType, $"-{Guid.NewGuid()}");
 
-        MsSqlContainer = MsSqlContainerGenerator.CreateContainer(containerName);
+            MsSqlContainer = MsSqlContainerGenerator.CreateContainer(containerName);
 
-        await MsSqlContainer.StartAsync();
+            await MsSqlContainer.StartAsync();
 
-        ConnectionString = MsSqlContainer.GetConnectionString(DatabaseName);
+            ConnectionString = MsSqlContainer.GetConnectionStringForDb(DatabaseName);
+        }
+        catch (Exception)
+        {
+            if (MsSqlContainer is not null)
+            {
+                await MsSqlContainer.StopAsync();
+            }
+
+            throw;
+        }
     }
 
     public new virtual async Task DisposeAsync()

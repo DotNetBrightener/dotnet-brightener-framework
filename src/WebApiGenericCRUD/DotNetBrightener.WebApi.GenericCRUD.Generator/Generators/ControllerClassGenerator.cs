@@ -1,4 +1,7 @@
-﻿using System.Collections.Immutable;
+﻿using System;
+using System.Collections.Immutable;
+using System.IO;
+using System.Text;
 using Microsoft.CodeAnalysis;
 using WebApi.GenericCRUD.Generator.SyntaxReceivers;
 using WebApi.GenericCRUD.Generator.Utils;
@@ -138,8 +141,8 @@ namespace {modelClass.ControllerNamespace};
 
 public partial class {className}
 {{
-    
-    internal {className}(
+
+    private {className}(
         I{modelClass.TargetEntity}DataService dataService)
         : base(dataService)
     {{
@@ -154,7 +157,7 @@ public partial class {className}
     /// </response>
     /// <response code=""401"">
     ///     Unauthorized request to retrieve filtered collection of <see cref=""{modelClass.TargetEntity}"" /> records.
-    /// </response> 
+    /// </response>
     /// <response code=""500"">
     ///     Unknown internal server error.
     /// </response>
@@ -169,14 +172,17 @@ public partial class {className}
             Directory.CreateDirectory(targetFolder);
         }
 
-        var gPathFile = Path.Combine(targetFolder, $"{className}.g.cs");
-        File.WriteAllText(gPathFile, controllerSrc);
+        var protectedGeneratedPath = GetProtectedGeneratedFilePath(targetFolder, $"{className}.g.cs");
+        WriteProtectedGeneratedFile(protectedGeneratedPath, controllerSrc);
+        context.AddSource($"{className}.g.cs", controllerSrc);
 
         var defaultPathFile = Path.Combine(targetFolder, $"{className}.cs");
 
         if (!File.Exists(defaultPathFile))
         {
-            var defaultControllerFileContent = $@"using DotNetBrightener.WebApi.GenericCRUD.Controllers;
+            var defaultControllerFileContent =
+                $@"
+using DotNetBrightener.WebApi.GenericCRUD.Controllers;
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -261,6 +267,55 @@ public partial class {className}: BaseCRUDController<{modelClass.TargetEntity}>
     }}
 }}";
             File.WriteAllText(defaultPathFile, defaultControllerFileContent);
+        }
+    }
+
+    /// <summary>
+    /// Gets the protected path for generated files in the obj directory structure
+    /// </summary>
+    private static string GetProtectedGeneratedFilePath(string targetFolder, string fileName)
+    {
+        // Find the project root by looking for .csproj file
+        var projectRoot = targetFolder.GetAssemblyPath();
+
+        if (projectRoot == null)
+        {
+            // Fallback to target folder if project root not found
+            return Path.Combine(targetFolder, "Generated", fileName);
+        }
+
+        // Use obj/Debug/netX.X/Generated as the protected location
+        var objPath       = Path.Combine(projectRoot, "obj");
+        var generatedPath = Path.Combine(objPath, "Generated");
+
+        return Path.Combine(generatedPath, fileName);
+    }
+
+    /// <summary>
+    /// Writes a generated file to the protected location with proper headers and validation
+    /// </summary>
+    private static void WriteProtectedGeneratedFile(string filePath, string content)
+    {
+        try
+        {
+            // Ensure the directory exists
+            var directory = Path.GetDirectoryName(filePath);
+
+            if (!Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            // Write the file with UTF-8 encoding without BOM
+            File.WriteAllText(filePath, content, new UTF8Encoding(false));
+
+            // Set file attributes to indicate it's generated (read-only)
+            File.SetAttributes(filePath, FileAttributes.ReadOnly);
+        }
+        catch (Exception ex)
+        {
+            // Log the error but don't fail the build - source context will still work
+            Console.WriteLine($"Warning: Could not write protected generated file {filePath}: {ex.Message}");
         }
     }
 }

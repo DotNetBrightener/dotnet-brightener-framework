@@ -12,7 +12,7 @@ namespace DotNetBrightener.FriendlyRoutingLibrary;
 /// </summary>
 public class FriendlyRouteActionSelector : IActionSelector
 {
-    private static readonly IReadOnlyList<ActionDescriptor> EmptyActions = Array.Empty<ActionDescriptor>();
+    private static readonly IReadOnlyList<ActionDescriptor> EmptyActions = [];
 
     private readonly IActionDescriptorCollectionProvider _actionDescriptorCollectionProvider;
     private readonly ILogger                             _logger;
@@ -337,7 +337,7 @@ public class FriendlyRouteActionSelector : IActionSelector
 
                 if (!OrdinalIgnoreCaseEntries.TryGetValue(routeValues, out var entries))
                 {
-                    entries = new List<ActionDescriptor>();
+                    entries = [];
                     OrdinalIgnoreCaseEntries.Add(routeValues, entries);
                 }
 

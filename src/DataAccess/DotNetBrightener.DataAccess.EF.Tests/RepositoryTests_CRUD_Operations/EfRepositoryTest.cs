@@ -512,14 +512,13 @@ public class EfRepositoryTest : MsSqlServerBaseXUnitTest
                                                                 DatabaseProvider.MsSql
                                                         },
                                                         hostContext.Configuration,
-                                                        optionsBuilder =>
+                                                        (serviceProvider, options) =>
                                                         {
-                                                            optionsBuilder
-                                                               .UseSqlServer(connectionString,
-                                                                             c =>
-                                                                             {
-                                                                                 c.EnableRetryOnFailure(20);
-                                                                             });
+                                                            options.UseSqlServer(connectionString,
+                                                                                 c =>
+                                                                                 {
+                                                                                     c.EnableRetryOnFailure(20);
+                                                                                 });
                                                         });
         services.AddEventPubSubService()
                 .AddEventHandlersFromAssemblies();

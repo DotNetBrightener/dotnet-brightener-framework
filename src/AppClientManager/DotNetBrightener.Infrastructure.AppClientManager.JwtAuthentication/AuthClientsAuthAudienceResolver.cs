@@ -4,18 +4,11 @@ using Microsoft.AspNetCore.Http;
 
 namespace DotNetBrightener.Infrastructure.AppClientManager.JwtAuthentication;
 
-public class AuthClientsAuthAudienceResolver : ICurrentRequestAudienceResolver
+public class AuthClientsAuthAudienceResolver(IHttpContextAccessor httpContextAccessor) : ICurrentRequestAudienceResolver
 {
-    private readonly IHttpContextAccessor _httpContextAccessor;
-
-    public AuthClientsAuthAudienceResolver(IHttpContextAccessor httpContextAccessor)
-    {
-        _httpContextAccessor = httpContextAccessor;
-    }
-
     public string[] GetAudiences()
     {
-        var appClientIdentityResult = _httpContextAccessor.RetrieveValue<AppClientIdentifyingResult>();
+        var appClientIdentityResult = httpContextAccessor.RetrieveValue<AppClientIdentifyingResult>();
 
         if (appClientIdentityResult is null)
             return [];

@@ -15,17 +15,13 @@ public class BaseQueryModel
     public string Columns
     {
         get => string.Join(";", FilteredColumns);
-        set
-        {
-            FilteredColumns = string.IsNullOrEmpty(value)
-                                  ? new List<string>()
-                                  : value.Split(new[]
-                                                {
-                                                    ',', ';'
-                                                },
-                                                StringSplitOptions.RemoveEmptyEntries)
-                                         .ToList();
-        }
+        set => FilteredColumns = string.IsNullOrEmpty(value)
+                                     ? []
+                                     : value.Split([
+                                                       ',', ';'
+                                                   ],
+                                                   StringSplitOptions.RemoveEmptyEntries)
+                                            .ToList();
     }
 
     /// <summary>
@@ -44,28 +40,24 @@ public class BaseQueryModel
     public string OrderBy
     {
         get => string.Join(";", OrderedColumns);
-        set
-        {
-            OrderedColumns = string.IsNullOrEmpty(value)
-                                 ? new List<string>()
-                                 : value.Split(new[]
-                                               {
-                                                   ',', ';'
-                                               },
-                                               StringSplitOptions.RemoveEmptyEntries)
-                                        .ToList();
-        }
+        set => OrderedColumns = string.IsNullOrEmpty(value)
+                                    ? []
+                                    : value.Split([
+                                                      ',', ';'
+                                                  ],
+                                                  StringSplitOptions.RemoveEmptyEntries)
+                                           .ToList();
     }
 
     /// <summary>
     ///     Retrieves the collection of columns (properties) of the entity to retrieve from the REST API request
     /// </summary>
-    public List<string> FilteredColumns { get; private set; } = new List<string>();
+    public List<string> FilteredColumns { get; private set; } = [];
 
     /// <summary>
     ///     Retrieves the collection of columns (properties) of the entity to retrieve from the REST API request
     /// </summary>
-    public List<string> OrderedColumns { get; private set; } = new List<string>();
+    public List<string> OrderedColumns { get; private set; } = [];
 
     public bool DeletedRecordsOnly { get; set; } = false;
 

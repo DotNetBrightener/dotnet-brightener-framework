@@ -30,7 +30,7 @@ public class TemplateEngine_SqlStorageTests(ITestOutputHelper testOutputHelper) 
         {
             var templateService = scope.ServiceProvider.GetRequiredService<ITemplateService>();
 
-            var template = templateService.LoadTemplate<TemplateTestModel>();
+            var template = await templateService.LoadTemplateAsync<TemplateTestModel>();
 
             template.ShouldNotBeNull().ShouldNotBeNull();
             template.TemplateTitle.ShouldBe("Hello {{Name}}"); 

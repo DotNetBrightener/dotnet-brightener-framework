@@ -118,15 +118,11 @@ public static partial class QueryableDeepFilterExtensions
                     BuildNumericPredicateQuery<TIn>(filter.Value, property),
 
                 _ when propertyUnderlingType == typeof(DateTime) =>
-                    BuildDateTimePredicateQuery<TIn>(filter.Value.Split(",",
-                                                                        StringSplitOptions.TrimEntries |
-                                                                        StringSplitOptions.RemoveEmptyEntries),
+                    BuildDateTimePredicateQuery<TIn>(SplitDateTimeFilterValue(filter.Value),
                                                      property),
 
                 _ when propertyUnderlingType == typeof(DateTimeOffset) =>
-                    BuildDateTimeOffsetPredicateQuery<TIn>(filter.Value.Split(",",
-                                                                              StringSplitOptions.TrimEntries |
-                                                                              StringSplitOptions.RemoveEmptyEntries),
+                    BuildDateTimeOffsetPredicateQuery<TIn>(SplitDateTimeFilterValue(filter.Value),
                                                            property),
                 _ => null
             };
@@ -236,6 +232,28 @@ public static partial class QueryableDeepFilterExtensions
         }
 
         return property;
+    }
+
+    /// <summary>
+    /// Splits a DateTime/DateTimeOffset filter value by comma, but preserves operator syntax with parentheses.
+    /// This prevents breaking IN/NOT IN operators that use comma-separated date ranges like: in_(2024-01-01,2024-12-31)
+    /// </summary>
+    /// <param name="filterValue">The filter value to split</param>
+    /// <returns>Array of filter value segments</returns>
+    private static string[] SplitDateTimeFilterValue(string filterValue)
+    {
+        // Check if the filter contains operator syntax with parentheses
+        // Operators like in_(...), notin_(...), on_(...), etc.
+        if (filterValue.Contains("_(") || filterValue.Contains("("))
+        {
+            // Don't split - the value contains operator syntax with parameters
+            return new[] { filterValue };
+        }
+
+        // Split by comma for multiple independent date filters
+        return filterValue.Split(",",
+                                StringSplitOptions.TrimEntries |
+                                StringSplitOptions.RemoveEmptyEntries);
     }
 }
 

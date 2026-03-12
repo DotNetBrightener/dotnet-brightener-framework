@@ -6,15 +6,20 @@ namespace DotNetBrightener.SiteSettings;
 
 public static class SiteSettingApiRegistration
 {
-    public static void RegisterSiteSettingApi(this IMvcBuilder mvcBuilder)
+    extension(IMvcBuilder mvcBuilder)
     {
-        mvcBuilder.AddApplicationPart(Assembly.GetExecutingAssembly());
+        public void RegisterSiteSettingApi()
+        {
+            mvcBuilder.AddApplicationPart(Assembly.GetExecutingAssembly());
 
-        mvcBuilder.Services.EnableCachingService();
-        mvcBuilder.Services
-                  .AddScoped<ISiteSettingService, SiteSettingService>();
+            mvcBuilder.Services
+                      .EnableCachingService();
 
-        mvcBuilder.Services
-                  .AddScoped<ISiteSettingDataService, SiteSettingDataService>();
+            mvcBuilder.Services
+                      .AddScoped<ISiteSettingService, SiteSettingService>();
+
+            mvcBuilder.Services
+                      .AddScoped<ISiteSettingDataService, SiteSettingDataService>();
+        }
     }
 }

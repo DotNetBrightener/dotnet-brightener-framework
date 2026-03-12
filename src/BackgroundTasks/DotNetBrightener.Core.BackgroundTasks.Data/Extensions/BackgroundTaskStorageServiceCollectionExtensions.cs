@@ -1,6 +1,5 @@
 ﻿using DotNetBrightener.Core.BackgroundTasks.Data;
 using DotNetBrightener.Core.BackgroundTasks.Data.DbContexts;
-using LinqToDB.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 // ReSharper disable CheckNamespace
@@ -19,8 +18,6 @@ public static class BackgroundTaskStorageServiceCollectionExtensions
         });
 
         serviceCollection.AddHostedService<MigrateBackgroundTaskDbContextHostedService>();
-
-        LinqToDBForEFTools.Initialize();
 
         return serviceCollection;
     }

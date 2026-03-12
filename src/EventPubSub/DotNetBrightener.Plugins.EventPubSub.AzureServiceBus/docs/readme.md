@@ -1,7 +1,7 @@
 # Azure Service Bus Enabled for [Event PubSub Library](https://www.nuget.org/packages/DotNetBrightener.Plugins.EventPubSub)
 
 
-&copy; 2024 [DotNet Brightener](mailto:admin@dotnetbrightener.com)
+&copy; 2025 [DotNet Brightener](mailto:admin@dotnetbrightener.com)
 
 
 ### Versions

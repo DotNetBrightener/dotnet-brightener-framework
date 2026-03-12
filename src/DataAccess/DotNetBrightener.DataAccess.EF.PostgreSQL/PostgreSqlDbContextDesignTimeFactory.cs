@@ -1,4 +1,5 @@
-﻿// ReSharper disable once CheckNamespace
+﻿// ReSharper disable CheckNamespace
+
 namespace Microsoft.EntityFrameworkCore.Design;
 
 public abstract class PostgreSqlDbContextDesignTimeFactory<TDbContext> : IDesignTimeDbContextFactory<TDbContext>
@@ -13,11 +14,13 @@ public abstract class PostgreSqlDbContextDesignTimeFactory<TDbContext> : IDesign
 
         dbContextOptionBuilder.UseNpgsql(DefaultConnectionString);
 
-        return Activator.CreateInstance(typeof(TDbContext),
-                                        new object[]
-                                        {
-                                            dbContextOptionBuilder.Options
-                                        })
-                   as TDbContext;
+        TDbContext instance = Activator.CreateInstance(typeof(TDbContext),
+                                                       new object[]
+                                                       {
+                                                           dbContextOptionBuilder.Options
+                                                       })
+                                  as TDbContext;
+
+        return instance;
     }
 }

@@ -1,7 +1,6 @@
 ﻿using DotNetBrightener.DataAccess.Auditing.Storage.DbContexts;
 using DotNetBrightener.DataAccess.EF.Auditing;
 using DotNetBrightener.Plugins.EventPubSub;
-using LinqToDB.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Collections.Immutable;
@@ -36,33 +35,21 @@ internal class SaveAuditTrailService : IEventHandler<AuditTrailMessage>
 
         try
         {
-            await _dbContext.BulkCopyAsync(entriesToSave);
+            await _dbContext.AddRangeAsync(entriesToSave);
+            await _dbContext.SaveChangesAsync();
 
-            _logger.LogInformation("Save {records} audit entries using bulk copy.\r\n" +
+            _logger.LogInformation("Save {records} audit entries using AddRange.\r\n" +
                                    "Audit entries: [@{auditEntries}].",
                                    entriesToSave.Count,
                                    entriesToSave);
         }
-        catch (Exception ex)
+        catch (Exception ex2)
         {
-            try
-            {
-                await _dbContext.AddRangeAsync(entriesToSave);
-                await _dbContext.SaveChangesAsync();
-
-                _logger.LogInformation("Save {records} audit entries using AddRange.\r\n" +
-                                       "Audit entries: [@{auditEntries}].",
-                                       entriesToSave.Count,
-                                       entriesToSave);
-            }
-            catch (Exception ex2)
-            {
-                _logger.LogError(ex2,
-                                 "Error while trying to save audit entries.\r\n" +
-                                 "Audit entries: [@{auditEntries}]",
-                                 entriesToSave);
-                return false;
-            }
+            _logger.LogError(ex2,
+                             "Error while trying to save audit entries.\r\n" +
+                             "Audit entries: [@{auditEntries}]",
+                             entriesToSave);
+            return false;
         }
 
         return true;

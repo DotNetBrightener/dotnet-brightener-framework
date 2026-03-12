@@ -1,8 +1,3 @@
 ﻿namespace DotNetBrightener.Core.BackgroundTasks.Cron;
 
-public class InvalidCronExpressionException : Exception
-{
-    public InvalidCronExpressionException(string message) : base(message)
-    {
-    }
-}
+public class InvalidCronExpressionException(string message) : Exception(message);

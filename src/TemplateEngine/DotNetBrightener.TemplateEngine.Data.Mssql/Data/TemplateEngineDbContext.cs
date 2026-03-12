@@ -1,5 +1,5 @@
 ﻿using DotNetBrightener.DataAccess.EF.Migrations;
-using DotNetBrightener.TemplateEngine.Data.Mssql.Entity;
+using DotNetBrightener.TemplateEngine.Data.Entity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
