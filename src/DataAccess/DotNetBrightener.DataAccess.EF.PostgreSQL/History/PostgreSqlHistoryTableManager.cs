@@ -152,13 +152,16 @@ internal class PostgreSqlHistoryTableManager
         var fullTableName = string.IsNullOrEmpty(schema) ? tableName : $"{schema}.{tableName}";
         var fullHistoryTableName = string.IsNullOrEmpty(schema) ? historyTableName : $"{schema}.{historyTableName}";
 
+        // Use the actual DB column name (respects [Column] attributes, snake_case conventions, etc.)
+        var storeObject = StoreObjectIdentifier.Table(tableName!, schema);
         var columns = entityType.GetProperties()
             .Where(p => !p.IsShadowProperty())
-            .Select(p => p.Name)
+            .Select(p => p.GetColumnName(storeObject) ?? p.Name)
             .ToList();
 
-        var columnList = string.Join(", ", columns);
-        var oldColumnList = string.Join(", ", columns.Select(c => $"OLD.{c}"));
+        // Quote every column name so the generated SQL is safe for any casing convention
+        var columnList    = string.Join(", ", columns.Select(c => $"\"{c}\""));
+        var oldColumnList = string.Join(", ", columns.Select(c => $"OLD.\"{c}\""));
 
         var sql = new StringBuilder();
 
@@ -213,13 +216,15 @@ CREATE TRIGGER {triggerName}
 
         sql.AppendLine($"CREATE TABLE IF NOT EXISTS {fullHistoryTableName} (");
 
-        var properties = entityType.GetProperties()
-                                   .Where(p => !p.IsShadowProperty())
-                                   .ToList();
+        // Use the actual DB column name (respects [Column] attributes, snake_case conventions, etc.)
+        var storeObject = StoreObjectIdentifier.Table(tableName!, schema);
+        var properties  = entityType.GetProperties()
+                                    .Where(p => !p.IsShadowProperty())
+                                    .ToList();
 
         foreach (var property in properties)
         {
-            var columnName = property.Name;
+            var columnName = property.GetColumnName(storeObject) ?? property.Name;
             var columnType = GetPostgreSqlColumnType(property);
 
             if (string.IsNullOrEmpty(columnType))

@@ -34,12 +34,14 @@ public abstract class PostgreSqlVersioningMigrationEnabledDbContext
 
     protected sealed override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
+
         ConfigureModelBuilder(modelBuilder);
 
         ConfigureHistoryTables(modelBuilder);
 
         modelBuilder.ApplyUuidV7DefaultForGuidKeys();
-    } 
+    }
 
     /// <summary>
     ///     Registers the entities to the <see cref="ModelBuilder"/>

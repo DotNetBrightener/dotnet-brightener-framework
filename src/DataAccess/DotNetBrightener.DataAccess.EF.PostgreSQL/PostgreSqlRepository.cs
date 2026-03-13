@@ -4,6 +4,7 @@ using DotNetBrightener.DataAccess.EF.PostgreSQL.History;
 using DotNetBrightener.DataAccess.EF.Repositories;
 using DotNetBrightener.DataAccess.Exceptions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
 
@@ -51,7 +52,7 @@ public class PostgreSqlRepository(
     }
 
     private string BuildHistoryQuery<T>(
-        Microsoft.EntityFrameworkCore.Metadata.IEntityType entityType,
+        IEntityType entityType,
         string historyTableName,
         string? historyTableSchema,
         string? mainTableName,
@@ -67,10 +68,13 @@ public class PostgreSqlRepository(
             ? mainTableName
             : $"{mainTableSchema}.{mainTableName}";
 
-        // Get all columns except the period columns
+        // Get all columns except the period columns.
+        // Use the actual DB column name so that [Column] attributes and naming conventions
+        // (e.g. Npgsql snake_case) are correctly reflected in the generated SQL.
+        var storeObject = StoreObjectIdentifier.Table(mainTableName!, mainTableSchema);
         var columns = entityType.GetProperties()
             .Where(p => !p.IsShadowProperty())
-            .Select(p => p.Name)
+            .Select(p => p.GetColumnName(storeObject) ?? p.Name)
             .ToList();
 
         var columnList = string.Join(", ", columns.Select(c => $"\"{c}\""));

@@ -1,10 +1,11 @@
 #nullable enable
+using DotNetBrightener.DataAccess.EF.PostgreSQL;
 using DotNetBrightener.DataAccess.EF.PostgreSQL.History;
 using DotNetBrightener.DataAccess.EF.PostgreSQL.Interceptors;
+using DotNetBrightener.DataAccess.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Logging;
 
 namespace DotNetBrightener.DataAccess.EF.PostgreSQL.Extensions;
 
@@ -20,9 +21,11 @@ public static class PostgreSqlHistoryServiceCollectionExtensions
     /// <returns>The service collection for chaining</returns>
     public static IServiceCollection AddPostgreSqlHistoryServices(this IServiceCollection services)
     {
-        services.AddScoped<PostgreSqlHistoryTableManager>();
-        services.AddScoped<PostgreSqlHistoryInterceptor>();
-        
+        services.TryAddSingleton<PostgreSqlHistoryTableManager>();
+        services.TryAddSingleton<PostgreSqlHistoryInterceptor>();
+
+        services.Replace(ServiceDescriptor.Scoped<IRepository, PostgreSqlRepository>());
+
         return services;
     }
 
@@ -42,27 +45,15 @@ public static class PostgreSqlHistoryServiceCollectionExtensions
     {
         services.AddPostgreSqlHistoryServices();
 
-        services.AddDbContext<TContext>((serviceProvider, options) =>
+        services.AddDbContext<TContext>((_, options) =>
         {
             options.UseNpgsql(connectionString);
-            
-            // Add history interceptor
-            var logger = serviceProvider.GetService<ILogger<PostgreSqlHistoryInterceptor>>();
-            var historyManager = serviceProvider.GetService<PostgreSqlHistoryTableManager>();
-            
-            if (historyManager != null)
-            {
-                var interceptor = new PostgreSqlHistoryInterceptor(
-                    logger ?? Microsoft.Extensions.Logging.Abstractions.NullLogger<PostgreSqlHistoryInterceptor>.Instance,
-                    historyManager);
-                
-                options.AddInterceptors(interceptor);
-            }
-
             configureOptions?.Invoke(options);
         });
 
-        services.TryAddScoped<PostgreSqlHistoryInterceptor>();
+        // The interceptor is wired into every DbContext through the IDbContextConfigurator
+        // pipeline (PostgreSQlHistoryEnabledDbContextConfigurator). No manual instantiation
+        // needed here — that was the source of the duplicate-registration bug.
         services.AddDbContextConfigurator<PostgreSQlHistoryEnabledDbContextConfigurator>();
 
         return services;
