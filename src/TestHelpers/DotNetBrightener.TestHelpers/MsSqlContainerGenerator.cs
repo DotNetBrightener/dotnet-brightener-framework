@@ -8,7 +8,7 @@ public static class MsSqlContainerGenerator
     public static MsSqlContainer CreateContainer(string containerName = "")
     {
         var builder = new MsSqlBuilder()
-                     .WithImage("mcr.microsoft.com/mssql/server:2022-latest")
+                     .WithImage("mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04")
                      .WithPassword("Str0ng3stP@s5w0rd3ver!")
                      .WithWaitStrategy(Wait.ForUnixContainer()
                                            .UntilMessageIsLogged("SQL Server is now ready for client connections"));

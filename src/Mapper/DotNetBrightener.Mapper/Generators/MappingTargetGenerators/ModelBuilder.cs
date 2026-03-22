@@ -1,0 +1,952 @@
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
+using System.Threading;
+using DotNetBrightener.Mapper.Generators.Shared;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+
+namespace DotNetBrightener.Mapper.Generators.MappingTargetGenerators;
+
+/// <summary>
+///     Builds MappableTargetModel instances from attribute syntax contexts.
+/// </summary>
+internal static class ModelBuilder
+{
+    /// <summary>
+    ///     Builds a MappableTargetModel from the generator attribute syntax context.
+    /// </summary>
+    public static MappableTargetModel? BuildModel(GeneratorAttributeSyntaxContext context, CancellationToken token)
+    {
+        token.ThrowIfCancellationRequested();
+        if (context.TargetSymbol is not INamedTypeSymbol targetSymbol) return null;
+        if (context.Attributes.Length == 0) return null;
+
+        var attribute = context.Attributes[0];
+        token.ThrowIfCancellationRequested();
+
+        var sourceType = AttributeParser.ExtractSourceType(attribute);
+        if (sourceType == null) return null;
+
+        // Parse attribute arguments
+        var excluded = AttributeParser.ExtractExcludedMembers(attribute);
+        var (included, isIncludeMode) = AttributeParser.ExtractIncludedMembers(attribute);
+
+        // Extract configuration settings
+        var includeFields = AttributeParser.GetNamedArg(attribute.NamedArguments, Constants.AttributeNames.IncludeFields, false);
+        var generateConstructor = AttributeParser.GetNamedArg(attribute.NamedArguments, Constants.AttributeNames.GenerateConstructor, true);
+        var generateParameterlessConstructor = AttributeParser.GetNamedArg(attribute.NamedArguments, Constants.AttributeNames.GenerateParameterlessConstructor, true);
+        var chainToParameterlessConstructor = AttributeParser.GetNamedArg(attribute.NamedArguments, Constants.AttributeNames.ChainToParameterlessConstructor, false);
+        var generateProjection = AttributeParser.GetNamedArg(attribute.NamedArguments, Constants.AttributeNames.GenerateProjection, true);
+        var generateToSource = AttributeParser.GetNamedArg(attribute.NamedArguments, Constants.AttributeNames.GenerateToSource, false);
+        var configurationTypeName = AttributeParser.ExtractConfigurationTypeName(attribute);
+        var beforeMapConfigurationTypeName = AttributeParser.ExtractBeforeMapConfigurationTypeName(attribute);
+        var afterMapConfigurationTypeName = AttributeParser.ExtractAfterMapConfigurationTypeName(attribute);
+
+        // Infer the type kind and whether it's a record from the target type declaration
+        var (typeKind, isRecord) = TypeAnalyzer.InferTypeKind(targetSymbol);
+
+        // Get the accessibility modifier
+        var accessibility = targetSymbol.DeclaredAccessibility switch
+        {
+            Accessibility.Public => "public",
+            Accessibility.Internal => "internal",
+            Accessibility.Protected => "protected",
+            Accessibility.ProtectedOrInternal => "protected internal",
+            Accessibility.ProtectedAndInternal => "private protected",
+            Accessibility.Private => "private",
+            _ => "public"
+        };
+
+        // For record types, default to preserving init-only and required modifiers
+        // unless explicitly overridden by the user
+        var preserveInitOnlyDefault = isRecord;
+        var preserveRequiredDefault = isRecord;
+
+        var preserveInitOnly = AttributeParser.GetNamedArg(attribute.NamedArguments, Constants.AttributeNames.PreserveInitOnlyProperties, preserveInitOnlyDefault);
+        var preserveRequired = AttributeParser.GetNamedArg(attribute.NamedArguments, Constants.AttributeNames.PreserveRequiredProperties, preserveRequiredDefault);
+        var nullableProperties = AttributeParser.GetNamedArg(attribute.NamedArguments, Constants.AttributeNames.NullableProperties, false);
+        var copyAttributes = AttributeParser.GetNamedArg(attribute.NamedArguments, Constants.AttributeNames.CopyAttributes, false);
+        var maxDepth = AttributeParser.GetNamedArg(attribute.NamedArguments, Constants.AttributeNames.MaxDepth, Constants.DefaultMaxDepth);
+        var preserveReferences = AttributeParser.GetNamedArg(attribute.NamedArguments, Constants.AttributeNames.PreserveReferences, Constants.DefaultPreserveReferences);
+
+        // Extract ConvertEnumsTo parameter
+        var convertEnumsTo = AttributeParser.ExtractConvertEnumsTo(attribute);
+
+        // Extract GenerateCopyConstructor and GenerateEquality parameters
+        var generateCopyConstructor = AttributeParser.GetNamedArg(attribute.NamedArguments, Constants.AttributeNames.GenerateCopyConstructor, false);
+        var generateEquality = AttributeParser.GetNamedArg(attribute.NamedArguments, Constants.AttributeNames.GenerateEquality, false);
+
+        // Extract nested targets parameter and build mapping from source type to child target type
+        var nestedTargetMappings = AttributeParser.ExtractNestedTargetMappings(attribute, context.SemanticModel.Compilation);
+
+        // Extract MapFrom attribute mappings from target type properties
+        var expressionMembers = new List<MappableTargetMember>();
+        var mapFromMappings = ExtractMapFromMappings(targetSymbol, expressionMembers, nullableProperties);
+
+        // Extract MapWhen attribute mappings from target type properties
+        var mapWhenMappings = ExtractMapWhenMappings(targetSymbol);
+
+        // Extract type-level XML documentation from the source type
+        var typeXmlDocumentation = CodeGenerationHelpers.ExtractXmlDocumentation(sourceType);
+
+        // Build members
+        var (members, excludedRequiredMembers) = ExtractMembers(
+            sourceType,
+            excluded,
+            included,
+            isIncludeMode,
+            includeFields,
+            preserveInitOnly,
+            preserveRequired,
+            nullableProperties,
+            copyAttributes,
+            nestedTargetMappings,
+            mapFromMappings,
+            mapWhenMappings,
+            convertEnumsTo,
+            token);
+
+        // Add expression-based members (from MapFrom with expressions)
+        if (expressionMembers.Count > 0)
+        {
+            members = members.AddRange(expressionMembers);
+        }
+
+        // Get the namespace early - needed for fullName calculation (GitHub issue #249)
+        var ns = targetSymbol.ContainingNamespace.IsGlobalNamespace
+            ? null
+            : targetSymbol.ContainingNamespace.ToDisplayString();
+
+        // Determine full name
+        var useFullName = AttributeParser.GetNamedArg(attribute.NamedArguments, Constants.AttributeNames.UseFullName, false);
+
+        // Get containing types for nested classes
+        var containingTypes = TypeAnalyzer.GetContainingTypes(targetSymbol);
+
+        // For nested classes, automatically use hierarchical name to avoid collisions
+        // even if UseFullName is false
+        string fullName;
+        if (useFullName)
+        {
+            fullName = targetSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat).GetSafeName();
+        }
+        else if (containingTypes.Length > 0)
+        {
+            // Build hierarchical name: ParentClass.NestedClass
+            fullName = string.Join(".", containingTypes) + "." + targetSymbol.Name;
+        }
+        else if (ns != null)
+        {
+            // Include namespace to avoid collisions for types with the same name in different namespaces
+            // (GitHub issue #249)
+            fullName = ns + "." + targetSymbol.Name;
+        }
+        else
+        {
+            fullName = targetSymbol.Name;
+        }
+
+        // Get containing types for the source type (to detect nesting in static classes)
+        var sourceContainingTypes = TypeAnalyzer.GetContainingTypes(sourceType);
+
+        // Check if the target type already has a primary constructor
+        var hasExistingPrimaryConstructor = TypeAnalyzer.HasExistingPrimaryConstructor(targetSymbol);
+
+        // Check if the source type has a positional constructor
+        var hasPositionalConstructor = TypeAnalyzer.HasPositionalConstructor(sourceType);
+
+        // Check if ToSource can actually be generated (GitHub issue #220)
+        // If the source type doesn't have an accessible parameterless constructor or has inaccessible setters,
+        // skip ToSource generation to avoid compilation errors
+        if (generateToSource && !hasPositionalConstructor)
+        {
+            // For non-positional types, we need a parameterless constructor and accessible setters
+            var hasAccessibleConstructor = TypeAnalyzer.HasAccessibleParameterlessConstructor(sourceType, context.SemanticModel.Compilation.Assembly);
+            var hasAccessibleSetters = TypeAnalyzer.AllPropertiesHaveAccessibleSetters(sourceType, members);
+
+            if (!hasAccessibleConstructor || !hasAccessibleSetters)
+            {
+                // Cannot generate ToSource - disable it silently
+                // Note: Users can still manually write their own ToSource method if needed
+                generateToSource = false;
+            }
+        }
+
+        // Collect base class member names to avoid generating duplicate properties
+        var baseClassMemberNames = GetBaseClassMemberNames(targetSymbol);
+
+        // Extract FlattenTo types for generating collection flattening methods
+        var flattenToTypes = AttributeParser.ExtractFlattenToTypes(attribute);
+
+        return new MappableTargetModel(
+            targetSymbol.Name,
+            ns,
+            fullName,
+            typeKind,
+            isRecord,
+            accessibility,
+            generateConstructor,
+            generateParameterlessConstructor,
+            generateProjection,
+            generateToSource,
+            sourceType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
+            sourceContainingTypes,
+            configurationTypeName,
+            members,
+            hasExistingPrimaryConstructor,
+            hasPositionalConstructor,
+            typeXmlDocumentation,
+            containingTypes,
+            useFullName,
+            excludedRequiredMembers,
+            nullableProperties,
+            copyAttributes,
+            maxDepth,
+            preserveReferences,
+            baseClassMemberNames,
+            flattenToTypes,
+            beforeMapConfigurationTypeName,
+            afterMapConfigurationTypeName,
+            chainToParameterlessConstructor,
+            convertEnumsTo,
+            generateCopyConstructor,
+            generateEquality);
+    }
+
+    #region Private Helper Methods
+
+    private static (ImmutableArray<MappableTargetMember> members, ImmutableArray<MappableTargetMember> excludedRequiredMembers) ExtractMembers(
+        INamedTypeSymbol sourceType,
+        HashSet<string> excluded,
+        HashSet<string> included,
+        bool isIncludeMode,
+        bool includeFields,
+        bool preserveInitOnly,
+        bool preserveRequired,
+        bool nullableProperties,
+        bool copyAttributes,
+        Dictionary<string, (string childTargetTypeName, string sourceTypeName)> nestedTargetMappings,
+        Dictionary<string, (string targetName, string source, bool reversible, bool includeInProjection, string typeName)> mapFromMappings,
+        Dictionary<string, (List<string> conditions, string? defaultValue, bool includeInProjection)> mapWhenMappings,
+        string? convertEnumsTo,
+        CancellationToken token)
+    {
+        var members = new List<MappableTargetMember>();
+        var excludedRequiredMembers = new List<MappableTargetMember>();
+        var addedMembers = new HashSet<string>();
+
+        var allMembersWithModifiers = GeneratorUtilities.GetAllMembersWithModifiers(sourceType);
+
+        foreach (var (member, isInitOnly, isRequired) in allMembersWithModifiers)
+        {
+            token.ThrowIfCancellationRequested();
+
+            if (addedMembers.Contains(member.Name)) continue;
+
+            bool shouldIncludeMember = isIncludeMode
+                ? included.Contains(member.Name)
+                : !excluded.Contains(member.Name);
+
+            if (member is IPropertySymbol property && property.DeclaredAccessibility == Accessibility.Public)
+            {
+                ProcessProperty(
+                    property,
+                    shouldIncludeMember,
+                    isInitOnly,
+                    isRequired,
+                    preserveInitOnly,
+                    preserveRequired,
+                    nullableProperties,
+                    copyAttributes,
+                    nestedTargetMappings,
+                    mapFromMappings,
+                    mapWhenMappings,
+                    convertEnumsTo,
+                    members,
+                    excludedRequiredMembers,
+                    addedMembers);
+            }
+            else if (includeFields && member is IFieldSymbol field && field.DeclaredAccessibility == Accessibility.Public)
+            {
+                ProcessField(
+                    field,
+                    shouldIncludeMember,
+                    isRequired,
+                    preserveRequired,
+                    nullableProperties,
+                    copyAttributes,
+                    members,
+                    excludedRequiredMembers,
+                    addedMembers);
+            }
+        }
+
+        return (members.ToImmutableArray(), excludedRequiredMembers.ToImmutableArray());
+    }
+
+    private static void ProcessProperty(
+        IPropertySymbol property,
+        bool shouldIncludeMember,
+        bool isInitOnly,
+        bool isRequired,
+        bool preserveInitOnly,
+        bool preserveRequired,
+        bool nullableProperties,
+        bool copyAttributes,
+        Dictionary<string, (string childTargetTypeName, string sourceTypeName)> nestedTargetMappings,
+        Dictionary<string, (string targetName, string source, bool reversible, bool includeInProjection, string typeName)> mapFromMappings,
+        Dictionary<string, (List<string> conditions, string? defaultValue, bool includeInProjection)> mapWhenMappings,
+        string? convertEnumsTo,
+        List<MappableTargetMember> members,
+        List<MappableTargetMember> excludedRequiredMembers,
+        HashSet<string> addedMembers)
+    {
+        var memberXmlDocumentation = CodeGenerationHelpers.ExtractXmlDocumentation(property);
+
+        // Check if this source property has a MapFrom attribute pointing to it
+        var hasMapFrom = mapFromMappings.TryGetValue(property.Name, out var mapFromInfo);
+
+        if (!shouldIncludeMember && !hasMapFrom)
+        {
+            // If this is a required member that was excluded, track it for ToSource generation
+            if (isRequired)
+            {
+                excludedRequiredMembers.Add(new MappableTargetMember(
+                    property.Name,
+                    GeneratorUtilities.GetTypeNameWithNullability(property.Type),
+                    TargetMemberKind.Property,
+                    property.Type.IsValueType,
+                    isInitOnly,
+                    isRequired,
+                    false, // Properties are not readonly
+                    memberXmlDocumentation));
+            }
+            return;
+        }
+
+        var shouldPreserveInitOnly = preserveInitOnly && isInitOnly;
+        var shouldPreserveRequired = preserveRequired && isRequired;
+
+        var typeName = GeneratorUtilities.GetTypeNameWithNullability(property.Type);
+        var propertyTypeName = property.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        bool isNestedTarget = false;
+        string? nestedTargetSourceTypeName = null;
+        bool isCollection = false;
+        string? collectionWrapper = null;
+
+        // Detect if the property type is a nested type (has a containing type)
+        // This is needed to generate 'using static' instead of 'using' for the containing type
+        bool isNestedType = GeneratorUtilities.IsNestedType(property.Type);
+
+        // Check if the property type is nullable (reference types)
+        bool isNullableReferenceType = property.Type.NullableAnnotation == NullableAnnotation.Annotated;
+        bool shouldTreatAsNullable = isNullableReferenceType;
+
+        if (!shouldTreatAsNullable && !property.Type.IsValueType)
+        {
+            bool isExplicitlyNonNullable = property.Type.NullableAnnotation == NullableAnnotation.NotAnnotated &&
+                                            property.IsRequired;
+
+            if (!isExplicitlyNonNullable)
+            {
+                // treat as potentially nullable for safety
+                shouldTreatAsNullable = true;
+            }
+        }
+
+        // Check if this property's type is a collection
+        if (GeneratorUtilities.TryGetCollectionElementType(property.Type, out var elementType, out var wrapper))
+        {
+            // Check if the collection element type matches a child target source type
+            var elementTypeName = elementType!.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+            if (nestedTargetMappings.TryGetValue(elementTypeName, out var nestedMapping))
+            {
+                // Wrap the child target type in the same collection type
+                var wrappedType = GeneratorUtilities.WrapInCollectionType(nestedMapping.childTargetTypeName, wrapper!);
+                // Preserve nullability if the collection itself was nullable
+                typeName = shouldTreatAsNullable ? wrappedType + "?" : wrappedType;
+                isNestedTarget = true;
+                isCollection = true;
+                collectionWrapper = wrapper;
+                nestedTargetSourceTypeName = nestedMapping.sourceTypeName;
+            }
+        }
+            // Check if this property's type matches a child target source type (non-collection)
+        else if (nestedTargetMappings.TryGetValue(propertyTypeName, out var nestedMapping))
+        {
+            // Preserve nullability when assigning nested target type name
+            typeName = shouldTreatAsNullable
+                ? nestedMapping.childTargetTypeName + "?"
+                : nestedMapping.childTargetTypeName;
+            isNestedTarget = true;
+            nestedTargetSourceTypeName = nestedMapping.sourceTypeName;
+        }
+
+        // Store the source type name before applying NullableProperties
+        var sourceMemberTypeName = typeName;
+
+        // Apply NullableProperties setting to all properties, including nested targets
+        if (nullableProperties)
+        {
+            typeName = GeneratorUtilities.MakeNullable(typeName);
+        }
+
+        // Extract copiable attributes and their namespaces if requested
+        List<string> attributes;
+        List<string> attributeNamespaces;
+        if (copyAttributes)
+        {
+            var (attrs, namespaces) = AttributeProcessor.ExtractCopiableAttributesWithNamespaces(property, TargetMemberKind.Property);
+            attributes = attrs;
+            attributeNamespaces = namespaces.ToList();
+        }
+        else
+        {
+            attributes = new List<string>();
+            attributeNamespaces = new List<string>();
+        }
+
+        // Detect if the source property is a partial defining declaration (C# 13+).
+        // We detect this to properly handle initializer extraction (partial defining declarations
+        // cannot have initializers in C# 13+), but we do NOT propagate the partial modifier
+        // to the generated target type. Generating a partial defining declaration would require
+        // the user to provide an implementing declaration, which breaks the DTO use case.
+        // It also doesn't work with other source generators (e.g., CommunityToolkit.Mvvm)
+        // because source generators don't chain. (GitHub issue #277)
+        var isSourcePartial = IsPartialDefiningProperty(property);
+
+        // Extract property initializer/default value from source
+        // Skip initializers for:
+        // 1. Nested targets - the type changes and the initializer won't be compatible
+        // 2. NullableProperties = true - query DTOs should default to null, not the source initializer
+        // 3. Partial source properties - the source defining declaration cannot have initializers,
+        //    so there's nothing to extract anyway
+        string? defaultValue = null;
+        if (!isNestedTarget && !nullableProperties && !isSourcePartial)
+        {
+            defaultValue = ExtractPropertyInitializer(property);
+        }
+
+        // Determine final member name and mapping properties
+        var memberName = hasMapFrom ? mapFromInfo.targetName : property.Name;
+        var mapFromSource = hasMapFrom ? mapFromInfo.source : null;
+        var mapFromReversible = hasMapFrom ? mapFromInfo.reversible : true;
+        var mapFromIncludeInProjection = hasMapFrom ? mapFromInfo.includeInProjection : true;
+        var sourcePropertyName = property.Name; // Always use the actual source property name
+
+        // Get MapWhen conditions for this property (keyed by target property name)
+        var hasMapWhen = mapWhenMappings.TryGetValue(memberName, out var mapWhenInfo);
+
+        // User declared the property with [MapFrom] or [MapWhen]
+        var isUserDeclared = hasMapFrom || hasMapWhen;
+        var mapWhenConditions = hasMapWhen ? mapWhenInfo.conditions : null;
+        var mapWhenDefault = hasMapWhen ? mapWhenInfo.defaultValue : null;
+        var mapWhenIncludeInProjection = hasMapWhen ? mapWhenInfo.includeInProjection : true;
+
+        // If user declared, use their type name instead
+        if (hasMapFrom && !string.IsNullOrEmpty(mapFromInfo.typeName))
+        {
+            typeName = mapFromInfo.typeName;
+            if (nullableProperties)
+            {
+                typeName = GeneratorUtilities.MakeNullable(typeName);
+            }
+        }
+
+        // Enum conversion: if ConvertEnumsTo is set and this property is an enum type, convert it
+        bool isEnumConversion = false;
+        string? originalEnumTypeName = null;
+        if (convertEnumsTo != null && !isNestedTarget && !isCollection && !isUserDeclared)
+        {
+            // Get the underlying type (strip nullable wrapper if present)
+            var underlyingType = property.Type;
+            bool isNullableEnum = false;
+            if (underlyingType is INamedTypeSymbol namedType && namedType.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T)
+            {
+                underlyingType = namedType.TypeArguments[0];
+                isNullableEnum = true;
+            }
+
+            if (underlyingType.TypeKind == TypeKind.Enum)
+            {
+                isEnumConversion = true;
+                originalEnumTypeName = underlyingType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+
+                if (convertEnumsTo == "string")
+                {
+                    typeName = isNullableEnum ? "string?" : "string";
+                }
+                else if (convertEnumsTo == "int")
+                {
+                    typeName = isNullableEnum ? "int?" : "int";
+                }
+
+                // Update sourceMemberTypeName to reflect the original type before conversion
+                sourceMemberTypeName = GeneratorUtilities.GetTypeNameWithNullability(property.Type);
+
+                // Apply NullableProperties if needed
+                if (nullableProperties)
+                {
+                    typeName = GeneratorUtilities.MakeNullable(typeName);
+                }
+
+                // Clear default value since it's an enum initializer and won't match the new type
+                defaultValue = null;
+            }
+        }
+
+        members.Add(new MappableTargetMember(
+            memberName,
+            typeName,
+            TargetMemberKind.Property,
+            property.Type.IsValueType,
+            shouldPreserveInitOnly,
+            shouldPreserveRequired,
+            false, // Properties are not readonly
+            memberXmlDocumentation,
+            isNestedTarget,
+            nestedTargetSourceTypeName,
+            attributes,
+            isCollection,
+            collectionWrapper,
+            sourceMemberTypeName,
+            mapFromSource,
+            mapFromReversible,
+            mapFromIncludeInProjection,
+            sourcePropertyName,
+            isUserDeclared,
+            mapWhenConditions,
+            mapWhenDefault,
+            mapWhenIncludeInProjection,
+            attributeNamespaces,
+            defaultValue,
+            isEnumConversion,
+            originalEnumTypeName,
+            isNestedType,
+            isPartial: false)); // Never propagate partial from source (GitHub issue #277)
+        addedMembers.Add(memberName);
+    }
+
+    /// <summary>
+    ///     Determines whether a property symbol is a partial property defining declaration (C# 13+).
+    ///     A defining declaration has the <c>partial</c> modifier but no accessor body implementations.
+    /// </summary>
+    private static bool IsPartialDefiningProperty(IPropertySymbol property)
+    {
+        foreach (var syntaxRef in property.DeclaringSyntaxReferences)
+        {
+            if (syntaxRef.GetSyntax() is PropertyDeclarationSyntax propSyntax)
+            {
+                var hasPartial = propSyntax.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword));
+                if (!hasPartial) continue;
+
+                // Defining declaration: partial modifier present and no accessor has a body
+                var hasAccessorBody = propSyntax.AccessorList?.Accessors
+                    .Any(a => a.Body != null || a.ExpressionBody != null) == true;
+
+                if (!hasAccessorBody)
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    /// <summary>
+    ///     Extracts the property initializer from the source property's syntax declaration.
+    ///     For example, for "public UserSettings Settings { get; set; } = new();" this returns "new()".
+    /// </summary>
+    private static string? ExtractPropertyInitializer(IPropertySymbol property)
+    {
+        // Try to get the syntax for the property declaration
+        foreach (var syntaxRef in property.DeclaringSyntaxReferences)
+        {
+            var syntax = syntaxRef.GetSyntax();
+            if (syntax is PropertyDeclarationSyntax propSyntax && propSyntax.Initializer != null)
+            {
+                // Return the initializer value (the part after the '=')
+                return propSyntax.Initializer.Value.ToFullString().Trim();
+            }
+        }
+        return null;
+    }
+
+    private static void ProcessField(
+        IFieldSymbol field,
+        bool shouldIncludeMember,
+        bool isRequired,
+        bool preserveRequired,
+        bool nullableProperties,
+        bool copyAttributes,
+        List<MappableTargetMember> members,
+        List<MappableTargetMember> excludedRequiredMembers,
+        HashSet<string> addedMembers)
+    {
+        var memberXmlDocumentation = CodeGenerationHelpers.ExtractXmlDocumentation(field);
+
+        if (!shouldIncludeMember)
+        {
+            // If this is a required field that was excluded, track it for ToSource generation
+            if (isRequired)
+            {
+                excludedRequiredMembers.Add(new MappableTargetMember(
+                    field.Name,
+                    GeneratorUtilities.GetTypeNameWithNullability(field.Type),
+                    TargetMemberKind.Field,
+                    field.Type.IsValueType,
+                    false, // Fields don't have init-only
+                    isRequired,
+                    field.IsReadOnly, // Fields can be readonly
+                    memberXmlDocumentation));
+            }
+            return;
+        }
+
+        var shouldPreserveRequired = preserveRequired && isRequired;
+
+        var typeName = GeneratorUtilities.GetTypeNameWithNullability(field.Type);
+        var sourceMemberTypeName = typeName; // Store source type before applying NullableProperties
+        if (nullableProperties)
+        {
+            typeName = GeneratorUtilities.MakeNullable(typeName);
+        }
+
+        // Extract copiable attributes and their namespaces if requested
+        List<string> attributes;
+        List<string> attributeNamespaces;
+        if (copyAttributes)
+        {
+            var (attrs, namespaces) = AttributeProcessor.ExtractCopiableAttributesWithNamespaces(field, TargetMemberKind.Field);
+            attributes = attrs;
+            attributeNamespaces = namespaces.ToList();
+        }
+        else
+        {
+            attributes = new List<string>();
+            attributeNamespaces = new List<string>();
+        }
+
+        // Extract field initializer/default value from source
+        // Skip initializers when NullableProperties = true (query DTOs should default to null)
+        string? defaultValue = null;
+        if (!nullableProperties)
+        {
+            defaultValue = ExtractFieldInitializer(field);
+        }
+
+        members.Add(new MappableTargetMember(
+            field.Name,
+            typeName,
+            TargetMemberKind.Field,
+            field.Type.IsValueType,
+            false, // Fields don't have init-only
+            shouldPreserveRequired,
+            field.IsReadOnly, // Fields can be readonly
+            memberXmlDocumentation,
+            false, // Fields don't support nested targets
+            null,
+            attributes,
+            false, // Fields are not collections
+            null,  // No collection wrapper for fields
+            sourceMemberTypeName,
+            null,  // mapFromSource
+            false, // mapFromReversible
+            true,  // mapFromIncludeInProjection
+            null,  // sourcePropertyName
+            false, // isUserDeclared
+            null,  // mapWhenConditions
+            null,  // mapWhenDefault
+            true,  // mapWhenIncludeInProjection
+            attributeNamespaces,
+            defaultValue));
+        addedMembers.Add(field.Name);
+    }
+
+    /// <summary>
+    ///     Extracts the field initializer from the source field's syntax declaration.
+    ///     For example, for "public string Name = string.Empty;" this returns "string.Empty".
+    /// </summary>
+    private static string? ExtractFieldInitializer(IFieldSymbol field)
+    {
+        // Try to get the syntax for the field declaration
+        foreach (var syntaxRef in field.DeclaringSyntaxReferences)
+        {
+            var syntax = syntaxRef.GetSyntax();
+            if (syntax is VariableDeclaratorSyntax varSyntax && varSyntax.Initializer != null)
+            {
+                // Return the initializer value (the part after the '=')
+                return varSyntax.Initializer.Value.ToFullString().Trim();
+            }
+        }
+        return null;
+    }
+
+    /// <summary>
+    ///     Extracts MapFrom attribute mappings from the target type's properties.
+    ///     Returns a dictionary mapping source property names to (targetName, source, reversible, includeInProjection, typeName).
+    ///     Also returns a list of expression-based members that should be added directly.
+    /// </summary>
+private static Dictionary<string, (string targetName, string source, bool reversible, bool includeInProjection, string typeName)> ExtractMapFromMappings(
+    INamedTypeSymbol targetSymbol,
+    List<MappableTargetMember> expressionMembers,
+    bool nullableProperties)
+{
+    var mappings = new Dictionary<string, (string targetName, string source, bool reversible, bool includeInProjection, string typeName)>();
+
+    // Get all members from the target type (user-declared properties)
+    foreach (var member in targetSymbol.GetMembers())
+    {
+        if (member is not IPropertySymbol property) continue;
+
+        // Look for MapFrom attribute
+        foreach (var attr in property.GetAttributes())
+        {
+            if (attr.AttributeClass?.ToDisplayString() == Constants.MapFromAttributeFullName)
+            {
+                // Try to obtain the source string from the compiled attribute data first
+                string? sourceFromData = null;
+                if (attr.ConstructorArguments.Length > 0 && attr.ConstructorArguments[0].Value is string s)
+                {
+                    sourceFromData = s;
+                }
+
+                // Try to resolve original syntax (to detect `@` in nameof, etc.)
+                string? source = sourceFromData;
+                bool hadLeadingAt = false;
+                if (attr.ApplicationSyntaxReference?.GetSyntax() is AttributeSyntax attrSyntax)
+                {
+                    var firstArgExpr = attrSyntax.ArgumentList?.Arguments.FirstOrDefault()?.Expression;
+                    if (firstArgExpr != null)
+                    {
+                        var (resolved, hadAt) = NameOfResolver.ResolveExpression(firstArgExpr);
+                        // Only use the resolved value if it came from a nameof() expression with @ prefix
+                        // For string literals, stick with the compiled data to avoid including quotes
+                        if (!string.IsNullOrEmpty(resolved) && hadAt && IsNameOfExpression(firstArgExpr))
+                        {
+                            // When using @nameof(TypeName.PropertyPath), extract just the property path
+                            // by removing the first segment (the source type name)
+                            var segments = resolved.Split('.');
+                            if (segments.Length > 1)
+                            {
+                                // Skip the first segment (type name) and rebuild the path
+                                source = string.Join(".", segments.Skip(1));
+                            }
+                            else
+                            {
+                                source = resolved;
+                            }
+                            hadLeadingAt = hadAt;
+                        }
+                    }
+                }
+
+                if (string.IsNullOrEmpty(source))
+                {
+                    // nothing meaningful to do
+                    break;
+                }
+
+                // Get named arguments
+                var reversible = false;
+                var includeInProjection = true;
+
+                foreach (var namedArg in attr.NamedArguments)
+                {
+                    if (namedArg.Key == "Reversible" && namedArg.Value.Value is bool rev)
+                    {
+                        reversible = rev;
+                    }
+                    else if (namedArg.Key == "IncludeInProjection" && namedArg.Value.Value is bool incProj)
+                    {
+                        includeInProjection = incProj;
+                    }
+                }
+
+                // Get the property type name
+                var typeName = GeneratorUtilities.GetTypeNameWithNullability(property.Type);
+                if (nullableProperties)
+                {
+                    typeName = GeneratorUtilities.MakeNullable(typeName);
+                }
+
+                // If the argument is an expression, a nested path, or was written with @nameof(...) to force a full path,
+                // treat it as an expression-based member / nested path.
+                if (IsExpression(source) || source.Contains(".") || hadLeadingAt)
+                {
+                    expressionMembers.Add(new MappableTargetMember(
+                        property.Name,
+                        typeName,
+                        TargetMemberKind.Property,
+                        property.Type.IsValueType,
+                        false, // isInitOnly
+                        false, // isRequired
+                        false, // isReadOnly
+                        null,  // xmlDocumentation
+                        false, // isNestedTarget
+                        null,  // nestedTargetSourceTypeName
+                        null,  // attributes
+                        false, // isCollection
+                        null,  // collectionWrapper
+                        null,  // sourceMemberTypeName
+                        source, // mapFromSource
+                        reversible,
+                        includeInProjection,
+                        property.Name, // sourcePropertyName (use target name as placeholder)
+                        true)); // isUserDeclared
+                }
+                else
+                {
+                    // Simple property rename - map to source property
+                    mappings[source] = (property.Name, source, reversible, includeInProjection, typeName);
+                }
+            }
+        }
+    }
+
+    return mappings;
+}
+
+    /// <summary>
+    ///     Determines if the source string is an expression (contains operators, spaces, etc.)
+    /// </summary>
+    private static bool IsExpression(string source)
+    {
+        return source.Contains(" ") ||
+               source.Contains("+") ||
+               source.Contains("-") ||
+               source.Contains("*") ||
+               source.Contains("/") ||
+               source.Contains("(") ||
+               source.Contains("?") ||
+               source.Contains(":");
+    }
+
+    /// <summary>
+    ///     Gets all member names from the target type's base classes.
+    ///     This is used to avoid generating properties that already exist in base classes.
+    /// </summary>
+    private static ImmutableArray<string> GetBaseClassMemberNames(INamedTypeSymbol targetSymbol)
+    {
+        var memberNames = new List<string>();
+
+        // Walk up the inheritance chain
+        var baseType = targetSymbol.BaseType;
+        while (baseType != null && baseType.SpecialType != SpecialType.System_Object)
+        {
+            foreach (var member in baseType.GetMembers())
+            {
+                if (member is IPropertySymbol property && property.DeclaredAccessibility == Accessibility.Public)
+                {
+                    memberNames.Add(property.Name);
+                }
+                else if (member is IFieldSymbol field && field.DeclaredAccessibility == Accessibility.Public && !field.IsImplicitlyDeclared)
+                {
+                    memberNames.Add(field.Name);
+                }
+            }
+            baseType = baseType.BaseType;
+        }
+
+        return memberNames.ToImmutableArray();
+    }
+
+    /// <summary>
+    ///     Extracts MapWhen attribute mappings from the target type's properties.
+    ///     Returns a dictionary mapping property names to (conditions, defaultValue, includeInProjection).
+    /// </summary>
+    private static Dictionary<string, (List<string> conditions, string? defaultValue, bool includeInProjection)> ExtractMapWhenMappings(
+        INamedTypeSymbol targetSymbol)
+    {
+        var mappings = new Dictionary<string, (List<string> conditions, string? defaultValue, bool includeInProjection)>();
+
+        // Get all members from the target type (user-declared properties)
+        foreach (var member in targetSymbol.GetMembers())
+        {
+            if (member is not IPropertySymbol property) continue;
+
+            var conditions = new List<string>();
+            string? defaultValue = null;
+            bool includeInProjection = true;
+
+            // Look for MapWhen attributes (can have multiple)
+            foreach (var attr in property.GetAttributes())
+            {
+                if (attr.AttributeClass?.ToDisplayString() == Constants.MapWhenAttributeFullName)
+                {
+                    // Get the Condition constructor argument
+                    if (attr.ConstructorArguments.Length > 0 && attr.ConstructorArguments[0].Value is string condition)
+                    {
+                        conditions.Add(condition);
+
+                        // Get named arguments
+                        foreach (var namedArg in attr.NamedArguments)
+                        {
+                            if (namedArg.Key == "Default" && namedArg.Value.Value != null)
+                            {
+                                // Convert the default value to a string representation
+                                defaultValue = ConvertDefaultValueToString(namedArg.Value);
+                            }
+                            else if (namedArg.Key == "IncludeInProjection" && namedArg.Value.Value is bool incProj)
+                            {
+                                includeInProjection = incProj;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (conditions.Count > 0)
+            {
+                mappings[property.Name] = (conditions, defaultValue, includeInProjection);
+            }
+        }
+
+        return mappings;
+    }
+
+    /// <summary>
+    ///     Converts a TypedConstant default value to its C# string representation.
+    /// </summary>
+    private static string? ConvertDefaultValueToString(TypedConstant value)
+    {
+        if (value.IsNull)
+            return "null";
+
+        return value.Value switch
+        {
+            string s => $"\"{s.Replace("\"", "\\\"")}\"",
+            char c => $"'{c}'",
+            bool b => b ? "true" : "false",
+            int i => i.ToString(),
+            long l => $"{l}L",
+            float f => $"{f}f",
+            double d => $"{d}d",
+            decimal m => $"{m}m",
+            _ => value.Value?.ToString()
+        };
+    }
+
+    /// <summary>
+    ///     Checks if an expression is a nameof() call.
+    /// </summary>
+    private static bool IsNameOfExpression(ExpressionSyntax? expr)
+    {
+        if (expr is InvocationExpressionSyntax invocation)
+        {
+            var invokedExpr = invocation.Expression;
+            var invokedName = invokedExpr switch
+            {
+                IdentifierNameSyntax id => id.Identifier.ValueText,
+                MemberAccessExpressionSyntax ma when ma.Name is IdentifierNameSyntax id2 => id2.Identifier.ValueText,
+                _ => null
+            };
+
+            return string.Equals(invokedName, "nameof", System.StringComparison.Ordinal);
+        }
+
+        return false;
+    }
+
+    #endregion
+}

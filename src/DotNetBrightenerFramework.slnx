@@ -166,6 +166,16 @@
     <Project Path="Logging/DotNetBrightener.Core.Logging.PostgreSqlDbStorage/DotNetBrightener.Core.Logging.PostgreSqlDbStorage.csproj" />
     <Project Path="Logging/DotNetBrightener.Core.Logging/DotNetBrightener.Core.Logging.csproj" />
   </Folder>
+  <Folder Name="/Mapper/">
+    <Project Path="Mapper/DotNetBrightener.Mapper.Attributes/DotNetBrightener.Mapper.Attributes.csproj" />
+    <Project Path="Mapper/DotNetBrightener.Mapper.Dashboard/DotNetBrightener.Mapper.Dashboard.csproj" />
+    <Project Path="Mapper/DotNetBrightener.Mapper.Mapping.EFCore/DotNetBrightener.Mapper.Mapping.EFCore.csproj" />
+    <Project Path="Mapper/DotNetBrightener.Mapper.Mapping/DotNetBrightener.Mapper.Mapping.csproj" />
+    <Project Path="Mapper/DotNetBrightener.Mapper/DotNetBrightener.Mapper.csproj" />
+  </Folder>
+  <Folder Name="/Mapper/Tests/">
+    <Project Path="Mapper/test/DotNetBrightener.Mapper.Tests/DotNetBrightener.Mapper.Tests.csproj" />
+  </Folder>
   <Folder Name="/Modules/" />
   <Folder Name="/Modules/OAuth/" />
   <Folder Name="/NotificationService/">

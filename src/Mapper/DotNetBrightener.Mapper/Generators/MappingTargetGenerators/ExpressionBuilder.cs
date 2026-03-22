@@ -1,0 +1,428 @@
+using System.Linq;
+using DotNetBrightener.Mapper.Generators.Shared;
+
+namespace DotNetBrightener.Mapper.Generators.MappingTargetGenerators;
+
+/// <summary>
+///     Builds C# expressions for mapping between source and target types.
+///     Handles nested targets, collections, nullability, and depth tracking for circular reference prevention.
+/// </summary>
+internal static class ExpressionBuilder
+{
+    /// <summary>
+    ///     Gets the appropriate source value expression for a member (forward mapping: source to target).
+    ///     For nested targets, returns "new NestedTargetType(source.PropertyName)" with null checks if nullable.
+    ///     For collection nested targets, returns "source.PropertyName.Select(x => new NestedTargetType(x)).ToList()" with null checks if nullable.
+    ///     For regular members, returns "source.PropertyName".
+    /// </summary>
+    public static string GetSourceValueExpression(
+        MappableTargetMember member,
+        string sourceVariableName,
+        int maxDepth = 0,
+        bool useDepthParameter = false,
+        bool preserveReferences = false)
+    {
+        bool isNullable = member.TypeName.Contains("?");
+
+        if (member.IsNestedTarget && member.IsCollection)
+        {
+            return BuildCollectionNestedTargetExpression(
+                member, sourceVariableName, isNullable, maxDepth, useDepthParameter, preserveReferences);
+        }
+        else if (member.IsNestedTarget)
+        {
+            return BuildSingleNestedTargetExpression(
+                member, sourceVariableName, isNullable, maxDepth, useDepthParameter, preserveReferences);
+        }
+
+        // Check if this is a MapFrom expression (contains operators or spaces)
+        string valueExpression;
+        if (member.MapFromSource != null && IsExpression(member.MapFromSource))
+        {
+            valueExpression = TransformExpression(member.MapFromSource, sourceVariableName);
+        }
+        else if (member.MapFromSource != null)
+        {
+            // Use the full MapFromSource path for nested property paths (e.g., "Company.Address")
+            valueExpression = $"{sourceVariableName}.{member.MapFromSource}";
+        }
+        else
+        {
+            // Use SourcePropertyName for regular properties
+            valueExpression = $"{sourceVariableName}.{member.SourcePropertyName}";
+        }
+
+        // Apply enum conversion if this member was converted from an enum type
+        if (member.IsEnumConversion && member.OriginalEnumTypeName != null)
+        {
+            valueExpression = ApplyEnumToTargetConversion(valueExpression, member);
+        }
+
+        // Apply MapWhen conditions if present
+        if (member.MapWhenConditions.Count > 0)
+        {
+            valueExpression = WrapWithMapWhenCondition(member, valueExpression, sourceVariableName);
+        }
+
+        return valueExpression;
+    }
+
+    /// <summary>
+    ///     Gets the appropriate value expression for mapping back to the source type (backward mapping: target to source).
+    ///     For child targets, returns "this.PropertyName.ToSource()" with null checks if nullable.
+    ///     For collection child targets, returns "this.PropertyName.Select(x => x.ToSource()).ToList()" with null checks if nullable.
+    ///     For regular members, returns "this.PropertyName" with nullable-to-non-nullable conversion if needed.
+    /// </summary>
+    public static string GetToSourceValueExpression(MappableTargetMember member)
+    {
+        // Check if the member type is nullable (ends with ?)
+        bool targetTypeIsNullable = member.TypeName.Contains("?");
+
+        // Check if the source type is nullable
+        bool sourceTypeIsNullable = member.SourceMemberTypeName?.Contains("?") ?? targetTypeIsNullable;
+
+        if (member.IsNestedTarget && member.IsCollection)
+        {
+            return BuildCollectionToSourceExpression(member, targetTypeIsNullable);
+        }
+        else if (member.IsNestedTarget)
+        {
+            return BuildSingleToSourceExpression(member, targetTypeIsNullable);
+        }
+
+        // Handle enum conversion (reverse: string/int back to enum)
+        if (member.IsEnumConversion && member.OriginalEnumTypeName != null)
+        {
+            return ApplyTargetToEnumConversion(member);
+        }
+
+        // For regular properties/fields:
+        // If the target type is nullable but the source type is not, we need to unwrap the nullable
+        if (targetTypeIsNullable && !sourceTypeIsNullable)
+        {
+            // Use null-coalescing with default value for value types, or null-forgiving for reference types
+            if (member.IsValueType)
+            {
+                // For value types like int?, use: this.Property ?? default
+                return $"this.{member.Name} ?? default";
+            }
+            else
+            {
+                // For reference types, use null-forgiving operator since the source expects non-null
+                return $"this.{member.Name}!";
+            }
+        }
+
+        return $"this.{member.Name}";
+    }
+
+    /// <summary>
+    ///     Extracts the element type name from a collection type name.
+    /// </summary>
+    public static string ExtractElementTypeFromCollectionTypeName(string collectionTypeName)
+    {
+        // Strip nullable marker from collection first (e.g., "List<T>?" => "List<T>")
+        var nonNullableCollectionType = collectionTypeName.TrimEnd('?');
+
+        // Handle array syntax (e.g., "MyType[]" => "MyType")
+        if (nonNullableCollectionType.EndsWith("[]"))
+        {
+            var elementType = nonNullableCollectionType.Substring(0, nonNullableCollectionType.Length - 2);
+            // Remove any trailing nullable marker from the element type itself
+            return elementType.TrimEnd('?');
+        }
+
+        // Handle generic collection syntax (e.g., "List<MyType>" => "MyType")
+        var startIndex = nonNullableCollectionType.IndexOf('<');
+        var endIndex = nonNullableCollectionType.LastIndexOf('>');
+
+        if (startIndex > 0 && endIndex > startIndex)
+        {
+            var elementType = nonNullableCollectionType.Substring(startIndex + 1, endIndex - startIndex - 1);
+            // Remove any trailing nullable marker from the element type itself
+            return elementType.TrimEnd('?');
+        }
+
+        return nonNullableCollectionType.TrimEnd('?');
+    }
+
+    #region Private Helper Methods
+
+    /// <summary>
+    ///     Wraps a value expression with MapWhen condition(s), generating a ternary expression.
+    /// </summary>
+    private static string WrapWithMapWhenCondition(MappableTargetMember member, string valueExpression, string sourceVariableName)
+    {
+        // Combine multiple conditions with &&
+        var combinedCondition = string.Join(" && ", member.MapWhenConditions.Select(c =>
+            $"({TransformExpression(c, sourceVariableName)})"));
+
+        // Determine the default value
+        var defaultValue = member.MapWhenDefault ?? Shared.GeneratorUtilities.GetDefaultValueForType(member.TypeName);
+
+        return $"{combinedCondition} ? {valueExpression} : {defaultValue}";
+    }
+
+    private static string BuildCollectionNestedTargetExpression(
+        MappableTargetMember member,
+        string sourceVariableName,
+        bool isNullable,
+        int maxDepth,
+        bool useDepthParameter,
+        bool preserveReferences)
+    {
+        var elementTypeName = ExtractElementTypeFromCollectionTypeName(member.TypeName);
+        
+        var sourceElementTypeName = member.NestedTargetSourceTypeName ??
+            (member.SourceMemberTypeName != null
+                ? ExtractElementTypeFromCollectionTypeName(member.SourceMemberTypeName)
+                : elementTypeName);
+
+        // Use SourcePropertyName for accessing the source property (supports MapFrom)
+        var sourcePropName = member.SourcePropertyName;
+
+        // Check if we should stop due to max depth
+        if (useDepthParameter && maxDepth > 0)
+        {
+            var updatedProcessed = preserveReferences
+                ? $"(__processed != null ? new System.Collections.Generic.HashSet<object>(__processed, System.Collections.Generic.ReferenceEqualityComparer.Instance) {{ {sourceVariableName} }} : new System.Collections.Generic.HashSet<object>(System.Collections.Generic.ReferenceEqualityComparer.Instance) {{ {sourceVariableName} }})"
+                : "__processed";
+
+            var sourceCollection = preserveReferences
+                ? $"{sourceVariableName}.{sourcePropName}.Distinct(System.Collections.Generic.ReferenceEqualityComparer.Instance).Cast<{sourceElementTypeName}>()"
+                : $"{sourceVariableName}.{sourcePropName}";
+
+            var projection = preserveReferences
+                ? $"{sourceCollection}.Select(x => __processed != null && __processed.Contains(x) ? null : new {elementTypeName}(x, __depth + 1, {updatedProcessed})).Where(x => x != null).OfType<{elementTypeName}>()"
+                : $"{sourceCollection}.Select(x => new {elementTypeName}(x, __depth + 1, {updatedProcessed}))";
+
+            // Convert back to the appropriate collection type
+            var collectionExpression = WrapCollectionProjection(projection, member.CollectionWrapper!);
+
+            if (isNullable)
+            {
+                return $"__depth < {maxDepth} && {sourceVariableName}.{sourcePropName} != null ? {collectionExpression} : null";
+            }
+
+            // For non-nullable collections, add null check with descriptive exception when within depth,
+            // and use null-forgiving operator when depth is exceeded
+            return $"__depth < {maxDepth} ? ({sourceVariableName}.{sourcePropName} != null ? {collectionExpression} : throw new System.ArgumentNullException(\"{sourcePropName}\", \"Required nested target collection property '{sourcePropName}' on source type was null. Ensure the source property is populated before mapping.\")) : null!";
+        }
+        else
+        {
+            var updatedProcessed = preserveReferences && useDepthParameter
+                ? $"(__processed != null ? new System.Collections.Generic.HashSet<object>(__processed, System.Collections.Generic.ReferenceEqualityComparer.Instance) {{ {sourceVariableName} }} : new System.Collections.Generic.HashSet<object>(System.Collections.Generic.ReferenceEqualityComparer.Instance) {{ {sourceVariableName} }})"
+                : "__processed";
+
+            var sourceCollection = preserveReferences && useDepthParameter
+                ? $"{sourceVariableName}.{sourcePropName}.Distinct(System.Collections.Generic.ReferenceEqualityComparer.Instance).Cast<{sourceElementTypeName}>()"
+                : $"{sourceVariableName}.{sourcePropName}";
+
+            var projection = useDepthParameter
+                ? (preserveReferences
+                    ? $"{sourceCollection}.Select(x => __processed != null && __processed.Contains(x) ? null : new {elementTypeName}(x, __depth + 1, {updatedProcessed})).Where(x => x != null).OfType<{elementTypeName}>()"
+                    : $"{sourceCollection}.Select(x => new {elementTypeName}(x, __depth + 1, {updatedProcessed}))")
+                : $"{sourceCollection}.Select(x => new {elementTypeName}(x))";
+
+            // Convert back to the appropriate collection type
+            var collectionExpression = WrapCollectionProjection(projection, member.CollectionWrapper!);
+
+            if (isNullable)
+            {
+                return $"{sourceVariableName}.{sourcePropName} != null ? {collectionExpression} : null";
+            }
+
+            // For non-nullable collections without depth tracking, add null check with descriptive exception
+            return $"{sourceVariableName}.{sourcePropName} != null ? {collectionExpression} : throw new System.ArgumentNullException(\"{sourcePropName}\", \"Required nested target collection property '{sourcePropName}' on source type was null. Ensure the source property is populated before mapping.\")";
+        }
+    }
+
+    private static string BuildSingleNestedTargetExpression(
+        MappableTargetMember member,
+        string sourceVariableName,
+        bool isNullable,
+        int maxDepth,
+        bool useDepthParameter,
+        bool preserveReferences)
+    {
+        var nonNullableTypeName = member.TypeName.TrimEnd('?');
+        // Use SourcePropertyName for accessing the source property (supports MapFrom)
+        var sourcePropName = member.SourcePropertyName;
+
+        // Build the constructor call with reference checking if needed
+        string BuildConstructorCall(string sourceExpr)
+        {
+            var updatedProcessed = preserveReferences && useDepthParameter
+                ? $"(__processed != null ? new System.Collections.Generic.HashSet<object>(__processed, System.Collections.Generic.ReferenceEqualityComparer.Instance) {{ {sourceVariableName} }} : new System.Collections.Generic.HashSet<object>(System.Collections.Generic.ReferenceEqualityComparer.Instance) {{ {sourceVariableName} }})"
+                : "__processed";
+
+            var ctorCall = useDepthParameter
+                ? $"new {nonNullableTypeName}({sourceExpr}, __depth + 1, {updatedProcessed})"
+                : $"new {nonNullableTypeName}({sourceExpr})";
+
+            if (preserveReferences && useDepthParameter)
+            {
+                // Check against __processed (not updatedProcessed) to detect if this exact object was already processed
+                // For non-nullable types, use null-forgiving operator to avoid CS8601 compiler warnings
+                var nullFallback = isNullable ? "null" : "null!";
+                return $"(__processed != null && __processed.Contains({sourceExpr}) ? {nullFallback} : {ctorCall})";
+            }
+
+            return ctorCall;
+        }
+
+        // Check if we should stop due to max depth
+        if (useDepthParameter && maxDepth > 0)
+        {
+            var constructorCall = BuildConstructorCall($"{sourceVariableName}.{sourcePropName}");
+
+            if (isNullable)
+            {
+                return $"__depth < {maxDepth} && {sourceVariableName}.{sourcePropName} != null ? {constructorCall} : null";
+            }
+
+            // For non-nullable properties, add null check with descriptive exception
+            // This prevents NullReferenceException inside the nested constructor when source property is unexpectedly null
+            return $"__depth < {maxDepth} ? ({sourceVariableName}.{sourcePropName} != null ? {constructorCall} : throw new System.ArgumentNullException(\"{sourcePropName}\", \"Required nested target property '{sourcePropName}' on source type was null. Ensure the source property is populated before mapping.\")) : null!";
+        }
+        else
+        {
+            var constructorCall = BuildConstructorCall($"{sourceVariableName}.{sourcePropName}");
+
+            if (isNullable)
+            {
+                return $"{sourceVariableName}.{sourcePropName} != null ? {constructorCall} : null";
+            }
+
+            // For non-nullable properties without depth tracking, add null check with descriptive exception
+            return $"{sourceVariableName}.{sourcePropName} != null ? {constructorCall} : throw new System.ArgumentNullException(\"{sourcePropName}\", \"Required nested target property '{sourcePropName}' on source type was null. Ensure the source property is populated before mapping.\")";
+        }
+    }
+
+    private static string BuildCollectionToSourceExpression(MappableTargetMember member, bool targetTypeIsNullable)
+    {
+        // Use LINQ Select to map each element back
+        var projection = $"this.{member.Name}.Select(x => x.ToSource())";
+
+        // Convert back to the appropriate collection type
+        var collectionExpression = WrapCollectionProjection(projection, member.CollectionWrapper!);
+
+        // Add null check for nullable collections
+        if (targetTypeIsNullable)
+        {
+            return $"this.{member.Name} != null ? {collectionExpression} : null";
+        }
+
+        return collectionExpression;
+    }
+
+    private static string BuildSingleToSourceExpression(MappableTargetMember member, bool targetTypeIsNullable)
+    {
+        // Add null check for nullable nested targets
+        if (targetTypeIsNullable)
+        {
+            return $"this.{member.Name} != null ? this.{member.Name}.ToSource() : null";
+        }
+
+        // Use the child target's generated ToSource method
+        return $"this.{member.Name}.ToSource()";
+    }
+
+    private static string WrapCollectionProjection(string projection, string collectionWrapper)
+    {
+        return collectionWrapper switch
+        {
+            Constants.CollectionWrappers.List => $"{projection}.ToList()",
+            Constants.CollectionWrappers.IList => $"{projection}.ToList()",
+            Constants.CollectionWrappers.ICollection => $"{projection}.ToList()",
+            Constants.CollectionWrappers.IReadOnlyList => $"{projection}.ToList()",
+            Constants.CollectionWrappers.IReadOnlyCollection => $"{projection}.ToList()",
+            Constants.CollectionWrappers.IEnumerable => projection,
+            Constants.CollectionWrappers.Array => $"{projection}.ToArray()",
+            _ => projection
+        };
+    }
+
+    // Expression parsing methods delegated to shared ExpressionHelper
+    private static bool IsExpression(string source) => ExpressionHelper.IsExpression(source);
+    private static string TransformExpression(string expression, string sourceVariableName) => ExpressionHelper.TransformExpression(expression, sourceVariableName);
+
+    /// <summary>
+    ///     Applies enum-to-target-type conversion (source enum to target string/int).
+    /// </summary>
+    private static string ApplyEnumToTargetConversion(string valueExpression, MappableTargetMember member)
+    {
+        // Determine if the source enum property is nullable
+        bool isNullableEnum = member.SourceMemberTypeName?.Contains("?") ?? false;
+
+        if (member.TypeName.TrimEnd('?') == "string")
+        {
+            // Enum to string conversion
+            if (isNullableEnum)
+            {
+                return $"{valueExpression}?.ToString()";
+            }
+            return $"{valueExpression}.ToString()";
+        }
+        else if (member.TypeName.TrimEnd('?') == "int")
+        {
+            // Enum to int conversion
+            if (isNullableEnum)
+            {
+                return $"(int?){valueExpression}";
+            }
+            return $"(int){valueExpression}";
+        }
+
+        return valueExpression;
+    }
+
+    /// <summary>
+    ///     Applies target-type-to-enum conversion (target string/int to source enum) for ToSource mapping.
+    /// </summary>
+    private static string ApplyTargetToEnumConversion(MappableTargetMember member)
+    {
+        var enumTypeName = member.OriginalEnumTypeName!;
+        bool targetTypeIsNullable = member.TypeName.Contains("?");
+        bool sourceTypeIsNullable = member.SourceMemberTypeName?.Contains("?") ?? false;
+
+        if (member.TypeName.TrimEnd('?') == "string")
+        {
+            // String to enum conversion
+            if (targetTypeIsNullable && sourceTypeIsNullable)
+            {
+                return $"this.{member.Name} != null ? ({enumTypeName}?)System.Enum.Parse<{enumTypeName}>(this.{member.Name}) : null";
+            }
+            else if (targetTypeIsNullable)
+            {
+        // Target is nullable string but source expects non-nullable enum
+                return $"System.Enum.Parse<{enumTypeName}>(this.{member.Name}!)";
+            }
+            else
+            {
+                return $"System.Enum.Parse<{enumTypeName}>(this.{member.Name})";
+            }
+        }
+        else if (member.TypeName.TrimEnd('?') == "int")
+        {
+            // Int to enum conversion
+            if (targetTypeIsNullable && sourceTypeIsNullable)
+            {
+                return $"this.{member.Name} != null ? ({enumTypeName}?)({enumTypeName})this.{member.Name}.Value : null";
+            }
+            else if (targetTypeIsNullable)
+            {
+        // Target is nullable int but source expects non-nullable enum
+                return $"({enumTypeName})(this.{member.Name} ?? default)";
+            }
+            else
+            {
+                return $"({enumTypeName})this.{member.Name}";
+            }
+        }
+
+        return $"this.{member.Name}";
+    }
+
+    #endregion
+}

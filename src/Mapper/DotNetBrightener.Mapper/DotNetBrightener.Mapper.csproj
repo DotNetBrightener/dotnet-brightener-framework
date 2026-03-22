@@ -1,0 +1,66 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <IsPackable>true</IsPackable>
+        <PackageId>DotNetBrightener.Mapper</PackageId>
+        <Description>A Roslyn source generator for models and projections.</Description>
+        <PackageTags>source-generator dto projection mapper</PackageTags>
+        <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+        <Title>DotNetBrightener.Mapper</Title>
+        <GenerateAssemblyVersionAttribute>true</GenerateAssemblyVersionAttribute>
+        <GenerateAssemblyFileVersionAttribute>true</GenerateAssemblyFileVersionAttribute>
+        <GenerateAssemblyInformationalVersionAttribute>true</GenerateAssemblyInformationalVersionAttribute>
+
+        <!-- IMPORTANT: Prevent this DLL from being included as a regular dependency -->
+        <!-- This is critical for AOT compatibility and prevents Roslyn dependencies from leaking -->
+        <IncludeBuildOutput>false</IncludeBuildOutput>
+        <IncludeSymbols>false</IncludeSymbols>
+
+        <!-- RS1038: Suppress Workspaces warning - CodeFixProvider needs Workspaces but only runs in IDE -->
+        <NoWarn>$(NoWarn);RS1038</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- Reference to DotNetBrightener.Mapper.Attributes (will become a package dependency) -->
+        <ProjectReference Include="..\DotNetBrightener.Mapper.Attributes\DotNetBrightener.Mapper.Attributes.csproj" PrivateAssets="none" ReferenceOutputAssembly="true" />
+
+        <!-- Roslyn dependencies (MUST be PrivateAssets="all") -->
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" PrivateAssets="all" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Remove="bin\Debug\netstandard2.0\\DotNetBrightener.Mapper.dll" />
+    </ItemGroup>
+
+    <ItemGroup>
+		<None Include="docs\**\*"
+		      Pack="true"
+		      PackagePath="docs\"/>
+	</ItemGroup>
+
+    <ItemGroup>
+        <!-- Pack the source generator DLL into the analyzers folder -->
+        <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+
+        <!-- Pack DotNetBrightener.Mapper.Attributes.dll into the analyzers folder (generator needs it at build time) -->
+        <None Include="$(OutputPath)\DotNetBrightener.Mapper.Attributes.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    </ItemGroup>
+
+    <!-- Ensure DotNetBrightener.Mapper.Attributes.dll is available to the analyzer when used via ProjectReference -->
+    <Target Name="GetAnalyzerAssemblies" Returns="@(_MapperAnalyzerAssemblies)" DependsOnTargets="ResolveProjectReferences">
+        <ItemGroup>
+            <!-- Include DotNetBrightener.Mapper.dll itself -->
+            <_MapperAnalyzerAssemblies Include="$(OutputPath)$(AssemblyName).dll" />
+            <!-- Include DotNetBrightener.Mapper.Attributes.dll so generator can load it -->
+            <_MapperAnalyzerAssemblies Include="$(OutputPath)DotNetBrightener.Mapper.Attributes.dll" />
+        </ItemGroup>
+    </Target>
+
+    <ItemGroup>
+        <!-- Expose analyzer assemblies to consuming projects -->
+        <UpToDateCheckOutput Include="$(OutputPath)DotNetBrightener.Mapper.Attributes.dll" />
+    </ItemGroup>
+</Project>

@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<IsPackable>true</IsPackable>
+		<PackageId>DotNetBrightener.Mapper.Attributes</PackageId>
+		<Title>DotNetBrightener.Mapper.Attributes</Title>
+		<Description>Runtime attributes for the mapper source generator. This package contains only the attributes and enums needed at runtime.</Description>
+		<PackageTags>source-generator attributes dto projection</PackageTags>
+		<RootNamespace>DotNetBrightener.Mapper</RootNamespace>
+		<Nullable>enable</Nullable>
+		<LangVersion>latest</LangVersion>
+	</PropertyGroup>
+
+</Project>

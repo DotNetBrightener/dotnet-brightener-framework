@@ -1,0 +1,14 @@
+<div class="target-card">
+    <div class="target-header">
+        <span class="target-name">{{targetName}}</span>
+        <span class="target-type-kind">{{typeKind}}</span>
+    </div>
+    <div class="target-features">
+        <span class="feature {{constructorClass}}">{{constructorIcon}} Constructor</span>
+        <span class="feature {{projectionClass}}">{{projectionIcon}} Projection</span>
+        <span class="feature {{toSourceClass}}">{{toSourceIcon}} ToSource</span>
+    </div>
+    {{exclusions}}
+    {{inclusions}}
+    <div class="target-config" style="margin-top: 0.5rem;">{{memberCount}} member{{memberPlural}}</div>
+</div>

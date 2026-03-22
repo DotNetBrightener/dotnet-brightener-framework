@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <IsPackable>true</IsPackable>
+        <PackageId>DotNetBrightener.Mapper.Mapping</PackageId>
+        <Description>Advanced custom async mapper support, expression mapping, and extensions for DotNetBrightener.Mapper.</Description>
+        <PackageTags>dotnetbrightener mapper expressions linq predicates mapping source-generator dto compile-time</PackageTags>
+        <Title>DotNetBrightener.Mapper.Mapping</Title>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\DotNetBrightener.Mapper\DotNetBrightener.Mapper.csproj" />
+    </ItemGroup>
+</Project>
