@@ -59,8 +59,18 @@
 		      Pack="true"
 		      PackagePath="\"/>
 
+		<None Condition="Exists('docs\README.md')"
+		      Include="docs\README.md"
+		      Pack="true"
+		      PackagePath="\"/>
+
 		<None Condition="Exists('readme.md')"
 		      Include="readme.md"
+		      Pack="true"
+		      PackagePath="\"/>
+
+		<None Condition="Exists('README.md')"
+		      Include="README.md"
 		      Pack="true"
 		      PackagePath="\"/>
 	</ItemGroup>
