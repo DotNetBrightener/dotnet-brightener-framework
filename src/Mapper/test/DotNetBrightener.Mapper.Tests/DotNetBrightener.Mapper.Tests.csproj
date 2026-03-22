@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
+    <!-- Suppress analyzer warnings for test cases that intentionally use inherited properties -->
+    <NoWarn>$(NoWarn);FAC004</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Shouldly" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\DotNetBrightener.Mapper\DotNetBrightener.Mapper.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\DotNetBrightener.Mapper.Attributes\DotNetBrightener.Mapper.Attributes.csproj" />
+    <ProjectReference Include="..\..\DotNetBrightener.Mapper.Mapping\DotNetBrightener.Mapper.Mapping.csproj" />
+    <ProjectReference Include="..\..\DotNetBrightener.Mapper.Mapping.EFCore\DotNetBrightener.Mapper.Mapping.EFCore.csproj" />
+  </ItemGroup>
+
+  <!-- Manually include DotNetBrightener.Mapper.Attributes.dll as an analyzer dependency so generators can load it -->
+  <ItemGroup>
+    <Analyzer Include="..\..\DotNetBrightener.Mapper.Attributes\bin\$(Configuration)\netstandard2.0\DotNetBrightener.Mapper.Attributes.dll" />
+  </ItemGroup>
+
+</Project>
