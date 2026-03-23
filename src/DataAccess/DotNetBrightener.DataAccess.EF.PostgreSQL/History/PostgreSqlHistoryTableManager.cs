@@ -146,6 +146,54 @@ internal class PostgreSqlHistoryTableManager
     }
 
     /// <summary>
+    ///     Generates SQL for creating the history trigger function only
+    /// </summary>
+    public string GenerateHistoryTriggerFunctionSql(IEntityType entityType)
+    {
+        var tableName = entityType.GetTableName();
+        var schema = entityType.GetSchema();
+        var historyTableName = $"{tableName}_History";
+        var functionName = $"{tableName}_history_trigger_func";
+
+        // Quote the history table name consistently with table creation
+        var fullHistoryTableName = string.IsNullOrEmpty(schema)
+            ? $"\"{historyTableName}\""
+            : $"\"{schema}\".\"{historyTableName}\"";
+
+        // Use the actual DB column name (respects [Column] attributes, snake_case conventions, etc.)
+        var storeObject = StoreObjectIdentifier.Table(tableName!, schema);
+        var columns = entityType.GetProperties()
+            .Where(p => !p.IsShadowProperty())
+            .Select(p => p.GetColumnName(storeObject) ?? p.Name)
+            .ToList();
+
+        // Quote every column name so the generated SQL is safe for any casing convention
+        var columnList    = string.Join(", ", columns.Select(c => $"\"{c}\""));
+        var oldColumnList = string.Join(", ", columns.Select(c => $"OLD.\"{c}\""));
+
+        return $@"
+CREATE OR REPLACE FUNCTION {functionName}()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF TG_OP = 'DELETE' THEN
+        INSERT INTO {fullHistoryTableName} ({columnList}, ""PeriodStart"", ""PeriodEnd"")
+        VALUES ({oldColumnList},
+                COALESCE(OLD.""ModifiedDate"", OLD.""CreatedDate"", NOW()),
+                '9999-12-31 23:59:59.999999+00'::timestamptz);
+        RETURN OLD;
+    ELSIF TG_OP = 'UPDATE' THEN
+        INSERT INTO {fullHistoryTableName} ({columnList}, ""PeriodStart"", ""PeriodEnd"")
+        VALUES ({oldColumnList},
+                COALESCE(OLD.""ModifiedDate"", OLD.""CreatedDate"", NOW()),
+                '9999-12-31 23:59:59.999999+00'::timestamptz);
+        RETURN NEW;
+    END IF;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;";
+    }
+
+    /// <summary>
     ///     Generates SQL for creating history triggers
     /// </summary>
     public string GenerateHistoryTriggerSql(IEntityType entityType)
@@ -154,10 +202,11 @@ internal class PostgreSqlHistoryTableManager
         var schema = entityType.GetSchema();
         var historyTableName = $"{tableName}_History";
         var triggerName = $"{tableName}_history_trigger";
-        var functionName = $"{tableName}_history_function";
+        var functionName = $"{tableName}_history_trigger_func";
 
-        var fullTableName = string.IsNullOrEmpty(schema) ? tableName : $"{schema}.{tableName}";
-        var fullHistoryTableName = string.IsNullOrEmpty(schema) ? historyTableName : $"{schema}.{historyTableName}";
+        // Quote table names consistently
+        var fullTableName = string.IsNullOrEmpty(schema) ? $"\"{tableName}\"" : $"\"{schema}\".\"{tableName}\"";
+        var fullHistoryTableName = string.IsNullOrEmpty(schema) ? $"\"{historyTableName}\"" : $"\"{schema}\".\"{historyTableName}\"";
 
         // Use the actual DB column name (respects [Column] attributes, snake_case conventions, etc.)
         var storeObject = StoreObjectIdentifier.Table(tableName!, schema);
@@ -178,16 +227,16 @@ CREATE OR REPLACE FUNCTION {functionName}()
 RETURNS TRIGGER AS $$
 BEGIN
     IF TG_OP = 'DELETE' THEN
-        INSERT INTO {fullHistoryTableName} ({columnList}, PeriodStart, PeriodEnd)
-        VALUES ({oldColumnList}, 
-                COALESCE(OLD.""ModifiedDate"", OLD.""CreatedDate"", NOW()), 
-                NOW());
+        INSERT INTO {fullHistoryTableName} ({columnList}, ""PeriodStart"", ""PeriodEnd"")
+        VALUES ({oldColumnList},
+                COALESCE(OLD.""ModifiedDate"", OLD.""CreatedDate"", NOW()),
+                '9999-12-31 23:59:59.999999+00'::timestamptz);
         RETURN OLD;
     ELSIF TG_OP = 'UPDATE' THEN
-        INSERT INTO {fullHistoryTableName} ({columnList}, PeriodStart, PeriodEnd)
-        VALUES ({oldColumnList}, 
-                COALESCE(OLD.""ModifiedDate"", OLD.""CreatedDate"", NOW()), 
-                COALESCE(NEW.""ModifiedDate"", NEW.""CreatedDate"", NOW()));
+        INSERT INTO {fullHistoryTableName} ({columnList}, ""PeriodStart"", ""PeriodEnd"")
+        VALUES ({oldColumnList},
+                COALESCE(OLD.""ModifiedDate"", OLD.""CreatedDate"", NOW()),
+                '9999-12-31 23:59:59.999999+00'::timestamptz);
         RETURN NEW;
     END IF;
     RETURN NULL;
@@ -243,7 +292,20 @@ CREATE TRIGGER {triggerName}
 
         // Period columns — always NOT NULL
         sql.AppendLine("    \"PeriodStart\" timestamptz NOT NULL,");
-        sql.AppendLine("    \"PeriodEnd\"   timestamptz NOT NULL");
+        sql.AppendLine("    \"PeriodEnd\"   timestamptz NOT NULL,");
+
+        // Primary key: composite key of original PK columns + PeriodStart
+        var primaryKey = entityType.FindPrimaryKey()?.Properties.Select(p => p.GetColumnName(storeObject) ?? p.Name).ToList();
+        if (primaryKey != null && primaryKey.Count > 0)
+        {
+            var pkColumns = string.Join(", ", primaryKey.Select(c => $"\"{c}\""));
+            sql.AppendLine($"    PRIMARY KEY ({pkColumns}, \"PeriodStart\")");
+        }
+        else
+        {
+            sql.AppendLine("    PRIMARY KEY (\"PeriodStart\")"); // Fallback if no PK defined
+        }
+
         sql.AppendLine(");");
 
         // Indexes for efficient temporal queries

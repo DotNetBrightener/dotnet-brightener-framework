@@ -10,12 +10,12 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 namespace DotNetBrightener.DataAccess.EF.PostgreSQL.Extensions;
 
 /// <summary>
-/// Extension methods for configuring PostgreSQL history services
+/// 	Extension methods for configuring PostgreSQL history services
 /// </summary>
 public static class PostgreSqlHistoryServiceCollectionExtensions
 {
     /// <summary>
-    /// Adds PostgreSQL history services to the service collection
+    /// 	Adds PostgreSQL history services to the service collection
     /// </summary>
     /// <param name="services">The service collection</param>
     /// <returns>The service collection for chaining</returns>
@@ -23,6 +23,7 @@ public static class PostgreSqlHistoryServiceCollectionExtensions
     {
         services.TryAddSingleton<PostgreSqlHistoryTableManager>();
         services.TryAddSingleton<PostgreSqlHistoryInterceptor>();
+        services.TryAddSingleton<PostgreSqlHistorySaveChangesInterceptor>();
 
         services.Replace(ServiceDescriptor.Scoped<IRepository, PostgreSqlRepository>());
 
@@ -30,7 +31,7 @@ public static class PostgreSqlHistoryServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Configures a DbContext to use PostgreSQL history tracking
+    /// 	Configures a DbContext to use PostgreSQL history tracking
     /// </summary>
     /// <typeparam name="TContext">The DbContext type</typeparam>
     /// <param name="services">The service collection</param>

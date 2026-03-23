@@ -26,6 +26,7 @@ public class TemporalTableQueryIntegrationTests(ITestOutputHelper testOutputHelp
 		using var scope = host.Services.CreateScope();
 		var dbContext = scope.ServiceProvider.GetRequiredService<TemporalTestDbContext>();
 		await dbContext.Database.EnsureCreatedAsync();
+		await EnsureHistoryInfrastructureAsync(host, dbContext);
 
 		var entity = new HistoryEnabledTestEntity
 		{
@@ -60,6 +61,7 @@ public class TemporalTableQueryIntegrationTests(ITestOutputHelper testOutputHelp
 		using var scope = host.Services.CreateScope();
 		var dbContext = scope.ServiceProvider.GetRequiredService<TemporalTestDbContext>();
 		await dbContext.Database.EnsureCreatedAsync();
+		await EnsureHistoryInfrastructureAsync(host, dbContext);
 
 		var entity1 = new HistoryEnabledTestEntity
 		{
@@ -100,6 +102,7 @@ public class TemporalTableQueryIntegrationTests(ITestOutputHelper testOutputHelp
 		using var scope = host.Services.CreateScope();
 		var dbContext = scope.ServiceProvider.GetRequiredService<TemporalTestDbContext>();
 		await dbContext.Database.EnsureCreatedAsync();
+		await EnsureHistoryInfrastructureAsync(host, dbContext);
 
 		var entity = new HistoryEnabledTestEntity
 		{
@@ -143,6 +146,7 @@ public class TemporalTableQueryIntegrationTests(ITestOutputHelper testOutputHelp
 		using var scope = host.Services.CreateScope();
 		var dbContext = scope.ServiceProvider.GetRequiredService<TemporalTestDbContext>();
 		await dbContext.Database.EnsureCreatedAsync();
+		await EnsureHistoryInfrastructureAsync(host, dbContext);
 
 		var entity = new HistoryEnabledTestEntity
 		{
@@ -175,6 +179,7 @@ public class TemporalTableQueryIntegrationTests(ITestOutputHelper testOutputHelp
 		using var scope = host.Services.CreateScope();
 		var dbContext = scope.ServiceProvider.GetRequiredService<TemporalTestDbContext>();
 		await dbContext.Database.EnsureCreatedAsync();
+		await EnsureHistoryInfrastructureAsync(host, dbContext);
 
 		var entity = new HistoryEnabledTestEntity
 		{
@@ -212,6 +217,7 @@ public class TemporalTableQueryIntegrationTests(ITestOutputHelper testOutputHelp
 		using var scope = host.Services.CreateScope();
 		var dbContext = scope.ServiceProvider.GetRequiredService<TemporalTestDbContext>();
 		await dbContext.Database.EnsureCreatedAsync();
+		await EnsureHistoryInfrastructureAsync(host, dbContext);
 
 		var entity = new HistoryEnabledTestEntity
 		{
@@ -248,6 +254,7 @@ public class TemporalTableQueryIntegrationTests(ITestOutputHelper testOutputHelp
 		using var scope = host.Services.CreateScope();
 		var dbContext = scope.ServiceProvider.GetRequiredService<TemporalTestDbContext>();
 		await dbContext.Database.EnsureCreatedAsync();
+		await EnsureHistoryInfrastructureAsync(host, dbContext);
 
 		var entity = new HistoryEnabledTestEntity
 		{
@@ -283,6 +290,7 @@ public class TemporalTableQueryIntegrationTests(ITestOutputHelper testOutputHelp
 		using var scope = host.Services.CreateScope();
 		var dbContext = scope.ServiceProvider.GetRequiredService<TemporalTestDbContext>();
 		await dbContext.Database.EnsureCreatedAsync();
+		await EnsureHistoryInfrastructureAsync(host, dbContext);
 
 		// Act
 		var repository = CreateRepository(dbContext);

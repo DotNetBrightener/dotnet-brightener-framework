@@ -24,6 +24,7 @@ public class TemporalTableMigrationIntegrationTests(ITestOutputHelper testOutput
 		using var scope = host.Services.CreateScope();
 		var dbContext = scope.ServiceProvider.GetRequiredService<TemporalTestDbContext>();
 		await dbContext.Database.EnsureCreatedAsync();
+		await EnsureHistoryInfrastructureAsync(host, dbContext);
 
 		// Assert
 		var connection = dbContext.Database.GetDbConnection();
@@ -53,6 +54,7 @@ public class TemporalTableMigrationIntegrationTests(ITestOutputHelper testOutput
 		using var scope = host.Services.CreateScope();
 		var dbContext = scope.ServiceProvider.GetRequiredService<TemporalTestDbContext>();
 		await dbContext.Database.EnsureCreatedAsync();
+		await EnsureHistoryInfrastructureAsync(host, dbContext);
 
 		// Assert
 		var connection = dbContext.Database.GetDbConnection();
@@ -62,7 +64,7 @@ public class TemporalTableMigrationIntegrationTests(ITestOutputHelper testOutput
 		command.CommandText = @"
 			SELECT EXISTS (
 				SELECT FROM pg_proc
-				WHERE proname = 'HistoryEnabledTestEntities_history_trigger_func'
+				WHERE proname = 'historyenabledtestentities_history_trigger_func'
 			);";
 
 		var result = await command.ExecuteScalarAsync();
@@ -81,6 +83,7 @@ public class TemporalTableMigrationIntegrationTests(ITestOutputHelper testOutput
 		using var scope = host.Services.CreateScope();
 		var dbContext = scope.ServiceProvider.GetRequiredService<TemporalTestDbContext>();
 		await dbContext.Database.EnsureCreatedAsync();
+		await EnsureHistoryInfrastructureAsync(host, dbContext);
 
 		// Assert
 		var connection = dbContext.Database.GetDbConnection();
@@ -109,6 +112,7 @@ public class TemporalTableMigrationIntegrationTests(ITestOutputHelper testOutput
 		using var scope = host.Services.CreateScope();
 		var dbContext = scope.ServiceProvider.GetRequiredService<TemporalTestDbContext>();
 		await dbContext.Database.EnsureCreatedAsync();
+		await EnsureHistoryInfrastructureAsync(host, dbContext);
 
 		// Assert
 		var connection = dbContext.Database.GetDbConnection();
@@ -160,6 +164,7 @@ public class TemporalTableMigrationIntegrationTests(ITestOutputHelper testOutput
 		using var scope = host.Services.CreateScope();
 		var dbContext = scope.ServiceProvider.GetRequiredService<TemporalTestDbContext>();
 		await dbContext.Database.EnsureCreatedAsync();
+		await EnsureHistoryInfrastructureAsync(host, dbContext);
 
 		// Assert
 		var connection = dbContext.Database.GetDbConnection();
@@ -189,6 +194,7 @@ public class TemporalTableMigrationIntegrationTests(ITestOutputHelper testOutput
 		using var scope = host.Services.CreateScope();
 		var dbContext = scope.ServiceProvider.GetRequiredService<TemporalTestDbContext>();
 		await dbContext.Database.EnsureCreatedAsync();
+		await EnsureHistoryInfrastructureAsync(host, dbContext);
 
 		// Assert
 		var connection = dbContext.Database.GetDbConnection();
@@ -218,18 +224,19 @@ public class TemporalTableMigrationIntegrationTests(ITestOutputHelper testOutput
 		using var scope = host.Services.CreateScope();
 		var dbContext = scope.ServiceProvider.GetRequiredService<TemporalTestDbContext>();
 		await dbContext.Database.EnsureCreatedAsync();
+		await EnsureHistoryInfrastructureAsync(host, dbContext);
 
 		// Assert
 		var connection = dbContext.Database.GetDbConnection();
 		await connection.OpenAsync();
 
 		using var command = connection.CreateCommand();
-		command.CommandText = @"
-			SELECT a.attname
-			FROM pg_index i
-			JOIN pg_attribute a ON a.attrelid = i.indrelid AND a.attnum = ANY(i.indkey)
-			WHERE i.indrelid = 'HistoryEnabledTestEntities_History'::regclass
-			AND i.indisprimary;";
+		command.CommandText =
+			"SELECT a.attname\n" +
+			"FROM pg_index i\n" +
+			"JOIN pg_attribute a ON a.attrelid = i.indrelid AND a.attnum = ANY(i.indkey)\n" +
+			"WHERE i.indrelid = '\"HistoryEnabledTestEntities_History\"'::regclass\n" +
+			"AND i.indisprimary;";
 
 		using var reader = await command.ExecuteReaderAsync();
 		var pkColumns = new List<string>();
@@ -256,6 +263,7 @@ public class TemporalTableMigrationIntegrationTests(ITestOutputHelper testOutput
 		using var scope = host.Services.CreateScope();
 		var dbContext = scope.ServiceProvider.GetRequiredService<TemporalTestDbContext>();
 		await dbContext.Database.EnsureCreatedAsync();
+		await EnsureHistoryInfrastructureAsync(host, dbContext);
 
 		// Assert
 		var connection = dbContext.Database.GetDbConnection();
@@ -298,6 +306,7 @@ public class TemporalTableMigrationIntegrationTests(ITestOutputHelper testOutput
 		using var scope = host.Services.CreateScope();
 		var dbContext = scope.ServiceProvider.GetRequiredService<TemporalTestDbContext>();
 		await dbContext.Database.EnsureCreatedAsync();
+		await EnsureHistoryInfrastructureAsync(host, dbContext);
 
 		// Assert
 		var connection = dbContext.Database.GetDbConnection();

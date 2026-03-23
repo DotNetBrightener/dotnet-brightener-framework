@@ -61,12 +61,12 @@ public class PostgreSqlRepository(
         DateTimeOffset? to) where T : class, new()
     {
         var fullHistoryTableName = string.IsNullOrEmpty(historyTableSchema)
-            ? historyTableName
-            : $"{historyTableSchema}.{historyTableName}";
+            ? $"\"{historyTableName}\""
+            : $"\"{historyTableSchema}\".\"{historyTableName}\"";
 
         var fullMainTableName = string.IsNullOrEmpty(mainTableSchema)
-            ? mainTableName
-            : $"{mainTableSchema}.{mainTableName}";
+            ? $"\"{mainTableName}\""
+            : $"\"{mainTableSchema}\".\"{mainTableName}\"";
 
         // Get all columns except the period columns.
         // Use the actual DB column name so that [Column] attributes and naming conventions
@@ -79,50 +79,61 @@ public class PostgreSqlRepository(
 
         var columnList = string.Join(", ", columns.Select(c => $"\"{c}\""));
 
-        // For current data, we need to add dummy period columns to match history table structure
         var currentDataSql = $@"
-            SELECT {columnList},
-                   COALESCE(""ModifiedDate"", ""CreatedDate"", NOW()) as ""PeriodStart"",
-                   '9999-12-31 23:59:59.999999+00'::timestamptz as ""PeriodEnd""
+            SELECT {columnList}
             FROM {fullMainTableName}";
 
         var historyDataSql = $@"
-            SELECT {columnList}, ""PeriodStart"", ""PeriodEnd""
+            SELECT {columnList}
             FROM {fullHistoryTableName}";
 
         // Add date range filtering if specified
         if (from.HasValue || to.HasValue)
         {
-            var whereConditions = new List<string>();
+            var historyWhereConditions = new List<string>();
+
+            // For history table, filter by PeriodStart/PeriodEnd overlap with the requested range
+            // A record overlaps if: PeriodStart <= to AND PeriodEnd >= from
+            if (to.HasValue)
+            {
+                historyWhereConditions.Add($"\"PeriodStart\" <= '{to.Value:yyyy-MM-dd HH:mm:ss.fff}+00'");
+            }
 
             if (from.HasValue)
             {
-                whereConditions.Add($"\"PeriodStart\" >= '{from.Value:yyyy-MM-dd HH:mm:ss.fff}+00'");
+                historyWhereConditions.Add($"\"PeriodEnd\" >= '{from.Value:yyyy-MM-dd HH:mm:ss.fff}+00'");
             }
 
+            if (historyWhereConditions.Any())
+            {
+                var historyWhereClause = string.Join(" AND ", historyWhereConditions);
+                historyDataSql += $" WHERE {historyWhereClause}";
+            }
+
+            // For current data, filter by ModifiedDate/CreatedDate being <= to
+            // (current records are valid from their creation/modification until "forever")
+            // We only need to check that the record was active before the 'to' date
             if (to.HasValue)
             {
-                whereConditions.Add($"\"PeriodEnd\" <= '{to.Value:yyyy-MM-dd HH:mm:ss.fff}+00'");
+                currentDataSql += $" WHERE COALESCE(\"ModifiedDate\", \"CreatedDate\", NOW()) <= '{to.Value:yyyy-MM-dd HH:mm:ss.fff}+00'";
             }
 
-            if (whereConditions.Any())
+            if (from.HasValue)
             {
-                var whereClause = string.Join(" AND ", whereConditions);
-                historyDataSql += $" WHERE {whereClause}";
-
-                // Also filter current data if it falls within the date range
-                currentDataSql += $" WHERE {whereClause.Replace("\"PeriodEnd\"", "'9999-12-31 23:59:59.999999+00'::timestamptz")}";
+                // For current records with a 'from' filter, they're always valid since PeriodEnd is "forever"
+                // Just ensure they existed before the 'from' time
+                var existingCondition = $" COALESCE(\"ModifiedDate\", \"CreatedDate\", NOW()) <= '{from.Value:yyyy-MM-dd HH:mm:ss.fff}+00'";
+                currentDataSql += currentDataSql.Contains("WHERE") ? $" AND {existingCondition}" : $" WHERE {existingCondition}";
             }
         }
 
-        // Combine current and historical data, then order by PeriodStart
+        // Combine current and historical data
         var sql = $@"
             SELECT {columnList} FROM (
                 {currentDataSql}
                 UNION ALL
                 {historyDataSql}
-            ) combined_data
-            ORDER BY ""PeriodStart"" DESC";
+            ) combined_data";
 
         return sql;
     }

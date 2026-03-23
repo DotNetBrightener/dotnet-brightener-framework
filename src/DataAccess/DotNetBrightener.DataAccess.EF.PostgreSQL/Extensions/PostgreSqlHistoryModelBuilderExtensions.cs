@@ -8,27 +8,27 @@ using Microsoft.Extensions.Logging;
 namespace DotNetBrightener.DataAccess.EF.PostgreSQL.Extensions;
 
 /// <summary>
-/// Extension methods for configuring PostgreSQL history tables
+/// 	Extension methods for configuring PostgreSQL history tables
 /// </summary>
 public static class PostgreSqlHistoryModelBuilderExtensions
 {
-    /// <summary>
-    /// Adds PostgreSQL history interceptor to the DbContext options
-    /// </summary>
-    /// <param name="optionsBuilder">The options builder</param>
-    /// <param name="logger">Optional logger</param>
-    /// <returns>The options builder for chaining</returns>
-    public static DbContextOptionsBuilder AddPostgreSqlHistoryInterceptor(this DbContextOptionsBuilder optionsBuilder,
-                                                                          IServiceProvider             serviceProvider)
-    {
-        var historyTableManager = new PostgreSqlHistoryTableManager(serviceProvider);
+	/// <summary>
+	/// 	Adds PostgreSQL history interceptor to the DbContext options
+	/// </summary>
+	/// <param name="optionsBuilder">The options builder</param>
+	/// <param name="serviceProvider">The service provider</param>
+	/// <returns>The options builder for chaining</returns>
+	public static DbContextOptionsBuilder AddPostgreSqlHistoryInterceptor(this DbContextOptionsBuilder optionsBuilder,
+																		  IServiceProvider             serviceProvider)
+	{
+		var historyTableManager = new PostgreSqlHistoryTableManager(serviceProvider);
 
-        var logger = serviceProvider.GetService<ILogger<PostgreSqlHistoryInterceptor>>();
+		var logger = serviceProvider.GetService<ILogger<PostgreSqlHistorySaveChangesInterceptor>>();
 
-        var interceptor = new PostgreSqlHistoryInterceptor(logger!, historyTableManager);
+		var interceptor = new PostgreSqlHistorySaveChangesInterceptor(logger!, historyTableManager);
 
-        optionsBuilder.AddInterceptors(interceptor);
+		optionsBuilder.AddInterceptors(interceptor);
 
-        return optionsBuilder;
-    }
+		return optionsBuilder;
+	}
 }

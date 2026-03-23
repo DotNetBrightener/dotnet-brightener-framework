@@ -1,6 +1,5 @@
 using DotNetBrightener.DataAccess.EF.PostgreSQL.Tests.TemporalTable.TestEntities;
 using DotNetBrightener.DataAccess.EF.PostgreSQL.Extensions;
-using DotNetBrightener.DataAccess.EF.PostgreSQL.Interceptors;
 using DotNetBrightener.TestHelpers;
 using DotNetBrightener.TestHelpers.PostgreSql;
 using Microsoft.EntityFrameworkCore;
@@ -38,15 +37,12 @@ public abstract class TemporalTestBase : PostgreSqlServerBaseXUnitTest
 			{
 				// Register PostgreSQL history services
 				services.AddPostgreSqlHistoryServices();
+				services.AddDbContextConfigurator<PostgreSQlHistoryEnabledDbContextConfigurator>();
 
 				services.AddDbContext<TemporalTestDbContext>((provider, options) =>
 				{
 					options.UseNpgsql(ConnectionString);
 					options.EnableSensitiveDataLogging();
-
-					// Add the history interceptor from DI
-					var interceptor = provider.GetRequiredService<PostgreSqlHistoryInterceptor>();
-					options.AddInterceptors(interceptor);
 				});
 
 				configureServices?.Invoke(services);
@@ -65,5 +61,13 @@ public abstract class TemporalTestBase : PostgreSqlServerBaseXUnitTest
 		{
 			host.Dispose();
 		}
+	}
+
+	/// <summary>
+	/// 	Creates history infrastructure for the given DbContext
+	/// </summary>
+	protected async Task EnsureHistoryInfrastructureAsync(IHost host, TemporalTestDbContext dbContext)
+	{
+		await dbContext.CreateHistoryInfrastructureAsync(host.Services);
 	}
 }

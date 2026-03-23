@@ -10,56 +10,43 @@ using Microsoft.Extensions.Logging;
 namespace DotNetBrightener.DataAccess.EF.PostgreSQL.Interceptors;
 
 /// <summary>
-/// Interceptor that ensures history triggers are created for PostgreSQL history-enabled entities
+/// 	Interceptor that ensures history triggers are created for PostgreSQL history-enabled entities
 /// </summary>
 internal class PostgreSqlHistoryInterceptor(
     ILogger<PostgreSqlHistoryInterceptor> logger,
     PostgreSqlHistoryTableManager         historyTableManager)
     : DbConnectionInterceptor
 {
-    // Static so the "already processed" cache survives across scoped lifetimes when the
-    // interceptor is registered as Singleton — one check per context type per process lifetime.
-    private static readonly ConcurrentDictionary<string, bool> _processedContexts = new();
 
-    public override async ValueTask<InterceptionResult> ConnectionOpeningAsync(DbConnection        connection,
-                                                                               ConnectionEventData eventData,
-                                                                               InterceptionResult  result,
-                                                                               CancellationToken cancellationToken =
-                                                                                   default)
+    public override async Task ConnectionOpenedAsync(DbConnection              connection,
+                                                      ConnectionEndEventData eventData,
+                                                      CancellationToken cancellationToken =
+                                                          default)
     {
         if (eventData.Context != null)
         {
-            await EnsureHistoryTriggersExist(eventData.Context, connection, cancellationToken);
+            await EnsureHistoryInfrastructureExists(eventData.Context, connection, cancellationToken);
         }
 
-        return await base.ConnectionOpeningAsync(connection, eventData, result, cancellationToken);
+        await base.ConnectionOpenedAsync(connection, eventData, cancellationToken);
     }
 
-    public override InterceptionResult ConnectionOpening(DbConnection        connection,
-                                                         ConnectionEventData eventData,
-                                                         InterceptionResult  result)
+    public override void ConnectionOpened(DbConnection          connection,
+                                          ConnectionEndEventData eventData)
     {
         if (eventData.Context != null)
         {
-            // Use the fully-synchronous code path to avoid .GetAwaiter().GetResult()
-            // which can deadlock inside an ASP.NET synchronization context.
-            EnsureHistoryTriggersExistSync(eventData.Context, connection);
+            EnsureHistoryInfrastructureExistsSync(eventData.Context, connection);
         }
 
-        return base.ConnectionOpening(connection, eventData, result);
+        base.ConnectionOpened(connection, eventData);
     }
 
-    private async Task EnsureHistoryTriggersExist(DbContext         context,
-                                                  DbConnection      connection,
-                                                  CancellationToken cancellationToken)
+    private async Task EnsureHistoryInfrastructureExists(DbContext         context,
+                                                         DbConnection      connection,
+                                                         CancellationToken cancellationToken)
     {
-        // Include connection string in cache key to support multiple databases (e.g., tests with separate containers)
-        var contextKey = $"{context.GetType().FullName ?? context.GetType().Name}_{connection.ConnectionString}";
-
-        // Avoid processing the same context type more than once per process lifetime.
-        if (_processedContexts.ContainsKey(contextKey))
-            return;
-
+        // Don't cache - check every time in case tables were created after connection opened
         try
         {
             var model = context.Model;
@@ -71,32 +58,25 @@ internal class PostgreSqlHistoryInterceptor(
 
             if (!historyEnabledEntities.Any())
             {
-                _processedContexts.TryAdd(contextKey, true);
-
                 return;
             }
 
-            logger.LogDebug("Creating history triggers for {Count} entities in context {ContextType}",
-                            historyEnabledEntities.Count,
-                            contextKey);
+            logger.LogDebug("Ensuring history infrastructure for {Count} entities", historyEnabledEntities.Count);
 
             foreach (var entityType in historyEnabledEntities)
             {
-                await CreateHistoryTriggerIfNotExists(connection, entityType, cancellationToken);
+                await CreateHistoryInfrastructure(connection, entityType, cancellationToken);
             }
-
-            _processedContexts.TryAdd(contextKey, true);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to create history triggers for context {ContextType}", contextKey);
-            // Don't throw - let the application continue without history triggers
+            logger.LogError(ex, "Failed to create history infrastructure for context");
         }
     }
 
-    private async Task CreateHistoryTriggerIfNotExists(DbConnection connection,
-                                                       Microsoft.EntityFrameworkCore.Metadata.IEntityType entityType,
-                                                       CancellationToken cancellationToken)
+    private async Task CreateHistoryInfrastructure(DbConnection connection,
+                                                    Microsoft.EntityFrameworkCore.Metadata.IEntityType entityType,
+                                                    CancellationToken cancellationToken)
     {
         try
         {
@@ -104,9 +84,7 @@ internal class PostgreSqlHistoryInterceptor(
             var schema      = entityType.GetSchema();
             var triggerName = $"{tableName}_history_trigger";
 
-            // Ensure the history table exists before we check / create the trigger.
-            // CREATE TABLE IF NOT EXISTS is idempotent, so this is safe to run every time
-            // the application starts (when the processed-context cache is cold).
+            // 1. Create the history table
             logger.LogDebug("Ensuring history table exists for {TableName}", tableName);
             var tableCreationSql = historyTableManager.GenerateHistoryTableSql(entityType);
 
@@ -114,65 +92,44 @@ internal class PostgreSqlHistoryInterceptor(
             tableCommand.CommandText = tableCreationSql;
             await tableCommand.ExecuteNonQueryAsync(cancellationToken);
 
-            // Check if the trigger already exists
-            var checkTriggerSql = $@"
-                SELECT COUNT(*)
-                FROM information_schema.triggers
-                WHERE trigger_name = '{triggerName}'
-                AND event_object_table = '{tableName}'
-                {(string.IsNullOrEmpty(schema) ? "" : $"AND event_object_schema = '{schema}'")}";
+            // 2. Create the trigger function (CREATE OR REPLACE is idempotent)
+            logger.LogDebug("Ensuring history trigger function exists for {TableName}", tableName);
+            var functionSql = historyTableManager.GenerateHistoryTriggerFunctionSql(entityType);
 
-            using var checkCommand = connection.CreateCommand();
-            checkCommand.CommandText = checkTriggerSql;
+            using var functionCommand = connection.CreateCommand();
+            functionCommand.CommandText = functionSql;
+            await functionCommand.ExecuteNonQueryAsync(cancellationToken);
 
-            var triggerExists = Convert.ToInt32(await checkCommand.ExecuteScalarAsync(cancellationToken)) > 0;
+            // 3. Create the trigger using conditional SQL - run every time to ensure it exists
+            var schemaCondition = string.IsNullOrEmpty(schema) ? "" : $"AND table_schema = '{schema}'";
+            var qualifiedTable = string.IsNullOrEmpty(schema) ? $"\"{tableName}\"" : $"\"{schema}\".\"{tableName}\"";
 
-            if (!triggerExists)
-            {
-                logger.LogDebug("Creating history trigger {TriggerName} for table {TableName}",
-                                triggerName,
-                                tableName);
+            var triggerSql = $@"
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = '{tableName}' {schemaCondition}) THEN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.triggers WHERE trigger_name = '{triggerName}' AND event_object_table = '{tableName}') THEN
+            EXECUTE 'DROP TRIGGER IF EXISTS {triggerName} ON {qualifiedTable}';
+            EXECUTE 'CREATE TRIGGER {triggerName} BEFORE UPDATE OR DELETE ON {qualifiedTable} FOR EACH ROW EXECUTE FUNCTION {tableName}_history_trigger_func()';
+        END IF;
+    END IF;
+END $$;";
 
-                var triggerSql = historyTableManager.GenerateHistoryTriggerSql(entityType);
+            using var triggerCommand = connection.CreateCommand();
+            triggerCommand.CommandText = triggerSql;
+            await triggerCommand.ExecuteNonQueryAsync(cancellationToken);
 
-                using var createCommand = connection.CreateCommand();
-                createCommand.CommandText = triggerSql;
-                await createCommand.ExecuteNonQueryAsync(cancellationToken);
-
-                logger.LogInformation("Successfully created history trigger {TriggerName} for table {TableName}",
-                                      triggerName,
-                                      tableName);
-            }
-            else
-            {
-                logger.LogDebug("History trigger {TriggerName} already exists for table {TableName}",
-                                triggerName,
-                                tableName);
-            }
+            logger.LogDebug("History infrastructure ensured for {TableName}", tableName);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex,
-                            "Failed to ensure history infrastructure for entity {EntityName}",
-                            entityType.ClrType.Name);
-            // Continue with other entities
+            logger.LogError(ex, "Failed to ensure history infrastructure for {EntityName}", entityType.ClrType.Name);
         }
     }
 
-    // -----------------------------------------------------------------------
-    // Synchronous counterparts — used by ConnectionOpening (the non-async
-    // override) to avoid the sync-over-async deadlock that .GetAwaiter().GetResult()
-    // can cause inside an ASP.NET synchronization context.
-    // -----------------------------------------------------------------------
-
-    private void EnsureHistoryTriggersExistSync(DbContext context, DbConnection connection)
+    private void EnsureHistoryInfrastructureExistsSync(DbContext context, DbConnection connection)
     {
-        // Include connection string in cache key to support multiple databases (e.g., tests with separate containers)
-        var contextKey = $"{context.GetType().FullName ?? context.GetType().Name}_{connection.ConnectionString}";
-
-        if (_processedContexts.ContainsKey(contextKey))
-            return;
-
+        // Don't cache - check every time in case tables were created after connection opened
         try
         {
             var historyEnabledEntities = context.Model
@@ -184,24 +141,19 @@ internal class PostgreSqlHistoryInterceptor(
 
             if (!historyEnabledEntities.Any())
             {
-                _processedContexts.TryAdd(contextKey, true);
                 return;
             }
 
-            logger.LogDebug("Creating history triggers (sync) for {Count} entities in context {ContextType}",
-                            historyEnabledEntities.Count,
-                            contextKey);
+            logger.LogDebug("Ensuring history infrastructure (sync) for {Count} entities", historyEnabledEntities.Count);
 
             foreach (var entityType in historyEnabledEntities)
             {
                 CreateHistoryInfrastructureSync(connection, entityType);
             }
-
-            _processedContexts.TryAdd(contextKey, true);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to create history triggers (sync) for context {ContextType}", contextKey);
+            logger.LogError(ex, "Failed to create history infrastructure (sync) for context");
         }
     }
 
@@ -215,41 +167,41 @@ internal class PostgreSqlHistoryInterceptor(
             var schema      = entityType.GetSchema();
             var triggerName = $"{tableName}_history_trigger";
 
-            // Ensure the history table exists (idempotent)
+            // 1. Create the history table
             using var tableCommand = connection.CreateCommand();
             tableCommand.CommandText = historyTableManager.GenerateHistoryTableSql(entityType);
             tableCommand.ExecuteNonQuery();
 
-            // Check whether the trigger already exists
-            var checkTriggerSql = $@"
-                SELECT COUNT(*)
-                FROM information_schema.triggers
-                WHERE trigger_name = '{triggerName}'
-                AND event_object_table = '{tableName}'
-                {(string.IsNullOrEmpty(schema) ? "" : $"AND event_object_schema = '{schema}'")}";
+            // 2. Create the trigger function (CREATE OR REPLACE is idempotent)
+            logger.LogDebug("Ensuring history trigger function exists (sync) for {TableName}", tableName);
+            using var functionCommand = connection.CreateCommand();
+            functionCommand.CommandText = historyTableManager.GenerateHistoryTriggerFunctionSql(entityType);
+            functionCommand.ExecuteNonQuery();
 
-            using var checkCommand = connection.CreateCommand();
-            checkCommand.CommandText = checkTriggerSql;
-            var triggerExists = Convert.ToInt32(checkCommand.ExecuteScalar()) > 0;
+            // 3. Create the trigger using conditional SQL
+            var schemaCondition = string.IsNullOrEmpty(schema) ? "" : $"AND table_schema = '{schema}'";
+            var qualifiedTable = string.IsNullOrEmpty(schema) ? $"\"{tableName}\"" : $"\"{schema}\".\"{tableName}\"";
 
-            if (!triggerExists)
-            {
-                logger.LogDebug("Creating history trigger {TriggerName} for table {TableName} (sync)",
-                                triggerName, tableName);
+            var triggerSql = $@"
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = '{tableName}' {schemaCondition}) THEN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.triggers WHERE trigger_name = '{triggerName}' AND event_object_table = '{tableName}') THEN
+            EXECUTE 'DROP TRIGGER IF EXISTS {triggerName} ON {qualifiedTable}';
+            EXECUTE 'CREATE TRIGGER {triggerName} BEFORE UPDATE OR DELETE ON {qualifiedTable} FOR EACH ROW EXECUTE FUNCTION {tableName}_history_trigger_func()';
+        END IF;
+    END IF;
+END $$;";
 
-                using var createCommand = connection.CreateCommand();
-                createCommand.CommandText = historyTableManager.GenerateHistoryTriggerSql(entityType);
-                createCommand.ExecuteNonQuery();
+            using var triggerCommand = connection.CreateCommand();
+            triggerCommand.CommandText = triggerSql;
+            triggerCommand.ExecuteNonQuery();
 
-                logger.LogInformation("Successfully created history trigger {TriggerName} for table {TableName}",
-                                      triggerName, tableName);
-            }
+            logger.LogDebug("History infrastructure ensured (sync) for {TableName}", tableName);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex,
-                            "Failed to ensure history infrastructure (sync) for entity {EntityName}",
-                            entityType.ClrType.Name);
+            logger.LogError(ex, "Failed to ensure history infrastructure (sync) for {EntityName}", entityType.ClrType.Name);
         }
     }
 }
