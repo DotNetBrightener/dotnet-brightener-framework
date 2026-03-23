@@ -59,6 +59,7 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
     </Project>
   </Folder>
+  <Folder Name="/Core/" />
   <Folder Name="/Cryptography/">
     <Project Path="Cryptography/DotNetBrightener.CryptoEngine.DependencyInjection/DotNetBrightener.CryptoEngine.DependencyInjection.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
@@ -103,6 +104,7 @@
     <Project Path="DataAccess/DotNetBrightener.DataAccess.DataMigration.Tests/DotNetBrightener.DataAccess.DataMigration.Tests.csproj" />
   </Folder>
   <Folder Name="/DataAccess/Tests/">
+    <Project Path="DataAccess/DotNetBrightener.DataAccess.EF.PostgreSQL.Tests/DotNetBrightener.DataAccess.EF.PostgreSQL.Tests.csproj" />
     <Project Path="DataAccess/DotNetBrightener.DataAccess.EF.Tests/DotNetBrightener.DataAccess.EF.Tests.csproj" />
   </Folder>
   <Folder Name="/DataAccess/Tests/PostgreSqlMigrationTest/">
@@ -282,6 +284,7 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
     </Project>
   </Folder>
+  <Folder Name="/TestHelpers/" />
   <Folder Name="/UploadService/">
     <Project Path="UploadService/DotNetBrightener.SimpleUploadService/DotNetBrightener.SimpleUploadService.csproj" />
     <Project Path="UploadService/DotNetBrightener.UploadService.AzureBlobStorage/DotNetBrightener.UploadService.AzureBlobStorage.csproj" />

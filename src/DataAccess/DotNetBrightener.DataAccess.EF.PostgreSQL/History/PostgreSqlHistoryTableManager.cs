@@ -14,11 +14,18 @@ internal class PostgreSqlHistoryTableManager
 {
     private readonly ILogger _logger;
 
-    public PostgreSqlHistoryTableManager(IServiceProvider serviceProvider)
+    public PostgreSqlHistoryTableManager(IServiceProvider? serviceProvider)
     {
-        var loggerFactory = serviceProvider.GetService(typeof(ILoggerFactory)) as ILoggerFactory;
+        ILoggerFactory? loggerFactory = null;
 
-        _logger = loggerFactory.CreateLogger<PostgreSqlHistoryTableManager>();
+        if (serviceProvider != null)
+        {
+            loggerFactory = serviceProvider.GetService(typeof(ILoggerFactory)) as ILoggerFactory;
+        }
+
+        // Use null logger if serviceProvider is null or loggerFactory is not available
+        _logger = loggerFactory?.CreateLogger<PostgreSqlHistoryTableManager>()
+                   ?? Microsoft.Extensions.Logging.Abstractions.NullLogger<PostgreSqlHistoryTableManager>.Instance;
     }
 
     /// <summary>

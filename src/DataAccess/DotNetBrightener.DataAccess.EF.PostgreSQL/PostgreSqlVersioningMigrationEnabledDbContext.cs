@@ -53,7 +53,7 @@ public abstract class PostgreSqlVersioningMigrationEnabledDbContext
 
     protected virtual void ConfigureHistoryTables(ModelBuilder modelBuilder)
     {
-        var historyTableManager = new PostgreSqlHistoryTableManager(ServiceProvider);
+        var historyTableManager = new PostgreSqlHistoryTableManager(this.ServiceProvider);
 
         historyTableManager.ConfigureHistoryTables(modelBuilder);
     }

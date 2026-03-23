@@ -53,7 +53,8 @@ internal class PostgreSqlHistoryInterceptor(
                                                   DbConnection      connection,
                                                   CancellationToken cancellationToken)
     {
-        var contextKey = context.GetType().FullName ?? context.GetType().Name;
+        // Include connection string in cache key to support multiple databases (e.g., tests with separate containers)
+        var contextKey = $"{context.GetType().FullName ?? context.GetType().Name}_{connection.ConnectionString}";
 
         // Avoid processing the same context type more than once per process lifetime.
         if (_processedContexts.ContainsKey(contextKey))
@@ -166,7 +167,8 @@ internal class PostgreSqlHistoryInterceptor(
 
     private void EnsureHistoryTriggersExistSync(DbContext context, DbConnection connection)
     {
-        var contextKey = context.GetType().FullName ?? context.GetType().Name;
+        // Include connection string in cache key to support multiple databases (e.g., tests with separate containers)
+        var contextKey = $"{context.GetType().FullName ?? context.GetType().Name}_{connection.ConnectionString}";
 
         if (_processedContexts.ContainsKey(contextKey))
             return;
