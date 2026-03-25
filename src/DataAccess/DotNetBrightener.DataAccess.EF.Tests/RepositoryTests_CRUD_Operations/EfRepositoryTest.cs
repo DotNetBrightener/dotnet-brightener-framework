@@ -74,7 +74,10 @@ public class EfRepositoryTest : MsSqlServerBaseXUnitTest
         }
 
         await Task.Delay(TimeSpan.FromSeconds(3));
-        _mockAwaiter.Verify(x => x.WaitFinished(It.Is<TestEntity>(x => x.Name.EndsWith("_Created by create event handler"))));
+        _mockAwaiter.Verify(x =>
+                                x.WaitFinished(It.Is<TestEntity>(x =>
+                                                                     x.Name
+                                                                      .EndsWith("_Created by create event handler"))));
 
         await host.StopAsync();
     }
@@ -119,7 +122,10 @@ public class EfRepositoryTest : MsSqlServerBaseXUnitTest
 
         await Task.Delay(TimeSpan.FromSeconds(3));
 
-        _mockAwaiter.Verify(x => x.WaitFinished(It.Is<TestEntity>(x => x.Name.Equals("Name1_Updated_Updated by update event handler"))));
+        _mockAwaiter.Verify(x =>
+                                x.WaitFinished(It.Is<TestEntity>(x =>
+                                                                     x.Name
+                                                                      .Equals("Name1_Updated_Updated by update event handler"))));
 
         await host.StopAsync();
     }
@@ -163,7 +169,10 @@ public class EfRepositoryTest : MsSqlServerBaseXUnitTest
 
         await Task.Delay(TimeSpan.FromSeconds(3));
 
-        _mockAwaiter.Verify(x => x.WaitFinished(It.Is<TestEntity>(x => x.Name.Equals("Name1_Updated_From_Logic, _Updated by update event handler"))));
+        _mockAwaiter.Verify(x =>
+                                x.WaitFinished(It.Is<TestEntity>(x =>
+                                                                     x.Name
+                                                                      .Equals("Name1_Updated_From_Logic, _Updated by update event handler"))));
 
         await host.StopAsync();
     }
@@ -211,7 +220,7 @@ public class EfRepositoryTest : MsSqlServerBaseXUnitTest
         }
 
         await Task.Delay(TimeSpan.FromSeconds(3));
-        
+
         _mockAwaiter.Verify(x => x.WaitFinished(It.Is<TestEntity>(x =>
                                                                       x.Name
                                                                        .Equals("Name1_Updated_From_Logic, _Updated by update event handler") &&
@@ -502,7 +511,7 @@ public class EfRepositoryTest : MsSqlServerBaseXUnitTest
     {
         services.AddSingleton<IMockAwaiter>(_mockAwaiter.Object);
 
-        var connectionString = MsSqlContainer.GetConnectionString($"MsSqlServerBaseTest");
+        var connectionString = MsSqlContainer.GetConnectionStringForDb($"MsSqlServerBaseTest");
 
         services
            .AddEFCentralizedDataServices<TestDbContext>(new DatabaseConfiguration

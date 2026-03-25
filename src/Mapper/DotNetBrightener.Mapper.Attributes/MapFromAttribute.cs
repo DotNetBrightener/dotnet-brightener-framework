@@ -9,22 +9,23 @@ namespace DotNetBrightener.Mapper;
 /// </summary>
 /// <remarks>
 ///     <para>
-///         The <see cref="MapFromAttribute"/> can be used in several ways:
+///         The <see cref="MapFromAttribute"/> should be used with <c>nameof()</c> for type-safe property access:
 ///     </para>
 ///     <list type="bullet">
 ///         <item>
 ///             <description>
-///                 Simple property rename: <c>[MapFrom("FirstName")]</c> maps from source.FirstName
+///                 Simple property rename: <c>[MapFrom(nameof(User.FirstName))]</c> maps from source.FirstName
 ///             </description>
 ///         </item>
 ///         <item>
 ///             <description>
-///                 Nested property access: <c>[MapFrom("Company.Name")]</c> maps from source.Company.Name
+///                 Nested property access: <c>[MapFrom(nameof(@User.Company.Name))]</c> maps from source.Company.Name
+///                 (use <c>@</c> prefix for nested paths to get compile-time validation)
 ///             </description>
 ///         </item>
 ///         <item>
 ///             <description>
-///                 Expression: <c>[MapFrom("FirstName + \" \" + LastName")]</c> for computed values
+///                 Expression: <c>[MapFrom(nameof(User.FirstName) + " + \" \" + " + nameof(User.LastName))]</c> for computed values
 ///             </description>
 ///         </item>
 ///     </list>
@@ -36,42 +37,48 @@ namespace DotNetBrightener.Mapper;
 /// </remarks>
 /// <example>
 ///     <code>
-///         [MappableTarget(typeof(User))]
+///         [MappingTarget&lt;User&gt;]
 ///         public partial class UserDto
 ///         {
-///             [MapFrom("FirstName")]
+///             // Simple property rename
+///             [MapFrom(nameof(User.FirstName))]
 ///             public string Name { get; set; }
-///             [MapFrom("Company.Name")]
+///
+///             // Nested property path (use @ prefix for full path)
+///             [MapFrom(nameof(@User.Company.Name))]
 ///             public string CompanyName { get; set; }
-///             [MapFrom("FirstName + \" \" + LastName", Reversible = false)]
+///
+///             // Computed expression (only case where string concatenation is used)
+///             [MapFrom(nameof(User.FirstName) + " + \" \" + " + nameof(User.LastName), Reversible = false)]
 ///             public string FullName { get; set; }
 ///         }
 ///     </code>
 /// </example>
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
-public sealed class MapFromAttribute : Attribute
+public class MapFromAttribute : Attribute
 {
     /// <summary>
-    ///     The source property name or expression to map from.
+    ///     The source property path or expression to map from.
+    ///     Use nameof() for type-safe property access.
     /// </summary>
     /// <remarks>
     ///     <para>
-    ///         This can be:
+    ///         Recommended usage with nameof():
     ///     </para>
     ///     <list type="bullet">
     ///         <item>
     ///             <description>
-    ///                 A simple property name: "FirstName"
+    ///                 Simple property: <c>nameof(SourceType.PropertyName)</c>
     ///             </description>
     ///         </item>
     ///         <item>
     ///             <description>
-    ///                 A nested property path: "Company.Address.City"
+    ///                 Nested path: <c>nameof(@SourceType.Nested.Property)</c> (use @ prefix for nested paths)
     ///             </description>
     ///         </item>
     ///         <item>
     ///             <description>
-    ///                 A C# expression: "FirstName + \" \" + LastName"
+    ///                 Expression: <c>nameof(SourceType.FirstName) + " + \" \" + " + nameof(SourceType.LastName)</c>
     ///             </description>
     ///         </item>
     ///     </list>
@@ -104,7 +111,7 @@ public sealed class MapFromAttribute : Attribute
     ///         </item>
     ///         <item>
     ///             <description>
-    ///                 Navigation property paths (e.g., "Company.Name")
+    ///                 Navigation property paths (e.g., Company.Name)
     ///             </description>
     ///         </item>
     ///         <item>
@@ -139,7 +146,7 @@ public sealed class MapFromAttribute : Attribute
     ///     Creates a new MapFromAttribute that maps from the specified source property or expression.
     /// </summary>
     /// <param name="source">
-    ///     The source property name or expression to map from.
+    ///     The source property path (using nameof()) or expression to map from.
     /// </param>
     public MapFromAttribute(string source)
     {

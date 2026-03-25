@@ -118,14 +118,14 @@ public class MapFromMultiLevelEntity
     GenerateToSource = false)]
 public partial class MapFromSingleLevelPathTarget
 {
-    // Use string literal to access nested property
-    [MapFrom("Company.CompanyName")]
+    // Use @nameof() to access nested property with compile-time validation
+    [MapFrom(nameof(@MapFromNestedPropertyEntity.Company.CompanyName))]
     public string CompanyName { get; set; } = string.Empty;
 
-    [MapFrom("Company.Address")]
+    [MapFrom(nameof(@MapFromNestedPropertyEntity.Company.Address))]
     public string CompanyAddress { get; set; } = string.Empty;
-    
-    // Same as above but not a hardcoded string literal - should generate same mapping
+
+    // Alternative property using same path
     [MapFrom(nameof(@MapFromNestedPropertyEntity.Company.CompanyName))]
     public string AlternativeCompanyName { get; set; } = string.Empty;
 }
@@ -136,16 +136,16 @@ public partial class MapFromSingleLevelPathTarget
     GenerateToSource = false)]
 public partial class MapFromMultiLevelPathTarget
 {
-    // Two levels deep
-    [MapFrom("Employee.Company.CompanyName")]
+    // Two levels deep using @nameof() for full path validation
+    [MapFrom(nameof(@MapFromMultiLevelEntity.Employee.Company.CompanyName))]
     public string EmployeeCompanyName { get; set; } = string.Empty;
 
     // Two levels deep
-    [MapFrom("Employee.Company.Address")]
+    [MapFrom(nameof(@MapFromMultiLevelEntity.Employee.Company.Address))]
     public string EmployeeCompanyAddress { get; set; } = string.Empty;
 
     // Single level
-    [MapFrom("Employee.Name")]
+    [MapFrom(nameof(@MapFromMultiLevelEntity.Employee.Name))]
     public string EmployeeName { get; set; } = string.Empty;
 }
 

@@ -4,7 +4,7 @@ The `[MapFrom]` attribute provides declarative property mapping, allowing you to
 
 ## Basic Usage
 
-Use `[MapFrom]` on properties in your target type to specify which source property to map from. Use `nameof()` for type-safe property references:
+Use `[MapFrom]` on properties in your target type to specify which source property to map from. **Always use `nameof()` for type-safe property references**:
 
 ```csharp
 public class User
@@ -67,19 +67,19 @@ var entity = dto.ToSource();
 
 ### Source (Required)
 
-The source property name or expression to map from. Use `nameof()` for type-safe references:
+The source property path or expression to map from. **Always use `nameof()` for type-safe references**:
 
 ```csharp
 // Type-safe property reference (recommended)
 [MapFrom(nameof(User.FirstName))]
 public string Name { get; set; }
 
-// Expression with multiple properties (string required)
-[MapFrom(nameof(User.FirstName) + " + \" \" + " + nameof(User.LastName))]
-public string FullName { get; set; }
+// Nested property path (use @ prefix for full path validation)
+[MapFrom(nameof(@User.Company.Name))]
+public string CompanyName { get; set; }
 
-// Or simply use a string for expressions
-[MapFrom("FirstName + \" \" + LastName")]
+// Expression with multiple properties using nameof() concatenation
+[MapFrom(nameof(User.FirstName) + " + \" \" + " + nameof(User.LastName))]
 public string FullName { get; set; }
 ```
 
@@ -112,7 +112,7 @@ Controls whether the mapping is included in the static `Projection` expression. 
 
 ```csharp
 // This property will NOT be included in EF Core projections
-[MapFrom("ComplexField", IncludeInProjection = false)]
+[MapFrom(nameof(Product.ComplexField), IncludeInProjection = false)]
 public string Computed { get; set; } = string.Empty;
 ```
 
@@ -151,22 +151,22 @@ public partial class ProductDto
 
 ### Computed Expressions
 
-Use expressions to combine or transform properties:
+Use `nameof()` concatenation to create expressions that combine or transform properties:
 
 ```csharp
 [MappingTarget<User>]
 public partial class UserDto
 {
-    // Concatenate first and last name
-    [MapFrom("FirstName + \" \" + LastName")]
+    // Concatenate first and last name using nameof()
+    [MapFrom(nameof(User.FirstName) + " + \" \" + " + nameof(User.LastName))]
     public string FullName { get; set; } = string.Empty;
 
     // Mathematical expressions
-    [MapFrom("Price * Quantity")]
+    [MapFrom(nameof(Order.Price) + " * " + nameof(Order.Quantity))]
     public decimal Total { get; set; }
 
     // Method calls (works in constructor, may not translate to SQL)
-    [MapFrom("Name.ToUpper()")]
+    [MapFrom(nameof(Product.Name) + ".ToUpper()")]
     public string UpperName { get; set; } = string.Empty;
 }
 ```
@@ -232,26 +232,27 @@ public partial class UserDto
 
 ## Best Practices
 
-1. **Use `nameof()` for type safety** - Prevents typos and enables refactoring support
-2. **Set Reversible = false for computed properties** - Expressions can't be reversed
-3. **Consider projection compatibility** - Set `IncludeInProjection = false` for expressions that can't translate to SQL
-4. **Combine with custom mappers when needed** - MapFrom handles the basics, custom mapper handles the rest
+1. **Always use `nameof()` for type safety** - Prevents typos and enables refactoring support
+2. **Use `@` prefix for nested paths** - `nameof(@SourceType.Nested.Property)` provides full path validation
+3. **Set Reversible = false for computed properties** - Expressions can't be reversed
+4. **Consider projection compatibility** - Set `IncludeInProjection = false` for expressions that can't translate to SQL
+5. **Combine with custom mappers when needed** - MapFrom handles the basics, custom mapper handles the rest
 
 ## Nested Property Paths
 
-You can use `MapFrom` to flatten nested object structures by specifying property paths:
+Use `@nameof()` syntax to flatten nested object structures with full compile-time validation:
 
 ```csharp
 public class Order
 {
     public int Id { get; set; }
-    public Customer Customer { get; set; }
+    public Customer? Customer { get; set; }
 }
 
 public class Customer
 {
     public string Name { get; set; }
-    public Address Address { get; set; }
+    public Address? Address { get; set; }
 }
 
 public class Address
@@ -260,19 +261,21 @@ public class Address
     public string Country { get; set; }
 }
 
-[MappingTarget<Order>(nameof(Order.Customer)])]
+[MappingTarget<Order>(
+    exclude: [nameof(Order.Customer)],
+    GenerateToSource = false)]
 public partial class OrderDto
 {
-    // Single-level nested path
-    [MapFrom("Customer.Name")]
-    public string CustomerName { get; set; }
+    // Single-level nested path using @nameof()
+    [MapFrom(nameof(@Order.Customer.Name))]
+    public string CustomerName { get; set; } = string.Empty;
 
     // Multi-level nested path
-    [MapFrom("Customer.Address.City")]
-    public string City { get; set; }
+    [MapFrom(nameof(@Order.Customer.Address.City))]
+    public string City { get; set; } = string.Empty;
 
-    [MapFrom("Customer.Address.Country")]
-    public string Country { get; set; }
+    [MapFrom(nameof(@Order.Customer.Address.Country))]
+    public string Country { get; set; } = string.Empty;
 }
 ```
 
@@ -282,6 +285,6 @@ public partial class OrderDto
 
 - **Same type required** - Source and target property types must match
 - **Expressions are not reversible** - Computed expressions are one-way (source → DTO only)
-- **No null-checking in nested paths** - `"Company.Address.City"` will throw if Company or Address is null
+- **No null-checking in nested paths** - Accessing nested properties will throw if any intermediate property is null
 
 For complex scenarios like async operations or conditional logic, use [Custom Mapping](04_CustomMapping.md) instead.
