@@ -5,10 +5,6 @@ namespace LocaleManagement.Tests;
 
 public class LocaleManagementServiceTests
 {
-    public LocaleManagementServiceTests()
-    {
-    }
-
     [Fact]
     public async Task GetSystemSupportedLocales_ShouldBeAbleToGetSystemLocales()
     {
