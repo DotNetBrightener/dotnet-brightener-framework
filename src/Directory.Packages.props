@@ -120,5 +120,8 @@
     <!-- Template engines -->
     <PackageVersion Include="Handlebars.Net" Version="2.1.6" />
     <PackageVersion Include="Handlebars.Net.Helpers" Version="2.5.4" />
+    <!-- Validation -->
+    <PackageVersion Include="FluentValidation" Version="11.9.0" />
+    <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="11.9.0" />
   </ItemGroup>
 </Project>
