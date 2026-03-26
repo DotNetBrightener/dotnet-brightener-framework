@@ -1,28 +1,17 @@
-﻿using LocaleManagement.Services;
-using NUnit.Framework;
+using LocaleManagement.Services;
+using Xunit;
 
 namespace LocaleManagement.Tests;
 
 public class LocaleManagementServiceTests
 {
-
-    [SetUp]
-    public void Setup()
-    {
-    }
-
-    [Test]
+    [Fact]
     public async Task GetSystemSupportedLocales_ShouldBeAbleToGetSystemLocales()
     {
         var supportedLocales = LocaleManagementService.InternalGetSystemSupportedLocales();
 
-        Assert.That(supportedLocales, Is.Not.Null);
+        Assert.NotNull(supportedLocales);
 
         //Console.WriteLine(JsonConvert.SerializeObject(supportedLocales, Formatting.Indented));
-    }
-
-    [TearDown]
-    public void TearDown()
-    {
     }
 }
