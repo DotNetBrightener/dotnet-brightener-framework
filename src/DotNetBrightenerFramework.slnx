@@ -144,6 +144,9 @@
     </Project>
   </Folder>
   <Folder Name="/Infrastructure/Tests/">
+    <Project Path="Infrastructure/CommonShared.Tests/WebApp.CommonShared.Tests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+    </Project>
     <Project Path="Infrastructure/Tests/WebAppCommonShared.Demo/WebAppCommonShared.Demo.csproj" />
   </Folder>
   <Folder Name="/LinQToSqlBuilder/">
