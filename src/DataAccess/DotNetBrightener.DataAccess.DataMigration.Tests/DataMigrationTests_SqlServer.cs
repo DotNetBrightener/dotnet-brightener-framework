@@ -1,11 +1,10 @@
-﻿using DotNetBrightener.DataAccess.DataMigration.Extensions;
+using DotNetBrightener.DataAccess.DataMigration.Extensions;
 using DotNetBrightener.TestHelpers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using NUnit.Framework;
+using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
-using Assert = NUnit.Framework.Assert;
 
 namespace DotNetBrightener.DataAccess.DataMigration.Tests;
 
@@ -14,28 +13,26 @@ public class DataMigrationTests_SqlServer(ITestOutputHelper testOutputHelper): M
     [Fact]
     public async Task AddDataMigrator_ShouldThrowBecauseOfNotInitializeDataMigrationFirst()
     {
-        Assert.Throws(Is.TypeOf<InvalidOperationException>()
-                        .And.Message
-                        .EqualTo("The data migrations must be enabled first using EnableDataMigrations method"),
-                      () =>
-                      {
-                          var builder = new HostBuilder()
-                             .ConfigureServices((hostContext, services) =>
-                              {
-                                  services.AddDataMigrator<GoodMigration>();
-                              });
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+        {
+            var builder = new HostBuilder()
+               .ConfigureServices((hostContext, services) =>
+                {
+                    services.AddDataMigrator<GoodMigration>();
+                });
 
-                          var host = builder.Build();
-                      });
+            var host = builder.Build();
+        });
+
+        exception.Message.ShouldBe("The data migrations must be enabled first using EnableDataMigrations method");
     }
 
     [Fact]
     public async Task AddDataMigrator_ShouldThrowBecauseOfNoAttribute()
     {
-        Assert.Throws(Is.TypeOf<InvalidOperationException>()
-                        .And.Message
-                        .EqualTo($"The data migration {typeof(ShouldNotBeRegisteredMigration).FullName} must have [DataMigration] attribute defined with the migration id"),
-                      () => ConfigureService<ShouldNotBeRegisteredMigration>());
+        var exception = Assert.Throws<InvalidOperationException>(() => ConfigureService<ShouldNotBeRegisteredMigration>());
+
+        exception.Message.ShouldBe($"The data migration {typeof(ShouldNotBeRegisteredMigration).FullName} must have [DataMigration] attribute defined with the migration id");
     }
 
     [Fact]
@@ -49,8 +46,8 @@ public class DataMigrationTests_SqlServer(ITestOutputHelper testOutputHelper): M
         var metadata        = serviceProvider.GetRequiredService<DataMigrationMetadata>();
 
         // Assert
-        Assert.That(metadata.Values.Count, Is.EqualTo(1));
-        Assert.That(metadata.Values.ElementAt(0), Is.EqualTo(typeof(GoodMigration)));
+        metadata.Values.Count.ShouldBe(1);
+        metadata.Values.ElementAt(0).ShouldBe(typeof(GoodMigration));
     }
 
     [Fact]
@@ -82,9 +79,9 @@ public class DataMigrationTests_SqlServer(ITestOutputHelper testOutputHelper): M
                                         .ToList();
 
         // Assert
-        Assert.That(migrationHistory.Count, Is.EqualTo(2));
-        Assert.That(migrationHistory[0].MigrationId, Is.EqualTo("20240502_160412_InitializeMigration"));
-        Assert.That(migrationHistory[1].MigrationId, Is.EqualTo("20240502_160413_InitializeMigration3"));
+        migrationHistory.Count.ShouldBe(2);
+        migrationHistory[0].MigrationId.ShouldBe("20240502_160412_InitializeMigration");
+        migrationHistory[1].MigrationId.ShouldBe("20240502_160413_InitializeMigration3");
 
         await host.StopAsync();
     }
@@ -118,7 +115,7 @@ public class DataMigrationTests_SqlServer(ITestOutputHelper testOutputHelper): M
                                         .ToList();
 
         // Assert
-        Assert.That(migrationHistory.Count, Is.EqualTo(0));
+        migrationHistory.Count.ShouldBe(0);
 
         await host.StopAsync();
     }
