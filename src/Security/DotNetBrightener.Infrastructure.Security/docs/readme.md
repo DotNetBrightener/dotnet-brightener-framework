@@ -90,3 +90,71 @@ serviceCollection.RegisterPermissionProvider<SomePermissionsList>();
 ```
 
 The `app.LoadAndValidatePermissions()` call above should automatically register the permissions you defined in the class provided
+
+## Minimal API Support
+
+The library provides extension methods for Minimal API endpoints using `RequirePermission()` and `RequireAnyPermission()`.
+
+### Basic Permission Authorization (ALL required)
+
+User must have **ALL** specified permissions:
+
+```csharp
+// Single permission
+app.MapGet("/api/users", GetUsers)
+   .RequirePermission("UserManagement.View");
+
+// Multiple permissions (ALL required)
+app.MapDelete("/api/users/{id}", DeleteUser)
+   .RequirePermission("UserManagement.Delete", "UserManagement.View");
+```
+
+### Any Permission Authorization (OR logic)
+
+User must have **at least ONE** of the specified permissions:
+
+```csharp
+// Any one permission is sufficient
+app.MapGet("/api/reports", GetReports)
+   .RequireAnyPermission("Reports.View", "Reports.ViewAll", "Admin.Access");
+```
+
+### Resource-Based Authorization
+
+For scenarios where authorization depends on a specific resource:
+
+```csharp
+// Single permission with resource
+app.MapGet("/api/documents/{id}", async (int id, IDocumentService docService) =>
+{
+    var document = await docService.GetById(id);
+    return Results.Ok(document);
+}).RequirePermission("Document.View", documentResource);
+
+// Multiple permissions for resource (ALL required)
+app.MapPut("/api/documents/{id}", UpdateDocument)
+   .RequirePermissionForResource(documentResource, "Document.Edit", "Document.View");
+
+// Any permission for resource (OR logic)
+app.MapGet("/api/projects/{id}", GetProject)
+   .RequireAnyPermissionForResource(projectResource, "Project.View", "Project.ViewAll", "Admin.Access");
+```
+
+### Allow Anonymous
+
+Use `[AllowAnonymous]` attribute on the endpoint delegate or `.AllowAnonymous()` to bypass permission checks:
+
+```csharp
+app.MapGet("/api/public/info", GetPublicInfo)
+   .AllowAnonymous();
+```
+
+### Summary of Extension Methods
+
+| Method | Logic | Resource Support |
+|--------|-------|------------------|
+| `RequirePermission(params string[])` | ALL required | No |
+| `RequirePermission(string, object)` | Single permission | Yes |
+| `RequirePermissionForResource(object, params string[])` | ALL required | Yes |
+| `RequireAnyPermission(params string[])` | Any one | No |
+| `RequireAnyPermissionForResource(object, params string[])` | Any one | Yes |
