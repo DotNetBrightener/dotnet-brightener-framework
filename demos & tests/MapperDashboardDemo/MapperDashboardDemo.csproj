@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+    <PropertyGroup>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Bogus" />
+        <PackageReference Include="Swashbuckle.AspNetCore" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Source generator (analyzer reference only) -->
+        <ProjectReference Include="..\..\src\Mapper\DotNetBrightener.Mapper\DotNetBrightener.Mapper.csproj"
+                          OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+        <!-- Dashboard (ASP.NET Core middleware + HTML visualization) -->
+        <ProjectReference Include="..\..\src\Mapper\DotNetBrightener.Mapper.Dashboard\DotNetBrightener.Mapper.Dashboard.csproj" />
+        <!-- Runtime mapping extensions (ToTarget, SelectTargets, ToSource) -->
+        <ProjectReference Include="..\..\src\Mapper\DotNetBrightener.Mapper.Mapping\DotNetBrightener.Mapper.Mapping.csproj" />
+    </ItemGroup>
+</Project>

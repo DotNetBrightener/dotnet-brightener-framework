@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="../../src/Mapper/DotNetBrightener.Mapper.Attributes/DotNetBrightener.Mapper.Attributes.csproj" />
+  <Project Path="../../src/Mapper/DotNetBrightener.Mapper.Dashboard/DotNetBrightener.Mapper.Dashboard.csproj" />
+  <Project Path="../../src/Mapper/DotNetBrightener.Mapper.Mapping/DotNetBrightener.Mapper.Mapping.csproj" />
+  <Project Path="../../src/Mapper/DotNetBrightener.Mapper/DotNetBrightener.Mapper.csproj" />
+  <Project Path="MapperDashboardDemo.csproj" />
+</Solution>
