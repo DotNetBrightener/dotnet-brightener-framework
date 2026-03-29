@@ -1,5 +1,7 @@
 # DotNetBrightener.UploadService.ImageOptimizer
 
+Copyright © 2017 - 2026 Vampire Coder (formerly DotnetBrightener)
+
 Image optimization and resizing functionality for DotNetBrightener Upload Service.
 
 ## 🔒 Migration Notice - Version 2026.0.1+
@@ -235,3 +237,4 @@ For issues, questions, or contributions:
 - [SkiaSharp Documentation](https://github.com/mono/SkiaSharp)
 - [DotNetBrightener Framework Documentation](https://github.com/dotnetbrightener/dotnet-brightener-framework)
 - [CVE-2025-65955 Advisory](https://github.com/advisories/GHSA-q3hc-j9x5-mp9m)
+

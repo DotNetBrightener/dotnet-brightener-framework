@@ -1,4 +1,6 @@
 ﻿# DotNetBrightener SiteSettings Module
+ 
+Copyright © 2017 - 2026 Vampire Coder (formerly DotnetBrightener)
 
 ## Overview
 
@@ -378,3 +380,4 @@ public void Should_Save_And_Retrieve_Settings()
 3. Use the `SaveSetting` method to populate the new system
 
 This integration guide provides everything needed to successfully implement the DotNetBrightener SiteSettings module in your .NET applications.
+

@@ -1,5 +1,7 @@
 # DotNetBrightener Push Notification Library
 
+Copyright © 2017 - 2026 Vampire Coder (formerly DotnetBrightener)
+
 A comprehensive push notification library for .NET applications that supports multiple providers including Apple Push Notification service (APNs) and Firebase Cloud Messaging (FCM).
 
 ## Features
@@ -158,3 +160,4 @@ builder.Services.AddPushNotification()
 - [Firebase Cloud Messaging Setup Guide](./fcm-setup.md)
 - [API Reference](./api-reference.md)
 - [Testing Guide](./testing.md)
+

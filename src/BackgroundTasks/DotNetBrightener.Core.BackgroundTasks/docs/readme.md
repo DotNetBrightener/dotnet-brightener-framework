@@ -1,5 +1,7 @@
 # DotNetBrightener Background Tasks
 
+Copyright © 2017 - 2026 Vampire Coder (formerly DotnetBrightener)
+
 ## Overview
 
 The DotNetBrightener Background Tasks module provides a comprehensive, cron-based task scheduling system for .NET applications. It enables developers to schedule and execute background tasks with precise timing control, overlap prevention, and robust error handling.

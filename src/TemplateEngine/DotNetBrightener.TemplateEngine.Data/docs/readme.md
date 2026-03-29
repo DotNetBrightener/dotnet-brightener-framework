@@ -1,4 +1,3 @@
 ﻿# Centralized API for Store / Load / Parse template in ASP.NET Core Applications with Support from Handlebars
 
-&copy; 2022 DotNet Brightener
-
+Copyright © 2017 - 2026 Vampire Coder (formerly DotnetBrightener)

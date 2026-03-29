@@ -1,4 +1,3 @@
 ﻿# OAuth Library
 
-&copy; 2022 DotNet Brightener
-
+Copyright © 2017 - 2026 Vampire Coder (formerly DotnetBrightener)

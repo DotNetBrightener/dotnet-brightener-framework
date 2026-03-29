@@ -1,8 +1,9 @@
 # DotNetBrightener.CryptoEngine
 
+Copyright © 2017 - 2026 Vampire Coder (formerly DotnetBrightener)
+
 A library providing APIs for asymmetric and symmetric encryption methods in .NET applications.
 
-&copy; DotNet Brightener
 
 ## Installation
 
@@ -458,3 +459,4 @@ public class CryptoEngineConfiguration
 | `IRSAKeysLoader` | RSA key loading interface |
 | `FileRSAKeysLoader` | File-based key loader |
 | `EnvironmentVarISAKeysLoader` | Environment variable key loader |
+

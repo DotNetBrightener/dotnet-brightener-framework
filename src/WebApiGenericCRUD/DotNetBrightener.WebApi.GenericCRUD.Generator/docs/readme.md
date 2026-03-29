@@ -2,10 +2,10 @@
 
 # Code Generator for Centralized CRUD WebAPI in ASP.NET Core Applications
  
-&copy; 2025 DotNet Brightener. <admin@dotnetbrightener.com>
+Copyright © 2017 - 2026 Vampire Coder (formerly DotnetBrightener) 
  
 # Instruction
- 
+
 Most applications rely on CRUD operations. This tool aids in generating WebAPI controllers and DataService interfaces/classes using the [DotNetBrightener.WebApi.GenericCRUD](https://www.nuget.org/packages/DotNetBrightener.WebApi.GenericCRUD/) and [DotNetBrightener.DataAccess.Abstractions](https://www.nuget.org/packages/DotNetBrightener.DataAccess.Abstractions/) libraries. 
  
 Specifically, [DotNetBrightener.WebApi.GenericCRUD](https://www.nuget.org/packages/DotNetBrightener.WebApi.GenericCRUD/) provides core CRUD functionalities, exposing them as WebAPI controllers, while [DotNetBrightener.DataAccess.Abstractions](https://www.nuget.org/packages/DotNetBrightener.DataAccess.Abstractions/) facilitates the database access layer performing these CRUD operations. 
@@ -264,3 +264,4 @@ The body of the request can be part of the entity. Only the provided fields in t
  
 ### `PUT` /api/{entity}/{id}/undelete
 * Restore the **deleted** record of the `entity` by `id`
+

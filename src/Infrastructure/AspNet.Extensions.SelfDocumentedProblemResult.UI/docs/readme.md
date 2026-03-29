@@ -1,6 +1,6 @@
 # UI for ASP.NET Core Problem Result Extension
 
-&copy; 2025 [DotNet Brightener](mailto:admin@dotnetbrightener.com)
+Copyright © 2017 - 2026 Vampire Coder (formerly DotnetBrightener)
 
 ![NuGet Version](https://img.shields.io/nuget/v/DotNetBrightener.AspNet.Extensions.SelfDocumentedProblemResult.UI)
 
@@ -124,3 +124,4 @@ visiting the URL in `type` property will see an error page like following:
 > ```
 
 The `Description` of the page is pulled from XML Document `<summary>` tag, and the `Reason` is pulled from `<remarks>` tag. The `Response HTTP Status Code` is the status code that the error object is associated with. The `Response Body` is the sample response body that the error object will be returned.
+

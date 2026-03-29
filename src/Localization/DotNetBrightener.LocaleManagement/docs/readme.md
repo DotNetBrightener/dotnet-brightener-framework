@@ -1,4 +1,3 @@
 # Locale Management Module for ASP.NET Web API
 
-&copy; 2025 DotNetBrightener <admin@dotnetbrightener.com>
-
+Copyright © 2017 - 2026 Vampire Coder (formerly DotnetBrightener)

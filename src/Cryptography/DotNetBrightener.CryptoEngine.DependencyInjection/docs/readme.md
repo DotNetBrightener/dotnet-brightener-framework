@@ -1,4 +1,3 @@
 ﻿# Extension for ASP.NET Core for CryptoEngine library
 
-&copy; DotNet Brightener
-
+Copyright © 2017 - 2026 Vampire Coder (formerly DotnetBrightener)

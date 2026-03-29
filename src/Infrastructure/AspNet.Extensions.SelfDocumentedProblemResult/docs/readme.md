@@ -1,8 +1,6 @@
 # ASP.NET Core WebApp Self-Documented Problem Result Extension
 
-
-&copy; 2025 [DotNet Brightener](mailto:admin@dotnetbrightener.com)
-
+Copyright © 2017 - 2026 Vampire Coder (formerly DotnetBrightener)
 
 ![NuGet Version](https://img.shields.io/nuget/v/DotNetBrightener.AspNet.Extensions.SelfDocumentedProblemResult)
 

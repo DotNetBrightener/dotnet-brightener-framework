@@ -1,9 +1,10 @@
 # App Client Manager Library for ASP.NET Core Web API Applications
 
+Copyright © 2017 - 2026 Vampire Coder (formerly DotnetBrightener)
+
 > Manage your ASP.NET Core Applications' clients with ease.
 
 
-&copy; 2025 DotNetBrightener. All rights reserved.
 
 ## Introduction
 
@@ -28,4 +29,5 @@ The client app that needs to access the API, must satisfy 2 conditions:
 ## Change Logs
 
 2024.0.12: Initial Version
+
 

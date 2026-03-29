@@ -1,5 +1,7 @@
 # DotNetBrightener.Mapper.Mapping
 
+Copyright © 2017 - 2026 Vampire Coder (formerly DotnetBrightener)
+
 `DotNetBrightener.Mapper.Mapping` adds mapping helpers, custom mapper interfaces, and expression translation utilities for types generated with `MappingTarget<TSource>`.
 
 ## What This Package Includes
@@ -276,3 +278,4 @@ var inverted = isActive.Negate();
 - `DotNetBrightener.Mapper.Attributes` for `MappingTarget<TSource>` and the mapping attributes
 - `DotNetBrightener.Mapper` for the source generator that emits constructors, projections, and `ToSource`
 - `DotNetBrightener.Mapper.Mapping.EFCore` for EF Core async query helpers and tracked source updates
+

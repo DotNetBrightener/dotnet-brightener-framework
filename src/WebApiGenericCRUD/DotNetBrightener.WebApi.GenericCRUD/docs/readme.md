@@ -1,6 +1,6 @@
 ﻿# Centralized CRUD WebAPI in ASP.NET Core Applications
  
-&copy; 2025 DotNet Brightener. <admin@dotnetbrightener.com>
+Copyright © 2017 - 2026 Vampire Coder (formerly DotnetBrightener) 
  
 # Instruction
  

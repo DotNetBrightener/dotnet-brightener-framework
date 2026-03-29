@@ -1,5 +1,7 @@
 # Activity Log Database Storage
 
+Copyright © 2017 - 2026 Vampire Coder (formerly DotnetBrightener)
+
 Adds persistent Layer for [`Activity Log`](https://www.nuget.org/packages/DotNetBrightener.ActivityLog) package.
 
 ## Quick Setup
@@ -62,4 +64,5 @@ Every time a method with `[LogActivity]` runs, a record is saved with:
 - **How it went** - Success/failure, any exceptions
 - **Extra context** - Custom metadata you add during execution
 - **Performance info** - Execution time, slow method detection
+
 

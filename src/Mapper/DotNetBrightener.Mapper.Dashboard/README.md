@@ -1,132 +1,111 @@
-# Facet.Dashboard
+# DotNetBrightener.Mapper.Dashboard
 
-A Swagger-like dashboard for visualizing all Facet source types and their generated facets in your application.
+Copyright © 2017 - 2026 Vampire Coder (formerly DotnetBrightener)
 
-## Demo
+Interactive web dashboard that auto-discovers and visualizes every `[MappingTarget<T>]` usage in your ASP.NET Core app. Think of it as a Swagger UI, but for your compile-time object mappings instead of HTTP endpoints.
 
-![Logout](https://github.com/user-attachments/assets/e6f30dfe-93cb-4789-ac76-382230014413)
+## Why?
 
-## Features
+When a project accumulates dozens of source entities mapped to many DTOs, it gets hard to track which properties are included, excluded, renamed, or nested. This dashboard gives you a single page to inspect all of that at a glance — no XML docs or code navigation needed.
 
-- **Visual Overview**: See all source types and their generated facets at a glance
-- **Property Inspection**: View source type properties and facet members with type information
-- **Feature Indicators**: Quickly see which features are enabled (Constructor, Projection, ToSource)
-- **Search & Filter**: Easily find specific types in large projects
-- **Dark Mode**: Automatic dark mode support based on system preferences
-- **JSON API**: Optional JSON endpoint for programmatic access
-- **Authentication Support**: Optional authentication configuration
-
-## Installation
+## Install
 
 ```bash
-dotnet add package Facet.Dashboard
+dotnet add package DotNetBrightener.Mapper.Dashboard
 ```
 
-## Quick Start
-
-### 1. Add the Dashboard to Your Application
+## Get Running in 30 Seconds
 
 ```csharp
-using Facet.Dashboard;
+// Program.cs
+using DotNetBrightener.Mapper.Dashboard;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add Facet Dashboard services
-builder.Services.AddFacetDashboard();
+builder.Services.AddDotNetBrightenerMapperDashboard();
 
 var app = builder.Build();
-
-// Map the dashboard endpoint
-app.MapFacetDashboard();
-
+app.MapDotNetBrightenerMapperDashboard();
 app.Run();
 ```
 
-### 2. Navigate to the Dashboard
+Fire up the app and open **`https://localhost:5001/dnb-mapper`**.
 
-Open your browser and navigate to:
-```
-https://localhost:5001/facets
-```
+## What You See
 
-## Configuration
+| Section | Details |
+|---------|---------|
+| **Source type cards** | Expandable cards per source entity — click to reveal properties and all targets |
+| **Source properties** | Name, friendly type (`int?`, `List<T>`), modifiers (Nullable, Required, Init, Collection) |
+| **Target cards** | Each `[MappingTarget]` DTO: type kind, feature flags, excluded/included props, member count |
+| **Feature badges** | Green check / red X for Constructor, Projection, ToSource |
+| **Search bar** | Filter by source or target name |
+| **Dark mode** | Follows your OS setting unless overridden |
 
-### Basic Configuration
+## Tweaking the Defaults
 
 ```csharp
-builder.Services.AddFacetDashboard(options =>
+builder.Services.AddDotNetBrightenerMapperDashboard(options =>
 {
-    options.RoutePrefix = "/facets";         // Default: "/facets"
-    options.Title = "My API Facets";         // Default: "Facet Dashboard"
-    options.AccentColor = "#3b82f6";         // Default: "#6366f1" (Indigo)
-    options.DefaultDarkMode = true;          // Default: false (uses system preference)
-    options.IncludeSystemAssemblies = false; // Default: false
+    // Where the dashboard lives (default: "/dnb-mapper")
+    options.RoutePrefix = "/mapper-inspector";
+
+    // Page title shown in the browser tab
+    options.Title = "Acme Corp — Mapping Inspector";
+
+    // Brand color for headings and badges
+    options.AccentColor = "#0ea5e9";   // sky blue
+
+    // Force dark mode on first load (default: follows OS)
+    options.DefaultDarkMode = true;
+
+    // Turn off the JSON API if you only need the HTML view
+    options.EnableJsonApi = false;
 });
 ```
 
-### Authentication
+### Lock It Behind Auth
 
 ```csharp
-builder.Services.AddFacetDashboard(options =>
+builder.Services.AddDotNetBrightenerMapperDashboard(options =>
 {
     options.RequireAuthentication = true;
-    options.AuthenticationPolicy = "AdminOnly";  // Optional: specific policy
+    options.AuthenticationPolicy = "AdminOnly";   // ties into your existing policy
 });
 ```
 
-### Additional Assemblies
+### Scan Extra Assemblies
 
-By default, the dashboard scans the entry assembly and its references. You can add additional assemblies:
+The dashboard auto-scans the entry assembly + its references. Point it at more:
 
 ```csharp
-builder.Services.AddFacetDashboard(options =>
+builder.Services.AddDotNetBrightenerMapperDashboard(options =>
 {
-    options.AdditionalAssemblies.Add(typeof(MyDtoClass).Assembly);
+    options.AdditionalAssemblies.Add(typeof(ExternalDto).Assembly);
 });
 ```
 
-### Disable JSON API
+### Include System Assemblies
+
+Off by default to keep things fast. Flip it on if you map from `Microsoft.*` / `System.*` types:
 
 ```csharp
-builder.Services.AddFacetDashboard(options =>
+builder.Services.AddDotNetBrightenerMapperDashboard(options =>
 {
-    options.EnableJsonApi = false;  // Default: true
+    options.IncludeSystemAssemblies = true;
 });
 ```
 
-### Theme Customization
+## HTTP Endpoints
 
-```csharp
-builder.Services.AddFacetDashboard(options =>
-{
-    options.AccentColor = "#3b82f6";      // Custom accent color (blue)
-    options.DefaultDarkMode = true;       // Enable dark mode by default
-});
-```
+| URL | What it returns |
+|-----|-----------------|
+| `GET /dnb-mapper` | Full HTML dashboard |
+| `GET /dnb-mapper/api/dnb-mapping-types` | Machine-readable JSON of every discovered mapping |
 
-**Note:** If `DefaultDarkMode` is false (default), the dashboard will respect the user's system preference for dark/light mode.
+## JSON API Shape
 
-### System Assemblies
-
-```csharp
-builder.Services.AddFacetDashboard(options =>
-{
-    options.IncludeSystemAssemblies = true;  // Scan Microsoft.* and System.* assemblies
-});
-```
-
-**Note:** By default, system assemblies are excluded from scanning to improve performance and reduce noise. Only enable this if you have custom facets in system assemblies.
-
-## Available Endpoints
-
-| Endpoint | Description |
-|----------|-------------|
-| `GET /facets` | HTML dashboard page |
-| `GET /facets/api/facets` | JSON API (if enabled) |
-
-## JSON API Response
-
-The JSON API returns all facet mappings in a structured format:
+A quick taste — the real response includes every source member and target member:
 
 ```json
 [
@@ -135,47 +114,19 @@ The JSON API returns all facet mappings in a structured format:
     "sourceTypeSimpleName": "User",
     "sourceTypeNamespace": "MyApp.Models",
     "sourceMembers": [
-      {
-        "name": "Id",
-        "typeName": "int",
-        "isProperty": true,
-        "isNullable": false,
-        "isRequired": false,
-        "isInitOnly": false,
-        "isReadOnly": false,
-        "isCollection": false,
-        "attributes": ["JsonProperty"]
-      }
+      { "name": "Id", "typeName": "int", "isNullable": false, "isRequired": false, "isCollection": false }
     ],
-    "facets": [
+    "targets": [
       {
-        "facetTypeName": "MyApp.DTOs.UserDto",
-        "facetTypeSimpleName": "UserDto",
-        "facetTypeNamespace": "MyApp.DTOs",
+        "targetTypeName": "MyApp.DTOs.UserDto",
+        "targetTypeSimpleName": "UserDto",
         "typeKind": "record",
         "hasConstructor": true,
         "hasProjection": true,
         "hasToSource": false,
-        "nullableProperties": "Infer",
-        "copyAttributes": true,
-        "configurationTypeName": null,
-        "excludedProperties": ["Password"],
-        "includedProperties": null,
-        "nestedFacets": [],
+        "excludedProperties": ["PasswordHash"],
         "members": [
-          {
-            "name": "Id",
-            "typeName": "int",
-            "isProperty": true,
-            "isNullable": false,
-            "isRequired": false,
-            "isInitOnly": true,
-            "isReadOnly": false,
-            "isNestedFacet": false,
-            "isCollection": false,
-            "mappedFromProperty": null,
-            "attributes": []
-          }
+          { "name": "Id", "typeName": "int", "isNullable": false, "isInitOnly": true }
         ]
       }
     ]
@@ -183,66 +134,40 @@ The JSON API returns all facet mappings in a structured format:
 ]
 ```
 
-## Dashboard Features
-
-### Source Type Cards
-
-Each source type is displayed as an expandable card showing:
-- Type name and namespace
-- Number of facets and properties
-- Click to expand and see details
-
-### Source Properties Table
-
-Shows all public properties of the source type with:
-- Property name
-- Type (with friendly names like `string`, `int?`, `List<T>`)
-- Modifiers (Nullable, Required, Init, Collection, Nested Facet)
-
-### Facet Cards
-
-Each generated facet shows:
-- Facet name and type kind (class, record, struct)
-- Feature indicators (Constructor, Projection, ToSource)
-- Excluded/Included properties
-- Member count
-
-### Search
-
-Use the search bar to filter source types and facets by name.
-
-## Example
-
-Given these types in your application:
+## Real-World Example
 
 ```csharp
+// Entity
 public class User
 {
     public int Id { get; set; }
     public string Name { get; set; }
     public string Email { get; set; }
-    public string Password { get; set; }
+    public string PasswordHash { get; set; }
     public List<Order> Orders { get; set; }
 }
 
-[Facet(typeof(User), nameof(User.Password))]
+// Full DTO minus the hash
+[MappingTarget<User>(nameof(User.PasswordHash))]
 public partial record UserDto;
 
-[Facet(typeof(User), Include = new[] { nameof(User.Id), nameof(User.Name) })]
+// Minimal DTO for dropdowns / lists
+[MappingTarget<User>(Include = new[] { nameof(User.Id), nameof(User.Name) })]
 public partial record UserSummaryDto;
 ```
 
-The dashboard will show:
-- **User** source type with 5 properties
-- Two facets: `UserDto` (excludes Password) and `UserSummaryDto` (includes only Id, Name)
+Open the dashboard and you'll see the **User** card with both targets: `UserDto` (4 members, PasswordHash excluded) and `UserSummaryDto` (2 members, Id + Name only).
 
 ## Requirements
 
-- .NET 8.0 or later
-- ASP.NET Core application
+- .NET 10.0+ with ASP.NET Core
+- A project that references `DotNetBrightener.Mapper` (the source generator)
 
-## Related Packages
+## Ecosystem
 
-- [Facet](https://www.nuget.org/packages/Facet) - Core source generator
-- [Facet.Extensions](https://www.nuget.org/packages/Facet.Extensions) - Mapping extension methods
-- [Facet.Extensions.EFCore](https://www.nuget.org/packages/Facet.Extensions.EFCore) - Entity Framework Core support
+| Package | Purpose |
+|---------|---------|
+| [DotNetBrightener.Mapper](https://www.nuget.org/packages/DotNetBrightener.Mapper) | Roslyn source generator — produces the mapping code at compile time |
+| [DotNetBrightener.Mapper.Attributes](https://www.nuget.org/packages/DotNetBrightener.Mapper.Attributes) | `[MappingTarget<T>]`, `[MapFrom]`, `[GenerateDtos]` — the attributes the generator reads |
+| [DotNetBrightener.Mapper.Mapping](https://www.nuget.org/packages/DotNetBrightener.Mapper.Mapping) | Runtime helpers — `.ToTarget()`, `.SelectTargets()`, `.ToSource()` extension methods |
+| [DotNetBrightener.Mapper.Mapping.EFCore](https://www.nuget.org/packages/DotNetBrightener.Mapper.Mapping.EFCore) | EF Core integration — use generated projections in LINQ queries |

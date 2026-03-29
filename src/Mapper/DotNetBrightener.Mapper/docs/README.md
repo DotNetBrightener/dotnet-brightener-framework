@@ -1,5 +1,7 @@
 # DotNetBrightener.Mapper
 
+Copyright © 2017 - 2026 Vampire Coder (formerly DotnetBrightener)
+
 `DotNetBrightener.Mapper` is a compile-time DTO and projection generator for .NET.
 
 Define a target type once with `MappingTarget<TSource>`, and the generator produces the mapping surface for you:
@@ -212,3 +214,4 @@ Additional generation options include:
 - [DotNetBrightener.Mapper.Mapping](https://www.nuget.org/packages/DotNetBrightener.Mapper.Mapping#readme-body-tab)
 - [DotNetBrightener.Mapper.Mapping.EFCore](https://www.nuget.org/packages/DotNetBrightener.Mapper.Mapping.EFCore#readme-body-tab)
 - [DotNetBrightener.Mapper.Dashboard](https://www.nuget.org/packages/DotNetBrightener.Mapper.Dashboard#readme-body-tab)
+

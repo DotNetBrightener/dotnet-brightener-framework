@@ -1,5 +1,7 @@
 # DotNetBrightener.Mapper.Attributes
 
+Copyright © 2017 - 2026 Vampire Coder (formerly DotnetBrightener)
+
 `DotNetBrightener.Mapper.Attributes` contains the runtime attribute and enum definitions used by the `DotNetBrightener.Mapper` source generator ecosystem.
 
 This package does not contain the generator itself. It provides the attribute types that your application code references.
@@ -199,3 +201,4 @@ Supported configuration includes:
 ## AOT And Runtime Safety
 
 This package is runtime-safe and lightweight because it contains only attribute and enum definitions. Keeping these definitions separate from the generator avoids pulling Roslyn dependencies into application runtime deployments, including AOT scenarios.
+

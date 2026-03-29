@@ -1,5 +1,7 @@
 # S3-Compatible Storage Upload Service Provider
 
+Copyright © 2017 - 2026 Vampire Coder (formerly DotnetBrightener)
+
 This package provides a universal S3-compatible storage upload service provider for the DotNetBrightener Upload Service framework. It works with **AWS S3**, **Digital Ocean Spaces**, **Wasabi**, **MinIO**, **Backblaze B2**, and any other S3-compatible storage service.
 
 ## Features
@@ -343,3 +345,4 @@ One of the key benefits of this package is the ability to easily switch between 
 ## License
 
 This package is part of the DotNetBrightener framework.
+

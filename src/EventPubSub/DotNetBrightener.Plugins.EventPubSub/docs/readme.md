@@ -1,6 +1,6 @@
-﻿# Event Publish/Subscribe Library 
+﻿# Event Publish/Subscribe Library
 
-&copy; DotNet Brightener
+Copyright © 2017 - 2026 Vampire Coder (formerly DotnetBrightener)
 
 ![NuGet Version](https://img.shields.io/nuget/v/DotNetBrightener.Plugins.EventPubSub)
 

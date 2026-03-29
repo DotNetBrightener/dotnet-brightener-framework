@@ -1,5 +1,7 @@
 # DotNetBrightener.Mapper.Mapping.EFCore
 
+Copyright © 2017 - 2026 Vampire Coder (formerly DotnetBrightener)
+
 `DotNetBrightener.Mapper.Mapping.EFCore` adds Entity Framework Core helpers on top of `DotNetBrightener.Mapper.Mapping`.
 
 It covers two main scenarios:
@@ -198,3 +200,4 @@ This package builds on the APIs from `DotNetBrightener.Mapper.Mapping`, includin
 - `ToSource(...)`
 
 Use those when you need provider-agnostic mapping helpers outside EF Core-specific async operations.
+

@@ -1,5 +1,7 @@
 # Activity Logging for .NET
 
+Copyright © 2017 - 2026 Vampire Coder (formerly DotnetBrightener)
+
 Automatically track and log method execution in your .NET applications with a simple attribute. Perfect for monitoring business operations, debugging issues, and maintaining audit trails.
 
 ## What It Does

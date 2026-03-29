@@ -1,6 +1,6 @@
 ﻿# DotNetBrightener.Caching library
 
-&copy; 2022 DotNetBrightener
+Copyright © 2017 - 2026 Vampire Coder (formerly DotnetBrightener)
 
 ## Usage
 

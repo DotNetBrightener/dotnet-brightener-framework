@@ -1,8 +1,7 @@
 ﻿# Simple Upload API for ASP.NET Application
 
 
-&copy; 2025 [DotNet Brightener](mailto:admin@dotnetbrightener.com)
-
+Copyright © 2017 - 2026 Vampire Coder (formerly DotnetBrightener)
 
 ![NuGet Version](https://img.shields.io/nuget/v/DotNetBrightener.SimpleUploadService)
 
@@ -59,4 +58,5 @@ Implement your own logic for resizing photos by deriving the `IImageResizer` int
 ```
 
 ## Extend API with `IUploadServiceProvider`
+
 

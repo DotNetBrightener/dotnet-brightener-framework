@@ -1,5 +1,7 @@
 # Push Notification Test Web Client
 
+Copyright © 2017 - 2026 Vampire Coder (formerly DotnetBrightener)
+
 A simple HTML/JavaScript web client for testing push notifications with the DotNetBrightener Push Notification library. This client demonstrates web push notification functionality using Firebase Cloud Messaging (FCM).
 
 ## Features
@@ -198,3 +200,4 @@ This web client can be used alongside mobile applications:
 - Test cross-platform notification delivery
 - Verify consistent behavior across platforms
 - Test different notification formats and data payloads
+

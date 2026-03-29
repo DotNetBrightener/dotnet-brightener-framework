@@ -1,5 +1,7 @@
 ﻿# WebApp.CommonShared
 
+Copyright © 2017 - 2026 Vampire Coder (formerly DotnetBrightener)
+
 A foundational infrastructure library providing reusable components, utilities, and patterns for ASP.NET Core web applications built on the DotNetBrightener framework.
 
 ## Installation
@@ -566,3 +568,4 @@ This package depends on:
 ## License
 
 MIT License - See [LICENSE](../../LICENSE) for details.
+
