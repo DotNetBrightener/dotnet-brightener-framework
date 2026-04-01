@@ -123,6 +123,10 @@ public static partial class QueryableDeepFilterExtensions
                                                                         StringSplitOptions.RemoveEmptyEntries),
                                                      property),
 
+                _ when propertyUnderlingType == typeof(DateOnly) =>
+                    BuildDateOnlyPredicateQuery<TIn>(SplitDateTimeFilterValue(filter.Value),
+                                                     property),
+
                 _ when propertyUnderlingType == typeof(DateTimeOffset) =>
                     BuildDateTimeOffsetPredicateQuery<TIn>(filter.Value.Split(",",
                                                                               StringSplitOptions.TrimEntries |
