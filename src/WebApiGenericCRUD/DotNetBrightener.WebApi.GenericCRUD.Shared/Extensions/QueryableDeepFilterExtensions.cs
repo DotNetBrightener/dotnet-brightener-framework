@@ -121,6 +121,10 @@ public static partial class QueryableDeepFilterExtensions
                     BuildDateTimePredicateQuery<TIn>(SplitDateTimeFilterValue(filter.Value),
                                                      property),
 
+                _ when propertyUnderlingType == typeof(DateOnly) =>
+                    BuildDateOnlyPredicateQuery<TIn>(SplitDateTimeFilterValue(filter.Value),
+                                                     property),
+
                 _ when propertyUnderlingType == typeof(DateTimeOffset) =>
                     BuildDateTimeOffsetPredicateQuery<TIn>(SplitDateTimeFilterValue(filter.Value),
                                                            property),
