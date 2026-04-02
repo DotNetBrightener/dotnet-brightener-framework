@@ -24,7 +24,7 @@ public static partial class QueryableDeepFilterExtensions
                     InvalidOperationException($"Operator {operation} is not supported for filtering by property '{property.Path}' of type {property.PropertyUnderlyingType.Name}");
             }
 
-            if (!DateTime.TryParse(filterValueActualSegment, out var filterValue))
+            if (!DateOnly.TryParse(filterValueActualSegment, out var filterValue))
             {
                 throw new InvalidOperationException("Date format cannot be recognized.");
             }
