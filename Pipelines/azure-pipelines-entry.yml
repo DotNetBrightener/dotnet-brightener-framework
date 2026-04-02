@@ -4,6 +4,15 @@ trigger:
       - '*'
     exclude:
       - releases/*
+  paths:
+    include:
+      - /src/*
+      - /Pipelines/*
+    exclude:
+      - version.json
+      - benchmarks/*
+      - demos & tests/*
+      - '**/README.md'
 
 pr:
   branches:
