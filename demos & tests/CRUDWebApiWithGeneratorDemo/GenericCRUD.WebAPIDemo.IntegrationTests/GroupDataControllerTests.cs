@@ -57,8 +57,7 @@ public class GroupDataControllerTests(
 
         var response = await _client.GetAsync($"/api/GroupEntity?" +
                                               $"columns=name,createdBy,createdDate" +
-                                              $"&createdDate=ge({denverJuly5thStart:O})" +
-                                              $"&createdDate=le({denverJuly5thEnd:O})");
+                                              $"&createdDate=in({denverJuly5thStart:O},{denverJuly5thEnd:O})");
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
 
