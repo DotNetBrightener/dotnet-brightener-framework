@@ -24,11 +24,7 @@ public static partial class QueryableDeepFilterExtensions
                     InvalidOperationException($"Operator {operation} is not supported for filtering by property '{property.Path}' of type {property.PropertyUnderlyingType.Name}");
             }
 
-            if (!DateOnly.TryParse(filterValueActualSegment, out var filterValue))
-            {
-                throw new InvalidOperationException("Date format cannot be recognized.");
-            }
-
+            // Route In/NotIn first — they handle their own range parsing internally
             var subPredicateQuery = operation.Value switch
             {
                 OperatorComparer.In =>
@@ -36,14 +32,27 @@ public static partial class QueryableDeepFilterExtensions
                 OperatorComparer.NotIn =>
                     Build_DateOnly_NotIn_PredicateQuery<TIn>(property, filterValueActualSegment),
                 _ =>
-                    ExpressionExtensions.BuildPredicate<TIn>(filterValue, operation!.Value, property.Path)
+                    ParseDateOnlyAndBuildPredicate<TIn>(filterValueActualSegment, operation!.Value, property.Path)
             };
-
 
             predicateQuery = predicateQuery != null ? predicateQuery.And(subPredicateQuery) : subPredicateQuery;
         }
 
         return predicateQuery;
+    }
+
+    private static Expression<Func<TIn, bool>> ParseDateOnlyAndBuildPredicate<TIn>(
+        string           rawValue,
+        OperatorComparer operation,
+        string           propertyPath)
+        where TIn : class
+    {
+        if (!DateOnly.TryParse(rawValue, out var filterValue))
+        {
+            throw new InvalidOperationException("Date format cannot be recognized.");
+        }
+
+        return ExpressionExtensions.BuildPredicate<TIn>(filterValue, operation, propertyPath);
     }
 
 
@@ -52,13 +61,13 @@ public static partial class QueryableDeepFilterExtensions
                                                                                          filterValueActualSegment)
         where TIn : class
     {
-        var datesSegments = filterValueActualSegment.Split(',');
+        var datesSegments = filterValueActualSegment.Split([',', ';']);
 
         if (datesSegments.Length != 2)
             throw new InvalidOperationException("IN/NOT IN operators need start and end date parameters.");
 
-        if (!DateOnly.TryParse(datesSegments[0], out var startValue) ||
-            !DateOnly.TryParse(datesSegments[1], out var endValue))
+        if (!DateOnly.TryParse(datesSegments[0].Trim(), out var startValue) ||
+            !DateOnly.TryParse(datesSegments[1].Trim(), out var endValue))
         {
             throw new InvalidOperationException("Date format cannot be recognized.");
         }
@@ -85,13 +94,13 @@ public static partial class QueryableDeepFilterExtensions
                                                                                             filterValueActualSegment)
         where TIn : class
     {
-        var datesSegments = filterValueActualSegment.Split(',');
+        var datesSegments = filterValueActualSegment.Split([',', ';']);
 
         if (datesSegments.Length != 2)
             throw new InvalidOperationException("IN/NOT IN operators need start and end date parameters.");
 
-        if (!DateOnly.TryParse(datesSegments[0], out var startValue) ||
-            !DateOnly.TryParse(datesSegments[1], out var endValue))
+        if (!DateOnly.TryParse(datesSegments[0].Trim(), out var startValue) ||
+            !DateOnly.TryParse(datesSegments[1].Trim(), out var endValue))
         {
             throw new InvalidOperationException("Date format cannot be recognized.");
         }
