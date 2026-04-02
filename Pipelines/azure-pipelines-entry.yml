@@ -2,11 +2,14 @@ trigger:
   branches:
     include:
       - '*'
+    exclude:
+      - releases/*
 
 pr:
   branches:
     include:
       - master
+      - releases/*
   paths:
     include:
       - /src/*
