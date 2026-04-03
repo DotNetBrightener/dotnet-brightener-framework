@@ -64,23 +64,6 @@ public static class ServiceCollectionExtensions
         }
 
         /// <summary>
-        ///     Registers all the endpoint registrars found in the <see cref="loadedAssemblies"/>
-        ///     to the given <see cref="IServiceCollection"/>
-        /// </summary>
-        /// <param name="loadedAssemblies">
-        ///     The loaded assemblies
-        /// </param>
-        public void AddEndpointRegistrars(Assembly[] loadedAssemblies)
-        {
-            var endpointRegistrarTypes = loadedAssemblies.GetDerivedTypes<IEndpointRegistrar>();
-
-            foreach (var endpointRegistrarType in endpointRegistrarTypes)
-            {
-                serviceCollection.AddTransient(typeof(IEndpointRegistrar), endpointRegistrarType);
-            }
-        }
-
-        /// <summary>
         ///     Adds the commonly-used required services for the web application to the specified <see cref="IServiceCollection"/>
         /// </summary>
         /// <param name="configuration">The <see cref="IConfiguration"/></param>

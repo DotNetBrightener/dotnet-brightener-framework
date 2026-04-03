@@ -22,6 +22,8 @@
     <PackageVersion Include="EntityFrameworkCore.Exceptions.PostgreSQL" Version="10.0.0" />
     <PackageVersion Include="EntityFrameworkCore.Exceptions.SqlServer" Version="10.0.0" />
     <PackageVersion Include="linq2db.EntityFrameworkCore" Version="10.1.0" />
+    <!-- Messaging -->
+    <PackageVersion Include="RabbitMQ.Client" Version="7.1.2" />
     <!-- External services -->
     <PackageVersion Include="AWSSDK.S3" Version="4.0.19.2" />
     <PackageVersion Include="Google.Apis.Auth" Version="1.73.0" />

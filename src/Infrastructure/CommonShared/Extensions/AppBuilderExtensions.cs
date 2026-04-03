@@ -40,25 +40,4 @@ public static class AppBuilderExtensions
 
         return app;
     }
-
-    /// <param name="endpoints">
-    ///     The <see cref="IEndpointRouteBuilder"/>
-    /// </param>
-    extension(IEndpointRouteBuilder endpoints)
-    {
-        /// <summary>
-        ///     Maps the endpoints from the registered <see cref="IEndpointRegistrar"/> instances to the specified <see cref="IEndpointRouteBuilder"/>
-        /// </summary>
-        public void MapEndpointsFromRegistrars(RouteGroupBuilder groupBuilder = null)
-        {
-            var endpointRegistrars = endpoints.ServiceProvider
-                                              .GetServices<IEndpointRegistrar>()
-                                              .ToList();
-
-            foreach (var registrar in endpointRegistrars)
-            {
-                registrar.Map(groupBuilder ?? endpoints);
-            }
-        }
-    }
 }

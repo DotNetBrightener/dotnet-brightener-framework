@@ -117,6 +117,7 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
     </Project>
     <Project Path="EventPubSub/DotNetBrightener.Plugins.EventPubSub.AzureServiceBus/DotNetBrightener.Plugins.EventPubSub.AzureServiceBus.csproj" />
+    <Project Path="EventPubSub/DotNetBrightener.Plugins.EventPubSub.RabbitMq/DotNetBrightener.Plugins.EventPubSub.RabbitMq.csproj" />
     <Project Path="EventPubSub/DotNetBrightener.Plugins.EventPubSub.DependencyInjection/DotNetBrightener.Plugins.EventPubSub.DependencyInjection.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
     </Project>
