@@ -141,7 +141,6 @@
     <Project Path="Infrastructure/DotNetBrightener.SimpleIdentityServer/DotNetBrightener.SimpleIdentityServer.csproj" />
   </Folder>
   <Folder Name="/LinQToSqlBuilder/">
-    <Project Path="LinQToSqlBuilder/LinQToSqlBuilder.DataAccessLayer.Tests/LinQToSqlBuilder.DataAccessLayer.Tests.csproj" />
     <Project Path="LinQToSqlBuilder/LinQToSqlBuilder/LinQToSqlBuilder.csproj" />
   </Folder>
   <Folder Name="/Localization/">
