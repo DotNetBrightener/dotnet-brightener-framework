@@ -1,0 +1,713 @@
+# MappingTarget Attribute Reference
+
+The `[MappingTarget<TSource>]` attribute is used to declare a generated target type based on an existing source type.
+
+## Usage
+
+### Exclude Mode (Default)
+```csharp
+[MappingTarget<SourceType>("Property1", "Property2")]
+public partial class MyDto { }
+```
+
+### Include Mode (New)
+```csharp
+[MappingTarget<SourceType>(Include = [nameof(SourceType.Property1), nameof(SourceType.Property2)])]
+public partial class MyDto { }
+```
+
+## Parameters
+
+| Parameter                      | Type      | Description                                                                 |
+|--------------------------------|-----------|-----------------------------------------------------------------------------|
+| `sourceType`                   | `Type`    | The type to project from (required).                                        |
+| `exclude`                      | `string[]`| Names of properties/fields to exclude from the generated type (optional).   |
+| `Include`                      | `string[]`| Names of properties/fields to include in the generated type (optional). Mutually exclusive with `exclude`. |
+| `NestedTargetTypes`                 | `Type[]?` | Array of nested target types to automatically map nested objects (default: null). |
+| `IncludeFields`                | `bool`    | Include public fields from the source type (default: false for include mode, false for exclude mode). |
+| `GenerateConstructor`          | `bool`    | Generate a constructor that copies values from the source (default: true).   |
+| `GenerateParameterlessConstructor` | `bool` | Generate a parameterless constructor for testing and initialization (default: true). |
+| `ChainToParameterlessConstructor` | `bool` | Chain generated constructors to the user-defined parameterless constructor using `: this()` (default: false). See [Constructor Chaining](#constructor-chaining) below. |
+| `Configuration`                | `Type?`   | Custom mapping config type (see [Custom Mapping](04_CustomMapping.md)).      |
+| `GenerateProjection`           | `bool`    | Generate a static LINQ projection (default: true).                          |
+| `GenerateToSource`             | `bool`    | Generate a method to map back from target to source type (default: false).    |
+| `PreserveInitOnlyProperties`   | `bool`    | Preserve init-only modifiers from source properties (default: true for records). |
+| `PreserveRequiredProperties`   | `bool`    | Preserve required modifiers from source properties (default: true for records). |
+| `NullableProperties`           | `bool`    | Make all properties nullable in the generated target (default: false). |
+| `CopyAttributes`               | `bool`    | Copy attributes from source type members to generated target members (default: false). See [Attribute Copying](#attribute-copying) below. |
+| `UseFullName`                  | `bool`    | Use full type name in generated file names to avoid collisions (default: false). |
+| `MaxDepth`                     | `int`     | Maximum depth for nested target recursion to prevent stack overflow (default: 3). Set to 0 for unlimited (not recommended). See [Circular Reference Protection](#circular-reference-protection) below. |
+| `PreserveReferences`           | `bool`    | Enable runtime circular reference detection using object tracking (default: true). See [Circular Reference Protection](#circular-reference-protection) below. |
+| `SourceSignature`              | `string?` | Hash signature to track source entity changes. Emits DNB022 warning when source structure changes. See [Source Signature Change Tracking](16_SourceSignature.md). |
+| `ConvertEnumsTo`               | `Type?`   | When set, all enum properties are converted to the specified type (`typeof(string)` or `typeof(int)`) in the generated target. Default is null (enums retain their original types). See [Enum Conversion](20_ConvertEnumsTo.md). |
+| `GenerateCopyConstructor`      | `bool`    | Generate a copy constructor that accepts another instance of the same target type and copies all member values (default: false). See [Copy Constructor](#copy-constructor) below. |
+| `GenerateEquality`             | `bool`    | Generate value-based equality members (`Equals`, `GetHashCode`, `==`, `!=`) and implement `IEquatable<T>` (default: false). Ignored for records. See [Equality Generation](#equality-generation) below. |
+
+## Include vs Exclude
+
+The `Include` and `Exclude` parameters are mutually exclusive:
+
+- **Exclude Mode**: Include all properties except those listed in `exclude` (default behavior)
+- **Include Mode**: Only include properties listed in the `Include` array
+
+### Include Mode Behavior
+
+When using `Include` mode:
+- Only the properties specified in the `Include` array are copied to the generated target
+- `IncludeFields` defaults to `false` (disabled by default for include mode)
+- All other properties from the source type are excluded
+- Works with inheritance - you can include properties from base classes
+
+## Examples
+
+### Basic Include Usage
+```csharp
+// Only include FirstName, LastName, and Email
+[MappingTarget<User>(Include = [nameof(User.FirstName), nameof(User.LastName), nameof(User.Email)])]
+public partial class UserContactDto;
+```
+
+### Single Property Include
+```csharp
+// Only include the Name property
+[MappingTarget<Product>(Include = [nameof(Product.Name)])]
+public partial class ProductNameDto;
+```
+
+### Include with Custom Properties
+```csharp
+// Include specific properties and add custom ones
+[MappingTarget<User>(Include = [nameof(User.FirstName), nameof(User.LastName)])]
+public partial class UserSummaryDto
+{
+    public string FullName { get; set; } = string.Empty; // Custom property
+}
+```
+
+### Include with Fields
+```csharp
+// Include fields as well as properties
+[MappingTarget<EntityWithFields>(Include = [nameof(EntityWithFields.Name), nameof(EntityWithFields.Age)], IncludeFields = true)]
+public partial class EntityDto;
+```
+
+### Include with Records
+```csharp
+// Generate a record type with only specific properties
+[MappingTarget<User>(Include = [nameof(User.FirstName), nameof(User.LastName)])]
+public partial record UserNameRecord;
+```
+
+### Traditional Exclude Usage
+```csharp
+// Exclude sensitive properties (original behavior)
+[MappingTarget<User>(nameof(User.Password))]
+public partial record UserDto;
+```
+
+### Nullable Properties for Query Models
+```csharp
+// Make all properties nullable for query/filter scenarios
+[MappingTarget<Product>(nameof(Product.InternalNotes), NullableProperties = true, GenerateToSource = false)]
+public partial class ProductQueryDto;
+
+// Usage: All fields are optional for filtering
+var query = new ProductQueryDto
+{
+    Name = "Widget",
+    Price = 50.00m
+    // Other fields remain null
+};
+```
+
+**Note:** When using `NullableProperties = true`, it's recommended to set `GenerateToSource = false` since mapping nullable properties back to non-nullable source properties is not logically sound.
+
+### Nested Target Types for Composing DTOs
+```csharp
+// Define target types for nested source types
+[MappingTarget<Address>]
+public partial record AddressDto;
+
+[MappingTarget<Company>(NestedTargetTypes = [typeof(AddressDto)])]
+public partial record CompanyDto;
+
+[MappingTarget<Employee>(
+    nameof(Employee.PasswordHash),
+    nameof(Employee.Salary),
+    NestedTargetTypes = [typeof(CompanyDto), typeof(AddressDto)])]
+public partial record EmployeeDto;
+
+// Usage - automatically handles nested mapping
+var employee = new Employee
+{
+    FirstName = "John",
+    Company = new Company
+    {
+        Name = "Acme Corp",
+        HeadquartersAddress = new Address { City = "San Francisco" }
+    },
+    HomeAddress = new Address { City = "Oakland" }
+};
+
+var employeeDto = new EmployeeDto(employee);
+// employeeDto.Company is CompanyDto
+// employeeDto.Company.HeadquartersAddress is AddressDto
+// employeeDto.HomeAddress is AddressDto
+
+// ToSource also handles nested types automatically
+var mappedEmployee = employeeDto.ToSource();
+// All nested objects are properly reconstructed
+```
+
+**How NestedTargetTypes Works:**
+- The generator automatically detects which properties in your source type match the source types of the nested target types
+- For each match, it replaces the property type with the nested target type
+- Constructors automatically call `new NestedTargetType(source.Property)` for nested properties
+- Projections work seamlessly for EF Core queries through constructor chaining
+- ToSource methods call `.ToSource()` on nested target types to reconstruct the original type hierarchy
+
+**Benefits:**
+- No manual property declarations for nested types
+- Automatic mapping in constructors, projections, and ToSource methods
+- Works with multiple levels of nesting
+- Supports multiple nested target types on the same parent type
+
+## When to Use Include vs Exclude
+
+### Use **Include** when:
+- You want a generated target with only a few specific properties from a large source type
+- Creating focused DTOs (e.g., summary views, contact info only)
+- Building API response models that should only expose certain fields
+- Creating search result DTOs with minimal data
+
+### Use **Exclude** when:
+- You want most properties but need to hide a few sensitive ones
+- The majority of the source type should be included in the generated target
+- You prefer exclude-style configuration over include-style configuration
+
+### Use **NullableProperties** when:
+- Creating query/filter DTOs where all search criteria are optional
+- Building patch/update models where only changed fields are provided
+- Implementing flexible API request models that support partial data
+- Generating DTOs similar to the Query DTOs in `GenerateDtos`
+
+**Important considerations:**
+- Value types (int, bool, DateTime, enums) become nullable (int?, bool?, etc.)
+- Reference types (string, objects) remain reference types but are marked nullable
+- Disable `GenerateToSource` to avoid mapping issues from nullable to non-nullable types
+
+## Constructor Chaining
+
+The `ChainToParameterlessConstructor` parameter allows the generated constructor to chain to your user-defined parameterless constructor using `: this()`. This ensures any custom initialization logic in your constructor runs before property mapping.
+
+### Usage
+
+```csharp
+public class ModelType
+{
+    public int MaxValue { get; set; }
+    public string Name { get; set; } = string.Empty;
+}
+
+[MappingTarget<ModelType>(GenerateParameterlessConstructor = false, ChainToParameterlessConstructor = true)]
+public partial class MyDto
+{
+    public int Value { get; set; }
+    public bool Initialized { get; set; }
+
+    public MyDto()
+    {
+        // Custom initialization logic that runs before mapping
+        Value = 100;
+        Initialized = true;
+    }
+}
+
+// Usage
+var source = new ModelType { MaxValue = 42, Name = "Test" };
+var dto = new MyDto(source);
+// dto.Value == 100 (from parameterless constructor)
+// dto.Initialized == true (from parameterless constructor)
+// dto.MaxValue == 42 (from source mapping)
+// dto.Name == "Test" (from source mapping)
+```
+
+### Generated Code
+
+With `ChainToParameterlessConstructor = true`, the generated constructor chains to your parameterless constructor:
+
+```csharp
+public MyDto(ModelType source) : this()  // <-- Chains to your constructor
+{
+    this.MaxValue = source.MaxValue;
+    this.Name = source.Name;
+}
+```
+
+### When to Use
+
+- When you have initialization logic in your parameterless constructor that needs to run during mapping
+- When you need to set default values that aren't simply copied from the source
+- When you have computed or derived properties that need initial values
+
+**Note:** Set `GenerateParameterlessConstructor = false` to prevent the generator from creating its own parameterless constructor, which would conflict with yours.
+
+## Attribute Copying
+
+The `CopyAttributes` parameter allows you to copy attributes from the source type's members to the generated target members. This is particularly useful for preserving data validation attributes when creating DTOs for API models.
+
+### Usage
+
+```csharp
+public class User
+{
+    public int Id { get; set; }
+
+    [Required]
+    [StringLength(50)]
+    public string FirstName { get; set; } = string.Empty;
+
+    [Required]
+    [EmailAddress]
+    public string Email { get; set; } = string.Empty;
+
+    [Range(0, 150)]
+    public int Age { get; set; }
+
+    public string Password { get; set; } = string.Empty;
+}
+
+[MappingTarget<User>(nameof(User.Password), CopyAttributes = true)]
+public partial class UserDto;
+```
+
+The generated `UserDto` will include all the validation attributes:
+
+```csharp
+public partial class UserDto
+{
+    public int Id { get; set; }
+
+    [Required]
+    [StringLength(50)]
+    public string FirstName { get; set; }
+
+    [Required]
+    [EmailAddress]
+    public string Email { get; set; }
+
+    [Range(0, 150)]
+    public int Age { get; set; }
+}
+```
+
+### What Gets Copied
+
+The attribute copying feature intelligently filters attributes to copy only those that make sense on the target:
+
+**Commonly copied attributes include:**
+- Data validation attributes: `Required`, `StringLength`, `Range`, `EmailAddress`, `Phone`, `Url`, `RegularExpression`, `CreditCard`, etc.
+- Display attributes: `Display`, `DisplayName`, `Description`
+- JSON serialization attributes: `JsonPropertyName`, `JsonIgnore`, etc.
+- Custom validation attributes that inherit from `ValidationAttribute`
+
+**Automatically excluded attributes:**
+- Internal compiler-generated attributes (e.g., `System.Runtime.CompilerServices.*`)
+- The base `ValidationAttribute` class itself (only derived validation attributes are copied)
+- Attributes that are not valid for the target member type based on `AttributeUsage`
+
+### Attribute Parameters
+
+All attribute parameters are preserved with correct C# syntax:
+
+```csharp
+public class Product
+{
+    [Required]
+    [StringLength(100, MinimumLength = 3, ErrorMessage = "Name must be 3-100 characters")]
+    public string Name { get; set; } = string.Empty;
+
+    [Range(0.01, 10000.00)]
+    public decimal Price { get; set; }
+
+    [RegularExpression(@"^[A-Z]{3}-\d{4}$", ErrorMessage = "Invalid SKU format")]
+    public string Sku { get; set; } = string.Empty;
+}
+
+[MappingTarget<Product>(CopyAttributes = true)]
+public partial class ProductDto;
+```
+
+All parameters including named parameters, string literals with escape sequences, and numeric values are correctly preserved.
+
+### With Nested Target Types
+
+`CopyAttributes` works seamlessly with `NestedTargetTypes`:
+
+```csharp
+[MappingTarget<Address>(CopyAttributes = true)]
+public partial class AddressDto;
+
+[MappingTarget<Order>(nameof(Order.InternalNotes), CopyAttributes = true, NestedTargetTypes = [typeof(AddressDto)])]
+public partial class OrderDto;
+```
+
+Both the parent and nested target types will have their attributes copied from their respective source types.
+
+### When to Use CopyAttributes
+
+**Use `CopyAttributes = true` when:**
+- Creating API request/response DTOs that need validation
+- Building DTOs for ASP.NET Core model validation
+- Preserving display metadata for UI frameworks
+- Maintaining JSON serialization attributes
+- You want consistent validation between your domain models and DTOs
+
+**Don't use it when:**
+- You want different validation rules for your DTOs
+- Your source types have attributes specific to their domain concerns (e.g., ORM mapping attributes)
+- You prefer to define validation attributes directly on the target type
+
+### Default Behavior
+
+By default, `CopyAttributes = false`, meaning no attributes are copied. This maintains backward compatibility and gives you explicit control over when attributes should be copied.
+
+## Circular Reference Protection
+
+When working with nested target types, circular references in your object graph can cause stack overflow exceptions and IDE crashes. The generator provides two complementary features to prevent this:
+
+### MaxDepth
+
+Controls how many levels deep nested target types can be instantiated. This prevents infinite recursion during both code generation and runtime.
+
+**Default:** `3` (recommended for most scenarios)
+
+```csharp
+// Handles: Order -> LineItems -> Product -> Category
+[MappingTarget<Order>(NestedTargetTypes = [typeof(LineItemDto)])]
+public partial record OrderDto;
+
+// For deeper nesting, increase MaxDepth
+[MappingTarget<Organization>(MaxDepth = 5, NestedTargetTypes = [typeof(DepartmentDto)])]
+public partial record OrganizationDto;
+
+// To disable depth limiting (use with caution!)
+[MappingTarget<SimpleType>(MaxDepth = 0)]
+public partial record SimpleTypeDto;
+```
+
+**How MaxDepth Works:**
+- **Level 0**: Root object (e.g., Order)
+- **Level 1**: First level nested objects (e.g., LineItems)
+- **Level 2**: Second level nested objects (e.g., Product)
+- **Level 3**: Third level nested objects (e.g., Category) - stops here with default MaxDepth = 3
+- Properties that would exceed MaxDepth are set to `null`
+
+### PreserveReferences
+
+Enables runtime tracking of object instances to detect when the same object is being processed multiple times. This prevents circular references where objects reference each other.
+
+**Default:** `true` (recommended for safety)
+
+```csharp
+// Enable circular reference detection (default)
+[MappingTarget<Author>(PreserveReferences = true, NestedTargetTypes = [typeof(BookDto)])]
+public partial record AuthorDto;
+
+[MappingTarget<Book>(PreserveReferences = true, NestedTargetTypes = [typeof(AuthorDto)])]
+public partial record BookDto;
+
+// Disable for maximum performance (only if you're certain no circular refs exist)
+[MappingTarget<FlatDto>(PreserveReferences = false)]
+public partial record FlatDto;
+```
+
+**How PreserveReferences Works:**
+- Uses a `HashSet<object>` with reference equality to track processed objects
+- When creating nested target types, checks if the source object was already processed
+- Returns `null` for already-processed objects to break circular references
+- Filters out duplicates from collections using `.Where(x => x != null)`
+
+### Best Practices
+
+**For circular references (e.g., Author <> Book, Employee <> Manager):**
+```csharp
+[MappingTarget<Author>(MaxDepth = 2, PreserveReferences = true,
+       NestedTargetTypes = [typeof(BookDto)])]
+public partial record AuthorDto;
+
+[MappingTarget<Book>(MaxDepth = 2, PreserveReferences = true,
+       NestedTargetTypes = [typeof(AuthorDto)])]
+public partial record BookDto;
+```
+
+**For self-referencing types (e.g., Employee -> Manager -> Manager):**
+```csharp
+[MappingTarget<Employee>(MaxDepth = 5, PreserveReferences = true,
+       NestedTargetTypes = [typeof(EmployeeDto)])]
+public partial record EmployeeDto;
+```
+
+**For simple hierarchies with no circular references:**
+```csharp
+// Can reduce overhead if certain no circular refs
+[MappingTarget<Category>(MaxDepth = 10, PreserveReferences = false,
+       NestedTargetTypes = [typeof(CategoryDto)])]
+public partial record CategoryDto;
+```
+
+**For flat DTOs with no nested target types:**
+```csharp
+// Can disable both for maximum performance
+[MappingTarget<Product>(MaxDepth = 0, PreserveReferences = false)]
+public partial record ProductDto;
+```
+
+### Performance Considerations
+
+- **MaxDepth**: Negligible overhead - just depth counter checks
+- **PreserveReferences**: Minimal overhead - HashSet reference lookups (typically < 1% performance impact)
+- Both features are safe to leave enabled by default
+- Only disable if you have profiled your application and identified these as bottlenecks
+
+### Common Scenarios
+
+| Scenario | MaxDepth | PreserveReferences | Example |
+|----------|----------|-------------------|---------|
+| Flat DTO (no nesting) | 0 | false | Simple user profile |
+| Simple parent-child | 2 | false | Order -> Customer |
+| Multi-level hierarchy | 3-5 | false | Order -> LineItem -> Product -> Category |
+| Circular references | 2-3 | true | Author <> Book, Post <> Comments |
+| Self-referencing | 3-5 | true | Employee tree, Category tree |
+| Complex object graphs | 3-5 | true | Any complex domain model |
+
+### Troubleshooting
+
+**Stack overflow during code generation:**
+- Increase `MaxDepth`, the source generator is hitting infinite recursion
+- Ensure `MaxDepth > 0` when using `PreserveReferences = true`
+
+**Stack overflow at runtime:**
+- Enable `PreserveReferences = true`
+- Increase `MaxDepth` if your legitimate nesting depth exceeds the current value
+
+**Missing nested data:**
+- Check if your nesting depth exceeds `MaxDepth`
+- Verify `PreserveReferences` isn't filtering out valid references
+
+---
+
+## MapWhen Attribute
+
+The `[MapWhen]` attribute enables conditional property mapping based on source values.
+
+### Basic Usage
+
+```csharp
+[MappingTarget<Order>]
+public partial class OrderDto
+{
+    [MapWhen("Status == OrderStatus.Completed")]
+    public DateTime? CompletedAt { get; set; }
+}
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `Condition` | `string` | The condition expression to evaluate (required) |
+| `Default` | `object?` | Custom default value when condition is false |
+| `IncludeInProjection` | `bool` | Include condition in Projection expression (default: true) |
+
+### Supported Conditions
+
+- Boolean: `[MapWhen("IsActive")]`
+- Equality: `[MapWhen("Status == OrderStatus.Completed")]`
+- Null checks: `[MapWhen("Email != null")]`
+- Comparisons: `[MapWhen("Age >= 18")]`
+- Negation: `[MapWhen("!IsDeleted")]`
+
+### Multiple Conditions
+
+Multiple attributes are combined with AND logic:
+
+```csharp
+[MapWhen("IsActive")]
+[MapWhen("Status == OrderStatus.Completed")]
+public DateTime? CompletedAt { get; set; }
+```
+
+See [MapWhen Conditional Mapping](17_MapWhen.md) for full documentation.
+
+---
+
+## Enum Conversion
+
+The `ConvertEnumsTo` property converts all enum properties to `string` or `int` in the generated target.
+
+### Basic Usage
+
+```csharp
+// Convert enums to strings (for API responses)
+[MappingTarget<User>(ConvertEnumsTo = typeof(string))]
+public partial class UserDto;
+
+// Convert enums to integers (for storage)
+[MappingTarget<User>(ConvertEnumsTo = typeof(int))]
+public partial class UserDto;
+```
+
+### With Reverse Mapping
+
+```csharp
+[MappingTarget<User>(ConvertEnumsTo = typeof(string), GenerateToSource = true)]
+public partial class UserDto;
+
+var dto = new UserDto(user);
+dto.Status // "Active" (string)
+
+var entity = dto.ToSource();
+entity.Status // UserStatus.Active (enum)
+```
+
+### Nullable Enums
+
+Nullable enum properties preserve their nullability after conversion:
+- `UserStatus?` ? `string?` (null when source is null)
+- `UserStatus?` ? `int?` (nullable int)
+
+See [Enum Conversion](20_ConvertEnumsTo.md) for full documentation.
+
+---
+
+## Copy Constructor
+
+The `GenerateCopyConstructor` property generates a constructor that accepts another instance of the same target type and copies all member values. This is useful for MVVM scenarios, cloning DTOs, or creating independent copies.
+
+### Basic Usage
+
+```csharp
+[MappingTarget<User>(GenerateCopyConstructor = true)]
+public partial class UserDto;
+
+// Usage
+var original = new UserDto(user);
+var copy = new UserDto(original); // Copy constructor
+
+// Modify the copy without affecting the original
+copy.FirstName = "Changed";
+original.FirstName; // Still "John"
+```
+
+### Generated Code
+
+```csharp
+public partial class UserDto
+{
+    /// <summary>
+    /// Initializes a new instance by copying all member values from another instance.
+    /// </summary>
+    public UserDto(UserDto other)
+    {
+        if (other is null) throw new ArgumentNullException(nameof(other));
+        this.Id = other.Id;
+        this.FirstName = other.FirstName;
+        this.LastName = other.LastName;
+        this.Email = other.Email;
+    }
+}
+```
+
+### When to Use
+
+- **MVVM ViewModels**: Clone a view model for editing while preserving the original for cancel/revert
+- **DTO Cloning**: Create independent copies of DTOs for caching or comparison
+- **Undo/Redo**: Snapshot DTO state before modifications
+- **Inheritance Scenarios**: Use with base class inheritance where you need to copy target properties to derived types
+
+---
+
+## Equality Generation
+
+The `GenerateEquality` property generates value-based equality members for class and struct target types. This includes `Equals(T)`, `Equals(object)`, `GetHashCode()`, and the `==` / `!=` operators. The generated type also implements `IEquatable<T>`.
+
+> **Note:** This option is ignored for record types, which already have built-in value-based equality from the C# language.
+
+### Basic Usage
+
+```csharp
+[MappingTarget<User>(GenerateEquality = true)]
+public partial class UserDto;
+
+// Value-based comparison
+var dto1 = new UserDto(user);
+var dto2 = new UserDto(user);
+dto1.Equals(dto2); // true
+dto1 == dto2;      // true
+dto1.GetHashCode() == dto2.GetHashCode(); // true
+
+// Works in collections
+var set = new HashSet<UserDto> { dto1 };
+set.Contains(dto2); // true � same values
+```
+
+### Combining with Copy Constructor
+
+```csharp
+[MappingTarget<User>(GenerateCopyConstructor = true, GenerateEquality = true)]
+public partial class UserDto;
+
+var original = new UserDto(user);
+var copy = new UserDto(original);
+original == copy; // true � same values, different instances
+```
+
+### Generated Code
+
+```csharp
+public partial class UserDto : System.IEquatable<UserDto>
+{
+    public bool Equals(UserDto? other)
+    {
+        if (other is null) return false;
+        if (ReferenceEquals(this, other)) return true;
+        return this.Id == other.Id
+            && EqualityComparer<string>.Default.Equals(this.FirstName, other.FirstName)
+            && EqualityComparer<string>.Default.Equals(this.LastName, other.LastName);
+    }
+
+    public override bool Equals(object? obj) => obj is UserDto other && Equals(other);
+
+    public override int GetHashCode()
+    {
+        unchecked
+        {
+            int hash = 17;
+            hash = hash * 31 + Id.GetHashCode();
+            hash = hash * 31 + (FirstName?.GetHashCode() ?? 0);
+            hash = hash * 31 + (LastName?.GetHashCode() ?? 0);
+            return hash;
+        }
+    }
+
+    public static bool operator ==(UserDto? left, UserDto? right) { ... }
+    public static bool operator !=(UserDto? left, UserDto? right) => !(left == right);
+}
+```
+
+### When to Use
+
+- **Class-based DTOs** that need value comparison without converting to records
+- **Change detection**: Compare DTOs to check if data has been modified
+- **Caching**: Use DTOs as dictionary keys or in hash sets
+- **Testing**: Assert DTO equality in unit tests
+
+### When NOT to Use
+
+- **Records**: Records already have value-based equality � `GenerateEquality` is automatically ignored
+- **Reference equality needed**: If you need identity-based comparison, don't enable this
+
+---
+
+See [Custom Mapping](04_CustomMapping.md) for advanced scenarios.
