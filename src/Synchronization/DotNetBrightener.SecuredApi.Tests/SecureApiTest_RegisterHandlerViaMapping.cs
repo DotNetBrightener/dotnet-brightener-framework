@@ -1,6 +1,7 @@
-﻿using DotNetBrightener.Utils.MessageCompression;
+using DotNetBrightener.Utils.MessageCompression;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 using System.Net;
@@ -8,20 +9,19 @@ using Xunit;
 
 namespace DotNetBrightener.SecuredApi.Tests;
 
-public class SecureApiTest_RegisterHandlerViaMapping : IAsyncDisposable
+public class SecureApiTest_RegisterHandlerViaMapping : IAsyncLifetime
 {
-    private WebApplication _host;
-    private int            _port;
+    private WebApplication? _host;
+    private HttpClient?     _httpClient;
 
-    public SecureApiTest_RegisterHandlerViaMapping()
+    public async Task InitializeAsync()
     {
         // Arrange
-        _port    = new Random().Next(32454, 33000);
         var builder = WebApplication.CreateBuilder();
 
         builder.Services.AddSecuredApi();
 
-        builder.WebHost.UseUrls($"http://localhost:{_port}");
+        builder.WebHost.UseTestServer();
 
         _host = builder.Build();
 
@@ -29,12 +29,8 @@ public class SecureApiTest_RegisterHandlerViaMapping : IAsyncDisposable
         _host.MapSecuredPost<SyncUserService>("test/syncUser");
 
         // Acts
-        _host.StartAsync().Wait();
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        await TearDownHost();
+        await _host.StartAsync();
+        _httpClient = _host.GetTestClient();
     }
 
     [Theory]
@@ -52,8 +48,6 @@ public class SecureApiTest_RegisterHandlerViaMapping : IAsyncDisposable
     {
         var method = HttpMethod.Parse(httpMethod);
 
-        var httpClient = new HttpClient();
-
         var apiMessagePayload = new UserRecord();
 
         var apiMessage = ApiMessage.FromPayload(apiMessagePayload);
@@ -61,12 +55,12 @@ public class SecureApiTest_RegisterHandlerViaMapping : IAsyncDisposable
         var request           = await apiMessage.ToJsonBytes();
         var compressedRequest = await request.Compress();
 
-        var requestMsg = new HttpRequestMessage(method, $"http://localhost:{_port}{requestUrl}")
+        var requestMsg = new HttpRequestMessage(method, requestUrl)
         {
             Content = new ByteArrayContent(compressedRequest)
         };
 
-        var response = await httpClient.SendAsync(requestMsg);
+        var response = await _httpClient!.SendAsync(requestMsg);
 
         response.StatusCode.ShouldBe(expectedResponseCode);
 
@@ -90,9 +84,14 @@ public class SecureApiTest_RegisterHandlerViaMapping : IAsyncDisposable
         }
     }
 
-    private async Task TearDownHost()
+    public async Task DisposeAsync()
     {
-        await _host.StopAsync();
-        await _host.DisposeAsync();
+        _httpClient?.Dispose();
+
+        if (_host is not null)
+        {
+            await _host.StopAsync();
+            await _host.DisposeAsync().AsTask();
+        }
     }
 }
