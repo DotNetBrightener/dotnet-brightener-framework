@@ -4,7 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
-using System.Transactions;
 
 namespace DotNetBrightener.DataAccess.DataMigration;
 
@@ -70,60 +69,50 @@ internal class DataMigrationRunner(
             return;
         }
 
-        var appliedMigrations = new List<DataMigrationHistory>();
-
-        using (var transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+        foreach (var migrationId in notAppliedMigrations)
         {
-            foreach (var migrationId in notAppliedMigrations)
+            using (var scope = serviceScopeFactory.CreateScope())
             {
-                using (var scope = serviceScopeFactory.CreateScope())
+                try
                 {
-                    try
+                    var sw = Stopwatch.StartNew();
+                    logger.LogInformation("Applying data migration {migrationId}", migrationId);
+
+                    await Migrate(scope, metadata, migrationId);
+
+                    var serviceProvider = scope.ServiceProvider;
+
+                    await using (var dbContext = serviceProvider.GetRequiredService<DataMigrationDbContext>())
                     {
-                        var sw = Stopwatch.StartNew();
-                        logger.LogInformation("Applying data migration {migrationId}", migrationId);
-
-                        await Migrate(scope, metadata, migrationId);
-
-                        appliedMigrations.Add(new DataMigrationHistory
+                        await dbContext.AddAsync(new DataMigrationHistory
                         {
                             MigrationId    = migrationId,
                             AppliedDateUtc = DateTime.UtcNow
                         });
 
-                        sw.Stop();
-
-                        logger.LogInformation("Data migration {migrationId} applied in {elapsedTime}",
-                                               migrationId,
-                                               sw.Elapsed);
+                        await dbContext.SaveChangesAsync();
                     }
-                    catch (Exception exception)
-                    {
-                        logger.LogError(exception,
-                                         "Error while applying migration {migrationId}. Rolling back all changes.",
-                                         migrationId);
 
-                        throw;
-                    }
+                    sw.Stop();
+
+                    logger.LogInformation("Data migration {migrationId} applied in {elapsedTime}",
+                                           migrationId,
+                                           sw.Elapsed);
                 }
-            }
-
-            logger.LogInformation("Migrations applied. Saving history records...");
-
-            using (var scope = serviceScopeFactory.CreateScope())
-            {
-                var serviceProvider = scope.ServiceProvider;
-
-                await using (var dbContext = serviceProvider.GetRequiredService<DataMigrationDbContext>())
+                catch (Exception exception)
                 {
-                    await dbContext.AddRangeAsync(appliedMigrations);
-                    await dbContext.SaveChangesAsync();
+                    logger.LogError(exception,
+                                     "Error while applying migration {migrationId}. " +
+                                     "Migrations already applied remain committed; " +
+                                     "this migration and any remaining ones will be retried on next startup.",
+                                     migrationId);
+
+                    throw;
                 }
             }
-
-            logger.LogInformation("Successfully applied data migrations");
-            transactionScope.Complete();
         }
+
+        logger.LogInformation("Successfully applied data migrations");
     }
 
     private async Task Migrate(IServiceScope         scope,

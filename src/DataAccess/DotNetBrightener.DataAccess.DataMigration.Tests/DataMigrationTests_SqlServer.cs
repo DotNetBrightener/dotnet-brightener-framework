@@ -87,7 +87,7 @@ public class DataMigrationTests_SqlServer(ITestOutputHelper testOutputHelper): M
     }
 
     [Fact]
-    public async Task AddDataMigrator_ShouldExecuteAtAppStart_WithoutWritingHistoryDueToException()
+    public async Task AddDataMigrator_ShouldExecuteAtAppStart_AndKeepAlreadyAppliedMigrationsOnException()
     {
         // Arrange
         var builder = new HostBuilder()
@@ -114,10 +114,64 @@ public class DataMigrationTests_SqlServer(ITestOutputHelper testOutputHelper): M
         var migrationHistory = dbContext.Set<DataMigrationHistory>()
                                         .ToList();
 
-        // Assert
-        migrationHistory.Count.ShouldBe(0);
+        // Assert: GoodMigration ran and committed before MigrationWithThrowingException failed,
+        // so it stays recorded as applied instead of being rolled back with the failing one.
+        migrationHistory.Count.ShouldBe(1);
+        migrationHistory[0].MigrationId.ShouldBe("20240502_160412_InitializeMigration");
 
         await host.StopAsync();
+    }
+
+    [Fact]
+    public async Task AddDataMigrator_ShouldResumeFromLastAppliedMigrationOnRestart()
+    {
+        // Arrange: first run fails partway through, only GoodMigration should be recorded
+        var failingBuilder = new HostBuilder()
+           .ConfigureServices((hostContext, services) =>
+            {
+                services.EnableDataMigrations()
+                        .UseSqlServer(ConnectionString);
+
+                services.AddDataMigrator<GoodMigration>();
+                services.AddDataMigrator<MigrationWithThrowingException>();
+            });
+
+        var failingHost = failingBuilder.Build();
+
+        await failingHost.StartAsync();
+        await failingHost.StopAsync();
+
+        // Act: a subsequent run (simulating an app restart) with the failing migration
+        // replaced now only has GoodMigration2 left to apply
+        var resumedBuilder = new HostBuilder()
+           .ConfigureServices((hostContext, services) =>
+            {
+                services.EnableDataMigrations()
+                        .UseSqlServer(ConnectionString);
+
+                services.AddDataMigrator<GoodMigration>();
+                services.AddDataMigrator<GoodMigration2>();
+            });
+
+        var resumedHost = resumedBuilder.Build();
+
+        await resumedHost.StartAsync();
+
+        using var serviceScope = resumedHost.Services.CreateScope();
+
+        var serviceProvider = serviceScope.ServiceProvider;
+
+        await using var dbContext = serviceProvider.GetRequiredService<DataMigrationDbContext>();
+
+        var migrationHistory = dbContext.Set<DataMigrationHistory>()
+                                        .ToList();
+
+        // Assert: GoodMigration was not re-applied; only GoodMigration2 got added
+        migrationHistory.Count.ShouldBe(2);
+        migrationHistory[0].MigrationId.ShouldBe("20240502_160412_InitializeMigration");
+        migrationHistory[1].MigrationId.ShouldBe("20240502_160413_InitializeMigration3");
+
+        await resumedHost.StopAsync();
     }
 
     private IHost ConfigureService<TMigration>() where TMigration : IDataMigration
