@@ -42,10 +42,9 @@ steps:
             Write-Host "##vso[task.setvariable variable=TestProjectsExist]false"
         }
 
-  # Test the packages if the Tests projects available
-  # TEMPORARILY DISABLED: test run was taking too long. Re-enable by restoring the condition below.
   - task: DotNetCoreCLI@2
-    condition: false # eq(variables.TestProjectsExist, 'true')
+    #condition: false # eq(variables.TestProjectsExist, 'true')
+    condition: eq(variables.TestProjectsExist, 'true')
     inputs:
       command: test
       projects: $(ProjectFile)
