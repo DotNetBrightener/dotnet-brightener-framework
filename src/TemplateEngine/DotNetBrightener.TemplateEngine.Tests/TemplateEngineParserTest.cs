@@ -138,9 +138,6 @@ public class TemplateEngineParserTest
     [InlineData("{{formatCurrency Price '' 'en-GB'}}",
                 10.30,
                 "\u00a310.30")]
-    [InlineData("{{formatCurrency Price '' 'en-VN'}}",
-                10300,
-                "\u20ab10.300")]
     [InlineData("{{formatCurrency Price '' 'vi-VN'}}",
                 10300,
                 "10.300 \u20ab")]

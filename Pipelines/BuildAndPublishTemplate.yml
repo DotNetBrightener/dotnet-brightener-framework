@@ -45,10 +45,11 @@ steps:
   - task: DotNetCoreCLI@2
     #condition: false # eq(variables.TestProjectsExist, 'true')
     condition: eq(variables.TestProjectsExist, 'true')
+    timeoutInMinutes: 20
     inputs:
       command: test
       projects: $(ProjectFile)
-      arguments: '--no-restore -p:GeneratePackageOnBuild=false --configuration $(BuildConfiguration) --collect "Code coverage"'
+      arguments: '--no-restore -p:GeneratePackageOnBuild=false --configuration $(BuildConfiguration) --collect "Code coverage" --blame-hang --blame-hang-timeout 5min --blame-hang-dump-type mini'
     displayName: "Testing all test projects in ${{ parameters.projectName }}"
 
   # Build the package

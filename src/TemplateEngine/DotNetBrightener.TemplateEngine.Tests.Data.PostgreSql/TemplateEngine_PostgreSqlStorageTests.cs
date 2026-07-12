@@ -13,6 +13,8 @@ internal class EmptyDbContext(DbContextOptions<EmptyDbContext> options) : DbCont
 
 public class TemplateEngine_PostgreSqlStorageTests(ITestOutputHelper testOutputHelper) : IAsyncLifetime
 {
+    private static readonly TimeSpan ContainerStartTimeout = TimeSpan.FromMinutes(2);
+
     private IHost _testHost;
     private string _connectionString;
 
@@ -27,7 +29,9 @@ public class TemplateEngine_PostgreSqlStorageTests(ITestOutputHelper testOutputH
                               .WithPassword("password")
                               .Build();
 
-        await _postgreSqlContainer.StartAsync();
+        using var startTimeoutCts = new CancellationTokenSource(ContainerStartTimeout);
+
+        await _postgreSqlContainer.StartAsync(startTimeoutCts.Token);
         _connectionString = _postgreSqlContainer.GetConnectionString();
 
 

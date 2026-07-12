@@ -8,8 +8,10 @@ using Xunit;
 
 namespace DotNetBrightener.DataAccess.DataMigration.Tests;
 
-public class DataMigrationTests_PostgreSql : IAsyncDisposable
+public class DataMigrationTests_PostgreSql : IAsyncLifetime
 {
+    private static readonly TimeSpan ContainerStartTimeout = TimeSpan.FromMinutes(2);
+
     private readonly PostgreSqlContainer _postgreSqlContainer = new PostgreSqlBuilder()
                                                                .WithImage("postgres:17")
                                                                .WithDatabase($"DataMigration_UnitTest{DateTime.Now:yyyyMMddHHmm}")
@@ -17,14 +19,14 @@ public class DataMigrationTests_PostgreSql : IAsyncDisposable
                                                                .WithPassword("password")
                                                                .Build();
 
-
-    public DataMigrationTests_PostgreSql()
+    public async Task InitializeAsync()
     {
-        // Start the PostgreSQL container synchronously in constructor
-        _postgreSqlContainer.StartAsync().Wait();
+        using var startTimeoutCts = new CancellationTokenSource(ContainerStartTimeout);
+
+        await _postgreSqlContainer.StartAsync(startTimeoutCts.Token);
     }
 
-    public async ValueTask DisposeAsync()
+    public async Task DisposeAsync()
     {
         // Clean up after each test and dispose container
         TearDownHost();
