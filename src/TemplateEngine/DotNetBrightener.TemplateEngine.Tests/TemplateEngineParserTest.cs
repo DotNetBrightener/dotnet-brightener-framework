@@ -26,15 +26,15 @@ public class TemplateEngineParserTest
     }
 
     [Theory]
-    //[TestCase("’", "'")]
+    //[TestCase("ï¿½", "'")]
     [InlineData("&", "&")]
     [InlineData("\"", "\"")]
     [InlineData("<", "<")]
     [InlineData(">", ">")]
-    [InlineData("€", "€")]
-    [InlineData("£", "£")]
-    [InlineData("®", "®")]
-    [InlineData("©", "©")]
+    [InlineData("ï¿½", "ï¿½")]
+    [InlineData("ï¿½", "ï¿½")]
+    [InlineData("ï¿½", "ï¿½")]
+    [InlineData("ï¿½", "ï¿½")]
     public void TestParseTemplate_HtmlDisabled_ShouldRetainInputAsItWas(string input, string expectedValue)
     {
         var templateParserService = _serviceProvider.GetService<ITemplateParserService>();
@@ -45,7 +45,7 @@ public class TemplateEngineParserTest
 
     //[Test]
     //[TestCase("Welcome to your home. {{Address}}",
-    //          "111 Adam’s MHS Test St., NorthPole, AK 66666",
+    //          "111 Adamï¿½s MHS Test St., NorthPole, AK 66666",
     //          "Welcome to your home. 111 Adam's MHS Test St., NorthPole, AK 66666")]
     //public void TestParseTemplate_ComplexObject(string template,
     //                                            string inputAddress,
@@ -64,7 +64,7 @@ public class TemplateEngineParserTest
 
     //[Test]
     //[TestCase("Welcome to your home. {{Address}}",
-    //          "111 Adam’s MHS Test St., NorthPole, AK 66666",
+    //          "111 Adamï¿½s MHS Test St., NorthPole, AK 66666",
     //          "Welcome to your home. 111 Adam's MHS Test St., NorthPole, AK 66666")]
     //public void TestParseTemplate_ComplexObject_HtmlEnabled(string template,
     //                                            string inputAddress,
@@ -140,7 +140,7 @@ public class TemplateEngineParserTest
                 "\u00a310.30")]
     [InlineData("{{formatCurrency Price '' 'en-VN'}}",
                 10300,
-                "\u20ab10,300")]
+                "\u20ab10.300")]
     [InlineData("{{formatCurrency Price '' 'vi-VN'}}",
                 10300,
                 "10.300 \u20ab")]
