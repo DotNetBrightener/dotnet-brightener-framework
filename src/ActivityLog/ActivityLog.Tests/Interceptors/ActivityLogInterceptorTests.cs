@@ -53,6 +53,22 @@ public class ActivityLogInterceptorTests
         _proxyGenerator = new ProxyGenerator();
     }
 
+    // The interceptor logs synchronous-method completions via a fire-and-forget Task.Run,
+    // whose completion time is not deterministic (especially under CI ThreadPool pressure) -
+    // poll for the actual condition instead of guessing a fixed delay.
+    private static async Task WaitForAsync(Func<bool> condition, int timeoutMs = 2000)
+    {
+        var deadline = DateTime.UtcNow.AddMilliseconds(timeoutMs);
+
+        while (!condition())
+        {
+            if (DateTime.UtcNow >= deadline)
+                throw new TimeoutException("Timed out waiting for the fire-and-forget activity log call to complete.");
+
+            await Task.Delay(10);
+        }
+    }
+
     [Fact]
     public void Intercept_ShouldNotLog_WhenLoggingDisabled()
     {
@@ -94,14 +110,16 @@ public class ActivityLogInterceptorTests
         var testService = new TestService();
         var proxy       = _proxyGenerator.CreateInterfaceProxyWithTarget<ITestService>(testService, _interceptor);
 
+        var logged = false;
         _mockActivityLogService.Setup(x => x.LogMethodCompletionAsync(It.IsAny<MethodExecutionContext>()))
+                               .Callback(() => logged = true)
                                .Returns(Task.CompletedTask);
 
         // Act
         var result = proxy.GetValue(42);
 
-        // Wait a bit for the async logging to complete (fire-and-forget Task.Run)
-        await Task.Delay(100);
+        // Wait for the fire-and-forget Task.Run logging call to complete
+        await WaitForAsync(() => logged);
 
         // Assert
         result.ShouldBe("Value: 42");
@@ -133,15 +151,17 @@ public class ActivityLogInterceptorTests
         var testService = new TestService();
         var proxy       = _proxyGenerator.CreateInterfaceProxyWithTarget<ITestService>(testService, _interceptor);
 
+        var logged = false;
         _mockActivityLogService.Setup(x => x.LogMethodFailureAsync(It.IsAny<MethodExecutionContext>()))
+                               .Callback(() => logged = true)
                                .Returns(Task.CompletedTask);
 
         // Act & Assert
         var exception = Assert.Throws<InvalidOperationException>(() => proxy.ThrowException());
         exception.Message.ShouldBe("Test exception");
 
-        // Wait a bit for the async logging to complete
-        await Task.Delay(100);
+        // Wait for the fire-and-forget Task.Run logging call to complete
+        await WaitForAsync(() => logged);
 
         _mockActivityLogService.Verify(x => x.LogMethodFailureAsync(It.IsAny<MethodExecutionContext>()), Times.Once);
     }
@@ -180,8 +200,8 @@ public class ActivityLogInterceptorTests
         // Act
         var result = proxy.GetValue(42);
 
-        // Wait a bit for the async logging to complete
-        await Task.Delay(100);
+        // Wait for the fire-and-forget Task.Run logging call to complete
+        await WaitForAsync(() => capturedContext is not null);
 
         // Assert
         result.ShouldBe("Value: 42");
@@ -248,8 +268,8 @@ public class ActivityLogInterceptorTests
         // Act
         var result = proxy.ProcessWithMetadata(42);
 
-        // Wait a bit for the async logging to complete
-        await Task.Delay(100);
+        // Wait for the fire-and-forget Task.Run logging call to complete
+        await WaitForAsync(() => capturedContext is not null);
 
         // Assert
         result.ShouldBe("Processed: 42");
@@ -297,8 +317,14 @@ public class ActivityLogInterceptorTests
 
         await Task.WhenAll(tasks);
 
-        // Wait for async logging to complete
-        await Task.Delay(200);
+        // Wait for the fire-and-forget Task.Run logging calls to complete
+        await WaitForAsync(() =>
+        {
+            lock (capturedContexts)
+            {
+                return capturedContexts.Count >= 3;
+            }
+        });
 
         // Assert
         capturedContexts.Count.ShouldBe(3);
@@ -344,8 +370,14 @@ public class ActivityLogInterceptorTests
         // Act - Execute method that calls other methods (direct calls, not through proxy)
         var result = proxy.OuterMethod(42);
 
-        // Wait for async logging to complete
-        await Task.Delay(200);
+        // Wait for the fire-and-forget Task.Run logging call to complete
+        await WaitForAsync(() =>
+        {
+            lock (capturedContexts)
+            {
+                return capturedContexts.Count >= 1;
+            }
+        });
 
         // Assert
         result.ShouldBe("Outer: Inner: 42");
@@ -383,8 +415,14 @@ public class ActivityLogInterceptorTests
         var result1 = proxy.InnerMethod(100);
         var result2 = proxy.InnerMethod(200);
 
-        // Wait for async logging to complete
-        await Task.Delay(200);
+        // Wait for the fire-and-forget Task.Run logging calls to complete
+        await WaitForAsync(() =>
+        {
+            lock (capturedContexts)
+            {
+                return capturedContexts.Count >= 2;
+            }
+        });
 
         // Assert
         result1.ShouldBe("Inner: 100");
@@ -423,8 +461,8 @@ public class ActivityLogInterceptorTests
         // Act
         var result = proxy.ProcessWithBatchMetadata(42);
 
-        // Wait a bit for the async logging to complete
-        await Task.Delay(100);
+        // Wait for the fire-and-forget Task.Run logging call to complete
+        await WaitForAsync(() => capturedContext is not null);
 
         // Assert
         result.ShouldBe("Batch Processed: 42");
@@ -468,8 +506,8 @@ public class ActivityLogInterceptorTests
         // Act
         var result = proxy.ProcessWithEdgeCases(42);
 
-        // Wait a bit for the async logging to complete
-        await Task.Delay(100);
+        // Wait for the fire-and-forget Task.Run logging call to complete
+        await WaitForAsync(() => capturedContext is not null);
 
         // Assert
         result.ShouldBe("Edge Cases Processed: 42");
@@ -502,8 +540,8 @@ public class ActivityLogInterceptorTests
         // Act
         var result = proxy.ProcessWithContextModification(42);
 
-        // Wait a bit for the async logging to complete
-        await Task.Delay(100);
+        // Wait for the fire-and-forget Task.Run logging call to complete
+        await WaitForAsync(() => capturedContext is not null);
 
         // Assert
         result.ShouldBe("Context Modified: 42");
