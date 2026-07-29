@@ -9,25 +9,25 @@ namespace DotNetBrightener.DataAccess.DataMigration;
 
 internal class DataMigrationRunner(
     IServiceScopeFactory         serviceScopeFactory,
-    ILogger<DataMigrationRunner> logger,
-    IHostApplicationLifetime     lifetime)
+    ILogger<DataMigrationRunner> logger)
     : IHostedService, IDisposable
 {
-    public Task StartAsync(CancellationToken cancellationToken)
-    {
-        lifetime.ApplicationStarted.Register(InitializeAfterAppStarted);
-
-        return Task.CompletedTask;
-    }
-
-    private void InitializeAfterAppStarted()
+    public async Task StartAsync(CancellationToken cancellationToken)
     {
         using (var scope = serviceScopeFactory.CreateScope())
         {
             MigrateSchemaIfNeeded(scope);
         }
-        
-        ExecuteMigration().Wait();
+
+        try
+        {
+            await ExecuteMigration();
+        }
+        catch (Exception)
+        {
+            // Already logged inside ExecuteMigration: a migration failure must not fail app
+            // startup, already-applied migrations stay committed and the rest retry next startup.
+        }
     }
 
     private void MigrateSchemaIfNeeded(IServiceScope scope)
