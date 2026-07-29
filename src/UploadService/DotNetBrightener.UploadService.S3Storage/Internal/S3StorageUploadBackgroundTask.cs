@@ -139,7 +139,9 @@ internal class S3StorageUploadBackgroundTask(
                 Key = key,
                 InputStream = uploadStream,
                 ContentType = contentType,
-                CannedACL = S3CannedACL.PublicRead // Make files publicly readable
+                CannedACL = _configuration.PublicRead
+                                ? S3CannedACL.PublicRead
+                                : S3CannedACL.Private
             };
 
             var response = await _s3Client.Value.PutObjectAsync(putRequest);

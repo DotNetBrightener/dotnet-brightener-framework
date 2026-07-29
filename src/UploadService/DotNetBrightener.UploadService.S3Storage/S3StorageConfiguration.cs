@@ -108,4 +108,13 @@ public class S3StorageConfiguration
     /// Required for MinIO and some other providers
     /// </summary>
     public bool ForcePathStyle { get; set; }
+
+    /// <summary>
+    /// Whether uploaded objects are given a public-read ACL, making them directly accessible
+    /// via the storage provider's own URL (bypassing <see cref="RetrieveFileEndpoint"/>).
+    /// Defaults to <c>false</c> so files can only be accessed by streaming through
+    /// <see cref="RetrieveFileEndpoint"/>, which authenticates against the bucket using
+    /// <see cref="AccessKey"/>/<see cref="SecretKey"/> regardless of object ACL.
+    /// </summary>
+    public bool PublicRead { get; set; }
 }

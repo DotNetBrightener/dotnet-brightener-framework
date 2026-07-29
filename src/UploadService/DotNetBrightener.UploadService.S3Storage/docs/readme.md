@@ -12,7 +12,7 @@ This package provides a universal S3-compatible storage upload service provider 
 - **Thumbnail Generation**: Automatic thumbnail creation and caching
 - **Local Caching**: Configurable file caching to reduce API calls
 - **GUID File Naming**: Optional GUID-based file naming for uniqueness
-- **Public Access**: Files are uploaded with public read access by default
+- **Private by Default**: Files are uploaded with a private ACL and can only be retrieved by streaming through `RetrieveFileEndpoint`; set `PublicRead: true` to opt into direct public URLs instead
 - **Flexible Configuration**: Easy switching between providers with minimal configuration changes
 
 ## Installation
@@ -71,6 +71,17 @@ Add the following configuration to your `appsettings.json`:
 - **UseGuidForFileName**: Use GUID for file names to ensure uniqueness (default: false)
 - **CacheExpiration**: How long to cache files locally (default: 6 hours)
 - **ForcePathStyle**: Force path-style bucket access (required for MinIO and some providers)
+- **PublicRead**: Upload objects with a public-read ACL, making them directly accessible via the provider's own URL instead of only through `RetrieveFileEndpoint` (default: `false`)
+
+## Restricting Access to Server Streaming Only
+
+By default (`PublicRead: false`), uploaded objects get a **private** ACL. The `RetrieveFileEndpoint` endpoint authenticates against the bucket with `AccessKey`/`SecretKey`, so it can still read private objects and stream them to clients — but the object's direct storage URL (e.g. `https://your-space.nyc3.digitaloceanspaces.com/folder/file.png`) returns `403 Forbidden` to anyone else.
+
+Notes when doing this on Digital Ocean Spaces:
+
+- This only affects **newly uploaded** objects. Files uploaded previously with a public-read ACL remain public until their ACL is updated (e.g. via `PutACLRequest` with `CannedACL = S3CannedACL.Private`, or the DO Spaces dashboard/`s3cmd`/`doctl`).
+- Also check the Space's own **CDN/edge caching** — if a DO Spaces CDN endpoint was enabled for this Space, previously-public files may still be served from cached edge copies even after the ACL changes; purge the CDN cache after migrating.
+- Object-level ACL (this setting) controls whether anonymous `GetObject` requests succeed — it's independent of the Space's "File Listing" toggle, which only controls whether you can list/browse the bucket's contents.
 
 ### Provider-Specific Configuration Examples
 
