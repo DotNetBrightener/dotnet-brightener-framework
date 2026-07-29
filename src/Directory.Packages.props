@@ -21,6 +21,8 @@
     <PackageVersion Include="Dapper" Version="2.1.79" />
     <PackageVersion Include="EntityFrameworkCore.Exceptions.PostgreSQL" Version="10.0.1" />
     <PackageVersion Include="EntityFrameworkCore.Exceptions.SqlServer" Version="10.0.1" />
+    <PackageVersion Include="FluentValidation" Version="12.1.1" />
+    <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
     <PackageVersion Include="linq2db.EntityFrameworkCore" Version="10.1.0" />
     <!-- Messaging -->
     <PackageVersion Include="RabbitMQ.Client" Version="7.2.1" />

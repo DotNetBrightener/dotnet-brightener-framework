@@ -9,7 +9,6 @@ using Xunit;
 namespace DotNetBrightener.DataAccess.DataMigration.Tests;
 
 public class DataMigrationTests_PostgreSql : IAsyncLifetime
-public class DataMigrationTests_PostgreSql : IAsyncLifetime
 {
     private static readonly TimeSpan ContainerStartTimeout = TimeSpan.FromMinutes(2);
 
