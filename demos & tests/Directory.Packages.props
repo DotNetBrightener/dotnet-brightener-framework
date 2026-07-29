@@ -32,6 +32,11 @@
     <!-- Microsoft Identity -->
     <PackageVersion Include="Microsoft.Identity.Client" Version="4.79.2" />
 
+    <!-- Pins the C# compiler to match src/'s Microsoft.CodeAnalysis.CSharp version, so the
+         WebApi.GenericCRUD.Generator / Mapper source generators (consumed here as analyzers)
+         aren't silently skipped by an older SDK-bundled csc. Keep in sync with src/Directory.Packages.props. -->
+    <PackageVersion Include="Microsoft.Net.Compilers.Toolset" Version="5.6.0" />
+
     <!-- Microsoft Testing -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
 

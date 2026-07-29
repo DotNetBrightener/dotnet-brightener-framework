@@ -7,4 +7,13 @@
 
 		<NoWarn>$(NoWarn);0168;1701;1702;1591;1574;1723;1998;1573;RCS1194;CS8618;</NoWarn>
 	</PropertyGroup>
+
+	<!-- See src/Directory.Build.props for why this is needed. This file doesn't import
+	     ../Directory.Build.props, so the pin must be repeated here. -->
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Net.Compilers.Toolset">
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+			<PrivateAssets>all</PrivateAssets>
+		</PackageReference>
+	</ItemGroup>
 </Project>
