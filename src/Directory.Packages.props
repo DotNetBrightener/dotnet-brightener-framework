@@ -42,9 +42,12 @@
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.10" />
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.10" />
     <!-- Microsoft Code Analysis -->
-    <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="5.3.0" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="5.3.0" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="5.3.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="5.6.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="5.6.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="5.6.0" />
+    <!-- Pins the standalone Roslyn compiler build to 5.6.0 so analyzer/source-generator DLLs referencing
+         Microsoft.CodeAnalysis.CSharp 5.6.0 can be loaded even when the installed .NET SDK bundles an older csc. -->
+    <PackageVersion Include="Microsoft.Net.Compilers.Toolset" Version="5.6.0" />
     <!-- Microsoft Data -->
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="7.0.2" />
     <!-- Microsoft Entity Framework Core -->
