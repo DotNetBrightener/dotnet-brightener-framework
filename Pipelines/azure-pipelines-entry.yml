@@ -7,12 +7,12 @@ trigger:
   paths:
     include:
       - /src/*
-      - /Pipelines/*
     exclude:
       - version.json
       - benchmarks/*
       - demos & tests/*
       - '**/README.md'
+      - /Pipelines/*
 
 pr:
   branches:
@@ -22,12 +22,12 @@ pr:
   paths:
     include:
       - /src/*
-      - /Pipelines/*
     exclude:
       - version.json
       - benchmarks/*
       - demos & tests/*
       - '**/README.md'
+      - /Pipelines/*
 
 pool:
   vmImage:
