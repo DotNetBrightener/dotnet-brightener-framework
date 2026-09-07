@@ -61,9 +61,20 @@ steps:
     condition: succeeded()
     displayName: "Build ${{ parameters.projectName }} v$(VersionNumber)"
 
-  # Archive the package to build's artifacts
+  # Archive the package to build's artifacts (only for master/releases builds or PRs targeting them)
   - task: PublishBuildArtifacts@1
-    condition: succeeded()
+    condition: |
+      and(
+        succeeded(),
+        or(
+          eq(variables['Build.SourceBranch'], 'refs/heads/master'),
+          startsWith(variables['Build.SourceBranch'], 'refs/heads/releases/'),
+          eq(variables['System.PullRequest.TargetBranch'], 'master'),
+          eq(variables['System.PullRequest.TargetBranch'], 'refs/heads/master'),
+          startsWith(variables['System.PullRequest.TargetBranch'], 'releases/'),
+          startsWith(variables['System.PullRequest.TargetBranch'], 'refs/heads/releases/')
+        )
+      )
     displayName: "Archiving Artifact"
     inputs:
       PathToPublish: $(Build.ArtifactStagingDirectory)
