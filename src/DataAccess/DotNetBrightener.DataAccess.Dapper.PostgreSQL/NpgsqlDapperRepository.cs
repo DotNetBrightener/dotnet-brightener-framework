@@ -45,6 +45,21 @@ public class NpgsqlDapperRepository : IDapperRepository
         }
     }
 
+    public async Task<int> ExecuteAsync(string sqlQuery, object param = null)
+    {
+        using (var connection = await NewConnection())
+        {
+            return await connection.ExecuteAsync(sqlQuery, param);
+        }
+    }
+
+    public async Task<IDapperUnitOfWork> BeginUnitOfWorkAsync()
+    {
+        var connection = await NewConnection();
+
+        return new NpgsqlDapperUnitOfWork(connection);
+    }
+
     private Task<IDbConnection> NewConnection()
     {
         return NewConnection(_databaseConfiguration.ConnectionString);

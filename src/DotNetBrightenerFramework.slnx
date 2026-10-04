@@ -104,6 +104,7 @@
     <Project Path="DataAccess/DotNetBrightener.DataAccess.DataMigration.Tests/DotNetBrightener.DataAccess.DataMigration.Tests.csproj" />
   </Folder>
   <Folder Name="/DataAccess/Tests/">
+    <Project Path="DataAccess/DotNetBrightener.DataAccess.Dapper.Tests/DotNetBrightener.DataAccess.Dapper.Tests.csproj" />
     <Project Path="DataAccess/DotNetBrightener.DataAccess.EF.PostgreSQL.Tests/DotNetBrightener.DataAccess.EF.PostgreSQL.Tests.csproj" />
     <Project Path="DataAccess/DotNetBrightener.DataAccess.EF.Tests/DotNetBrightener.DataAccess.EF.Tests.csproj" />
   </Folder>
