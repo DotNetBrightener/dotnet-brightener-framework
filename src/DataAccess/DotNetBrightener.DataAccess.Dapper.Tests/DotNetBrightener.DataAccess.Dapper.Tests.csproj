@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<IsPackable>false</IsPackable>
+		<IsTestProject>true</IsTestProject>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Using Include="Xunit" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="coverlet.collector" />
+	  <PackageReference Include="Microsoft.NET.Test.Sdk" />
+	  <PackageReference Include="Shouldly" />
+	  <PackageReference Include="Testcontainers.PostgreSql" />
+	  <PackageReference Include="xunit" />
+	  <PackageReference Include="xunit.runner.visualstudio" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\DotNetBrightener.DataAccess.Dapper.PostgreSQL\DotNetBrightener.DataAccess.Dapper.PostgreSQL.csproj" />
+	  <ProjectReference Include="..\..\TestHelpers\DotNetBrightener.TestHelpers.PostgreSql\DotNetBrightener.TestHelpers.PostgreSql.csproj" />
+	</ItemGroup>
+</Project>
