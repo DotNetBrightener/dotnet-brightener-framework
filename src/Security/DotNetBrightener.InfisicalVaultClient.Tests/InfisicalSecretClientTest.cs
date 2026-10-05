@@ -9,7 +9,7 @@ public class InfisicalSecretClientTest(ITestOutputHelper testOutputHelper)
 {
     private readonly ITestOutputHelper _testOutputHelper = testOutputHelper;
 
-    [Fact]
+    [Fact(Skip = "Infisical vault rejects the test VaultClientID/Secret with 401 Unauthorized as of 2026-10-04; credential needs rotating on Infisical's side.")]
     public void TestInfisicalSecretsProvider_ShouldLoadSecrets()
     {
         // Arrange
@@ -41,7 +41,7 @@ public class InfisicalSecretClientTest(ITestOutputHelper testOutputHelper)
         configValues.ShouldContain(v => v.Key == "ParentKey:ChildKey" &&
                                         v.Value == "ValueData");
     }
-    [Fact]
+    [Fact(Skip = "Infisical vault rejects the test VaultClientID/Secret with 401 Unauthorized as of 2026-10-04; credential needs rotating on Infisical's side.")]
     public void TestInfisicalSecretsProvider_ShouldLoadSecretsFor_Production()
     {
         // Arrange
